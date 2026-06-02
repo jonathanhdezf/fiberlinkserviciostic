@@ -1853,7 +1853,47 @@
     </section>
   </main>
 
-  <footer class="site-footer">
+  
+  <!-- Partners / Sponsors -->
+  <style>
+    .partners { padding: 44px 0 22px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); }
+    .partners .section-kicker { color: var(--muted); margin-bottom:6px; }
+    .partners h3 { margin:0 0 10px; font-size:1.15rem; }
+    .partners-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:18px; align-items:center; justify-items:center; }
+    .partner-logo { width:72px; height:auto; opacity:.88; transition: transform .22s ease, opacity .18s ease, filter .18s ease; filter:grayscale(.0) contrast(.95); }
+    .partner-link { display:inline-flex; align-items:center; justify-content:center; padding:8px; border-radius:10px; background:transparent; }
+    .partner-link:hover .partner-logo { transform: translateY(-6px) scale(1.04); opacity:1; filter: none; }
+    @media (max-width:700px){ .partners { padding:28px 8px; } .partner-logo{ width:56px; } }
+  </style>
+
+  <section class="partners" aria-label="Aliados y patrocinadores">
+    <div class="container">
+      <div class="section-kicker">Aliados</div>
+      <h3>Marcas y socios tecnológicos</h3>
+      <div class="partners-grid" aria-hidden="false">
+        <a class="partner-link" href="https://www.microsoft.com" target="_blank" rel="noopener" aria-label="Microsoft">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/microsoft.svg" alt="Microsoft" />
+        </a>
+        <a class="partner-link" href="https://cloud.google.com" target="_blank" rel="noopener" aria-label="Google Cloud">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/google.svg" alt="Google" />
+        </a>
+        <a class="partner-link" href="https://aws.amazon.com" target="_blank" rel="noopener" aria-label="Amazon Web Services">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/amazonaws.svg" alt="AWS" />
+        </a>
+        <a class="partner-link" href="https://www.cloudflare.com" target="_blank" rel="noopener" aria-label="Cloudflare">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/cloudflare.svg" alt="Cloudflare" />
+        </a>
+        <a class="partner-link" href="https://www.ui.com" target="_blank" rel="noopener" aria-label="Ubiquiti">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/ubiquiti.svg" alt="Ubiquiti" />
+        </a>
+        <a class="partner-link" href="https://mikrotik.com" target="_blank" rel="noopener" aria-label="MikroTik">
+          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/mikrotik.svg" alt="MikroTik" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+<footer class="site-footer">
     <div class="container footer-inner">
       <div class="footer-copy">
         <strong>Fiberlink Servicios TIC</strong>
