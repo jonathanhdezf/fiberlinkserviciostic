@@ -1459,7 +1459,32 @@
     .mobile-drawer__backdrop, .mobile-drawer__panel, .drawer-nav a, .drawer-contact .btn { transition: none !important; transform: none !important; }
   }
 
-  </style>
+
+
+  /* Terminal CTA and demo styles */
+  .btn-neon { position: fixed; right: 18px; bottom: 18px; z-index: 140; padding: 12px 16px; border-radius: 12px; background: linear-gradient(90deg,#48d39b,#26c1a0); color:#071013; font-weight:800; box-shadow: 0 8px 30px rgba(72,211,155,0.12), 0 0 18px rgba(72,211,155,0.08); cursor:pointer; border: none; display: inline-flex; align-items:center; gap:10px; }
+  .btn-neon:hover { transform: translateY(-3px); box-shadow: 0 18px 70px rgba(72,211,155,0.18), 0 0 40px rgba(72,211,155,0.12); }
+  .btn-neon:active { transform: translateY(-1px) scale(.995); }
+  .btn-neon .pulse { width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,0.9); box-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 18px rgba(72,211,155,0.9); }
+
+  .terminal-demo { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 150; }
+  .terminal-demo.open { display: flex; }
+  .terminal-demo .backdrop { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.7)); backdrop-filter: blur(6px) saturate(110%); }
+  .terminal-box { position: relative; width: min(92%,980px); max-width: 980px; height: min(72vh,720px); background: radial-gradient(ellipse at top left, rgba(10,14,16,0.98), rgba(3,6,8,0.95)); border-radius: 12px; padding: 18px; box-shadow: 0 30px 120px rgba(2,6,10,0.8), inset 0 0 80px rgba(72,211,155,0.02); border:1px solid rgba(72,211,155,0.04); display:flex; flex-direction:column; overflow:hidden; }
+  .terminal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .terminal-controls { display:flex; gap:8px; align-items:center; }
+  .terminal-controls .dot { width:12px; height:12px; border-radius:999px; background:#ff5f56; box-shadow: 0 6px 18px rgba(255,95,86,0.06); }
+  .terminal-controls .dot.yellow { background:#ffbd2e; }
+  .terminal-controls .dot.green { background:#27c93f; }
+  .terminal-title { color: #cdeee2; font-weight:700; font-size: .98rem; }
+
+  .terminal-content { flex:1; overflow:auto; background: transparent; color: #9ef0d2; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size: 14px; line-height:1.45; padding:10px 4px; border-radius:6px; }
+  .terminal-line { white-space:pre-wrap; opacity:0; transform: translateY(6px); transition: opacity .18s ease, transform .22s ease; }
+  .terminal-line.visible { opacity:1; transform:none; }
+  .cursor { display:inline-block; width:8px; height:16px; background: linear-gradient(90deg, #cfffe8, #9ef0d2); margin-left:6px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: 0 } }
+
+</style>
 </head>
 <body>
   <canvas id="physics-bg" aria-hidden="true"></canvas>
@@ -2368,6 +2393,94 @@
       } catch(e) { /* ignore */ }
     })();
   </script>
+
+  <!-- Terminal demo CTA and modal -->
+  <button id="sysDemoBtn" class="btn-neon" aria-label="Ver estado en linea"><span class="pulse" aria-hidden="true"></span><span style="font-weight:800;">Ver estado en línea</span></button>
+
+  <div class="terminal-demo" id="terminalDemo" aria-hidden="true" role="dialog" aria-label="Simulador de estado">
+    <div class="backdrop" id="terminalBackdrop" data-close-terminal></div>
+    <div class="terminal-box" role="document">
+      <div class="terminal-header">
+        <div class="terminal-title">Fiberlink — Estado y seguridad en línea</div>
+        <div class="terminal-controls"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+      </div>
+      <div class="terminal-content" id="terminalContent" aria-live="polite"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+        <button class="btn btn-ghost" id="terminalClose">Cerrar</button>
+        <button class="btn btn-primary" id="terminalStop">Detener</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const demoBtn = document.getElementById('sysDemoBtn');
+      const demo = document.getElementById('terminalDemo');
+      const content = document.getElementById('terminalContent');
+      const backdrop = document.getElementById('terminalBackdrop');
+      const closeBtn = document.getElementById('terminalClose');
+      const stopBtn = document.getElementById('terminalStop');
+      let running = false, stopRequested = false;
+
+      const sequence = [
+        {cmd: 'date', out: new Date().toLocaleString()},
+        {cmd: 'ping noc.fiberlink.mx -c 3', out: 'PING noc.fiberlink.mx (45.55.22.11): 56 data bytes\n64 bytes from 45.55.22.11: icmp_seq=0 ttl=54 time=18.2 ms\n64 bytes from 45.55.22.11: icmp_seq=1 ttl=54 time=17.9 ms\n64 bytes from 45.55.22.11: icmp_seq=2 ttl=54 time=18.1 ms\n--- noc.fiberlink.mx ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss'},
+        {cmd: 'checking certificates', out: 'TLS/SSL: valid (Let's Encrypt)\nCertificate expires: 2026-12-18'},
+        {cmd: 'security-audit --fast', out: 'Auth: OK\nFirewall: OK\nVPN: OK\nIntrusion-detection: OK'},
+        {cmd: 'sync status', out: 'NOC: connected\nLast sync: 0m 12s ago\nServices: all operational'},
+        {cmd: 'connections', out: 'Clients online: 24\nSupport queue: 1\nAvailable engineers: 3'},
+        {cmd: 'exit', out: 'Demo finished — Fiberlink está actualizado, conectado y disponible. Seguridad en línea activa.'}
+      ];
+
+      function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
+
+      async function typeLine(text, el, speed=18){
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        el.appendChild(line);
+        line.innerHTML = '';
+        for (let i=0;i<text.length;i++){
+          if (stopRequested) return false;
+          line.textContent += text[i];
+          el.scrollTop = el.scrollHeight;
+          await sleep(speed + Math.random()*10);
+        }
+        line.classList.add('visible');
+        return true;
+      }
+
+      async function runSequence(){
+        running = true; stopRequested = false; content.innerHTML = '';
+        for (let i=0;i<sequence.length;i++){
+          const step = sequence[i];
+          if (stopRequested) break;
+          const prompt = `> ${step.cmd}`;
+          const ok = await typeLine(prompt, content, 16);
+          if (!ok) break;
+          await sleep(260 + Math.random()*320);
+          if (stopRequested) break;
+          const outLines = String(step.out).split('\n');
+          for (const out of outLines){
+            if (stopRequested) break;
+            await typeLine(out, content, 6);
+            await sleep(40 + Math.random()*60);
+          }
+          await sleep(260 + Math.random()*400);
+        }
+        running = false;
+      }
+
+      function openDemo(){ demo.classList.add('open'); demo.setAttribute('aria-hidden','false'); runSequence(); }
+      function closeDemo(){ stopRequested = true; demo.classList.remove('open'); demo.setAttribute('aria-hidden','true'); content.innerHTML = ''; }
+
+      demoBtn.addEventListener('click', () => { if (!running) openDemo(); else { stopRequested = true; } });
+      backdrop.addEventListener('click', closeDemo);
+      closeBtn.addEventListener('click', closeDemo);
+      stopBtn.addEventListener('click', () => { stopRequested = true; });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDemo(); });
+    })();
+  </script>
+
 </body>
 </html>
 
