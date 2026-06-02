@@ -2095,6 +2095,39 @@
       navLinks.style.borderRadius = isOpen ? "" : "8px";
     });
 
+    // Fallback delegated handler in case direct binding fails (fixes environments where menuBtn is null at bind time)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest && e.target.closest('#menuBtn');
+      if (!btn) return;
+      // replicate the same toggle logic
+      const mobileDrawer = document.getElementById('mobileDrawer');
+      const isMobile = window.innerWidth < 700;
+      if (isMobile && mobileDrawer) {
+        const open = mobileDrawer.classList.contains('open');
+        mobileDrawer.classList.toggle('open', !open);
+        document.body.classList.toggle('menu-open', !open);
+        btn.setAttribute('aria-expanded', String(!open));
+        mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
+        if (!open) setTimeout(() => mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
+        return;
+      }
+
+      const navLinks = document.querySelector('.nav-links');
+      if (!navLinks) return;
+      const isOpen = navLinks.style.display === 'flex';
+      navLinks.style.display = isOpen ? '' : 'flex';
+      navLinks.style.position = isOpen ? '' : 'absolute';
+      navLinks.style.left = isOpen ? '' : '10px';
+      navLinks.style.right = isOpen ? '' : '10px';
+      navLinks.style.top = isOpen ? '' : '64px';
+      navLinks.style.padding = isOpen ? '' : '14px';
+      navLinks.style.flexDirection = isOpen ? '' : 'column';
+      navLinks.style.alignItems = isOpen ? '' : 'stretch';
+      navLinks.style.background = isOpen ? '' : 'rgba(16,20,29,.98)';
+      navLinks.style.border = isOpen ? '' : '1px solid rgba(255,255,255,.12)';
+      navLinks.style.borderRadius = isOpen ? '' : '8px';
+    });
+
     // Drawer controls: close via backdrop, close button, or Escape
     const mobileDrawer = document.getElementById('mobileDrawer');
     const drawerBackdrop = document.getElementById('drawerBackdrop');
