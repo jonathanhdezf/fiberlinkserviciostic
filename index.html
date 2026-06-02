@@ -1484,6 +1484,19 @@
   .cursor { display:inline-block; width:8px; height:16px; background: linear-gradient(90deg, #cfffe8, #9ef0d2); margin-left:6px; animation: blink 1s steps(2) infinite; }
   @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: 0 } }
 
+  /* Mobile adjustments for terminal demo */
+  @media (max-width:700px) {
+    .btn-neon { right: 50%; transform: translateX(50%); padding: 14px 18px; border-radius: 999px; bottom: 14px; }
+    .terminal-box { width: 100%; max-width: 100%; height: 100vh; min-height: 100vh; border-radius: 0; padding: 14px; }
+    .terminal-content { font-size: 13px; line-height: 1.38; padding: 8px; }
+    .terminal-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .terminal-controls { order: 2; }
+    .terminal-title { font-size: .95rem; }
+    .terminal-box { padding-bottom: 84px; }
+    .terminal-actions { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; gap: 10px; }
+    .terminal-actions .btn { flex: 1; min-height: 48px; }
+  }
+
 </style>
 </head>
 <body>
@@ -2405,7 +2418,7 @@
         <div class="terminal-controls"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
       </div>
       <div class="terminal-content" id="terminalContent" aria-live="polite"></div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <div class="terminal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
         <button class="btn btn-ghost" id="terminalClose">Cerrar</button>
         <button class="btn btn-primary" id="terminalStop">Detener</button>
       </div>
