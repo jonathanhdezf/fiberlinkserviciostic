@@ -2484,7 +2484,41 @@
       }
 
       function openDemo(){ demo.classList.add('open'); demo.setAttribute('aria-hidden','false'); runSequence(); }
-      function closeDemo(){ stopRequested = true; demo.classList.remove('open'); demo.setAttribute('aria-hidden','true'); content.innerHTML = ''; }
+      function closeDemo(){ stopRequested = true; demo.classList.remove('open'); demo.setAttribute('aria-hidden','true'); content.innerHTML = ''; clearTerminalCTA(); }
+
+      // When the demo completes, show CTA buttons to open ticket or WhatsApp
+      function showTerminalCTA(){
+        try { clearTerminalCTA(); } catch(e){}
+        const cta = document.createElement('div');
+        cta.className = 'terminal-cta';
+        cta.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:12px;';
+
+        const btnTicket = document.createElement('button');
+        btnTicket.className = 'btn btn-primary';
+        btnTicket.textContent = 'Abrir ticket';
+        btnTicket.addEventListener('click', () => {
+          // trigger existing open-ticket button handler (works because handler was bound earlier)
+          const ot = document.querySelector('.open-ticket');
+          if (ot) { ot.click(); }
+          else { alert('Abrir formulario de ticket'); }
+        });
+
+        const btnWa = document.createElement('button');
+        btnWa.className = 'btn btn-ghost';
+        btnWa.textContent = 'Enviar por WhatsApp';
+        btnWa.addEventListener('click', () => {
+          const message = encodeURIComponent('Hola Fiberlink, vi el estado en línea y deseo soporte.');
+          window.open('https://wa.me/522311024672?text='+message, '_blank', 'noopener');
+        });
+
+        cta.appendChild(btnTicket);
+        cta.appendChild(btnWa);
+
+        const actions = demo.querySelector('.terminal-actions');
+        if (actions) actions.parentNode.insertBefore(cta, actions);
+        else demo.querySelector('.terminal-box')?.appendChild(cta);
+      }
+      function clearTerminalCTA(){ const ex = demo.querySelector('.terminal-cta'); if (ex) ex.remove(); }
 
       // robust binding: direct, delegated and touch
       function bindDemoHandlers(){
