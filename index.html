@@ -1411,6 +1411,8 @@
   /* Make 'Llamar' button black in header and drawer */
   .site-header .nav-actions .btn.btn-secondary { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.06); box-shadow: none; }
   .mobile-drawer .btn.btn-primary { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.06); }
+  /* Ensure call icon is visible on dark call button (mobile) */
+  .site-header .nav-actions .call-btn .img-icon { filter: invert(1) brightness(1.6) contrast(1.1); }
 
   /* subtle focus ring for premium feel */
   .mobile-drawer__panel :focus { outline: 2px solid rgba(72,211,155,.12); outline-offset: 6px; }
