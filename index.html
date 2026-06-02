@@ -31,6 +31,9 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+      
+      
+      
     body {
       margin: 0;
       background:
@@ -2697,6 +2700,96 @@
 
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });
     })();
+  </script>
+
+  <!-- Tech Tortillería Neon Promo Modal (integrated) -->
+  <script>
+  (function(){
+    const PROJECT_URL = 'https://techtortilleria.vercel.app';
+    const WHATSAPP = 'https://wa.me/522311024672?text=' + encodeURIComponent('Hola Fiberlink, quiero más info y demo de TECH TORTILLERÍA.');
+    const STORAGE_KEY = 'tt_modal_hide_v2';
+
+    function safeGet(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }
+    function safeSet(k,v){ try { sessionStorage.setItem(k,v); } catch(e){ /* no-op */ } }
+
+    // markup
+    const container = document.createElement('div');
+    container.innerHTML = `
+    <div id="ttModal2" class="tt-modal2" role="dialog" aria-modal="true" aria-hidden="true" style="display:none">
+      <div class="tt-backdrop2" data-action="backdrop"></div>
+      <div class="tt-panel2" role="document">
+        <button class="tt-close2" aria-label="Cerrar promoción">×</button>
+        <div class="tt-body2">
+          <div class="tt-badge2">TECH TORTILLERÍA</div>
+          <h3 class="tt-title2">Terminal de Grado Ejecutivo</h3>
+          <p class="tt-sub2">Digitaliza y escala tu tortillería: POS por peso/unidad, sincronía 100% en tiempo real y panel ejecutivo multi‑sucursal.</p>
+          <ul class="tt-feats2">
+            <li>POS premium y control de caja</li>
+            <li>Sincronización en tiempo real</li>
+            <li>Panel ejecutivo y gestión multi‑sucursal</li>
+          </ul>
+          <div class="tt-ctas2">
+            <button class="tt-neon-btn" type="button">Ver demo</button>
+            <button class="tt-outline-btn" type="button">Contactar (WhatsApp)</button>
+          </div>
+          <label class="tt-remember2"><input type="checkbox" class="tt-no-show2"> No mostrar otra vez</label>
+        </div>
+      </div>
+    </div>
+    <button id="ttOpenBtn2" class="tt-open-btn2" aria-label="TECH TORTILLERÍA">TECH TORTILLERÍA</button>
+    `;
+    document.body.appendChild(container);
+
+    // styles
+    const style = document.createElement('style');
+    style.textContent = `
+    .tt-backdrop2{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);z-index:9988}
+    .tt-modal2{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9990;padding:18px}
+    .tt-panel2{width:100%;max-width:560px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg, #04120a 0%, #061815 100%);border:1px solid rgba(0,255,120,0.12);box-shadow:0 8px 40px rgba(0,255,120,0.06);transform:translateY(18px);animation:tt-slide-in .48s cubic-bezier(.2,.9,.2,1)}
+    .tt-body2{padding:22px;color:#e9fff3;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    .tt-badge2{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(0,255,140,0.06);color:#bfffd0;font-weight:700;letter-spacing:1px;margin-bottom:8px}
+    .tt-title2{margin:6px 0 6px;font-size:20px;text-shadow:0 0 10px rgba(0,255,140,0.08)}
+    .tt-sub2{color:#bfffc8;margin:0 0 12px}
+    .tt-feats2{color:#dfffe3;margin:0 0 14px;padding-left:18px}
+    .tt-ctas2{display:flex;gap:10px}
+    .tt-neon-btn{background:linear-gradient(90deg,#00ff7a,#00d27a);color:#00210d;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:0 6px 28px rgba(0,255,122,0.12),0 0 20px rgba(0,255,122,0.08);transition:transform .12s ease}
+    .tt-neon-btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,255,122,0.18),0 0 30px rgba(0,255,122,0.16)}
+    .tt-outline-btn{background:transparent;border:1px solid rgba(0,255,122,0.12);color:#bfffd0;padding:10px 14px;border-radius:10px;cursor:pointer}
+    .tt-close2{position:absolute;right:14px;top:10px;background:transparent;border:none;color:#bfffd0;font-size:20px;cursor:pointer}
+    .tt-remember2{display:block;margin-top:12px;color:#cfeee0;font-size:13px}
+    .tt-open-btn2{position:fixed;left:14px;bottom:18px;background:transparent;color:#00ff83;padding:8px 10px;border-radius:999px;border:1px solid rgba(0,255,122,0.12);z-index:9989;cursor:pointer;backdrop-filter:blur(2px);box-shadow:0 8px 30px rgba(0,255,122,0.06)}
+    @keyframes tt-slide-in{from{opacity:0;transform:translateY(24px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @media(max-width:480px){ .tt-panel2{max-width:92%;border-radius:10px} .tt-body2{padding:16px} .tt-open-btn2{left:10px;bottom:12px} }
+    `;
+    document.head.appendChild(style);
+
+    const modal = document.getElementById('ttModal2');
+    const openBtn = document.getElementById('ttOpenBtn2');
+    const closeBtn = modal.querySelector('.tt-close2');
+    const neonBtn = modal.querySelector('.tt-neon-btn');
+    const contactBtn = modal.querySelector('.tt-outline-btn');
+    const noShow = modal.querySelector('.tt-no-show2');
+
+    function show(){ modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+    function hide(){ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+
+    closeBtn.addEventListener('click', hide);
+    openBtn.addEventListener('click', show);
+    neonBtn.addEventListener('click', () => { window.open(PROJECT_URL,'_blank','noopener'); });
+    contactBtn.addEventListener('click', () => { window.open(WHATSAPP,'_blank','noopener'); });
+
+    modal.querySelector('.tt-backdrop2').addEventListener('click', hide);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+
+    try{
+      const seen = safeGet(STORAGE_KEY);
+      if (!seen){ document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ try{ show(); }catch(e){ openBtn.style.display='block'; } },1200); }); }
+      else { openBtn.style.display='none'; }
+    }catch(e){ openBtn.style.display='block'; }
+
+    // remember preference
+    try{ if(noShow){ noShow.addEventListener('change',(ev)=>{ if(ev.target.checked) safeSet(STORAGE_KEY,'1'); else safeSet(STORAGE_KEY,''); }); } }catch(e){}
+  })();
   </script>
 
 </body>
