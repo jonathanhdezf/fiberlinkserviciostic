@@ -1291,10 +1291,11 @@
     .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
     .depth-glow { transition: none !important; transform: none !important; }
   }
-  /* Right-side scroll progress indicator */
-  #scrollProgress { position: fixed; right: 14px; top: 20px; bottom: 20px; width: 6px; z-index: 60; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02)); border-radius: 999px; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(72,211,155,.03); }
-  #scrollProgress .progress-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0%; background: linear-gradient(180deg, rgba(72,211,155,.95), rgba(72,211,155,.6)); border-radius: inherit; box-shadow: 0 6px 20px rgba(72,211,155,.12); transition: height .12s linear; }
-  @media (max-width:700px) { #scrollProgress { right: 8px; width: 5px; } }
+  /* Right-side scroll progress indicator (responsive height, fills top->down) */
+  #scrollProgress { position: fixed; right: 14px; top: 10vh; bottom: 10vh; width: 6px; z-index: 60; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02)); border-radius: 999px; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(72,211,155,.03); }
+  #scrollProgress .progress-fill { position: absolute; left: 0; right: 0; top: 0; height: 0%; background: linear-gradient(180deg, rgba(72,211,155,.95), rgba(72,211,155,.6)); border-radius: inherit; box-shadow: 0 6px 20px rgba(72,211,155,.12); transition: height .12s linear; transform-origin: top; }
+  @media (max-width:1100px) { #scrollProgress { right: 12px; top: 8vh; bottom: 8vh; } }
+  @media (max-width:700px) { #scrollProgress { right: 8px; width: 5px; top: 6vh; bottom: 6vh; } }
   @media (prefers-reduced-motion: reduce) { #scrollProgress .progress-fill { transition: none; } }
   </style>
 </head>
