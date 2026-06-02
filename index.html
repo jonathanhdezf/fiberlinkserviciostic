@@ -1297,6 +1297,11 @@
   @media (max-width:1100px) { #scrollProgress { right: 12px; top: 8vh; bottom: 8vh; } }
   @media (max-width:700px) { #scrollProgress { right: 8px; width: 5px; top: 6vh; bottom: 6vh; } }
   @media (prefers-reduced-motion: reduce) { #scrollProgress .progress-fill { transition: none; } }
+  /* Mobile highlight for service examples */
+  .service-example { color: var(--muted); margin-top: 8px; }
+  @media (max-width: 680px) {
+    .service-example { font-weight: 700; font-size: 1.03rem; color: #eef8f4; background: rgba(72,211,155,.04); padding: 10px 12px; border-radius: 10px; margin-top: 10px; }
+  }
   </style>
 </head>
 <body>
@@ -1497,7 +1502,7 @@
               <h2>Una mesa técnica para todo tu ecosistema.</h2>
           </div>
             <p class="section-text">Esta página está pensada para generar confianza: resolvemos problemas, instalamos y mejoramos equipos y acompañamos proyectos digitales. Explicamos todo con palabras sencillas, sin jerga técnica.</p>
-          <p class="section-text" style="margin-top:8px;color:var(--muted);">Por ejemplo: restablecemos tu conexión a internet, configuramos la red y el Wi‑Fi, instalamos cámaras de seguridad y reparamos computadoras. Siempre explicamos lo que haremos y cuánto costará.</p>
+          <p class="section-text service-example">Por ejemplo: restablecemos tu conexión a internet, configuramos la red y el Wi‑Fi, instalamos cámaras de seguridad y reparamos computadoras. Siempre explicamos lo que haremos y cuánto costará.</p>
         </div>
 
         <div class="service-grid">
