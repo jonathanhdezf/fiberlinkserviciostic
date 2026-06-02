@@ -189,11 +189,13 @@
     .menu-btn { display: none; }
 
     .menu-btn-icon {
-      width: 18px;
+      width: 20px;
       height: 18px;
-      display: grid;
-      gap: 3px;
-      grid-template-rows: repeat(3, 1fr);
+      position: relative;
+      display: inline-grid;
+      gap: 4px;
+      grid-auto-rows: 2px;
+      align-items: center;
     }
 
     .menu-btn-icon span {
@@ -202,15 +204,20 @@
       background: currentColor;
       height: 2px;
       transform-origin: center;
-      transition: transform .25s ease, opacity .25s ease, width .25s ease;
+      transition: transform .32s cubic-bezier(.2,.7,.2,1), opacity .2s ease, background .18s ease;
+      will-change: transform, opacity;
     }
 
     .menu-btn-icon span:nth-child(2) { width: 100%; }
     .menu-btn-icon span:nth-child(1), .menu-btn-icon span:nth-child(3) { width: 72%; margin-left: auto; }
 
-    body.menu-open .menu-btn-icon span:nth-child(1) { transform: translateY(5px) rotate(45deg); width: 100%; }
-    body.menu-open .menu-btn-icon span:nth-child(2) { opacity: 0; }
-    body.menu-open .menu-btn-icon span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); width: 100%; margin-left: 0; }
+    /* Animate into an X when menu is open */
+    body.menu-open .menu-btn-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); width: 100%; }
+    body.menu-open .menu-btn-icon span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    body.menu-open .menu-btn-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); width: 100%; margin-left: 0; }
+
+    /* Smooth focus/pressed state */
+    .menu-btn:active .menu-btn-icon span { transform: scaleX(.98); }
 
     .mobile-drawer {
       position: fixed;
