@@ -1024,6 +1024,17 @@
       opacity: .95;
     }
 
+    /* Subtle lift + glow for hover to match neon theme */
+    .contact-list li {
+      transition: box-shadow .18s ease, transform .18s ease;
+      will-change: transform, box-shadow;
+    }
+
+    .contact-list li:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(56,213,255,0.06), 0 3px 10px rgba(0,0,0,0.35);
+    }
+
     /* Highlight icon and value on hover to match the neon accent */
     .contact-list li:hover span:first-child svg {
       stroke: var(--cyan);
@@ -1039,10 +1050,11 @@
     .contact-list li:hover a,
     .contact-list li:hover span:last-child {
       color: var(--cyan);
+      text-shadow: 0 6px 24px rgba(56,213,255,0.06);
     }
 
     @media (max-width: 700px) {
-      .contact-list li { grid-template-columns: 1fr; gap: 6px; }
+      .contact-list li { grid-template-columns: 1fr; gap: 6px; transform: none; box-shadow: none; }
     }
 
     .quote-card form { display: grid; gap: 14px; }
