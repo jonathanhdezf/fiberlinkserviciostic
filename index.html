@@ -479,13 +479,15 @@
         }
         .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
 
-    /* Ensure all images inside header actions are hidden on desktop and remove reserved padding */
+    /* Ensure header action icons are hidden on desktop and remove reserved padding */
     @media (min-width: 861px) {
       .site-header .nav-actions img,
       .site-header .nav-actions .left-overlay,
-      .site-header .nav-actions .img-icon { display: none !important; }
-      /* restore compact padding so button fits label */
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 17px; }
+      .site-header .nav-actions .img-icon,
+      .site-header .nav-actions .btn .icon { display: none !important; }
+      /* restore compact padding so buttons fit label */
+      .site-header .nav-actions .btn.btn-secondary { padding-left: 12px; }
+      .site-header .nav-actions .btn { padding-left: 12px; padding-right: 12px; }
     }
 
     @media (max-width: 860px) {
