@@ -1013,18 +1013,32 @@
       gap: 8px;
     }
 
-    /* Icons follow the theme: use cyan accent and scale to match text */
+    /* Icons follow the theme: muted by default, accent on hover */
     .contact-list span:first-child svg {
       width: 18px;
       height: 18px;
       flex: 0 0 18px;
-      stroke: var(--cyan);
+      stroke: var(--muted);
       fill: none;
+      transition: stroke .18s ease, transform .18s ease, opacity .18s ease;
+      opacity: .95;
+    }
+
+    /* Highlight icon and value on hover to match the neon accent */
+    .contact-list li:hover span:first-child svg {
+      stroke: var(--cyan);
+      transform: translateY(-1px);
     }
 
     .contact-list li a,
     .contact-list li span:last-child {
       color: var(--soft);
+      transition: color .18s ease;
+    }
+
+    .contact-list li:hover a,
+    .contact-list li:hover span:last-child {
+      color: var(--cyan);
     }
 
     @media (max-width: 700px) {
