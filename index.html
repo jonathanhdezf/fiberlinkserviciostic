@@ -460,32 +460,38 @@
     .btn .btn-label { display: inline-block; }
     .btn .img-icon { display: none; }
 
-    /* Left-button overlay image for visual assistance */
-    .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 64px; }
-    .site-header .nav-actions .btn.btn-secondary .left-overlay {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
-      pointer-events: none;
-      opacity: .98;
-      transition: transform .18s ease, opacity .18s ease;
-      border-radius: 8px;
+    /* Left-button overlay: image-only square button */
+    .site-header .nav-actions .btn.btn-secondary {
+      position: relative;
+      padding: 0;
+      width: 56px;
+      height: 56px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      overflow: hidden;
     }
-    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
+    .site-header .nav-actions .btn.btn-secondary .left-overlay {
+      position: static;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      opacity: 1;
+      transition: transform .12s ease, opacity .12s ease;
+      border-radius: 0;
+    }
+    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: scale(1.03); }
 
     @media (max-width: 860px) {
-      /* In header, show overlay icon while keeping labels hidden to keep affordance */
+      /* Mobile: still image-only, slightly larger */
       .site-header .nav-actions .btn .btn-label { display: none; }
-      .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
+      .site-header .nav-actions .btn { padding: 0; min-width: 0; }
       .site-header .nav-actions .btn .icon { display: none; }
-      .site-header .nav-actions .btn .img-icon { display: inline-block; width:22px; height:22px; }
-      /* Make room for larger overlay on small screens */
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 52px; }
-      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: inline-block; width:32px;height:32px; left:10px; }
+      .site-header .nav-actions .btn .img-icon { display: none; }
+      .site-header .nav-actions .btn.btn-secondary { width: 64px; height: 64px; }
+      .site-header .nav-actions .btn.btn-secondary .left-overlay { width: 100%; height: 100%; }
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
@@ -1305,9 +1311,8 @@
         <a href="#contacto">Contacto</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-secondary" href="tel:+522311024672">
-          <img class="left-overlay" src="assets/soporte.png" onerror="this.src='assets/soporte-icon.png'" alt="Soporte" aria-hidden="true" />
-          <span>Llamar</span>
+        <a class="btn btn-secondary" href="tel:+522311024672" aria-label="Llamar">
+          <img class="left-overlay" src="assets/soporte.png" onerror="this.src='assets/soporte-icon.png'" alt="" aria-hidden="true" />
         </a>
         <button class="btn btn-primary open-ticket" type="button" aria-label="Solicitar soporte">
           <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
