@@ -2681,9 +2681,12 @@
             openModal();
             setTimeout(() => {
               // prefill ticket as demo request for punto de venta
-              ticketForm.querySelector('select[name="service"]')?.value = 'Punto de venta';
-              ticketForm.querySelector('input[name="company"]')?.value = 'Interesado en Punto de venta';
-              ticketForm.querySelector('textarea[name="message"]')?.value = 'Solicito demo e información de precios para punto de venta.';
+              const svc = ticketForm.querySelector('select[name="service"]');
+              if (svc) svc.value = 'Punto de venta';
+              const comp = ticketForm.querySelector('input[name="company"]');
+              if (comp) comp.value = 'Interesado en Punto de venta';
+              const msgEl = ticketForm.querySelector('textarea[name="message"]');
+              if (msgEl) msgEl.value = 'Solicito demo e información de precios para punto de venta.';
             }, 220);
           } else {
             alert('Abrir formulario de demo');
