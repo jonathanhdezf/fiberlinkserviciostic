@@ -2217,6 +2217,7 @@
     ticketForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const id = ticketId();
+      const isOnsite = ticketForm.querySelector('input[name="onsite"]')?.checked ? 'Sí' : 'No';
       const message = [
         `Ticket ${id} - Fiberlink Servicios TIC`,
         `Nombre: ${value(ticketForm, "name")}`,
@@ -2224,6 +2225,7 @@
         `Empresa/Hogar: ${value(ticketForm, "company") || "No especificado"}`,
         `Ubicacion: ${value(ticketForm, "location")}`,
         `Servicio: ${value(ticketForm, "service")}`,
+        `Servicio en sitio: ${isOnsite}`,
         `Prioridad: ${selectedPriority}`,
         `Descripcion: ${value(ticketForm, "message")}`
       ].join("\n");
