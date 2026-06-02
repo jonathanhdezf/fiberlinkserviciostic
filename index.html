@@ -460,12 +460,19 @@
     .btn .btn-label { display: inline-block; }
     .btn .img-icon { display: none; }
 
+    /* Left-button overlay image for visual assistance */
+    .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 44px; }
+    .site-header .nav-actions .btn.btn-secondary .left-overlay { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; pointer-events: none; opacity: .98; background-size: contain; background-repeat: no-repeat; background-position: center; transition: transform .18s ease, opacity .18s ease; }
+    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.06); opacity: 1; }
+
     @media (max-width: 860px) {
       /* In header, hide text to avoid overflow; show icon-only */
       .site-header .nav-actions .btn .btn-label { display: none; }
       .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
       .site-header .nav-actions .btn .icon { display: none; }
       .site-header .nav-actions .btn .img-icon { display: inline-block; width:18px; height:18px; }
+      .site-header .nav-actions .btn.btn-secondary { padding-left: 12px; }
+      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: none; }
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
@@ -1285,7 +1292,10 @@
         <a href="#contacto">Contacto</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-secondary" href="tel:+522311024672">Llamar</a>
+        <a class="btn btn-secondary" href="tel:+522311024672">
+          <img class="left-overlay" src="assets/soporte.png" onerror="this.src='assets/soporte-icon.png'" alt="Soporte" aria-hidden="true" />
+          <span>Llamar</span>
+        </a>
         <button class="btn btn-primary open-ticket" type="button" aria-label="Solicitar soporte">
           <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 13v-1a9 9 0 0118 0v1" />
