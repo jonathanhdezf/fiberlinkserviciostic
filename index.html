@@ -462,20 +462,22 @@
 
     /* Left-button overlay image for visual assistance */
     .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 64px; }
-    .site-header .nav-actions .btn.btn-secondary .left-overlay {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
-      pointer-events: none;
-      opacity: .98;
-      transition: transform .18s ease, opacity .18s ease;
-      border-radius: 8px;
-    }
-    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
+        /* hide button images on desktop; shown on small screens via media query */
+        .site-header .nav-actions .btn.btn-secondary .left-overlay {
+          display: none;
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 36px;
+          height: 36px;
+          object-fit: contain;
+          pointer-events: none;
+          opacity: .98;
+          transition: transform .18s ease, opacity .18s ease;
+          border-radius: 8px;
+        }
+        .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
 
     @media (max-width: 860px) {
       /* In header, show overlay icon while keeping labels hidden to keep affordance */
