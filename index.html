@@ -1336,12 +1336,14 @@
     .service-example { font-weight: 700; font-size: 1.03rem; color: #eef8f4; background: rgba(72,211,155,.04); padding: 10px 12px; border-radius: 10px; margin-top: 10px; }
   }
   
-  /* Support button: desktop shows only text; mobile shows assistance icon from assets */
+  /* Support button: desktop shows only text; mobile shows assistance icon centered in the button */
   @media (min-width: 861px) {
     .site-header .nav-actions .img-icon { display: none !important; }
+    .site-header .nav-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
   }
   @media (max-width: 860px) {
-    .site-header .nav-actions .img-icon { display: inline-block !important; width:18px; height:18px; margin-right:8px; vertical-align:middle; }
+    .site-header .nav-actions .img-icon { display: inline-block !important; width:18px; height:18px; margin: 0; vertical-align:middle; }
+    .site-header .nav-actions .btn { display: inline-flex; align-items: center; gap: 8px; }
   }
 
   </style>
