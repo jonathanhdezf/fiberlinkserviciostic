@@ -1348,6 +1348,11 @@
   @media (max-width: 860px) {
     .site-header .nav-actions .img-icon { display: inline-block !important; width:18px; height:18px; margin: 0; vertical-align:middle; }
     .site-header .nav-actions .btn { display: inline-flex; align-items: center; gap: 8px; }
+
+    /* Make call button icon-only and centered on mobile to match support button logic */
+    .site-header .nav-actions .call-btn { justify-content: center; padding: 8px 10px; }
+    .site-header .nav-actions .call-btn .btn-label { display: none; }
+    .site-header .nav-actions .call-btn .img-icon { width: 20px; height: 20px; }
   }
 
   /* Premium mobile drawer open effects — centered modal */
@@ -1440,9 +1445,9 @@
         <a href="#contacto">Contacto</a>
       </nav>
       <div class="nav-actions">
-        <a class="btn btn-secondary" href="tel:+522311024672">
-          <img class="left-overlay" src="assets/soporte.png" onerror="this.src='assets/soporte-icon.png'" alt="Soporte" aria-hidden="true" />
-          <span>Llamar</span>
+        <a class="btn btn-secondary call-btn" href="tel:+522311024672" aria-label="Llamar">
+          <img class="img-icon" src="assets/headphones.svg" onerror="this.src='assets/soporte-icon.png'" alt="Llamar" aria-hidden="true" />
+          <span class="btn-label">Llamar</span>
         </a>
         <button class="btn btn-primary open-ticket" type="button" aria-label="Solicitar soporte">
           <img class="img-icon" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/icons/headphones.svg" alt="Asistencia" />
