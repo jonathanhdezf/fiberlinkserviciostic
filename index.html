@@ -1292,7 +1292,9 @@
           <img class="img-icon" src="assets/soporte-icon.png" alt="Soporte" style="display:none;width:18px;height:18px;" />
           <span class="btn-label">Solicitar soporte</span>
         </button>
-        <button class="btn btn-ghost menu-btn" type="button" id="menuBtn" aria-label="Abrir menu">Menu</button>
+        <button class="btn btn-ghost menu-btn" type="button" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
+          <span class="menu-btn-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
       </div>
     </div>
   </header>
@@ -1876,6 +1878,8 @@
         const open = mobileDrawer.classList.contains('open');
         mobileDrawer.classList.toggle('open', !open);
         document.body.classList.toggle('menu-open', !open);
+        // expose state to assistive tech
+        menuBtn.setAttribute('aria-expanded', String(!open));
         mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
         if (!open) {
           setTimeout(() => mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
