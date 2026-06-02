@@ -1263,6 +1263,48 @@
     </div>
   </header>
 
+  <!-- Mobile drawer (premium) -->
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <div class="mobile-drawer__backdrop" id="drawerBackdrop" tabindex="-1" aria-hidden="true"></div>
+    <aside class="mobile-drawer__panel" role="dialog" aria-modal="true" aria-label="Menu movil">
+      <div class="drawer-head">
+        <div class="drawer-brand">
+          <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
+            <span class="brand-mark">
+              <img class="brand-logo" src="logo.gif" alt="" aria-hidden="true">
+            </span>
+            <span>
+              <strong>Fiberlink</strong>
+              <span>Servicios TIC</span>
+            </span>
+          </a>
+        </div>
+        <div>
+          <button class="btn btn-ghost" id="drawerClose" aria-label="Cerrar menú">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+      <div class="drawer-contact" style="padding:18px;">
+        <nav class="drawer-nav" aria-label="Navegacion movil" style="display:grid;gap:16px;padding:6px 2px;">
+          <a class="drawer-link" href="#servicios">Servicios</a>
+          <a class="drawer-link" href="#herramientas">Herramientas</a>
+          <a class="drawer-link" href="#proceso">Proceso</a>
+          <a class="drawer-link" href="#contacto">Contacto</a>
+        </nav>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+          <a class="btn btn-primary" href="tel:+522311024672">Llamar</a>
+          <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">WhatsApp</a>
+          <button class="btn btn-ghost open-ticket" type="button">Solicitar soporte</button>
+        </div>
+        <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.04);padding-top:14px;color:var(--muted);font-size:.92rem;">
+          <div style="display:flex;align-items:center;gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke:var(--green)"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg><span>Teziutlan, Puebla</span></div>
+          <div style="margin-top:8px;">fiberlinkserviciostic@gmail.com</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
   <main id="inicio">
     <section class="hero">
       <div class="container hero-grid">
@@ -1780,10 +1822,25 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeModal();
+      if (event.key === "Escape") { closeModal(); if (typeof closeDrawer === 'function') closeDrawer(); }
     });
 
+    // Improved mobile menu: open a premium drawer on small screens, fallback to inline nav on desktop
     menuBtn?.addEventListener("click", () => {
+      const mobileDrawer = document.getElementById('mobileDrawer');
+      const isMobile = window.innerWidth < 700;
+      if (isMobile && mobileDrawer) {
+        const open = mobileDrawer.classList.contains('open');
+        mobileDrawer.classList.toggle('open', !open);
+        document.body.classList.toggle('menu-open', !open);
+        mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
+        if (!open) {
+          setTimeout(() => mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
+        }
+        return;
+      }
+
+      // Desktop fallback: keep previous inline behavior for small desktop widths
       const isOpen = navLinks.style.display === "flex";
       navLinks.style.display = isOpen ? "" : "flex";
       navLinks.style.position = isOpen ? "" : "absolute";
@@ -1797,6 +1854,20 @@
       navLinks.style.border = isOpen ? "" : "1px solid rgba(255,255,255,.12)";
       navLinks.style.borderRadius = isOpen ? "" : "8px";
     });
+
+    // Drawer controls: close via backdrop, close button, or Escape
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+    const drawerClose = document.getElementById('drawerClose');
+    function closeDrawer() {
+      if (!mobileDrawer) return;
+      mobileDrawer.classList.remove('open');
+      mobileDrawer.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('menu-open');
+    }
+    drawerBackdrop?.addEventListener('click', closeDrawer);
+    drawerClose?.addEventListener('click', closeDrawer);
+    document.querySelectorAll('.drawer-link').forEach((link) => link.addEventListener('click', closeDrawer));
 
     document.querySelectorAll(".priority button").forEach((button) => {
       button.addEventListener("click", () => {
