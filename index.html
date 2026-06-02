@@ -1340,6 +1340,20 @@
   #ticketModal .toast.show { display: block; animation: pop .36s ease; }
   @keyframes pop { from { transform: translateY(6px) scale(.98); opacity: 0 } to { transform: none; opacity: 1 } }
 
+  /* Neon preview effect for sample ticket */
+  #ticketModal .modal-card.neon { border-color: rgba(72,211,155,0.28); box-shadow: 0 18px 80px rgba(72,211,155,0.12), 0 0 140px rgba(72,211,155,0.08), inset 0 0 18px rgba(72,211,155,0.04); animation: neonPulse 1.6s ease-in-out; }
+  #ticketModal .modal-card.neon::before { content: ''; position: absolute; inset: -3px; border-radius: inherit; background: linear-gradient(90deg, rgba(72,211,155,0.06), rgba(72,211,155,0.02)); filter: blur(10px); opacity: .95; pointer-events: none; }
+  @keyframes neonPulse {
+    0% { box-shadow: 0 8px 30px rgba(72,211,155,0.06), 0 0 40px rgba(72,211,155,0.04); }
+    50% { box-shadow: 0 24px 120px rgba(72,211,155,0.22), 0 0 200px rgba(72,211,155,0.12); }
+    100% { box-shadow: 0 8px 30px rgba(72,211,155,0.06), 0 0 40px rgba(72,211,155,0.04); }
+  }
+
+  /* Subtle input glow when sample is loaded */
+  #ticketModal .modal-card.neon input, #ticketModal .modal-card.neon textarea, #ticketModal .modal-card.neon select { box-shadow: 0 6px 22px rgba(72,211,155,0.03); transition: box-shadow .36s ease; }
+  #ticketModal .modal-card.neon input:focus, #ticketModal .modal-card.neon textarea:focus { box-shadow: 0 8px 30px rgba(72,211,155,0.08); }
+
+
       input, select, textarea { font-size: 16px; }
     }
   /* Scroll reveal & parallax (Fiberlink Labs-like feel) */
@@ -1845,51 +1859,55 @@
       </div>
       <div class="modal-body">
         <form id="ticketForm">
-          <div class="form-row">
-            <label>Nombre
-              <input name="name" autocomplete="name" required>
-            </label>
-            <label>Telefono
-              <input name="phone" autocomplete="tel" required>
-            </label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <button type="button" class="btn btn-ghost load-sample" aria-label="Cargar ejemplo premium">Cargar ejemplo premium</button>
+          <span style="color:var(--muted);font-size:.95rem;">Ver ejemplo prellenado y efecto neon</span>
+        </div>
+        <div class="form-row">
+          <label>Nombre
+            <input name="name" autocomplete="name" required>
+          </label>
+          <label>Telefono
+            <input name="phone" autocomplete="tel" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Empresa / hogar
+            <input name="company" placeholder="Opcional">
+          </label>
+          <label>Ubicacion
+            <input name="location" required placeholder="Colonia o referencia">
+          </label>
+        </div>
+        <label>Tipo de servicio
+          <select name="service" required>
+            <option value="">Selecciona un servicio</option>
+            <option>Soporte tecnico</option>
+            <option>Punto de venta</option>
+            <option>Redes / WiFi</option>
+            <option>Videovigilancia</option>
+            <option>Diseno web / marketing</option>
+            <option>Otro servicio TIC</option>
+          </select>
+        </label>
+        <label style="margin-top:8px;">Servicio en sitio
+          <div style="margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" name="onsite" /> Servicio en sitio / domicilio</label>
           </div>
-          <div class="form-row">
-            <label>Empresa / hogar
-              <input name="company" placeholder="Opcional">
-            </label>
-            <label>Ubicacion
-              <input name="location" required placeholder="Colonia o referencia">
-            </label>
+        </label>
+        <label>Prioridad
+          <div class="priority" role="group" aria-label="Prioridad">
+            <button type="button" class="active" data-priority="Normal">Normal</button>
+            <button type="button" data-priority="Alta">Alta</button>
+            <button type="button" data-priority="Urgente">Urgente</button>
           </div>
-          <label>Tipo de servicio
-            <select name="service" required>
-              <option value="">Selecciona un servicio</option>
-              <option>Soporte tecnico</option>
-              <option>Punto de venta</option>
-              <option>Redes / WiFi</option>
-              <option>Videovigilancia</option>
-              <option>Diseno web / marketing</option>
-              <option>Otro servicio TIC</option>
-            </select>
-          </label>
-          <label style="margin-top:8px;">Servicio en sitio
-            <div style="margin-top:6px;">
-              <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" name="onsite" /> Servicio en sitio / domicilio</label>
-            </div>
-          </label>
-          <label>Prioridad
-            <div class="priority" role="group" aria-label="Prioridad">
-              <button type="button" class="active" data-priority="Normal">Normal</button>
-              <button type="button" data-priority="Alta">Alta</button>
-              <button type="button" data-priority="Urgente">Urgente</button>
-            </div>
-          </label>
-          <label>Descripcion
-            <textarea name="message" required placeholder="Describe sintomas, equipos involucrados, horario disponible y cualquier dato importante."></textarea>
-          </label>
-          <div class="toast" id="ticketToast">Solicitud preparada. Se abrira WhatsApp para enviarla.</div>
-          <button class="btn btn-primary" type="submit" style="width:100%;margin-top:14px;">Preparar mensaje</button>
-          <p class="form-note" style="margin-top:10px;">Tambien puedes enviarlo a fiberlinkserviciostic@gmail.com si prefieres correo.</p>
+        </label>
+        <label>Descripcion
+          <textarea name="message" required placeholder="Describe sintomas, equipos involucrados, horario disponible y cualquier dato importante."></textarea>
+        </label>
+        <div class="toast" id="ticketToast">Solicitud preparada. Se abrira WhatsApp para enviarla.</div>
+        <button class="btn btn-primary" type="submit" style="width:100%;margin-top:14px;">Preparar mensaje</button>
+        <p class="form-note" style="margin-top:10px;">Tambien puedes enviarlo a fiberlinkserviciostic@gmail.com si prefieres correo.</p>
         </form>
       </div>
     </div>
@@ -2063,6 +2081,31 @@
       toast.classList.remove('show');
       if (_trapHandler) { document.removeEventListener('keydown', _trapHandler); _trapHandler = null; }
     }
+
+    function fillSampleTicket() {
+      // sample premium data
+      ticketForm.querySelector('input[name="name"]').value = 'María López';
+      ticketForm.querySelector('input[name="phone"]').value = '+52 231 102 4672';
+      ticketForm.querySelector('input[name="company"]').value = 'Panadería La Estrella';
+      ticketForm.querySelector('input[name="location"]').value = 'Av. Cuauhtémoc 210, Centro';
+      ticketForm.querySelector('select[name="service"]').value = 'Soporte tecnico';
+      ticketForm.querySelector('textarea[name="message"]').value = 'La caja registradora no enciende y la impresora de tickets no responde. Necesitamos atención hoy entre 10:00-13:00.';
+      ticketForm.querySelector('input[name="onsite"]').checked = true;
+
+      // set priority to Urgente
+      document.querySelectorAll('.priority button').forEach((b) => b.classList.remove('active'));
+      const urgentBtn = Array.from(document.querySelectorAll('.priority button')).find(b => b.dataset.priority === 'Urgente');
+      urgentBtn?.classList.add('active');
+      selectedPriority = 'Urgente';
+
+      // show modal and neon effect
+      openModal();
+      const card = modal.querySelector('.modal-card');
+      card?.classList.add('neon');
+      setTimeout(() => { card?.classList.remove('neon'); }, 1800);
+    }
+
+    document.querySelectorAll('.load-sample').forEach((btn) => btn.addEventListener('click', fillSampleTicket));
 
     function ticketId() {
       const now = new Date();
