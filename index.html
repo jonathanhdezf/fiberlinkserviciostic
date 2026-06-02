@@ -1385,6 +1385,12 @@
   .mobile-drawer.open .mobile-drawer__panel { transform: translate(-50%,-50%) scale(1); opacity: 1; pointer-events: auto; }
   body.menu-open .mobile-drawer__panel { transform: translate(-50%,-50%) scale(1); }
 
+  /* Mobile override: on small viewports the panel should be full-screen (no centering transform) */
+  @media (max-width:700px) {
+    .mobile-drawer.open .mobile-drawer__panel { transform: none !important; }
+    body.menu-open .mobile-drawer__panel { transform: none !important; }
+  }
+
   /* Staggered links for premium entrance (centered text) */
   .drawer-nav a { display: block; opacity: 0; transform: translateY(8px); transition: opacity .36s ease, transform .36s cubic-bezier(.2,.9,.3,1); text-align:center; font-weight:700; padding:10px 0; }
   .mobile-drawer.open .drawer-nav a:nth-child(1) { transition-delay: 100ms; opacity:1; transform:none; }
