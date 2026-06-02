@@ -1316,6 +1316,30 @@
           .modal { padding: 10px; align-items: center; }
       .modal-card { max-height: calc(100vh - 20px); border-radius: 12px 12px 0 0; }
       .modal-head, .modal-body { padding: 16px; }
+
+  /* Premium ticket modal styles */
+  #ticketModal { display: none; align-items: center; justify-content: center; }
+  #ticketModal.open { display: flex; }
+  #ticketModal .modal-backdrop { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), rgba(0,0,0,0.6)); backdrop-filter: blur(6px) saturate(110%); opacity: 0; transition: opacity .36s ease; }
+  #ticketModal .modal-card { position: relative; width: min(94%, 720px); max-width: 720px; max-height: 90vh; overflow: auto; padding: 18px; border-radius: 14px; background: linear-gradient(180deg, rgba(18,22,28,0.96), rgba(10,12,14,0.95)); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 20px 60px rgba(2,6,10,0.75), 0 6px 30px rgba(72,211,155,0.04); transform: translateY(12px) scale(.98); opacity: 0; transition: transform .44s cubic-bezier(.2,.9,.3,1), opacity .3s ease; text-align: left; }
+  #ticketModal .modal-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(90deg, rgba(72,211,155,0.04), rgba(72,211,155,0.01)); }
+  #ticketModal.open .modal-backdrop { opacity: 1; }
+  #ticketModal.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
+  #ticketModal .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  #ticketModal .modal-head .kicker { color: var(--muted); font-size: .86rem; }
+  #ticketModal .modal-head .title-row { display: flex; gap: 12px; align-items: center; }
+  #ticketModal .modal-head .title-row svg { width: 40px; height: 40px; color: var(--cyan); background: linear-gradient(180deg, rgba(72,211,155,0.12), rgba(72,211,155,0.04)); padding: 6px; border-radius: 10px; }
+  #ticketModal .close-btn { background: transparent; border: 0; font-size: 22px; color: rgba(255,255,255,.75); padding: 6px; }
+  #ticketModal .modal-body label { display: block; margin-bottom: 10px; }
+  #ticketModal .priority button { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.04); background: transparent; color: var(--muted); cursor: pointer; }
+  #ticketModal .priority button.active { background: linear-gradient(90deg, rgba(72,211,155,0.12), rgba(72,211,155,0.06)); color: #eef8f4; border-color: rgba(72,211,155,0.18); box-shadow: 0 6px 18px rgba(72,211,155,0.06); }
+  #ticketModal .priority button[data-priority='Alta'] { border-color: rgba(255,165,0,0.08); }
+  #ticketModal .priority button[data-priority='Urgente'] { border-color: rgba(255,80,80,0.12); }
+  #ticketModal .form-note { color: var(--muted); }
+  #ticketModal .toast { position: relative; padding: 10px 12px; border-radius: 10px; background: rgba(72,211,155,0.06); color: #e7fff2; display: none; }
+  #ticketModal .toast.show { display: block; animation: pop .36s ease; }
+  @keyframes pop { from { transform: translateY(6px) scale(.98); opacity: 0 } to { transform: none; opacity: 1 } }
+
       input, select, textarea { font-size: 16px; }
     }
   /* Scroll reveal & parallax (Fiberlink Labs-like feel) */
@@ -1809,9 +1833,12 @@
     <div class="modal-backdrop" data-close-modal></div>
     <div class="modal-card">
       <div class="modal-head">
-        <div>
-          <div class="section-kicker">Solicitud tecnica</div>
-          <h2 id="ticketTitle">Levantar ticket</h2>
+        <div class="title-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.05 5A5 5 0 0 1 19 8.95"></path><path d="M15.05 1A9 9 0 0 1 23 8.94"></path><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"></path></svg>
+          <div>
+            <div class="section-kicker">Solicitud técnica</div>
+            <h2 id="ticketTitle">Levantar ticket</h2>
+          </div>
         </div>
         <button class="close-btn" type="button" data-close-modal aria-label="Cerrar">×</button>
       </div>
@@ -2000,17 +2027,35 @@
       });
     }
 
+    let _trapHandler = null;
+    function trapFocus(event) {
+      if (!modal.classList.contains('open')) return;
+      const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.key === 'Tab') {
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    }
+
     function openModal() {
-      modal.classList.add("open");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        modal.querySelector('input[name="name"]')?.focus();
+        _trapHandler = trapFocus;
+        document.addEventListener('keydown', _trapHandler);
+      }, 180);
     }
 
     function closeModal() {
-      modal.classList.remove("open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-      toast.classList.remove("show");
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      toast.classList.remove('show');
+      if (_trapHandler) { document.removeEventListener('keydown', _trapHandler); _trapHandler = null; }
     }
 
     function ticketId() {
