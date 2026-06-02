@@ -1008,6 +1008,27 @@
       text-transform: uppercase;
       letter-spacing: .08em;
       font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Icons follow the theme: use cyan accent and scale to match text */
+    .contact-list span:first-child svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      stroke: var(--cyan);
+      fill: none;
+    }
+
+    .contact-list li a,
+    .contact-list li span:last-child {
+      color: var(--soft);
+    }
+
+    @media (max-width: 700px) {
+      .contact-list li { grid-template-columns: 1fr; gap: 6px; }
     }
 
     .quote-card form { display: grid; gap: 14px; }
