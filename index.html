@@ -111,6 +111,10 @@
       outline-offset: 3px;
     }
     img, svg { display: block; }
+
+      /* Selection color: dark text on neon background to improve legibility */
+      ::selection { background: var(--cyan); color: #000; }
+      ::-moz-selection { background: var(--cyan); color: #000; }
     .container { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
     .mono { font-family: "JetBrains Mono", monospace; }
 
@@ -1309,7 +1313,7 @@
       .map-label { position: static; max-width: none; margin-top: -4px; }
       .geo-metrics { grid-template-columns: 1fr; position: static; margin-top: 12px; }
       .geo-metrics li { padding: 11px 12px; }
-      .modal { padding: 10px; align-items: end; }
+          .modal { padding: 10px; align-items: center; }
       .modal-card { max-height: calc(100vh - 20px); border-radius: 12px 12px 0 0; }
       .modal-head, .modal-body { padding: 16px; }
       input, select, textarea { font-size: 16px; }
