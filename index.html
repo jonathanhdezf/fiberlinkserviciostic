@@ -2627,6 +2627,8 @@
     .pos-list { margin:8px 0 12px; padding-left:18px; color: var(--muted); font-size:.96rem; }
     .pos-actions { display:flex; gap:10px; margin-bottom:8px; }
     .pos-footer { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:.9rem; }
+    /* small floating opener button */
+    .pos-open-btn { position: fixed; left: 12px; bottom: 14px; z-index: 170; background: rgba(72,211,155,0.09); color: #eafff6; border: 1px solid rgba(72,211,155,0.06); padding: 8px 10px; border-radius: 999px; font-weight:700; box-shadow: 0 6px 18px rgba(72,211,155,0.04); }
     @media (max-width:700px){ .pos-panel{ width: calc(var(--vh,1vh)*100 - 24px); max-width:none; height: auto; border-radius:8px; padding:14px; } .pos-actions{flex-direction:column;} }
   </style>
 
@@ -2639,14 +2641,33 @@
       const dontShow = document.getElementById('posDontShow');
       const STORAGE_KEY = 'posPopupSeen';
 
-      function showPopup(){ if (sessionStorage.getItem(STORAGE_KEY) === '1') return; popup.classList.add('open'); popup.setAttribute('aria-hidden','false'); }
-      function closePopup(){ popup.classList.remove('open'); popup.setAttribute('aria-hidden','true'); if (dontShow && dontShow.checked) sessionStorage.setItem(STORAGE_KEY,'1'); }
+      function storageGet(key){ try { return sessionStorage.getItem(key); } catch(e){ return null; } }
+      function storageSet(key, val){ try { sessionStorage.setItem(key, val); } catch(e){ /* ignore */ } }
 
-      // show shortly after load
-      setTimeout(showPopup, 2500);
+      function showPopup(){ if (storageGet(STORAGE_KEY) === '1') return; popup.classList.add('open'); popup.setAttribute('aria-hidden','false'); }
+      function closePopup(){ popup.classList.remove('open'); popup.setAttribute('aria-hidden','true'); if (dontShow && dontShow.checked) storageSet(STORAGE_KEY,'1'); }
+
+      // show shortly after load (wait DOM ready)
+      function scheduleShow(){
+        console.log('[POS popup] scheduling show (posPopupSeen=', storageGet(STORAGE_KEY), ')');
+        setTimeout(() => { console.log('[POS popup] attempting to show'); showPopup(); }, 2500);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleShow); else scheduleShow();
 
       closeEls.forEach(el => el.addEventListener('click', closePopup));
       popup.addEventListener('click', (e) => { if (e.target === popup.querySelector('.pos-backdrop')) closePopup(); });
+
+      // expose a small floating opener for environments where auto-show is blocked
+      try {
+        const openBtn = document.createElement('button');
+        openBtn.id = 'posOpenBtn';
+        openBtn.className = 'pos-open-btn';
+        openBtn.type = 'button';
+        openBtn.setAttribute('aria-label', 'Mostrar oferta de punto de venta');
+        openBtn.textContent = 'Oferta POS';
+        document.body.appendChild(openBtn);
+        openBtn.addEventListener('click', showPopup);
+      } catch(e){ console.warn('posOpenBtn not created', e); }
 
       btnBuy.addEventListener('click', () => {
         const msg = encodeURIComponent('Hola Fiberlink, estoy interesado en comprar un punto de venta completo. Por favor, envíenme opciones y precios.');
