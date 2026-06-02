@@ -2594,6 +2594,95 @@
       window.addEventListener('orientationchange', setVh);
     })();
   </script>
+  <!-- Distributor popup: distribuidor autorizado -->
+  <div class="dist-popup" id="distPopup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="distTitle">
+    <div class="dist-backdrop" data-close-dist></div>
+    <div class="dist-panel" role="document">
+      <button class="dist-close" aria-label="Cerrar pop-up" data-close-dist>×</button>
+      <div class="dist-badge">Distribuidor autorizado</div>
+      <h3 id="distTitle">¿Quieres ser distribuidor autorizado?</h3>
+      <p class="dist-lead">Ofrecemos condiciones especiales, soporte técnico directo y material oficial para distribuidores. Únete a nuestra red de partners y crece con Fiberlink.</p>
+      <ul class="dist-list">
+        <li>Precios y promociones exclusivas</li>
+        <li>Soporte técnico prioritario</li>
+        <li>Capacitación y material de venta</li>
+      </ul>
+      <div class="dist-actions">
+        <button class="btn btn-primary" id="distApply">Solicitar ser distribuidor</button>
+        <button class="btn btn-ghost" id="distWa">Contactar por WhatsApp</button>
+      </div>
+      <label class="dist-footer"><input type="checkbox" id="distDontShow"> No mostrar de nuevo (esta sesión)</label>
+    </div>
+  </div>
+
+  <style>
+    .dist-popup { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 160; }
+    .dist-popup.open { display: flex; }
+    .dist-backdrop { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.66)); backdrop-filter: blur(6px); }
+    .dist-panel { position: relative; width: min(92%,720px); max-width:720px; background: linear-gradient(180deg, rgba(6,10,12,0.98), rgba(8,12,14,0.96)); border-radius: 12px; padding: 20px 18px 16px; border: 1px solid rgba(72,211,155,0.06); box-shadow: 0 22px 80px rgba(2,6,10,0.8), 0 0 100px rgba(72,211,155,0.04); color: #eafaf2; text-align: left; }
+    .dist-close { position:absolute; right:10px; top:8px; background:transparent; border:0; color: rgba(255,255,255,0.8); font-size:20px; }
+    .dist-badge { display:inline-block; padding:6px 10px; background: linear-gradient(90deg, rgba(72,211,155,0.12), rgba(72,211,155,0.05)); color: #dfffee; border-radius:999px; font-weight:700; font-size:.86rem; margin-bottom:8px; }
+    .dist-panel h3 { margin:6px 0 8px; font-size:1.18rem; }
+    .dist-lead { color: rgba(210,250,236,0.92); margin-bottom:10px; }
+    .dist-list { margin:10px 0 14px; padding-left:18px; color: var(--muted); }
+    .dist-actions { display:flex; gap:10px; margin-bottom:8px; }
+    .dist-footer { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:.92rem; }
+    @media (max-width:700px){ .dist-panel{ width: calc(var(--vh,1vh)*100 - 24px); max-width:none; height: auto; border-radius:8px; padding:16px; } .dist-actions{flex-direction:column;} }
+  </style>
+
+  <script>
+    (function(){
+      const popup = document.getElementById('distPopup');
+      const btnApply = document.getElementById('distApply');
+      const btnWa = document.getElementById('distWa');
+      const closeEls = popup.querySelectorAll('[data-close-dist]');
+      const dontShow = document.getElementById('distDontShow');
+      const STORAGE_KEY = 'distPopupSeen';
+
+      function showPopup(){
+        if (sessionStorage.getItem(STORAGE_KEY) === '1') return;
+        popup.classList.add('open'); popup.setAttribute('aria-hidden','false');
+      }
+      function closePopup(){
+        popup.classList.remove('open'); popup.setAttribute('aria-hidden','true');
+        if (dontShow && dontShow.checked) sessionStorage.setItem(STORAGE_KEY,'1');
+      }
+
+      // open delayed (3s) on first visit of session
+      setTimeout(showPopup, 3000);
+
+      closeEls.forEach(el => el.addEventListener('click', closePopup));
+      popup.addEventListener('click', (e) => { if (e.target === popup.querySelector('.dist-backdrop')) closePopup(); });
+
+      btnWa.addEventListener('click', () => {
+        const msg = encodeURIComponent('Hola Fiberlink, estoy interesado en ser distribuidor autorizado. Por favor, compártanme requisitos y condiciones.');
+        window.open('https://wa.me/522311024672?text='+msg, '_blank', 'noopener');
+      });
+
+      btnApply.addEventListener('click', () => {
+        // open ticket modal and prefill as distributor application
+        try {
+          if (typeof openModal === 'function') {
+            openModal();
+            setTimeout(() => {
+              const company = ticketForm.querySelector('input[name="company"]');
+              const name = ticketForm.querySelector('input[name="name"]');
+              const message = ticketForm.querySelector('textarea[name="message"]');
+              if (company) company.value = 'Solicitud: Distribuidor autorizado';
+              if (message) message.value = 'Solicito información para ser distribuidor autorizado. Enviar requisitos y condiciones.';
+              if (name) name.focus();
+            }, 240);
+          } else {
+            alert('Abrir formulario de solicitud');
+          }
+        } catch(e){ console.error(e); }
+        closePopup();
+      });
+
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });
+    })();
+  </script>
+
 </body>
 </html>
 
