@@ -1281,6 +1281,16 @@
       .modal-head, .modal-body { padding: 16px; }
       input, select, textarea { font-size: 16px; }
     }
+  /* Scroll reveal & parallax (Fiberlink Labs-like feel) */
+  .reveal { opacity: 0; transform: translateY(18px) translateZ(0) scale(.998); transition: transform .72s cubic-bezier(.2,.9,.3,1), opacity .6s ease; will-change: transform, opacity; }
+  .reveal.in-view { opacity: 1; transform: translateY(0) translateZ(0) scale(1); }
+  .service-card.reveal { transition-duration: .62s; }
+  .hero .hero-copy.reveal, .hero .hero-actions.reveal { transition-duration: .78s; }
+  .site-header.scrolled { box-shadow: 0 10px 30px rgba(0,0,0,.55); border-bottom-color: rgba(255,255,255,.04); backdrop-filter: blur(20px); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
+    .depth-glow { transition: none !important; transform: none !important; }
+  }
   </style>
 </head>
 <body>
@@ -2008,6 +2018,40 @@
 
     const tools = document.getElementById("toolTrack");
     tools.innerHTML += tools.innerHTML;
+  </script>
+  <script>
+    (function(){
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const sel = ['section','.service-card','.quote-card','.contact-copy','.geo-card','.hero .hero-copy','.hero .hero-actions'];
+      const nodes = document.querySelectorAll(sel.join(','));
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            // apply a tiny stagger where helpful
+            try { el.style.transitionDelay = (Math.min(8, Math.floor((entry.target.getBoundingClientRect().top||0)/120)) * 30) + 'ms'; } catch(e){}
+            el.classList.add('in-view');
+            obs.unobserve(el);
+          }
+        });
+      }, {threshold: 0.12});
+      nodes.forEach(n => { n.classList.add('reveal'); io.observe(n); });
+
+      const depth = document.querySelector('.depth-glow');
+      const header = document.querySelector('.site-header');
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            const s = window.scrollY || document.documentElement.scrollTop;
+            if (depth) depth.style.transform = `translate3d(0,${Math.round(s*0.06)}px,0)`;
+            if (header) header.classList.toggle('scrolled', s > 20);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, {passive:true});
+    })();
   </script>
 </body>
 </html>
