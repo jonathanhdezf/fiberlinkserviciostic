@@ -438,6 +438,25 @@
 
     .btn:hover { transform: translateY(-1px); }
     .btn:hover::before { opacity: 1; }
+
+    /* Icon inside buttons */
+    .btn .icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      display: inline-block;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* Label wrapper to allow hiding text in compact header */
+    .btn .btn-label { display: inline-block; }
+
+    @media (max-width: 860px) {
+      /* In header, hide text to avoid overflow; show icon-only */
+      .site-header .nav-actions .btn .btn-label { display: none; }
+      .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
+    }
     .btn-primary {
       background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
       color: #051018;
@@ -1257,7 +1276,10 @@
       </nav>
       <div class="nav-actions">
         <a class="btn btn-secondary" href="tel:+522311024672">Llamar</a>
-        <button class="btn btn-primary open-ticket" type="button">Solicitar soporte</button>
+        <button class="btn btn-primary open-ticket" type="button" aria-label="Solicitar soporte">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><path d="M4.93 4.93l2.12 2.12"></path><path d="M19.07 19.07l-2.12-2.12"></path><path d="M19.07 4.93l-2.12 2.12"></path><path d="M4.93 19.07l2.12-2.12"></path></svg>
+          <span class="btn-label">Solicitar soporte</span>
+        </button>
         <button class="btn btn-ghost menu-btn" type="button" id="menuBtn" aria-label="Abrir menu">Menu</button>
       </div>
     </div>
@@ -1295,7 +1317,10 @@
         <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
           <a class="btn btn-primary" href="tel:+522311024672">Llamar</a>
           <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">WhatsApp</a>
-          <button class="btn btn-ghost open-ticket" type="button">Solicitar soporte</button>
+          <button class="btn btn-ghost open-ticket" type="button" aria-label="Solicitar soporte">
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><path d="M4.93 4.93l2.12 2.12"></path><path d="M19.07 19.07l-2.12-2.12"></path><path d="M19.07 4.93l-2.12 2.12"></path><path d="M4.93 19.07l2.12-2.12"></path></svg>
+            <span class="btn-label">Solicitar soporte</span>
+          </button>
         </div>
         <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.04);padding-top:14px;color:var(--muted);font-size:.92rem;">
           <div style="display:flex;align-items:center;gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke:var(--green)"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg><span>Teziutlan, Puebla</span></div>
