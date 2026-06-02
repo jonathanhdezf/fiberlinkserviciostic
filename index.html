@@ -461,19 +461,31 @@
     .btn .img-icon { display: none; }
 
     /* Left-button overlay image for visual assistance */
-    .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 44px; }
-    .site-header .nav-actions .btn.btn-secondary .left-overlay { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; pointer-events: none; opacity: .98; background-size: contain; background-repeat: no-repeat; background-position: center; transition: transform .18s ease, opacity .18s ease; }
-    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.06); opacity: 1; }
+    .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 64px; }
+    .site-header .nav-actions .btn.btn-secondary .left-overlay {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      pointer-events: none;
+      opacity: .98;
+      transition: transform .18s ease, opacity .18s ease;
+      border-radius: 8px;
+    }
+    .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
 
     @media (max-width: 860px) {
       /* In header, show overlay icon while keeping labels hidden to keep affordance */
       .site-header .nav-actions .btn .btn-label { display: none; }
       .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
       .site-header .nav-actions .btn .icon { display: none; }
-      .site-header .nav-actions .btn .img-icon { display: inline-block; width:18px; height:18px; }
-      /* Make room for overlay on small screens */
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 36px; }
-      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: inline-block; width:20px;height:20px; left:8px; }
+      .site-header .nav-actions .btn .img-icon { display: inline-block; width:22px; height:22px; }
+      /* Make room for larger overlay on small screens */
+      .site-header .nav-actions .btn.btn-secondary { padding-left: 52px; }
+      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: inline-block; width:32px;height:32px; left:10px; }
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
