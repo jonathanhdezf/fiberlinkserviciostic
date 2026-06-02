@@ -2486,11 +2486,24 @@
       function openDemo(){ demo.classList.add('open'); demo.setAttribute('aria-hidden','false'); runSequence(); }
       function closeDemo(){ stopRequested = true; demo.classList.remove('open'); demo.setAttribute('aria-hidden','true'); content.innerHTML = ''; }
 
-      demoBtn.addEventListener('click', () => { if (!running) openDemo(); else { stopRequested = true; } });
-      backdrop.addEventListener('click', closeDemo);
-      closeBtn.addEventListener('click', closeDemo);
-      stopBtn.addEventListener('click', () => { stopRequested = true; });
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDemo(); });
+      // robust binding: direct, delegated and touch
+      function bindDemoHandlers(){
+        // direct
+        demoBtn?.addEventListener('click', () => { if (!running) openDemo(); else { stopRequested = true; } });
+        // delegated (works if element added later)
+        document.addEventListener('click', (e) => {
+          const b = e.target.closest && e.target.closest('#sysDemoBtn');
+          if (!b) return;
+          if (!running) openDemo(); else stopRequested = true;
+        });
+        // touch for mobile
+        demoBtn?.addEventListener('touchstart', (e) => { e.preventDefault(); if (!running) openDemo(); else { stopRequested = true; } }, { passive: false });
+        backdrop?.addEventListener('click', closeDemo);
+        closeBtn?.addEventListener('click', closeDemo);
+        stopBtn?.addEventListener('click', () => { stopRequested = true; });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDemo(); });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindDemoHandlers); else bindDemoHandlers();
     })();
   </script>
 
