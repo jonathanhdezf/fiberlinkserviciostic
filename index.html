@@ -462,7 +462,7 @@
 
     /* Left-button overlay image for visual assistance */
     .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 64px; }
-        /* hide button images on desktop; shown on small screens via media query */
+        /* hide button images on desktop; shown only on small screens */
         .site-header .nav-actions .btn.btn-secondary .left-overlay {
           display: none;
           position: absolute;
@@ -478,6 +478,13 @@
           border-radius: 8px;
         }
         .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
+
+    /* Ensure all images inside header actions are hidden on desktop */
+    @media (min-width: 861px) {
+      .site-header .nav-actions img,
+      .site-header .nav-actions .left-overlay,
+      .site-header .nav-actions .img-icon { display: none !important; }
+    }
 
     @media (max-width: 860px) {
       /* In header, show overlay icon while keeping labels hidden to keep affordance */
