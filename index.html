@@ -2237,6 +2237,28 @@
       window.addEventListener('load', () => { updateProgress(); setTimeout(updateProgress, 140); }, {passive:true});
     })();
   </script>
+  <script>
+    (function(){
+      try {
+        const btn = document.getElementById('menuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            const isMobile = window.innerWidth < 700 && mobileDrawer;
+            if (isMobile) {
+              const open = mobileDrawer.classList.contains('open');
+              mobileDrawer.classList.toggle('open', !open);
+              document.body.classList.toggle('menu-open', !open);
+              btn.setAttribute('aria-expanded', String(!open));
+              mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
+              if (!open) setTimeout(()=> mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
+              e.preventDefault();
+            }
+          });
+        }
+      } catch(e) { /* ignore */ }
+    })();
+  </script>
 </body>
 </html>
 
