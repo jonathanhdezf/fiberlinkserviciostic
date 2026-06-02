@@ -1856,13 +1856,15 @@
   
   <!-- Partners / Sponsors -->
   <style>
-    .partners { padding: 44px 0 22px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); }
-    .partners .section-kicker { color: var(--muted); margin-bottom:6px; }
-    .partners h3 { margin:0 0 10px; font-size:1.15rem; }
+    /* Neon green partners block */
+    .partners { padding: 44px 0 22px; background: linear-gradient(180deg, rgba(72,211,155,0.02), rgba(72,211,155,0.005)); border-top: 1px solid rgba(72,211,155,0.04); }
+    .partners .section-kicker { color: rgba(160,230,205,0.92); margin-bottom:6px; }
+    .partners h3 { margin:0 0 10px; font-size:1.15rem; color: #dfffee; text-shadow: 0 6px 18px rgba(72,211,155,0.06); }
     .partners-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:18px; align-items:center; justify-items:center; }
-    .partner-logo { width:72px; height:auto; opacity:.88; transition: transform .22s ease, opacity .18s ease, filter .18s ease; filter:grayscale(.0) contrast(.95); }
-    .partner-link { display:inline-flex; align-items:center; justify-content:center; padding:8px; border-radius:10px; background:transparent; }
-    .partner-link:hover .partner-logo { transform: translateY(-6px) scale(1.04); opacity:1; filter: none; }
+    .partner-logo { width:72px; height:auto; opacity:.96; transition: transform .22s ease, opacity .18s ease, filter .18s ease, box-shadow .18s ease; filter: grayscale(0) contrast(1); box-shadow: 0 6px 22px rgba(72,211,155,0.04); }
+    .partner-link { display:inline-flex; align-items:center; justify-content:center; padding:8px; border-radius:10px; background: linear-gradient(90deg, rgba(72,211,155,0.03), rgba(72,211,155,0.01)); border: 1px solid rgba(72,211,155,0.04); }
+    .partner-link:hover { transform: translateY(-4px); }
+    .partner-link:hover .partner-logo { transform: translateY(-6px) scale(1.08); opacity:1; filter: none; box-shadow: 0 28px 120px rgba(72,211,155,0.14), 0 6px 40px rgba(72,211,155,0.06); }
     @media (max-width:700px){ .partners { padding:28px 8px; } .partner-logo{ width:56px; } }
   </style>
 
