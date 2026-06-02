@@ -2438,7 +2438,7 @@
       const sequence = [
         {cmd: 'date', out: new Date().toLocaleString()},
         {cmd: 'ping noc.fiberlink.mx -c 3', out: 'PING noc.fiberlink.mx (45.55.22.11): 56 data bytes\n64 bytes from 45.55.22.11: icmp_seq=0 ttl=54 time=18.2 ms\n64 bytes from 45.55.22.11: icmp_seq=1 ttl=54 time=17.9 ms\n64 bytes from 45.55.22.11: icmp_seq=2 ttl=54 time=18.1 ms\n--- noc.fiberlink.mx ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss'},
-        {cmd: 'checking certificates', out: 'TLS/SSL: valid (Let's Encrypt)\nCertificate expires: 2026-12-18'},
+        {cmd: 'checking certificates', out: 'TLS/SSL: valid (Let\'s Encrypt)\\nCertificate expires: 2026-12-18'},
         {cmd: 'security-audit --fast', out: 'Auth: OK\nFirewall: OK\nVPN: OK\nIntrusion-detection: OK'},
         {cmd: 'sync status', out: 'NOC: connected\nLast sync: 0m 12s ago\nServices: all operational'},
         {cmd: 'connections', out: 'Clients online: 24\nSupport queue: 1\nAvailable engineers: 3'},
