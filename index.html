@@ -466,13 +466,14 @@
     .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.06); opacity: 1; }
 
     @media (max-width: 860px) {
-      /* In header, hide text to avoid overflow; show icon-only */
+      /* In header, show overlay icon while keeping labels hidden to keep affordance */
       .site-header .nav-actions .btn .btn-label { display: none; }
       .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
       .site-header .nav-actions .btn .icon { display: none; }
       .site-header .nav-actions .btn .img-icon { display: inline-block; width:18px; height:18px; }
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 12px; }
-      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: none; }
+      /* Make room for overlay on small screens */
+      .site-header .nav-actions .btn.btn-secondary { padding-left: 36px; }
+      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: inline-block; width:20px;height:20px; left:8px; }
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
