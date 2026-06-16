@@ -4,2595 +4,579 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Fiberlink Servicios TIC en Teziutlan, Puebla: soporte tecnico, redes, videovigilancia, punto de venta, desarrollo web y soluciones digitales.">
-  <title>Fiberlink Servicios TIC | Soporte tecnico, redes y soluciones digitales</title>
+  <title>Fiberlink Servicios TIC | Soporte técnico, redes y soluciones digitales</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #07090d;
-      --panel: #10141d;
-      --panel-2: #151b26;
-      --line: rgba(255,255,255,.12);
-      --line-strong: rgba(255,255,255,.2);
-      --text: #eef4f8;
-      --muted: #96a4b2;
-      --soft: #c6d2dd;
-      --cyan: #48d39b;
-      --green: #48d39b;
-      --amber: #ffca66;
-      --red: #ff6b6b;
-      --shadow: 0 24px 80px rgba(0,0,0,.38);
-      --neon-cyan: 0 0 0 1px rgba(72,211,155,.28), 0 0 26px rgba(72,211,155,.18), 0 22px 70px rgba(0,0,0,.36);
-      --neon-green: 0 0 0 1px rgba(72,211,155,.24), 0 0 24px rgba(72,211,155,.14), 0 22px 70px rgba(0,0,0,.34);
-      --radius: 8px;
-      --max: 1180px;
-    }
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background:
-        linear-gradient(180deg, rgba(72,211,155,.08), transparent 38%),
-        radial-gradient(circle at 85% 12%, rgba(72,211,155,.11), transparent 32%),
-        var(--bg);
-      color: var(--text);
-      font-family: 'Manrope', system-ui, sans-serif;
-      line-height: 1.5;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background-image:
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: linear-gradient(to bottom, #000, transparent 82%);
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background: linear-gradient(90deg, rgba(7,9,13,.9), rgba(7,9,13,.6), rgba(7,9,13,.92));
-      pointer-events: none;
-    }
-
-    #physics-bg {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: .82;
-      mix-blend-mode: screen;
-    }
-
-    .depth-glow {
-      position: fixed;
-      inset: auto auto 6% 58%;
-      z-index: -1;
-      width: min(640px, 64vw);
-      aspect-ratio: 1;
-      background: url("logo.gif") center / contain no-repeat;
-      filter: drop-shadow(0 0 36px rgba(72,211,155,.24)) drop-shadow(0 0 80px rgba(72,211,155,.12));
-      opacity: .16;
-      mix-blend-mode: screen;
-      pointer-events: none;
-      transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
-      transition: transform .18s linear;
-      animation: logoFloat 10s ease-in-out infinite;
-    }
-
-    @keyframes logoFloat {
-      0%, 100% { translate: 0 0; scale: 1; }
-      50% { translate: 0 -14px; scale: 1.025; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .tool-track, .depth-glow { animation: none; }
-      #physics-bg { display: none; }
-    }
-
-    a { color: inherit; text-decoration: none; }
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; border: 0; }
-    :focus-visible {
-      outline: 2px solid var(--cyan);
-      outline-offset: 3px;
-    }
-    img, svg { display: block; }
-
-      /* Selection color: dark text on neon background to improve legibility */
-      ::selection { background: var(--cyan); color: #000; }
-      ::-moz-selection { background: var(--cyan); color: #000; }
-    .container { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
-    .mono { font-family: "JetBrains Mono", monospace; }
-
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(7,9,13,.82);
-      border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(18px);
-    }
-
-    .nav {
-      min-height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 44px;
-      height: 44px;
-      border: 1px solid rgba(72,211,155,.45);
-      border-radius: var(--radius);
-      display: grid;
-      place-items: center;
-      background: rgba(7,9,13,.72);
-      box-shadow: 0 0 0 1px rgba(72,211,155,.12), 0 0 32px rgba(72,211,155,.18);
-      position: relative;
-      overflow: hidden;
-      flex: 0 0 auto;
-    }
-
-    .brand-mark::after {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
-      transform: translateX(-120%) rotate(18deg);
-      transition: transform .7s ease;
-    }
-
-    .brand:hover .brand-mark::after { transform: translateX(120%) rotate(18deg); }
-
-    .brand-logo {
-      width: 34px;
-      height: 34px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 10px rgba(72,211,155,.28));
-    }
-
-    .brand strong { display: block; letter-spacing: -.03em; line-height: 1; }
-    .brand span { display: block; color: var(--muted); font-size: .78rem; margin-top: 3px; }
-    .brand .brand-mark { display: grid; margin-top: 0; }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      color: var(--soft);
-      font-size: .92rem;
-    }
-
-    .nav-links a { transition: color .2s ease; }
-    .nav-links a:hover { color: #fff; }
-
-    .nav-actions { display: flex; align-items: center; gap: 10px; }
-    .menu-btn { display: none; }
-
-    .menu-btn-icon {
-      width: 20px;
-      height: 18px;
-      position: relative;
-      display: inline-grid;
-      gap: 4px;
-      grid-auto-rows: 2px;
-      align-items: center;
-    }
-
-    .menu-btn-icon span {
-      display: block;
-      border-radius: 999px;
-      background: currentColor;
-      height: 2px;
-      transform-origin: center;
-      transition: transform .32s cubic-bezier(.2,.7,.2,1), opacity .2s ease, background .18s ease;
-      will-change: transform, opacity;
-    }
-
-    .menu-btn-icon span:nth-child(2) { width: 100%; }
-    .menu-btn-icon span:nth-child(1), .menu-btn-icon span:nth-child(3) { width: 72%; margin-left: auto; }
-
-    /* Animate into an X when menu is open */
-    body.menu-open .menu-btn-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); width: 100%; }
-    body.menu-open .menu-btn-icon span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    body.menu-open .menu-btn-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); width: 100%; margin-left: 0; }
-
-    /* Smooth focus/pressed state */
-    .menu-btn:active .menu-btn-icon span { transform: scaleX(.98); }
-
-    .mobile-drawer {
-      position: fixed;
-      inset: 0;
-      z-index: 90;
-      display: none;
-      pointer-events: none;
-    }
-
-    .mobile-drawer.open {
-      display: block;
-      pointer-events: auto;
-    }
-
-    .mobile-drawer__backdrop {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(72,211,155,.14), transparent 25%),
-        rgba(7,9,13,.72);
-      backdrop-filter: blur(16px);
-    }
-
-    .mobile-drawer__panel {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      bottom: 12px;
-      width: min(460px, calc(100vw - 24px));
-      border: 1px solid rgba(72,211,155,.25);
-      border-radius: 18px;
-      background:
-        linear-gradient(180deg, rgba(16,20,29,.98), rgba(10,13,19,.98)),
-        radial-gradient(circle at 50% 0%, rgba(72,211,155,.14), transparent 32%);
-      box-shadow: 0 22px 70px rgba(0,0,0,.45), 0 0 0 1px rgba(72,211,155,.08);
-      overflow: hidden;
-      transform: translateX(110%);
-      transition: transform .42s cubic-bezier(.2,.8,.2,1);
-    }
-
-    body.menu-open .mobile-drawer__panel { transform: translateX(0); }
-
-    .mobile-drawer__panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(72,211,155,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(72,211,155,.04) 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-      mask-image: linear-gradient(to bottom, #000 0 72%, transparent 100%);
-    }
-
-    .drawer-head {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: start;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 18px 18px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    .drawer-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .drawer-kicker {
-      color: var(--cyan);
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .drawer-head strong { display: block; letter-spacing: -.03em; line-height: 1; }
-    .drawer-head span { color: var(--muted); font-size: .82rem; }
-
-    .drawer-close {
-      width: 42px;
-      height: 42px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-    }
-
-    .drawer-body {
-      position: relative;
-      z-index: 1;
-      padding: 16px 18px 18px;
-      display: grid;
-      gap: 18px;
-      height: calc(100% - 78px);
-      overflow: auto;
-    }
-
-    .drawer-grid {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .drawer-action {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.04);
-      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
-    }
-
-    .drawer-action:hover {
-      transform: translateY(-1px);
-      border-color: rgba(72,211,155,.4);
-      background: rgba(72,211,155,.08);
-      box-shadow: var(--neon-cyan);
-    }
-
-    .drawer-action-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: rgba(72,211,155,.12);
-      color: var(--cyan);
-      flex: 0 0 auto;
-    }
-
-    .drawer-action strong { display: block; font-size: .92rem; }
-    .drawer-action span { display: block; color: var(--muted); font-size: .76rem; margin-top: 2px; }
-
-    .drawer-section-title {
-      color: var(--muted);
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .drawer-links {
-      display: grid;
-      gap: 8px;
-    }
-
-    .drawer-links a {
-      padding: 14px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--text);
-      font-weight: 700;
-      letter-spacing: -.01em;
-      transition: border-color .2s ease, background .2s ease, transform .2s ease;
-    }
-
-    .drawer-links a:hover {
-      border-color: rgba(72,211,155,.34);
-      background: rgba(72,211,155,.08);
-      transform: translateX(-2px);
-    }
-
-    .drawer-services {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .drawer-services .tag {
-      background: rgba(255,255,255,.04);
-    }
-
-    .drawer-contact {
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 16px;
-      background: rgba(255,255,255,.03);
-      padding: 14px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .drawer-contact a,
-    .drawer-contact span {
-      color: var(--soft);
-      overflow-wrap: anywhere;
-    }
-
-    .btn {
-      min-height: 44px;
-      border-radius: var(--radius);
-      padding: 0 17px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 700;
-      position: relative;
-      overflow: hidden;
-      isolation: isolate;
-      transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
-      white-space: nowrap;
-    }
-
-    .btn::before {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      z-index: -1;
-      background: radial-gradient(circle at var(--px, 50%) var(--py, 50%), rgba(255,255,255,.38), transparent 38%);
-      opacity: 0;
-      transition: opacity .22s ease;
-    }
-
-    .btn:hover { transform: translateY(-1px); }
-    .btn:hover::before { opacity: 1; }
-
-    /* Icon inside buttons */
-    .btn .icon {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
-      display: inline-block;
-      stroke: currentColor;
-      fill: none;
-    }
-
-    /* Label wrapper to allow hiding text in compact header */
-    .btn .btn-label { display: inline-block; }
-    .btn .img-icon { display: none; }
-
-    /* Left-button overlay image for visual assistance */
-    .site-header .nav-actions .btn.btn-secondary { position: relative; padding-left: 64px; }
-        /* hide button images on desktop; shown only on small screens */
-        .site-header .nav-actions .btn.btn-secondary .left-overlay {
-          display: none;
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 36px;
-          height: 36px;
-          object-fit: contain;
-          pointer-events: none;
-          opacity: .98;
-          transition: transform .18s ease, opacity .18s ease;
-          border-radius: 8px;
-        }
-        .site-header .nav-actions .btn.btn-secondary:hover .left-overlay { transform: translateY(-50%) scale(1.04); opacity: 1; }
-
-    /* Ensure header action icons are hidden on desktop and remove reserved padding */
-    @media (min-width: 861px) {
-      .site-header .nav-actions img,
-      .site-header .nav-actions .left-overlay,
-      .site-header .nav-actions .img-icon,
-      .site-header .nav-actions .btn .icon { display: none !important; }
-      /* restore compact padding so buttons fit label */
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 12px; }
-      .site-header .nav-actions .btn { padding-left: 12px; padding-right: 12px; }
-    }
-
-    @media (max-width: 860px) {
-      /* In header, show overlay icon while keeping labels hidden to keep affordance */
-      .site-header .nav-actions .btn .btn-label { display: none; }
-      .site-header .nav-actions .btn { padding: 0 12px; min-width: 44px; }
-      .site-header .nav-actions .btn .icon { display: none; }
-      .site-header .nav-actions .btn .img-icon { display: inline-block; width:22px; height:22px; }
-      /* Make room for larger overlay on small screens */
-      .site-header .nav-actions .btn.btn-secondary { padding-left: 52px; }
-      .site-header .nav-actions .btn.btn-secondary .left-overlay { display: inline-block; width:32px;height:32px; left:10px; }
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--cyan), #7ce7ff 46%, var(--green));
-      color: #051018;
-      box-shadow: 0 0 0 1px rgba(72,211,155,.35), 0 15px 44px rgba(72,211,155,.18);
-    }
-    .btn-primary:hover { box-shadow: 0 0 0 1px rgba(72,211,155,.55), 0 18px 58px rgba(72,211,155,.28); }
-    .btn-secondary { background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--text); }
-    .btn-secondary:hover { border-color: rgba(72,211,155,.62); background: rgba(72,211,155,.1); box-shadow: var(--neon-cyan); }
-    .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--soft); }
-    .btn-ghost:hover { color: #fff; border-color: rgba(72,211,155,.5); box-shadow: var(--neon-green); }
-
-    .hero {
-      min-height: calc(100vh - 72px);
-      display: grid;
-      align-items: center;
-      padding: 64px 0 42px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr);
-      gap: 48px;
-      align-items: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      color: var(--cyan);
-      font-size: .76rem;
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 30px;
-      height: 1px;
-      background: var(--cyan);
-    }
-
-    h1, h2, h3, p { margin-top: 0; }
-    h1 {
-      max-width: 820px;
-      margin-bottom: 20px;
-      font-size: clamp(2.55rem, 7vw, 5.9rem);
-      line-height: .95;
-      letter-spacing: -.075em;
-    }
-
-    .accent { color: var(--cyan); }
-    .hero-copy {
-      max-width: 650px;
-      color: var(--soft);
-      font-size: clamp(1rem, 2vw, 1.16rem);
-      margin-bottom: 28px;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .signal-row {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      max-width: 650px;
-      background: var(--line);
-      box-shadow: 0 0 0 1px rgba(72,211,155,.06);
-    }
-
-    .signal {
-      background: rgba(16,20,29,.9);
-      padding: 18px;
-      transition: background .22s ease, box-shadow .22s ease, transform .22s ease;
-    }
-
-    .signal:hover {
-      background: linear-gradient(180deg, rgba(20,28,41,.96), rgba(13,17,25,.96));
-      box-shadow: inset 0 1px 0 rgba(72,211,155,.3);
-      transform: translateY(-1px);
-    }
-
-    .signal strong {
-      display: block;
-      font-size: 1.22rem;
-      letter-spacing: -.04em;
-    }
-
-    .signal span {
-      display: block;
-      color: var(--muted);
-      font-size: .82rem;
-      margin-top: 4px;
-    }
-
-    .geo-card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(180deg, rgba(21,27,38,.96), rgba(13,17,25,.96)),
-        radial-gradient(circle at 50% 30%, rgba(72,211,155,.14), transparent 56%);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      position: relative;
-      transform: perspective(1200px) rotateX(calc(var(--tilt-y, 0deg) * -1)) rotateY(var(--tilt-x, 0deg));
-      transition: transform .16s ease, border-color .22s ease, box-shadow .22s ease;
-    }
-
-    .geo-card:hover {
-      border-color: rgba(72,211,155,.42);
-      box-shadow: var(--neon-cyan);
-    }
-
-    .geo-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(72,211,155,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(72,211,155,.05) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: radial-gradient(circle at 50% 44%, #000 0 58%, transparent 83%);
-      pointer-events: none;
-    }
-
-    .geo-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at var(--px, 50%) var(--py, 45%), rgba(72,211,155,.18), transparent 34%);
-      opacity: 0;
-      transition: opacity .2s ease;
-      pointer-events: none;
-    }
-
-    .geo-card:hover::after { opacity: 1; }
-
-    .geo-top {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .geo-title { font-weight: 800; letter-spacing: -.03em; }
-    .status-pill {
-      color: var(--green);
-      border: 1px solid rgba(72,211,155,.35);
-      background: rgba(72,211,155,.09);
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: .72rem;
-      font-weight: 800;
-    }
-
-    .map-wrap {
-      position: relative;
-      min-height: 435px;
-      padding: 18px;
-    }
-
-    .teziutlan-map {
-      width: 100%;
-      height: 330px;
-      filter: drop-shadow(0 28px 42px rgba(0,0,0,.45));
-      transform: translate3d(calc(var(--mx, 0px) * .18), calc(var(--my, 0px) * .18), 0);
-      transition: transform .16s linear;
-    }
-
-    .map-outline {
-      fill: rgba(72,211,155,.08);
-      stroke: rgba(72,211,155,.7);
-      stroke-width: 2;
-      transition: stroke .2s ease, filter .2s ease;
-    }
-
-    .geo-card:hover .map-outline {
-      stroke: rgba(72,211,155,.95);
-      filter: drop-shadow(0 0 16px rgba(72,211,155,.26));
-    }
-
-    .map-contour {
-      fill: none;
-      stroke: rgba(255,255,255,.12);
-      stroke-width: 1.2;
-    }
-
-    .map-route {
-      fill: none;
-      stroke: rgba(72,211,155,.65);
-      stroke-width: 2.4;
-      stroke-linecap: round;
-      stroke-dasharray: 6 10;
-      animation: routeFlow 7s linear infinite;
-    }
-
-    .map-ring {
-      fill: none;
-      stroke: rgba(72,211,155,.22);
-      stroke-width: 1;
-      stroke-dasharray: 3 7;
-    }
-
-    .map-pulse {
-      transform-origin: center;
-      animation: mapPulse 2.6s ease-out infinite;
-    }
-
-    .pin-core { fill: var(--cyan); }
-    .pin-service { fill: var(--green); }
-    .pin-alert { fill: var(--amber); }
-
-    @keyframes routeFlow {
-      to { stroke-dashoffset: -96; }
-    }
-
-    @keyframes mapPulse {
-      0% { opacity: .75; r: 8; }
-      100% { opacity: 0; r: 26; }
-    }
-
-    .map-label {
-      position: absolute;
-      left: 26px;
-      bottom: 92px;
-      max-width: 235px;
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: var(--radius);
-      background: rgba(7,9,13,.78);
-      backdrop-filter: blur(14px);
-      padding: 13px;
-    }
-
-    .map-label strong {
-      display: block;
-      letter-spacing: -.03em;
-      margin-bottom: 4px;
-    }
-
-    .map-label span {
-      color: var(--muted);
-      font-size: .82rem;
-    }
-
-    .geo-metrics {
-      padding: 0;
-      list-style: none;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--line);
-    }
-
-    .geo-metrics li {
-      background: rgba(16,20,29,.92);
-      padding: 13px;
-    }
-
-    .geo-metrics strong {
-      display: block;
-      font-size: .95rem;
-      letter-spacing: -.03em;
-    }
-
-    .geo-metrics span {
-      display: block;
-      color: var(--muted);
-      font-size: .72rem;
-      margin-top: 3px;
-    }
-
-    section { padding: 92px 0; }
-    .section-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 28px;
-      margin-bottom: 34px;
-    }
-
-    .section-kicker {
-      color: var(--cyan);
-      font-size: .76rem;
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    h2 {
-      font-size: clamp(2rem, 4.6vw, 4rem);
-      line-height: .98;
-      letter-spacing: -.065em;
-      margin-bottom: 0;
-    }
-
-    .section-text {
-      max-width: 470px;
-      color: var(--muted);
-      margin-bottom: 0;
-    }
-
-    .service-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--line);
-      overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(72,211,155,.04);
-    }
-
-    .service-card {
-      min-height: 330px;
-      padding: 24px;
-      background: rgba(16,20,29,.92);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
-    }
-
-    .service-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-top: 1px solid rgba(72,211,155,.18);
-      background:
-        radial-gradient(circle at var(--px, 50%) var(--py, 50%), rgba(72,211,155,.16), transparent 34%),
-        linear-gradient(135deg, rgba(72,211,155,.08), transparent 30%, rgba(72,211,155,.06));
-      opacity: 0;
-      transition: opacity .22s ease;
-      pointer-events: none;
-    }
-
-    .service-card:hover {
-      background: rgba(22,29,42,.95);
-      transform: translateY(-3px);
-      box-shadow: inset 0 0 0 1px rgba(72,211,155,.22), 0 20px 54px rgba(0,0,0,.28);
-    }
-
-    .service-card:hover::before { opacity: 1; }
-
-    .service-card > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .service-num {
-      color: var(--cyan);
-      font-size: .78rem;
-      letter-spacing: .12em;
-      font-weight: 800;
-      margin-bottom: 30px;
-    }
-
-    .service-card h3 {
-      font-size: 1.28rem;
-      line-height: 1.08;
-      letter-spacing: -.04em;
-      margin-bottom: 12px;
-    }
-
-    .service-card p {
-      color: var(--muted);
-      font-size: .93rem;
-      margin-bottom: 20px;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: auto;
-    }
-
-    .tag {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 5px 9px;
-      color: var(--soft);
-      background: rgba(255,255,255,.035);
-      font-size: .75rem;
-      font-weight: 700;
-      transition: border-color .2s ease, color .2s ease, background .2s ease;
-    }
-
-    .service-card:hover .tag, .tool:hover {
-      border-color: rgba(72,211,155,.42);
-      color: #fff;
-      background: rgba(72,211,155,.08);
-    }
-
-    .tools-band {
-      border-block: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      padding: 18px 0;
-      overflow: hidden;
-    }
-
-    .tool-track {
-      display: flex;
-      gap: 12px;
-      width: max-content;
-      animation: slide 30s linear infinite;
-    }
-
-    .tool {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 8px 14px;
-      color: var(--soft);
-      background: rgba(7,9,13,.64);
-      font-size: .82rem;
-      font-weight: 800;
-      letter-spacing: .02em;
-      white-space: nowrap;
-      transition: border-color .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
-    }
-
-    .tool:hover { box-shadow: 0 0 22px rgba(72,211,155,.14); }
-
-    @keyframes slide {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    .workflow {
-      display: grid;
-      grid-template-columns: .95fr 1.05fr;
-      gap: 36px;
-      align-items: start;
-    }
-
-    .workflow-panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(16,20,29,.9);
-      padding: 24px;
-      position: sticky;
-      top: 100px;
-      box-shadow: 0 0 0 1px rgba(72,211,155,.05);
-    }
-
-    .workflow-panel p { color: var(--muted); margin-bottom: 22px; }
-    .contact-mini {
-      display: grid;
-      gap: 10px;
-    }
-
-    .contact-mini a, .contact-mini span {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 12px;
-      color: var(--soft);
-      background: rgba(255,255,255,.035);
-      overflow-wrap: anywhere;
-      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
-    }
-
-    .contact-mini a:hover {
-      border-color: rgba(72,211,155,.5);
-      background: rgba(72,211,155,.08);
-      box-shadow: var(--neon-cyan);
-    }
-
-    .steps {
-      display: grid;
-      gap: 1px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--line);
-    }
-
-    .step {
-      display: grid;
-      grid-template-columns: 96px 1fr;
-      gap: 22px;
-      background: rgba(16,20,29,.92);
-      padding: 24px;
-      position: relative;
-      transition: background .2s ease, box-shadow .2s ease;
-    }
-
-    .step::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 2px;
-      background: linear-gradient(var(--cyan), var(--green));
-      opacity: 0;
-      transition: opacity .2s ease;
-    }
-
-    .step:hover {
-      background: rgba(22,29,42,.96);
-      box-shadow: inset 0 0 0 1px rgba(72,211,155,.14);
-    }
-
-    .step:hover::before { opacity: 1; }
-
-    .step .mono { color: var(--cyan); font-size: .82rem; font-weight: 800; }
-    .step h3 { margin-bottom: 8px; letter-spacing: -.03em; }
-    .step p { color: var(--muted); margin: 0; }
-
-    .contact-section {
-      padding-bottom: 70px;
-    }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(340px, 1.1fr);
-      gap: 1px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--line);
-      box-shadow: 0 0 0 1px rgba(72,211,155,.05);
-    }
-
-    .contact-copy, .quote-card {
-      background: rgba(16,20,29,.94);
-      padding: 30px;
-    }
-
-    .contact-copy p { color: var(--muted); }
-    .contact-list {
-      list-style: none;
-      margin: 26px 0 0;
-      padding: 0;
-      display: grid;
-      gap: 12px;
-    }
-
-    .contact-list li {
-      display: grid;
-      grid-template-columns: 110px 1fr;
-      gap: 12px;
-      color: var(--soft);
-    }
-
-    .contact-list span:first-child {
-      color: var(--muted);
-      font-size: .82rem;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Icons follow the theme: muted by default, accent on hover */
-    .contact-list span:first-child svg {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
-      stroke: var(--muted);
-      fill: none;
-      transition: stroke .18s ease, transform .18s ease, opacity .18s ease;
-      opacity: .95;
-    }
-
-    /* Subtle lift + glow for hover to match neon theme */
-    .contact-list li {
-      transition: box-shadow .18s ease, transform .18s ease;
-      will-change: transform, box-shadow;
-    }
-
-    .contact-list li:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(72,211,155,0.06), 0 3px 10px rgba(0,0,0,0.35);
-    }
-
-    /* Highlight icon and value on hover to match the neon accent */
-    .contact-list li:hover span:first-child svg {
-      stroke: var(--cyan);
-      transform: translateY(-1px);
-    }
-
-    .contact-list li a,
-    .contact-list li span:last-child {
-      color: var(--soft);
-      transition: color .18s ease;
-    }
-
-    .contact-list li:hover a,
-    .contact-list li:hover span:last-child {
-      color: var(--cyan);
-      text-shadow: 0 6px 24px rgba(72,211,155,0.06);
-    }
-
-    @media (max-width: 700px) {
-      .contact-list li { grid-template-columns: 1fr; gap: 6px; transform: none; box-shadow: none; }
-    }
-
-    .quote-card form { display: grid; gap: 14px; }
-    label { display: grid; gap: 7px; color: var(--soft); font-size: .86rem; font-weight: 800; }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(7,9,13,.72);
-      color: var(--text);
-      padding: 13px 14px;
-      outline: none;
-      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
-    }
-
-    textarea { min-height: 118px; resize: vertical; }
-    input:focus, select:focus, textarea:focus {
-      border-color: rgba(72,211,155,.65);
-      box-shadow: 0 0 0 3px rgba(72,211,155,.11);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .priority {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .priority button {
-      min-height: 40px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.04);
-      color: var(--soft);
-      font-weight: 800;
-      transition: border-color .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
-    }
-
-    .priority button.active {
-      border-color: rgba(72,211,155,.7);
-      background: rgba(72,211,155,.14);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(72,211,155,.12);
-    }
-
-    .form-note {
-      color: var(--muted);
-      font-size: .82rem;
-      margin: -2px 0 0;
-    }
-
-    /* Premium footer (centered layout) */
-      .site-footer {
-        padding: 28px 0; 
-        color: var(--muted);
-        background: linear-gradient(180deg, rgba(7,9,13,.92), rgba(10,13,18,.94));
-        border-top: 1px solid rgba(255,255,255,.04);
-        box-shadow: 0 -14px 50px rgba(0,0,0,.55);
-      }
-
-      .footer-inner {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 12px;
-        font-size: .95rem;
-      }
-
-      .footer-copy strong { display:block; color:var(--text); }
-      .footer-copy .muted { color:var(--muted); font-size:.95rem; }
-
-      .social-links { display:flex; gap:10px; align-items:center; justify-content:center; }
-      .social-links a { width:44px; height:44px; display:inline-grid; place-items:center; border-radius:10px; background: rgba(255,255,255,.02); color:var(--soft); transition: transform .16s ease, box-shadow .18s ease, background .18s ease; }
-      .social-links a img.social-icon { width:20px; height:20px; filter: invert(1) brightness(1.2); transition: filter .16s ease, transform .16s ease; }
-      .social-links a:hover { transform: translateY(-3px); background: linear-gradient(180deg, rgba(72,211,155,.95), rgba(72,211,155,.6)); color:#041017; box-shadow: var(--neon-green); }
-      .social-links a:hover img.social-icon { filter: none; transform: scale(1.02); }
-
-      @media (min-width:981px) {
-        .footer-inner { flex-direction: row; justify-content: center; gap:60px; align-items:center; }
-      }
-      @media (max-width:980px) {
-        .footer-inner { padding: 8px 0; }
-      }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal.open { display: flex; }
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.68);
-      backdrop-filter: blur(12px);
-    }
-
-    .modal-card {
-      position: relative;
-      width: min(560px, 100%);
-      max-height: min(780px, calc(100vh - 34px));
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .modal-head {
-      padding: 20px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      gap: 18px;
-    }
-
-    .modal-head h2 { font-size: 1.6rem; letter-spacing: -.04em; }
-    .close-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      border: 1px solid var(--line);
-      font-size: 1.2rem;
-    }
-
-    .modal-body { padding: 20px; }
-    .toast {
-      display: none;
-      border: 1px solid rgba(72,211,155,.35);
-      background: rgba(72,211,155,.1);
-      color: #dffbea;
-      border-radius: var(--radius);
-      padding: 12px;
-      font-size: .9rem;
-    }
-    .toast.show { display: block; }
-
-    @media (max-width: 980px) {
-      #physics-bg { opacity: .54; }
-      .nav-links { display: none; }
-      .menu-btn { display: inline-flex; }
-      .nav-actions .btn-secondary { display: none; }
-      .hero-grid, .workflow, .contact-grid { grid-template-columns: 1fr; }
-      .geo-card { max-width: 620px; margin-inline: auto; }
-      .service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .workflow-panel { position: static; }
-      .section-head { align-items: start; flex-direction: column; }
-    }
-
-    @media (max-width: 680px) {
-      .container { width: min(100% - 28px, var(--max)); }
-      .site-header .container { width: min(100% - 20px, var(--max)); }
-      .site-header { background: rgba(7,9,13,.92); }
-      .nav { min-height: 64px; }
-      .brand > span:not(.brand-mark) { display: none; }
-      .brand .brand-mark { display: grid; }
-      h1 { font-size: clamp(2.28rem, 13vw, 3.45rem); line-height: .98; letter-spacing: -.06em; }
-      h2 { letter-spacing: -.05em; }
-      .hero { min-height: auto; padding: 34px 0 34px; }
-      .hero-grid { gap: 28px; }
-      .hero-copy { font-size: 1rem; color: #d7e3eb; }
-      .hero-actions, .footer-inner { align-items: stretch; flex-direction: column; }
-      .btn { width: 100%; min-height: 48px; }
-      .signal-row, .service-grid, .form-row, .priority { grid-template-columns: 1fr; }
-      .signal { padding: 15px 16px; }
-      .service-card { min-height: auto; }
-      .step { grid-template-columns: 1fr; gap: 8px; }
-      section { padding: 58px 0; }
-      .contact-copy, .quote-card { padding: 22px; }
-      .contact-list li { grid-template-columns: 1fr; gap: 3px; }
-      .geo-top { padding: 14px; align-items: flex-start; }
-      .status-pill { white-space: nowrap; }
-      .map-wrap { min-height: auto; padding: 12px; }
-      .teziutlan-map { height: 270px; }
-      .map-label { position: static; max-width: none; margin-top: -4px; }
-      .geo-metrics { grid-template-columns: 1fr; position: static; margin-top: 12px; }
-      .geo-metrics li { padding: 11px 12px; }
-          .modal { padding: 10px; align-items: center; }
-      .modal-card { max-height: calc(100vh - 20px); border-radius: 12px 12px 0 0; }
-      .modal-head, .modal-body { padding: 16px; }
-
-  /* Premium ticket modal styles */
-  #ticketModal { display: none; align-items: center; justify-content: center; }
-  #ticketModal.open { display: flex; }
-  #ticketModal .modal-backdrop { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.45), rgba(0,0,0,0.6)); backdrop-filter: blur(6px) saturate(110%); opacity: 0; transition: opacity .36s ease; }
-  #ticketModal .modal-card { position: relative; width: min(94%, 720px); max-width: 720px; max-height: 90vh; overflow: auto; padding: 18px; border-radius: 14px; background: linear-gradient(180deg, rgba(18,22,28,0.96), rgba(10,12,14,0.95)); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 20px 60px rgba(2,6,10,0.75), 0 6px 30px rgba(72,211,155,0.04); transform: translateY(12px) scale(.98); opacity: 0; transition: transform .44s cubic-bezier(.2,.9,.3,1), opacity .3s ease; text-align: left; }
-  #ticketModal .modal-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(90deg, rgba(72,211,155,0.04), rgba(72,211,155,0.01)); }
-  #ticketModal.open .modal-backdrop { opacity: 1; }
-  #ticketModal.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
-  #ticketModal .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  #ticketModal .modal-head .kicker { color: var(--muted); font-size: .86rem; }
-  #ticketModal .modal-head .title-row { display: flex; gap: 12px; align-items: center; }
-  #ticketModal .modal-head .title-row svg { width: 40px; height: 40px; color: var(--cyan); background: linear-gradient(180deg, rgba(72,211,155,0.12), rgba(72,211,155,0.04)); padding: 6px; border-radius: 10px; }
-  #ticketModal .close-btn { background: transparent; border: 0; font-size: 22px; color: rgba(255,255,255,.75); padding: 6px; }
-  #ticketModal .modal-body label { display: block; margin-bottom: 10px; }
-  #ticketModal .priority button { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.04); background: transparent; color: var(--muted); cursor: pointer; }
-  #ticketModal .priority button.active { background: linear-gradient(90deg, rgba(72,211,155,0.12), rgba(72,211,155,0.06)); color: #eef8f4; border-color: rgba(72,211,155,0.18); box-shadow: 0 6px 18px rgba(72,211,155,0.06); }
-  #ticketModal .priority button[data-priority='Alta'] { border-color: rgba(255,165,0,0.08); }
-  #ticketModal .priority button[data-priority='Urgente'] { border-color: rgba(255,80,80,0.12); }
-  #ticketModal .form-note { color: var(--muted); }
-  #ticketModal .toast { position: relative; padding: 10px 12px; border-radius: 10px; background: rgba(72,211,155,0.06); color: #e7fff2; display: none; }
-  #ticketModal .toast.show { display: block; animation: pop .36s ease; }
-  @keyframes pop { from { transform: translateY(6px) scale(.98); opacity: 0 } to { transform: none; opacity: 1 } }
-
-  /* Neon preview effect for sample ticket */
-  #ticketModal .modal-card.neon { border-color: rgba(72,211,155,0.28); box-shadow: 0 18px 80px rgba(72,211,155,0.12), 0 0 140px rgba(72,211,155,0.08), inset 0 0 18px rgba(72,211,155,0.04); animation: neonPulse 1.6s ease-in-out; }
-  #ticketModal .modal-card.neon::before { content: ''; position: absolute; inset: -3px; border-radius: inherit; background: linear-gradient(90deg, rgba(72,211,155,0.06), rgba(72,211,155,0.02)); filter: blur(10px); opacity: .95; pointer-events: none; }
-  @keyframes neonPulse {
-    0% { box-shadow: 0 8px 30px rgba(72,211,155,0.06), 0 0 40px rgba(72,211,155,0.04); }
-    50% { box-shadow: 0 24px 120px rgba(72,211,155,0.22), 0 0 200px rgba(72,211,155,0.12); }
-    100% { box-shadow: 0 8px 30px rgba(72,211,155,0.06), 0 0 40px rgba(72,211,155,0.04); }
-  }
-
-  /* Subtle input glow when sample is loaded */
-  #ticketModal .modal-card.neon input, #ticketModal .modal-card.neon textarea, #ticketModal .modal-card.neon select { box-shadow: 0 6px 22px rgba(72,211,155,0.03); transition: box-shadow .36s ease; }
-  #ticketModal .modal-card.neon input:focus, #ticketModal .modal-card.neon textarea:focus { box-shadow: 0 8px 30px rgba(72,211,155,0.08); }
-
-
-      input, select, textarea { font-size: 16px; }
-    }
-  /* Scroll reveal & parallax (Fiberlink Labs-like feel) */
-  .reveal { opacity: 0; transform: translateY(18px) translateZ(0) scale(.998); transition: transform .72s cubic-bezier(.2,.9,.3,1), opacity .6s ease; will-change: transform, opacity; }
-  .reveal.in-view { opacity: 1; transform: translateY(0) translateZ(0) scale(1); }
-  .service-card.reveal { transition-duration: .62s; }
-  .hero .hero-copy.reveal, .hero .hero-actions.reveal { transition-duration: .78s; }
-  .site-header.scrolled { box-shadow: 0 10px 30px rgba(0,0,0,.55); border-bottom-color: rgba(255,255,255,.04); backdrop-filter: blur(20px); }
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
-    .depth-glow { transition: none !important; transform: none !important; }
-  }
-  /* Right-side scroll progress indicator (responsive height, fills top->down) */
-  #scrollProgress { position: fixed; right: 14px; top: 10vh; bottom: 10vh; width: 6px; z-index: 60; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02)); border-radius: 999px; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(72,211,155,.03); }
-  #scrollProgress .progress-fill { position: absolute; left: 0; right: 0; top: 0; height: 0%; background: linear-gradient(180deg, rgba(72,211,155,.95), rgba(72,211,155,.6)); border-radius: inherit; box-shadow: 0 6px 20px rgba(72,211,155,.12); transition: height .12s linear; transform-origin: top; }
-  @media (max-width:1100px) { #scrollProgress { right: 12px; top: 8vh; bottom: 8vh; } }
-  @media (max-width:700px) { #scrollProgress { right: 8px; width: 5px; top: 6vh; bottom: 6vh; } }
-  @media (prefers-reduced-motion: reduce) { #scrollProgress .progress-fill { transition: none; } }
-  /* Mobile highlight for service examples */
-  .service-example { color: var(--muted); margin-top: 8px; }
-  @media (max-width: 680px) {
-    .service-example { font-weight: 700; font-size: 1.03rem; color: #eef8f4; background: rgba(72,211,155,.04); padding: 10px 12px; border-radius: 10px; margin-top: 10px; }
-  }
-  
-  /* Support button: desktop shows only text; mobile shows assistance icon centered in the button */
-  @media (min-width: 861px) {
-    .site-header .nav-actions .img-icon { display: none !important; }
-    .site-header .nav-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-  }
-  @media (max-width: 860px) {
-    .site-header .nav-actions .img-icon { display: inline-block !important; width:18px; height:18px; margin: 0; vertical-align:middle; }
-    .site-header .nav-actions .btn { display: inline-flex; align-items: center; gap: 8px; }
-
-    /* Make call button icon-only and centered on mobile to match support button logic */
-    .site-header .nav-actions .call-btn { justify-content: center; padding: 8px 10px; }
-    .site-header .nav-actions .call-btn .btn-label { display: none; }
-    .site-header .nav-actions .call-btn .img-icon { width: 20px; height: 20px; }
-  }
-
-  /* Premium mobile drawer open effects — centered modal */
-  .mobile-drawer { position: fixed; inset: 0; z-index: 120; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-  .mobile-drawer__backdrop {
-    position: absolute; inset: 0; background: linear-gradient(180deg, rgba(2,6,10,.62), rgba(2,6,10,.58));
-    opacity: 0; transition: opacity .36s cubic-bezier(.2,.9,.3,1), backdrop-filter .36s ease; backdrop-filter: blur(0px) saturate(100%);
-    pointer-events: none;
-  }
-  .mobile-drawer__panel {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.98);
-    width: min(94%, 520px); max-height: 90vh; padding: 18px;
-    border-radius: 14px; overflow: auto; background: linear-gradient(180deg, rgba(16,20,29,.98), rgba(11,13,16,.96));
-    box-shadow: 0 18px 60px rgba(2,6,10,.7), 0 0 64px rgba(72,211,155,.06);
-    opacity: 0; transition: transform .44s cubic-bezier(.2,.9,.3,1), opacity .32s ease; pointer-events: none;
-    border: 1px solid rgba(255,255,255,.04); text-align: center; display:flex; flex-direction:column; align-items:center; gap:14px;
-  }
-  .mobile-drawer__panel::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(72,211,155,.02); }
-
-  /* Ensure full-screen modal on small devices so menu is fully visible */
-  @media (max-width: 700px) {
-    .mobile-drawer { align-items: stretch; justify-content: flex-end; }
-    .mobile-drawer__backdrop { background: linear-gradient(180deg, rgba(2,6,10,.72), rgba(2,6,10,.72)); }
-    .mobile-drawer__panel {
-      position: fixed; inset: 0; width: 100%; height: 100%; max-height: 100vh; border-radius: 0; padding: 18px; transform: none; overflow: auto;
-      display: flex; flex-direction: column; align-items: stretch; text-align: center; justify-content: flex-start;
-    }
-    .mobile-drawer__panel::before { border-radius: 0; }
-    .drawer-nav a { padding: 14px 0; font-size: 1.02rem; }
-    .mobile-drawer .drawer-contact { margin-top: auto; }
-  }
-
-  /* When open: glow backdrop + scale to center */
-  .mobile-drawer.open .mobile-drawer__backdrop { opacity: 1; backdrop-filter: blur(8px) saturate(120%); pointer-events: auto; }
-  .mobile-drawer.open .mobile-drawer__panel { transform: translate(-50%,-50%) scale(1); opacity: 1; pointer-events: auto; }
-  body.menu-open .mobile-drawer__panel { transform: translate(-50%,-50%) scale(1); }
-
-  /* Mobile override: on small viewports the panel should be full-screen (no centering transform) */
-  @media (max-width:700px) {
-    .mobile-drawer.open .mobile-drawer__panel { transform: none !important; }
-    body.menu-open .mobile-drawer__panel { transform: none !important; }
-  }
-
-  /* Staggered links for premium entrance (centered text) */
-  .drawer-nav a { display: block; opacity: 0; transform: translateY(8px); transition: opacity .36s ease, transform .36s cubic-bezier(.2,.9,.3,1); text-align:center; font-weight:700; padding:10px 0; }
-  .mobile-drawer.open .drawer-nav a:nth-child(1) { transition-delay: 100ms; opacity:1; transform:none; }
-  .mobile-drawer.open .drawer-nav a:nth-child(2) { transition-delay: 160ms; opacity:1; transform:none; }
-  .mobile-drawer.open .drawer-nav a:nth-child(3) { transition-delay: 220ms; opacity:1; transform:none; }
-  .mobile-drawer.open .drawer-nav a:nth-child(4) { transition-delay: 280ms; opacity:1; transform:none; }
-
-  /* Center action group and stagger entry */
-  .drawer-contact { display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; }
-  .drawer-contact .btn { opacity: 0; transform: translateY(8px); transition: opacity .42s ease, transform .42s cubic-bezier(.2,.9,.3,1); }
-  .mobile-drawer.open .drawer-contact .btn { opacity:1; transform:none; transition-delay: 320ms; }
-
-  /* Make 'Llamar' button black in header and drawer */
-  .site-header .nav-actions .btn.btn-secondary { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.06); box-shadow: none; }
-  .mobile-drawer .btn.btn-primary { background: #000; color: #fff; border: 1px solid rgba(255,255,255,.06); }
-  /* Ensure call icon is visible on dark call button (mobile) */
-  .site-header .nav-actions .call-btn .img-icon { filter: invert(1) brightness(1.6) contrast(1.1); }
-
-  /* subtle focus ring for premium feel */
-  .mobile-drawer__panel :focus { outline: 2px solid rgba(72,211,155,.12); outline-offset: 6px; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mobile-drawer__backdrop, .mobile-drawer__panel, .drawer-nav a, .drawer-contact .btn { transition: none !important; transform: none !important; }
-  }
-
-
-
-  /* Terminal CTA and demo styles */
-  .btn-neon { position: fixed; right: 18px; bottom: 18px; z-index: 140; padding: 12px 16px; border-radius: 12px; background: linear-gradient(90deg, rgba(72,211,155,0.14), rgba(38,193,160,0.12)); color:#e6fff6; font-weight:800; box-shadow: 0 6px 20px rgba(72,211,155,0.06), 0 0 12px rgba(72,211,155,0.04); backdrop-filter: blur(4px); border: 1px solid rgba(72,211,155,0.06); cursor:pointer; display: inline-flex; align-items:center; gap:10px; opacity:0.92; }
-  .btn-neon:hover { transform: translateY(-3px); box-shadow: 0 20px 80px rgba(72,211,155,0.14), 0 0 40px rgba(72,211,155,0.08); opacity:1; }
-  .btn-neon:active { transform: translateY(-1px) scale(.995); }
-  .btn-neon .pulse { width:8px; height:8px; border-radius:999px; background: rgba(255,255,255,0.85); box-shadow: 0 0 8px rgba(255,255,255,0.5), 0 0 14px rgba(72,211,155,0.7); }
-
-  .terminal-demo { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 150; }
-  .terminal-demo.open { display: flex; }
-  .terminal-demo .backdrop { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.7)); backdrop-filter: blur(6px) saturate(110%); }
-  .terminal-box { position: relative; width: min(92%,980px); max-width: 980px; height: min(72vh,720px); background: radial-gradient(ellipse at top left, rgba(10,14,16,0.98), rgba(3,6,8,0.95)); border-radius: 12px; padding: 18px; box-shadow: 0 30px 120px rgba(2,6,10,0.8), inset 0 0 80px rgba(72,211,155,0.02); border:1px solid rgba(72,211,155,0.04); display:flex; flex-direction:column; overflow:hidden; }
-  .terminal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
-  .terminal-controls { display:flex; gap:8px; align-items:center; }
-  .terminal-controls .dot { width:12px; height:12px; border-radius:999px; background:#ff5f56; box-shadow: 0 6px 18px rgba(255,95,86,0.06); }
-  .terminal-controls .dot.yellow { background:#ffbd2e; }
-  .terminal-controls .dot.green { background:#27c93f; }
-  .terminal-title { color: #cdeee2; font-weight:700; font-size: .98rem; }
-
-  .terminal-content { flex:1; overflow:auto; background: transparent; color: #9ef0d2; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size: 14px; line-height:1.45; padding:10px 4px; border-radius:6px; }
-  .terminal-line { white-space:pre-wrap; opacity:0; transform: translateY(6px); transition: opacity .18s ease, transform .22s ease; }
-  .terminal-line.visible { opacity:1; transform:none; }
-  .cursor { display:inline-block; width:8px; height:16px; background: linear-gradient(90deg, #cfffe8, #9ef0d2); margin-left:6px; animation: blink 1s steps(2) infinite; }
-  @keyframes blink { 0%,50% { opacity: 1 } 51%,100% { opacity: 0 } }
-
-  /* Mobile adjustments for terminal demo */
-  @media (max-width:700px) {
-    .btn-neon { right: 50%; transform: translateX(50%); padding: 14px 18px; border-radius: 999px; bottom: 14px; }
-    .terminal-box { width: 100%; max-width: 100%; height: calc(var(--vh, 1vh) * 100); min-height: calc(var(--vh, 1vh) * 100); border-radius: 0; padding: 14px; }
-    .terminal-content { font-size: 13px; line-height: 1.38; padding: 8px; }
-    .terminal-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .terminal-controls { order: 2; }
-    .terminal-title { font-size: .95rem; }
-    .terminal-box { padding-bottom: 84px; }
-    .terminal-actions { position: absolute; left: 12px; right: 12px; bottom: 14px; display: flex; gap: 10px; }
-    .terminal-actions .btn { flex: 1; min-height: 48px; }
-  }
-
-</style>
+<link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
-  <canvas id="physics-bg" aria-hidden="true"></canvas>
-  <div class="depth-glow" aria-hidden="true"></div>
-  <div id="scrollProgress" aria-hidden="true"><div class="progress-fill"></div></div>
 
-  <header class="site-header">
-    <div class="container nav">
-      <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
-        <span class="brand-mark">
-          <img class="brand-logo" src="logo.gif" alt="" aria-hidden="true">
-        </span>
-        <span>
-          <strong>Fiberlink</strong>
-          <span>Servicios TIC</span>
-        </span>
-      </a>
-      <nav class="nav-links" aria-label="Navegacion principal">
-        <a href="#servicios">Servicios</a>
-        <a href="#herramientas">Herramientas</a>
-        <a href="#fiberlink-labs">Fiberlink Labs</a>
-        <a href="#proceso">Proceso</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="btn btn-secondary call-btn" href="tel:+522311024672" aria-label="Llamar">
-          <img class="img-icon" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/icons/phone-call.svg" onerror="this.src='assets/headphones.svg'" alt="Llamar" aria-hidden="true" />
-          <span class="btn-label">Llamar</span>
-        </a>
-        <button class="btn btn-primary open-ticket" type="button" aria-label="Solicitar soporte">
-          <img class="img-icon" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/icons/headphones.svg" alt="Asistencia" />
-          <span class="btn-label">Solicitar soporte</span>
-        </button>
-        <button class="btn btn-ghost menu-btn" type="button" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
-          <span class="menu-btn-icon" aria-hidden="true"><span></span><span></span><span></span></span>
-        </button>
+<!-- Physics canvas background -->
+<div id="webgl-container" aria-hidden="true"></div>
+
+<!-- Scroll progress -->
+<div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
+
+<!-- ============================
+     HEADER
+============================ -->
+<header class="site-header" id="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
+      <div class="brand-mark">
+        <img class="brand-logo" src="logo.gif" alt="" aria-hidden="true">
       </div>
+    </a>
+
+    <div class="nav-actions">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
     </div>
-  </header>
-
-  <!-- Mobile drawer (premium) -->
-  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
-    <div class="mobile-drawer__backdrop" id="drawerBackdrop" tabindex="-1" aria-hidden="true"></div>
-    <aside class="mobile-drawer__panel" role="dialog" aria-modal="true" aria-label="Menu movil">
-      <div class="drawer-head">
-        <div class="drawer-brand">
-          <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
-            <span class="brand-mark">
-              <img class="brand-logo" src="logo.gif" alt="" aria-hidden="true">
-            </span>
-            <span>
-              <strong>Fiberlink</strong>
-              <span>Servicios TIC</span>
-            </span>
-          </a>
-        </div>
-        <div>
-          <button class="btn btn-ghost" id="drawerClose" aria-label="Cerrar menú">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-      </div>
-      <div class="drawer-contact" style="padding:18px;">
-        <nav class="drawer-nav" aria-label="Navegacion movil" style="display:grid;gap:16px;padding:6px 2px;">
-          <a class="drawer-link" href="#servicios">Servicios</a>
-          <a class="drawer-link" href="#herramientas">Herramientas</a>
-          <a class="drawer-link" href="#proceso">Proceso</a>
-          <a class="drawer-link" href="#contacto">Contacto</a>
-        </nav>
-        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
-          <a class="btn btn-primary" href="tel:+522311024672">Llamar</a>
-          <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">WhatsApp</a>
-          <button class="btn btn-ghost open-ticket" type="button" aria-label="Solicitar soporte">
-            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4 13v-1a8 8 0 0116 0v1" />
-              <path d="M5 13v3a2 2 0 002 2h1" />
-              <path d="M19 13v3a2 2 0 01-2 2h-1" />
-              <path d="M9 19v1a1 1 0 001 1h4a1 1 0 001-1v-1" />
-            </svg>
-              <img class="img-icon" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/icons/headphones.svg" alt="Asistencia" />
-            <span class="btn-label">Solicitar soporte</span>
-          </button>
-        </div>
-        <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.04);padding-top:14px;color:var(--muted);font-size:.92rem;">
-          <div style="display:flex;align-items:center;gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke:var(--green)"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg><span>Teziutlan, Puebla</span></div>
-          <div style="margin-top:8px;">fiberlinkserviciostic@gmail.com</div>
-        </div>
-      </div>
-    </aside>
   </div>
+</header>
 
-  <main id="inicio">
-    <section class="hero">
-      <div class="container hero-grid">
-        <div>
-          <div class="eyebrow">Teziutlan, Puebla</div>
-          <h1>Soporte tecnico y soluciones TIC para operar sin interrupciones.</h1>
-          <p class="hero-copy">
-            Fiberlink ofrece soporte, redes, cámaras de seguridad, sistemas de punto de venta y presencia web para hogares, negocios y oficinas que necesitan tecnología confiable, con resultados claros y correctamente instalada.
-          </p>
-          <div class="hero-actions">
-            <button class="btn btn-primary open-ticket" type="button">Levantar solicitud</button>
-            <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">WhatsApp</a>
-            <a class="btn btn-ghost" href="#servicios">Ver servicios</a>
-          </div>
-          <div class="signal-row" aria-label="Indicadores de servicio">
-            <div class="signal">
-              <strong>4 areas</strong>
-              <span>Soporte, redes, seguridad y web</span>
-            </div>
-            <div class="signal">
-              <strong>Mixto</strong>
-              <span>Hogares, negocios y oficinas</span>
-            </div>
-            <div class="signal">
-              <strong>Local</strong>
-              <span>Atencion en Teziutlan y region</span>
-            </div>
-          </div>
-        </div>
+<!-- Mobile drawer -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-back" id="drawerBack"></div>
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menú">
+    <div class="drawer-head">
+      <a class="brand" href="#inicio">
+        <div class="brand-mark" style="width:36px;height:36px"><img class="brand-logo" src="logo.gif" alt="" style="width:24px;height:24px"></div>
+        <div class="brand-text"><strong>Fiberlink</strong></div>
+      </a>
+      <button class="close-btn" id="drawerClose" aria-label="Cerrar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a class="dl" href="#servicios">Servicios<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#herramientas">Herramientas<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#proceso">Proceso<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#fiberlink-labs">Fiberlink Labs<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#contacto">Contacto<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </nav>
+    <div class="drawer-foot">
+      <a class="btn btn-primary" href="tel:+522311024672">Llamar ahora</a>
+      <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion." target="_blank" rel="noopener">WhatsApp</a>
+      <button class="btn btn-ghost open-ticket" type="button">Solicitar soporte</button>
+    </div>
+  </aside>
+</div>
 
-        <aside class="geo-card" aria-label="Mapa de cobertura Fiberlink en Teziutlan">
-          <div class="geo-top">
-            <div>
-              <div class="geo-title">Mapa de cobertura</div>
-              <div class="mono" style="color:var(--muted);font-size:.76rem;margin-top:4px;">FL-NOC / 2026</div>
-            </div>
-            <span class="status-pill">Teziutlan activo</span>
-          </div>
-          <div class="map-wrap">
-            <svg class="teziutlan-map" viewBox="0 0 520 420" role="img" aria-label="Mapa estilizado de Teziutlan, Puebla">
-              <defs>
-                <linearGradient id="mapFill" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stop-color="#48d39b" stop-opacity=".18"/>
-                  <stop offset=".55" stop-color="#48d39b" stop-opacity=".09"/>
-                  <stop offset="1" stop-color="#48d39b" stop-opacity=".05"/>
-                </linearGradient>
-                <filter id="pinGlow" x="-60%" y="-60%" width="220%" height="220%">
-                  <feGaussianBlur stdDeviation="5" result="blur"/>
-                  <feMerge>
-                    <feMergeNode in="blur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              <path class="map-outline" fill="url(#mapFill)" d="M112 74L169 45L228 63L274 42L338 68L408 98L460 156L443 224L470 294L414 359L321 374L264 346L194 373L135 335L84 265L99 205L65 150L112 74Z"/>
-              <path class="map-contour" d="M134 111C190 83 250 91 306 108C364 126 399 156 423 204"/>
-              <path class="map-contour" d="M101 169C160 147 218 152 270 168C330 187 377 214 448 214"/>
-              <path class="map-contour" d="M108 244C159 220 219 222 284 240C348 258 384 289 425 312"/>
-              <path class="map-contour" d="M154 321C211 292 269 294 322 308C354 317 386 331 415 348"/>
-              <path class="map-ring" d="M260 110C331 111 398 154 414 220C430 287 375 339 280 349C178 359 102 304 105 226C108 159 168 109 260 110Z"/>
-              <path class="map-route" d="M117 268C169 242 192 202 238 197C282 192 309 226 353 211C386 200 405 175 438 165"/>
-              <path class="map-route" d="M155 119C192 152 207 175 246 191C294 211 328 249 377 307"/>
+<!-- ============================
+     HERO
+============================ -->
+<main id="inicio">
+  <section class="hero">
+    <!-- decorative -->
+    <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+    <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
+    <div class="hero-orb hero-orb-3" aria-hidden="true"></div>
+    <div class="hero-ring hero-ring-1" aria-hidden="true"></div>
+    <div class="hero-ring hero-ring-2" aria-hidden="true"></div>
 
-              <g filter="url(#pinGlow)">
-                <circle class="map-pulse" cx="260" cy="205" r="9" stroke="#48d39b" stroke-width="2" fill="none"/>
-                <circle class="pin-core" cx="260" cy="205" r="7"/>
-                <circle class="pin-service" cx="158" cy="268" r="6"/>
-                <circle class="pin-service" cx="379" cy="307" r="6"/>
-                <circle class="pin-alert" cx="438" cy="165" r="6"/>
-                <circle class="pin-service" cx="155" cy="119" r="5"/>
-              </g>
-
-              <text x="276" y="199" fill="rgba(238,244,248,.92)" font-size="18" font-weight="800">Teziutlan</text>
-              <text x="276" y="219" fill="rgba(150,164,178,.9)" font-size="12">19.8173 N / -97.3599 O</text>
-            </svg>
-
-            <div class="map-label">
-              <strong>Centro operativo local</strong>
-              <span>Av. Cuauhtemoc 1010 como punto de referencia para soporte, visitas y proyectos TIC.</span>
-            </div>
-
-            <ul class="geo-metrics">
-              <li><strong>1,966 m</strong><span>altitud media urbana</span></li>
-              <li><strong>Centro</strong><span>zona base de atencion</span></li>
-              <li><strong>Region</strong><span>Teziutlan y alrededores</span></li>
-            </ul>
-          </div>
-        </aside>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Teziutlan, Puebla · Soporte TIC activo
       </div>
-    </section>
 
-    <section id="servicios">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="section-kicker">Servicios equilibrados</div>
-              <h2>Una mesa técnica para todo tu ecosistema.</h2>
-          </div>
-            <p class="section-text">Esta página está pensada para generar confianza: resolvemos problemas, instalamos y mejoramos equipos y acompañamos proyectos digitales. Explicamos todo con palabras sencillas, sin jerga técnica.</p>
-          <p class="section-text service-example">Por ejemplo: restablecemos tu conexión a internet, configuramos la red y el Wi‑Fi, instalamos cámaras de seguridad y reparamos computadoras. Siempre explicamos lo que haremos y cuánto costará.</p>
-        </div>
+      <h1 class="hero-h1">
+        <span class="line"><span>Soporte técnico</span></span>
+        <span class="line"><span>y soluciones TIC</span></span>
+        <span class="line"><span class="grad-text">sin interrupciones.</span></span>
+      </h1>
 
-        <div class="service-grid">
-          <article class="service-card">
-            <span class="service-num mono">01 / SOPORTE</span>
-            <h3>Soporte tecnico presencial y remoto</h3>
-            <p>Diagnostico, mantenimiento, instalacion de software, respaldo de informacion, optimizacion y recuperacion de equipos.</p>
-            <div class="tags">
-              <span class="tag">PC</span><span class="tag">Laptop</span><span class="tag">Software</span><span class="tag">Respaldos</span>
-            </div>
-          </article>
-          <article class="service-card">
-            <span class="service-num mono">02 / NEGOCIO</span>
-            <h3>Punto de venta y operacion comercial</h3>
-            <p>Configuracion de sistemas POS, impresoras, lectores, inventario, usuarios, respaldos y flujo de caja para comercios.</p>
-            <div class="tags">
-              <span class="tag">POS</span><span class="tag">Inventario</span><span class="tag">Tickets</span><span class="tag">Caja</span>
-            </div>
-          </article>
-          <article class="service-card">
-            <span class="service-num mono">03 / INFRA</span>
-            <h3>Redes, WiFi y videovigilancia</h3>
-            <p>Cableado, routers, switches, camaras, NVR, acceso remoto, revision de cobertura y ordenamiento de infraestructura.</p>
-            <div class="tags">
-              <span class="tag">Redes</span><span class="tag">CCTV</span><span class="tag">WiFi</span><span class="tag">NVR</span>
-            </div>
-          </article>
-          <article class="service-card">
-            <span class="service-num mono">04 / DIGITAL</span>
-            <h3>Sitios web y marketing digital</h3>
-            <p>Landing pages, paginas comerciales, presencia en buscadores, formularios de contacto y mejoras para captar clientes.</p>
-            <div class="tags">
-              <span class="tag">Web</span><span class="tag">SEO</span><span class="tag">Formularios</span><span class="tag">Marca</span>
-            </div>
-          </article>
-        </div>
+      <p class="hero-desc">
+        Fiberlink ofrece soporte, redes, cámaras de seguridad, sistemas POS y presencia web para hogares, negocios y oficinas que necesitan tecnología confiable con resultados claros.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary open-ticket" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+          Levantar solicitud
+        </button>
+        <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          WhatsApp
+        </a>
+        <a class="btn btn-ghost" href="#servicios">Ver servicios &rarr;</a>
       </div>
-    </section>
 
-    <div class="tools-band" id="herramientas" aria-label="Herramientas y plataformas">
-      <div class="tool-track" id="toolTrack">
-        <span class="tool">Diagnostico remoto</span>
-        <span class="tool">Mesa de tickets</span>
-        <span class="tool">CCTV IP</span>
-        <span class="tool">Punto de venta</span>
-        <span class="tool">Cableado estructurado</span>
-        <span class="tool">Respaldos</span>
-        <span class="tool">WiFi empresarial</span>
-        <span class="tool">Landing pages</span>
-        <span class="tool">Correo y nube</span>
-        <span class="tool">Mantenimiento preventivo</span>
+      <div class="hero-stats" role="list" aria-label="Indicadores de servicio">
+        <div class="hstat" role="listitem">
+          <span class="hstat-num" style="color:var(--c)">4</span>
+          <span class="hstat-lbl">Áreas de servicio</span>
+        </div>
+        <div class="hstat" role="listitem">
+          <span class="hstat-num">Mixto</span>
+          <span class="hstat-lbl">Hogares y negocios</span>
+        </div>
+        <div class="hstat" role="listitem">
+          <span class="hstat-num" style="color:var(--c)">Local</span>
+          <span class="hstat-lbl">Teziutlan y región</span>
+        </div>
       </div>
     </div>
 
-    <section id="proceso">
-      <div class="container workflow">
-        <aside class="workflow-panel">
-          <div class="section-kicker">Metodo de trabajo</div>
-          <h2>Orden antes que improvisacion.</h2>
-          <p>Cuando recibimos una solicitud la organizamos en cuatro puntos sencillos: qué hay que hacer, qué tan urgente es, pruebas (por ejemplo fotos o mensajes) y cuál será el siguiente paso. Así evitamos confusiones, viajes extra y gastos inesperados, y entregamos una solución completa.</p>
-          <div class="contact-mini">
-            <a href="tel:+522311024672">231 102 4672</a>
-            <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
-            <span>Av. Cuauhtemoc 1010, Centro, Teziutlan</span>
-            <span class="service-note" style="display:block;margin-top:8px;color:var(--muted);font-weight:600;">Servicio en sitio / a domicilio disponible</span>
-          </div>
-        </aside>
-        <div class="steps">
-          <article class="step">
-            <span class="mono">STEP 01</span>
-            <div>
-              <h3>Levantamiento</h3>
-              <p>Se recopilan datos del equipo, domicilio, sintomas, urgencia y evidencia disponible.</p>
-            </div>
-          </article>
-          <article class="step">
-            <span class="mono">STEP 02</span>
-            <div>
-              <h3>Diagnostico</h3>
-              <p>Se revisa la causa probable y se define si conviene soporte remoto, visita o cotizacion de proyecto.</p>
-            </div>
-          </article>
-          <article class="step">
-            <span class="mono">STEP 03</span>
-            <div>
-              <h3>Ejecucion</h3>
-              <p>Instalacion, reparacion, configuracion o entrega digital con criterios tecnicos claros.</p>
-            </div>
-          </article>
-          <article class="step">
-            <span class="mono">STEP 04</span>
-            <div>
-              <h3>Cierre y seguimiento</h3>
-              <p>Se confirma funcionamiento, se dejan recomendaciones y se conserva el canal de soporte.</p>
-            </div>
-          </article>
+    <div class="scroll-hint" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span class="scroll-label">scroll</span>
+    </div>
+  </section>
+
+  <!-- ============================
+       SERVICES
+  ============================ -->
+  <section id="servicios" class="services-section">
+    <div class="wrap">
+      <div class="svc-head">
+        <div class="reveal">
+          <div class="lbl">Servicios equilibrados</div>
+          <h2 class="sh">Una mesa técnica para<br>todo tu ecosistema.</h2>
         </div>
+        <p class="svc-head-right reveal from-right">Resolvemos problemas, instalamos y mejoramos equipos. Explicamos todo con palabras sencillas, sin jerga técnica innecesaria.</p>
       </div>
-    </section>
 
-    <!-- Fiberlink Labs: creación de sitios web -->
-    <section class="labs-section" id="fiberlink-labs">
-      <div class="container contact-grid">
-        <div class="contact-copy">
-          <div class="section-kicker">Fiberlink Labs</div>
-          <h2>Creación de sitios web profesionales</h2>
-          <p>Desarrollamos sitios rápidos, seguros y optimizados para conversiones a través de Fiberlink Labs. Diseño moderno, CMS opcional y despliegue continuo.</p>
-          <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
-            <a class="btn btn-primary" href="https://fiberlinklabs.vercel.app" target="_blank" rel="noopener">Visitar Fiberlink Labs</a>
-            <a class="btn btn-secondary" href="#contacto">Pedir presupuesto</a>
+      <div class="bento reveal from-scale">
+        <article class="bc">
+          <div class="bc-num mono">01 / SOPORTE</div>
+          <div class="bc-icon" style="background:rgba(72,211,155,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#48d39b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
-        </div>
-        <div class="quote-card" style="display:flex;align-items:center;justify-content:center;">
-          <div style="max-width:320px;text-align:center;padding:22px;">
-            <p style="color:var(--muted);margin-top:12px;">Creamos e implementamos tu sitio web, mejoramos cómo te encuentran en buscadores y nos encargamos del hosting. Todo listo para tu negocio.</p>
+          <h3>Soporte técnico presencial y remoto</h3>
+          <p>Diagnóstico, mantenimiento, instalación de software, respaldo de información, optimización y recuperación de equipos.</p>
+          <div class="tags"><span class="tag">PC</span><span class="tag">Laptop</span><span class="tag">Software</span><span class="tag">Respaldos</span></div>
+        </article>
+
+        <article class="bc">
+          <div class="bc-num mono">02 / NEGOCIO</div>
+          <div class="bc-icon" style="background:rgba(59,130,246,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           </div>
-        </div>
-      </div>
-    </section>
+          <h3>Punto de venta y operación comercial</h3>
+          <p>Configuración de sistemas POS, impresoras, lectores, inventario, usuarios, respaldos y flujo de caja para comercios.</p>
+          <div class="tags"><span class="tag">POS</span><span class="tag">Inventario</span><span class="tag">Tickets</span><span class="tag">Caja</span></div>
+        </article>
 
-    <section class="contact-section" id="contacto">
-      <div class="container contact-grid">
-        <div class="contact-copy">
-          <div class="section-kicker">Contacto</div>
-          <h2>Cuéntanos que necesitas resolver.</h2>
-          <p>Usa el formulario para armar una solicitud lista para enviar por WhatsApp. Tambien puedes llamar o escribir directo por correo.</p>
-          <ul class="contact-list">
-            <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 3.08 4.18 2 2 0 0 1 5 2h3a2 2 0 0 1 2 1.72c.12.99.38 1.97.76 2.88a2 2 0 0 1-.45 2.11L9.91 10.09a16 16 0 0 0 6 6l1.38-1.38a2 2 0 0 1 2.11-.45c.91.38 1.89.64 2.88.76A2 2 0 0 1 22 16.92z"></path></svg> Telefono</span><a href="tel:+522311024672">231 102 4672</a></li>
-            <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"></path><polyline points="22,6 12,13 2,6"/></svg> Email</span><a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a></li>
-            <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Ubicacion</span><span>Teziutlan, Puebla</span></li>
-          </ul>
-        </div>
-        <div class="quote-card">
-          <form id="contactForm">
-            <div class="form-row">
-              <label>Nombre
-                <input name="name" autocomplete="name" required>
-              </label>
-              <label>Telefono
-                <input name="phone" autocomplete="tel" required>
-              </label>
-            </div>
-            <label>Servicio
-              <select name="service" required>
-                <option value="">Selecciona una opcion</option>
-                <option>Soporte tecnico</option>
-                <option>Punto de venta</option>
-                <option>Redes / WiFi</option>
-                <option>Videovigilancia</option>
-                <option>Diseno web / marketing</option>
-                <option>Otro servicio TIC</option>
-              </select>
-            </label>
-            <label>Mensaje
-              <textarea name="message" required placeholder="Describe el problema, equipo, ubicacion y horario ideal."></textarea>
-            </label>
-            <button class="btn btn-primary" type="submit">Enviar por WhatsApp</button>
-            <p class="form-note">No guarda datos en el sitio; prepara tu mensaje y lo envia desde WhatsApp.</p>
-          </form>
-        </div>
-      </div>
-    </section>
-  </main>
+        <article class="bc">
+          <div class="bc-num mono">03 / INFRA</div>
+          <div class="bc-icon" style="background:rgba(139,92,246,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </div>
+          <h3>Redes, WiFi y videovigilancia</h3>
+          <p>Cableado, routers, switches, cámaras, NVR, acceso remoto, revisión de cobertura y ordenamiento de infraestructura.</p>
+          <div class="tags"><span class="tag">Redes</span><span class="tag">CCTV</span><span class="tag">WiFi</span><span class="tag">NVR</span></div>
+        </article>
 
-  
-  <!-- Partners / Sponsors -->
-  <style>
-    /* Neon green partners block */
-    .partners { padding: 44px 0 22px; background: linear-gradient(180deg, rgba(72,211,155,0.02), rgba(72,211,155,0.005)); border-top: 1px solid rgba(72,211,155,0.04); }
-    .partners .section-kicker { color: rgba(160,230,205,0.92); margin-bottom:6px; }
-    .partners h3 { margin:0 0 10px; font-size:1.15rem; color: #dfffee; text-shadow: 0 6px 18px rgba(72,211,155,0.06); }
-    .partners-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:18px; align-items:center; justify-items:center; }
-    .partner-logo { width:72px; height:auto; opacity:.96; transition: transform .22s ease, opacity .18s ease, filter .18s ease, box-shadow .18s ease; filter: brightness(0) saturate(100%) invert(1); box-shadow: 0 6px 22px rgba(72,211,155,0.04); }
-    .partner-link { display:inline-flex; align-items:center; justify-content:center; padding:8px; border-radius:10px; background: linear-gradient(90deg, rgba(72,211,155,0.03), rgba(72,211,155,0.01)); border: 1px solid rgba(72,211,155,0.04); }
-    .partner-link:hover { transform: translateY(-4px); }
-    .partner-link:hover .partner-logo { transform: translateY(-6px) scale(1.08); opacity:1; filter: none; box-shadow: 0 28px 120px rgba(72,211,155,0.14), 0 6px 40px rgba(72,211,155,0.06); }
-    @media (max-width:700px){ .partners { padding:28px 8px; } .partner-logo{ width:56px; } }
-  </style>
-
-  <section class="partners" aria-label="Aliados y patrocinadores">
-    <div class="container">
-      <div class="section-kicker">Aliados</div>
-      <h3>Marcas y socios tecnológicos</h3>
-      <div class="partners-grid" aria-hidden="false">
-        <a class="partner-link" href="https://www.microsoft.com" target="_blank" rel="noopener" aria-label="Microsoft">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/microsoft.svg" alt="Microsoft" />
-        </a>
-        <a class="partner-link" href="https://cloud.google.com" target="_blank" rel="noopener" aria-label="Google Cloud">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/google.svg" alt="Google" />
-        </a>
-        <a class="partner-link" href="https://aws.amazon.com" target="_blank" rel="noopener" aria-label="Amazon Web Services">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/amazonaws.svg" alt="AWS" />
-        </a>
-        <a class="partner-link" href="https://www.cloudflare.com" target="_blank" rel="noopener" aria-label="Cloudflare">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/cloudflare.svg" alt="Cloudflare" />
-        </a>
-        <a class="partner-link" href="https://www.ui.com" target="_blank" rel="noopener" aria-label="Ubiquiti">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/ubiquiti.svg" alt="Ubiquiti" />
-        </a>
-        <a class="partner-link" href="https://www.tp-link.com" target="_blank" rel="noopener" aria-label="TP-Link">
-          <img class="partner-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tp-link.svg" alt="TP-Link" />
-        </a>
+        <article class="bc">
+          <div class="bc-num mono">04 / DIGITAL</div>
+          <div class="bc-icon" style="background:rgba(245,158,11,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <h3>Sitios web y marketing digital</h3>
+          <p>Landing pages, páginas comerciales, presencia en buscadores, formularios de contacto y mejoras para captar clientes.</p>
+          <div class="tags"><span class="tag">Web</span><span class="tag">SEO</span><span class="tag">Formularios</span><span class="tag">Marca</span></div>
+        </article>
       </div>
     </div>
   </section>
 
-<footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-copy">
-        <strong>Fiberlink Servicios TIC</strong>
-        <div class="muted">Soporte, redes, CCTV, punto de venta y presencia web</div>
-      </div>
-
-      <div class="social-links" aria-label="Redes sociales">
-        <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
-          <img class="social-icon" src="assets/facebook.svg" alt="Facebook" width="18" height="18" />
-        </a>
-        <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
-          <img class="social-icon" src="assets/instagram.svg" alt="Instagram" width="18" height="18" />
-        </a>
-        <a href="https://www.tiktok.com" target="_blank" rel="noopener" aria-label="TikTok">
-          <img class="social-icon" src="assets/tiktok.svg" alt="TikTok" width="18" height="18" />
-        </a>
-        <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube">
-          <img class="social-icon" src="assets/youtube.svg" alt="YouTube" width="18" height="18" />
-        </a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
-          <img class="social-icon" src="assets/linkedin.svg" alt="LinkedIn" width="18" height="18" />
-        </a>
-      </div>
-
-      <div class="muted" style="font-size:.85rem;">© 2026 Fiberlink — Todos los derechos reservados</div>
+  <!-- ============================
+       MARQUEE BAND
+  ============================ -->
+  <div class="tools-band" id="herramientas" aria-label="Herramientas y plataformas">
+    <div class="marquee" id="mq">
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Diagnóstico remoto</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mesa de tickets</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>CCTV IP</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Punto de venta</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cableado estructurado</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Respaldos en nube</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>WiFi empresarial</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Landing pages</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Correo y nube</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mantenimiento preventivo</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Ubiquiti</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>MikroTik RouterOS</div>
     </div>
-  </footer>
+  </div>
 
-  <div class="modal" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal></div>
-    <div class="modal-card">
-      <div class="modal-head">
-        <div class="title-row">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.05 5A5 5 0 0 1 19 8.95"></path><path d="M15.05 1A9 9 0 0 1 23 8.94"></path><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"></path></svg>
+  <!-- ============================
+       PROCESS
+  ============================ -->
+  <section id="proceso" class="process-section">
+    <div class="wrap proc-grid">
+      <div class="proc-sticky">
+        <div class="lbl reveal">Método de trabajo</div>
+        <h2 class="sh reveal">Orden antes que<br>improvisación.</h2>
+        <p class="reveal">Cuando recibimos una solicitud la organizamos en cuatro pasos: qué hay que hacer, qué tan urgente es, evidencia y cuál será el siguiente paso. Así evitamos confusiones y gastos inesperados.</p>
+        <div class="cinfo">
+          <a class="citem" href="tel:+522311024672">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.86 19.86 0 013.08 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.12.99.38 1.97.76 2.88a2 2 0 01-.45 2.11L9.91 10.09a16 16 0 006 6l1.38-1.38a2 2 0 012.11-.45c.91.38 1.89.64 2.88.76A2 2 0 0122 16.92z"/></svg></div>
+            231 102 4672
+          </a>
+          <a class="citem" href="mailto:fiberlinkserviciostic@gmail.com">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            fiberlinkserviciostic@gmail.com
+          </a>
+          <div class="citem">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            Av. Cuauhtémoc 1010, Centro, Teziutlan
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <article class="step reveal from-right">
+          <div class="step-n mono">STEP<br>01</div>
           <div>
-            <div class="section-kicker">Solicitud técnica</div>
-            <h2 id="ticketTitle">Levantar ticket</h2>
+            <h3>Levantamiento</h3>
+            <p>Se recopilan datos del equipo, domicilio, síntomas, urgencia y evidencia disponible para documentar el caso.</p>
           </div>
-        </div>
-        <button class="close-btn" type="button" data-close-modal aria-label="Cerrar">×</button>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.08s">
+          <div class="step-n mono">STEP<br>02</div>
+          <div>
+            <h3>Diagnóstico</h3>
+            <p>Se revisa la causa probable y se define si conviene soporte remoto, visita presencial o cotización de proyecto.</p>
+          </div>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.16s">
+          <div class="step-n mono">STEP<br>03</div>
+          <div>
+            <h3>Ejecución</h3>
+            <p>Instalación, reparación, configuración o entrega digital con criterios técnicos claros y comunicación constante.</p>
+          </div>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.24s">
+          <div class="step-n mono">STEP<br>04</div>
+          <div>
+            <h3>Cierre y seguimiento</h3>
+            <p>Se confirma el funcionamiento, se dejan recomendaciones y se conserva el canal de soporte activo.</p>
+          </div>
+        </article>
       </div>
-      <div class="modal-body">
-        <form id="ticketForm">
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-          <button type="button" class="btn btn-ghost load-sample" aria-label="Cargar ejemplo premium">Cargar ejemplo premium</button>
-          <span style="color:var(--muted);font-size:.95rem;">Ver ejemplo prellenado y efecto neon</span>
-        </div>
-        <div class="form-row">
-          <label>Nombre
-            <input name="name" autocomplete="name" required>
-          </label>
-          <label>Telefono
-            <input name="phone" autocomplete="tel" required>
-          </label>
-        </div>
-        <div class="form-row">
-          <label>Empresa / hogar
-            <input name="company" placeholder="Opcional">
-          </label>
-          <label>Ubicacion
-            <input name="location" required placeholder="Colonia o referencia">
-          </label>
-        </div>
-        <label>Tipo de servicio
-          <select name="service" required>
-            <option value="">Selecciona un servicio</option>
-            <option>Soporte tecnico</option>
-            <option>Punto de venta</option>
-            <option>Redes / WiFi</option>
-            <option>Videovigilancia</option>
-            <option>Diseno web / marketing</option>
-            <option>Otro servicio TIC</option>
-          </select>
-        </label>
-        <label style="margin-top:8px;">Servicio en sitio
-          <div style="margin-top:6px;">
-            <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" name="onsite" /> Servicio en sitio / domicilio</label>
+    </div>
+  </section>
+
+  <!-- ============================
+       LABS
+  ============================ -->
+  <section class="labs-section" id="fiberlink-labs">
+    <div class="wrap">
+      <div class="labs-grid reveal from-scale">
+        <div class="labs-copy">
+          <div class="lbl">Fiberlink Labs</div>
+          <h2 class="sh">Creación de sitios<br>web profesionales.</h2>
+          <p>Desarrollamos sitios rápidos, seguros y optimizados para conversiones. Diseño moderno, CMS opcional, hosting y despliegue continuo.</p>
+          <div class="labs-actions">
+            <a class="btn btn-primary" href="https://fiberlinklabs.vercel.app" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Visitar Fiberlink Labs
+            </a>
+            <a class="btn btn-secondary" href="#contacto">Pedir presupuesto</a>
           </div>
-        </label>
-        <label>Prioridad
-          <div class="priority" role="group" aria-label="Prioridad">
-            <button type="button" class="active" data-priority="Normal">Normal</button>
-            <button type="button" data-priority="Alta">Alta</button>
-            <button type="button" data-priority="Urgente">Urgente</button>
+        </div>
+        <div class="labs-visual">
+          <div class="orbit-inner" aria-hidden="true"></div>
+          <div class="labs-badge-wrap">
+            <div class="labs-icon">
+              <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="labs-title">Desarrollo web moderno</div>
+            <div class="labs-sub">React · Next.js · Vercel · SEO</div>
           </div>
-        </label>
-        <label>Descripcion
-          <textarea name="message" required placeholder="Describe sintomas, equipos involucrados, horario disponible y cualquier dato importante."></textarea>
-        </label>
-        <div class="toast" id="ticketToast">Solicitud preparada. Se abrira WhatsApp para enviarla.</div>
-        <button class="btn btn-primary" type="submit" style="width:100%;margin-top:14px;">Preparar mensaje</button>
-        <p class="form-note" style="margin-top:10px;">Tambien puedes enviarlo a fiberlinkserviciostic@gmail.com si prefieres correo.</p>
-        </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       CONTACT
+  ============================ -->
+  <section class="contact-section" id="contacto">
+    <div class="wrap">
+      <div class="contact-grid reveal from-scale">
+        <div class="contact-copy">
+          <div class="lbl">Contacto</div>
+          <h2 class="sh">Cuéntanos qué<br>necesitas resolver.</h2>
+          <p>Usa el formulario para armar una solicitud lista para enviar por WhatsApp. También puedes llamar o escribir por correo.</p>
+          <ul class="clist">
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.86 19.86 0 013.08 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.12.99.38 1.97.76 2.88a2 2 0 01-.45 2.11L9.91 10.09a16 16 0 006 6l1.38-1.38a2 2 0 012.11-.45c.91.38 1.89.64 2.88.76A2 2 0 0122 16.92z"/></svg></div>
+              <a href="tel:+522311024672">231 102 4672</a>
+            </li>
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
+            </li>
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <span>Teziutlan, Puebla · Servicio a domicilio</span>
+            </li>
+          </ul>
+        </div>
+        <div class="form-wrap">
+          <form id="contactForm" class="form-grid">
+            <div class="form-row">
+              <label>Nombre<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
+              <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
+            </div>
+            <label>Servicio
+              <select name="service" required>
+                <option value="">Selecciona una opción</option>
+                <option>Soporte técnico</option>
+                <option>Punto de venta</option>
+                <option>Redes / WiFi</option>
+                <option>Videovigilancia</option>
+                <option>Diseño web / marketing</option>
+                <option>Otro servicio TIC</option>
+              </select>
+            </label>
+            <label>Mensaje<textarea name="message" required placeholder="Describe el problema, equipo, ubicación y horario ideal."></textarea></label>
+            <button class="btn btn-primary" type="submit" style="width:100%">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Enviar por WhatsApp
+            </button>
+            <p class="form-note">No guarda datos en el sitio — prepara tu mensaje y lo envía desde WhatsApp.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================
+     PARTNERS
+============================ -->
+<section class="partners-section" aria-label="Aliados tecnológicos">
+  <div class="wrap">
+    <div class="partners-head reveal">
+      <div class="lbl" style="justify-content:center">Aliados</div>
+      <h3>Marcas y socios tecnológicos</h3>
+    </div>
+    <div class="partners-row reveal">
+      <a class="partner-item" href="https://www.microsoft.com" target="_blank" rel="noopener" aria-label="Microsoft"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/microsoft.svg" alt="Microsoft"></a>
+      <a class="partner-item" href="https://cloud.google.com" target="_blank" rel="noopener" aria-label="Google"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/google.svg" alt="Google"></a>
+      <a class="partner-item" href="https://aws.amazon.com" target="_blank" rel="noopener" aria-label="AWS"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/amazonaws.svg" alt="AWS"></a>
+      <a class="partner-item" href="https://www.cloudflare.com" target="_blank" rel="noopener" aria-label="Cloudflare"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/cloudflare.svg" alt="Cloudflare"></a>
+      <a class="partner-item" href="https://www.ui.com" target="_blank" rel="noopener" aria-label="Ubiquiti"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/ubiquiti.svg" alt="Ubiquiti"></a>
+      <a class="partner-item" href="https://www.tp-link.com" target="_blank" rel="noopener" aria-label="TP-Link"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tp-link.svg" alt="TP-Link"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================
+     FOOTER
+============================ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#inicio">
+          <div class="brand-mark"><img class="brand-logo" src="logo.gif" alt="" aria-hidden="true"></div>
+          <div class="brand-text"><strong>Fiberlink</strong><span>Servicios TIC</span></div>
+        </a>
+        <p>Soporte técnico, redes, CCTV, punto de venta y presencia web para Teziutlan, Puebla y región.</p>
+      </div>
+
+      <div class="foot-col">
+        <h4>Servicios</h4>
+        <ul>
+          <li><a href="#servicios">Soporte técnico</a></li>
+          <li><a href="#servicios">Punto de venta</a></li>
+          <li><a href="#servicios">Redes y WiFi</a></li>
+          <li><a href="#servicios">Videovigilancia</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Empresa</h4>
+        <ul>
+          <li><a href="#proceso">Nuestro proceso</a></li>
+          <li><a href="#fiberlink-labs">Fiberlink Labs</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="tel:+522311024672">231 102 4672</a></li>
+          <li><a href="mailto:fiberlinkserviciostic@gmail.com" style="font-size:.78rem;word-break:break-all">fiberlinkserviciostic@gmail.com</a></li>
+          <li><span style="font-size:.82rem;color:var(--muted)">Teziutlan, Puebla</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Fiberlink Servicios TIC — Todos los derechos reservados</span>
+      <div class="social-row" aria-label="Redes sociales">
+        <a class="soc" href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><img src="assets/facebook.svg" alt="Facebook" width="17" height="17"></a>
+        <a class="soc" href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><img src="assets/instagram.svg" alt="Instagram" width="17" height="17"></a>
+        <a class="soc" href="https://www.tiktok.com" target="_blank" rel="noopener" aria-label="TikTok"><img src="assets/tiktok.svg" alt="TikTok" width="17" height="17"></a>
+        <a class="soc" href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><img src="assets/youtube.svg" alt="YouTube" width="17" height="17"></a>
+        <a class="soc" href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><img src="assets/linkedin.svg" alt="LinkedIn" width="17" height="17"></a>
       </div>
     </div>
   </div>
+</footer>
 
-  <script>
-    const FIBERLINK_PHONE = "522311024672";
-    const FIBERLINK_EMAIL = "fiberlinkserviciostic@gmail.com";
+<!-- ============================
+     TICKET MODAL — PREMIUM
+============================ -->
+<div class="modal" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle" aria-hidden="true">
+  <div class="modal-back" data-close-modal></div>
+  <div class="modal-panel">
 
-    const canvas = document.getElementById("physics-bg");
-    const ctx = canvas.getContext("2d");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const pointer = { x: -1000, y: -1000, vx: 0, vy: 0, active: false };
-    const field = { width: 0, height: 0, dpr: 1, nodes: [] };
-
-    const menuBtn = document.getElementById("menuBtn");
-    const navLinks = document.querySelector(".nav-links");
-    const modal = document.getElementById("ticketModal");
-    const ticketForm = document.getElementById("ticketForm");
-    const contactForm = document.getElementById("contactForm");
-    const toast = document.getElementById("ticketToast");
-    let selectedPriority = "Normal";
-
-    function resizePhysics() {
-      field.dpr = Math.min(window.devicePixelRatio || 1, 2);
-      field.width = window.innerWidth;
-      field.height = window.innerHeight;
-      canvas.width = Math.floor(field.width * field.dpr);
-      canvas.height = Math.floor(field.height * field.dpr);
-      canvas.style.width = `${field.width}px`;
-      canvas.style.height = `${field.height}px`;
-      ctx.setTransform(field.dpr, 0, 0, field.dpr, 0, 0);
-
-      const targetCount = Math.min(90, Math.max(38, Math.floor(field.width * field.height / 18000)));
-      field.nodes = Array.from({ length: targetCount }, (_, index) => ({
-        x: Math.random() * field.width,
-        y: Math.random() * field.height,
-        vx: (Math.random() - .5) * .42,
-        vy: (Math.random() - .5) * .42,
-        size: index % 9 === 0 ? 2.4 : Math.random() * 1.5 + .7,
-        mass: index % 9 === 0 ? 1.9 : 1,
-        hue: index % 5 === 0 ? "72,211,155" : "72,211,155"
-      }));
-    }
-
-    function movePointer(x, y) {
-      pointer.vx = x - pointer.x;
-      pointer.vy = y - pointer.y;
-      pointer.x = x;
-      pointer.y = y;
-      pointer.active = true;
-
-      const root = document.documentElement;
-      const offsetX = (x / field.width - .5) * 34;
-      const offsetY = (y / field.height - .5) * 24;
-      root.style.setProperty("--mx", `${offsetX}px`);
-      root.style.setProperty("--my", `${offsetY}px`);
-    }
-
-    function tickPhysics() {
-      ctx.clearRect(0, 0, field.width, field.height);
-      ctx.globalCompositeOperation = "lighter";
-
-      const linkDistance = field.width < 680 ? 108 : 145;
-      const pointerRadius = field.width < 680 ? 110 : 160;
-      const pointerSpeed = Math.min(18, Math.hypot(pointer.vx, pointer.vy));
-
-      for (let i = 0; i < field.nodes.length; i++) {
-        const node = field.nodes[i];
-
-        if (pointer.active) {
-          const dx = node.x - pointer.x;
-          const dy = node.y - pointer.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          if (dist < pointerRadius) {
-            const force = (1 - dist / pointerRadius) * (.42 + pointerSpeed * .012);
-            node.vx += (dx / dist) * force / node.mass;
-            node.vy += (dy / dist) * force / node.mass;
-          }
-        }
-
-        for (let j = i + 1; j < field.nodes.length; j++) {
-          const other = field.nodes[j];
-          const dx = other.x - node.x;
-          const dy = other.y - node.y;
-          const dist = Math.hypot(dx, dy);
-
-          if (dist < linkDistance) {
-            const alpha = (1 - dist / linkDistance) * .16;
-            ctx.beginPath();
-            ctx.moveTo(node.x, node.y);
-            ctx.lineTo(other.x, other.y);
-            ctx.strokeStyle = `rgba(72,211,155,${alpha})`;
-            ctx.lineWidth = .8;
-            ctx.stroke();
-
-            const spring = (linkDistance * .55 - dist) * .00008;
-            node.vx -= dx * spring;
-            node.vy -= dy * spring;
-            other.vx += dx * spring;
-            other.vy += dy * spring;
-          }
-        }
-
-        node.vx *= .986;
-        node.vy *= .986;
-        node.x += node.vx;
-        node.y += node.vy;
-
-        if (node.x < -20) node.x = field.width + 20;
-        if (node.x > field.width + 20) node.x = -20;
-        if (node.y < -20) node.y = field.height + 20;
-        if (node.y > field.height + 20) node.y = -20;
-
-        const glow = pointer.active ? Math.max(0, 1 - Math.hypot(node.x - pointer.x, node.y - pointer.y) / 260) : 0;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.size + glow * 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${node.hue},${.28 + glow * .34})`;
-        ctx.fill();
-      }
-
-      ctx.globalCompositeOperation = "source-over";
-      pointer.vx *= .86;
-      pointer.vy *= .86;
-      requestAnimationFrame(tickPhysics);
-    }
-
-    if (!reducedMotion && canvas && ctx) {
-      resizePhysics();
-      tickPhysics();
-      window.addEventListener("resize", resizePhysics);
-      window.addEventListener("mousemove", (event) => movePointer(event.clientX, event.clientY), { passive: true });
-      window.addEventListener("touchmove", (event) => {
-        const touch = event.touches[0];
-        if (touch) movePointer(touch.clientX, touch.clientY);
-      }, { passive: true });
-      window.addEventListener("mouseleave", () => {
-        pointer.active = false;
-        document.documentElement.style.setProperty("--mx", "0px");
-        document.documentElement.style.setProperty("--my", "0px");
-      });
-    }
-
-    let _trapHandler = null;
-    function trapFocus(event) {
-      if (!modal.classList.contains('open')) return;
-      const focusable = Array.from(modal.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
-      if (!focusable.length) return;
-      const first = focusable[0]; const last = focusable[focusable.length - 1];
-      if (event.key === 'Tab') {
-        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-      }
-    }
-
-    function openModal() {
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => {
-        modal.querySelector('input[name="name"]')?.focus();
-        _trapHandler = trapFocus;
-        document.addEventListener('keydown', _trapHandler);
-      }, 180);
-    }
-
-    function closeModal() {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      toast.classList.remove('show');
-      if (_trapHandler) { document.removeEventListener('keydown', _trapHandler); _trapHandler = null; }
-    }
-
-    function fillSampleTicket() {
-      // sample premium data
-      ticketForm.querySelector('input[name="name"]').value = 'María López';
-      ticketForm.querySelector('input[name="phone"]').value = '+52 231 102 4672';
-      ticketForm.querySelector('input[name="company"]').value = 'Panadería La Estrella';
-      ticketForm.querySelector('input[name="location"]').value = 'Av. Cuauhtémoc 210, Centro';
-      ticketForm.querySelector('select[name="service"]').value = 'Soporte tecnico';
-      ticketForm.querySelector('textarea[name="message"]').value = 'La caja registradora no enciende y la impresora de tickets no responde. Necesitamos atención hoy entre 10:00-13:00.';
-      ticketForm.querySelector('input[name="onsite"]').checked = true;
-
-      // set priority to Urgente
-      document.querySelectorAll('.priority button').forEach((b) => b.classList.remove('active'));
-      const urgentBtn = Array.from(document.querySelectorAll('.priority button')).find(b => b.dataset.priority === 'Urgente');
-      urgentBtn?.classList.add('active');
-      selectedPriority = 'Urgente';
-
-      // show modal and neon effect
-      openModal();
-      const card = modal.querySelector('.modal-card');
-      card?.classList.add('neon');
-      setTimeout(() => { card?.classList.remove('neon'); }, 1800);
-    }
-
-    document.querySelectorAll('.load-sample').forEach((btn) => btn.addEventListener('click', fillSampleTicket));
-
-    function ticketId() {
-      const now = new Date();
-      const stamp = now.toISOString().slice(0, 10).replaceAll("-", "");
-      const suffix = String(Math.floor(Math.random() * 900) + 100);
-      return `FL-${stamp}-${suffix}`;
-    }
-
-    function encodeWhatsApp(message) {
-      return `https://wa.me/${FIBERLINK_PHONE}?text=${encodeURIComponent(message)}`;
-    }
-
-    function value(form, name) {
-      return new FormData(form).get(name)?.toString().trim() || "";
-    }
-
-    function submitToWhatsApp(message) {
-      window.open(encodeWhatsApp(message), "_blank", "noopener");
-    }
-
-    function bindInteractiveSurface(selector, options = {}) {
-      const tilt = options.tilt || 0;
-      document.querySelectorAll(selector).forEach((element) => {
-        element.addEventListener("mousemove", (event) => {
-          const rect = element.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
-          const px = `${(x / rect.width) * 100}%`;
-          const py = `${(y / rect.height) * 100}%`;
-          element.style.setProperty("--px", px);
-          element.style.setProperty("--py", py);
-
-          if (tilt) {
-            const tiltX = ((x / rect.width) - .5) * tilt;
-            const tiltY = ((y / rect.height) - .5) * tilt;
-            element.style.setProperty("--tilt-x", `${tiltX}deg`);
-            element.style.setProperty("--tilt-y", `${tiltY}deg`);
-          }
-        }, { passive: true });
-
-        element.addEventListener("mouseleave", () => {
-          element.style.setProperty("--px", "50%");
-          element.style.setProperty("--py", "50%");
-          element.style.setProperty("--tilt-x", "0deg");
-          element.style.setProperty("--tilt-y", "0deg");
-        });
-      });
-    }
-
-    bindInteractiveSurface(".btn, .service-card", { tilt: 0 });
-    bindInteractiveSurface(".geo-card", { tilt: 5 });
-
-    document.querySelectorAll(".open-ticket").forEach((button) => {
-      button.addEventListener("click", openModal);
-    });
-
-    document.querySelectorAll("[data-close-modal]").forEach((button) => {
-      button.addEventListener("click", closeModal);
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") { closeModal(); if (typeof closeDrawer === 'function') closeDrawer(); }
-    });
-
-    // Improved mobile menu: open a premium drawer on small screens, fallback to inline nav on desktop
-    menuBtn?.addEventListener("click", () => {
-      const mobileDrawer = document.getElementById('mobileDrawer');
-      const isMobile = window.innerWidth < 700;
-      if (isMobile && mobileDrawer) {
-        const open = mobileDrawer.classList.contains('open');
-        mobileDrawer.classList.toggle('open', !open);
-        document.body.classList.toggle('menu-open', !open);
-        // expose state to assistive tech
-        menuBtn.setAttribute('aria-expanded', String(!open));
-        mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
-        if (!open) {
-          setTimeout(() => mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
-        }
-        return;
-      }
-
-      // Desktop fallback: keep previous inline behavior for small desktop widths
-      const isOpen = navLinks.style.display === "flex";
-      navLinks.style.display = isOpen ? "" : "flex";
-      navLinks.style.position = isOpen ? "" : "absolute";
-      navLinks.style.left = isOpen ? "" : "10px";
-      navLinks.style.right = isOpen ? "" : "10px";
-      navLinks.style.top = isOpen ? "" : "64px";
-      navLinks.style.padding = isOpen ? "" : "14px";
-      navLinks.style.flexDirection = isOpen ? "" : "column";
-      navLinks.style.alignItems = isOpen ? "" : "stretch";
-      navLinks.style.background = isOpen ? "" : "rgba(16,20,29,.98)";
-      navLinks.style.border = isOpen ? "" : "1px solid rgba(255,255,255,.12)";
-      navLinks.style.borderRadius = isOpen ? "" : "8px";
-    });
-
-    // Fallback delegated handler in case direct binding fails (fixes environments where menuBtn is null at bind time)
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest && e.target.closest('#menuBtn');
-      if (!btn) return;
-      // replicate the same toggle logic
-      const mobileDrawer = document.getElementById('mobileDrawer');
-      const isMobile = window.innerWidth < 700;
-      if (isMobile && mobileDrawer) {
-        const open = mobileDrawer.classList.contains('open');
-        mobileDrawer.classList.toggle('open', !open);
-        document.body.classList.toggle('menu-open', !open);
-        btn.setAttribute('aria-expanded', String(!open));
-        mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
-        if (!open) setTimeout(() => mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
-        return;
-      }
-
-      const navLinks = document.querySelector('.nav-links');
-      if (!navLinks) return;
-      const isOpen = navLinks.style.display === 'flex';
-      navLinks.style.display = isOpen ? '' : 'flex';
-      navLinks.style.position = isOpen ? '' : 'absolute';
-      navLinks.style.left = isOpen ? '' : '10px';
-      navLinks.style.right = isOpen ? '' : '10px';
-      navLinks.style.top = isOpen ? '' : '64px';
-      navLinks.style.padding = isOpen ? '' : '14px';
-      navLinks.style.flexDirection = isOpen ? '' : 'column';
-      navLinks.style.alignItems = isOpen ? '' : 'stretch';
-      navLinks.style.background = isOpen ? '' : 'rgba(16,20,29,.98)';
-      navLinks.style.border = isOpen ? '' : '1px solid rgba(255,255,255,.12)';
-      navLinks.style.borderRadius = isOpen ? '' : '8px';
-    });
-
-    // Drawer controls: close via backdrop, close button, or Escape
-    const mobileDrawer = document.getElementById('mobileDrawer');
-    const drawerBackdrop = document.getElementById('drawerBackdrop');
-    const drawerClose = document.getElementById('drawerClose');
-    function closeDrawer() {
-      if (!mobileDrawer) return;
-      mobileDrawer.classList.remove('open');
-      mobileDrawer.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('menu-open');
-    }
-    drawerBackdrop?.addEventListener('click', closeDrawer);
-    drawerClose?.addEventListener('click', closeDrawer);
-    document.querySelectorAll('.drawer-link').forEach((link) => link.addEventListener('click', closeDrawer));
-
-    document.querySelectorAll(".priority button").forEach((button) => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".priority button").forEach((item) => item.classList.remove("active"));
-        button.classList.add("active");
-        selectedPriority = button.dataset.priority;
-      });
-    });
-
-    ticketForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const id = ticketId();
-      const isOnsite = ticketForm.querySelector('input[name="onsite"]')?.checked ? 'Sí' : 'No';
-      const message = [
-        `Ticket ${id} - Fiberlink Servicios TIC`,
-        `Nombre: ${value(ticketForm, "name")}`,
-        `Telefono: ${value(ticketForm, "phone")}`,
-        `Empresa/Hogar: ${value(ticketForm, "company") || "No especificado"}`,
-        `Ubicacion: ${value(ticketForm, "location")}`,
-        `Servicio: ${value(ticketForm, "service")}`,
-        `Servicio en sitio: ${isOnsite}`,
-        `Prioridad: ${selectedPriority}`,
-        `Descripcion: ${value(ticketForm, "message")}`
-      ].join("\n");
-
-      toast.classList.add("show");
-      setTimeout(() => submitToWhatsApp(message), 350);
-    });
-
-    contactForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const message = [
-        "Hola Fiberlink, necesito informacion/cotizacion.",
-        `Nombre: ${value(contactForm, "name")}`,
-        `Telefono: ${value(contactForm, "phone")}`,
-        `Servicio: ${value(contactForm, "service")}`,
-        `Mensaje: ${value(contactForm, "message")}`
-      ].join("\n");
-
-      submitToWhatsApp(message);
-    });
-
-    const tools = document.getElementById("toolTrack");
-    tools.innerHTML += tools.innerHTML;
-  </script>
-  <script>
-    (function(){
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const sel = ['section','.service-card','.quote-card','.contact-copy','.geo-card','.hero .hero-copy','.hero .hero-actions'];
-      const nodes = document.querySelectorAll(sel.join(','));
-      const io = new IntersectionObserver((entries, obs) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const el = entry.target;
-            // apply a tiny stagger where helpful
-            try { el.style.transitionDelay = (Math.min(8, Math.floor((entry.target.getBoundingClientRect().top||0)/120)) * 30) + 'ms'; } catch(e){}
-            el.classList.add('in-view');
-            obs.unobserve(el);
-          }
-        });
-      }, {threshold: 0.12});
-      nodes.forEach(n => { n.classList.add('reveal'); io.observe(n); });
-
-      const depth = document.querySelector('.depth-glow');
-      const header = document.querySelector('.site-header');
-      let ticking = false;
-      window.addEventListener('scroll', () => {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            const s = window.scrollY || document.documentElement.scrollTop;
-            if (depth) depth.style.transform = `translate3d(0,${Math.round(s*0.06)}px,0)`;
-            if (header) header.classList.toggle('scrolled', s > 20);
-            ticking = false;
-          });
-          ticking = true;
-        }
-      }, {passive:true});
-    })();
-  </script>
-  <script>
-    (function(){
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const fill = document.querySelector('#scrollProgress .progress-fill');
-      if (!fill) return;
-      let ticking = false;
-      function updateProgress(){
-        const doc = document.documentElement;
-        const scrollTop = window.scrollY || doc.scrollTop || 0;
-        const height = Math.max(1, doc.scrollHeight - window.innerHeight);
-        const pct = Math.max(0, Math.min(100, (scrollTop / height) * 100));
-        fill.style.height = pct + '%';
-        ticking = false;
-      }
-      window.addEventListener('scroll', () => { if (!ticking) { window.requestAnimationFrame(updateProgress); ticking = true; } }, {passive:true});
-      window.addEventListener('resize', () => { updateProgress(); }, {passive:true});
-      window.addEventListener('load', () => { updateProgress(); setTimeout(updateProgress, 140); }, {passive:true});
-    })();
-  </script>
-  <script>
-    (function(){
-      try {
-        const btn = document.getElementById('menuBtn');
-        const mobileDrawer = document.getElementById('mobileDrawer');
-        if (btn) {
-          btn.addEventListener('click', (e) => {
-            const isMobile = window.innerWidth < 700 && mobileDrawer;
-            if (isMobile) {
-              const open = mobileDrawer.classList.contains('open');
-              mobileDrawer.classList.toggle('open', !open);
-              document.body.classList.toggle('menu-open', !open);
-              btn.setAttribute('aria-expanded', String(!open));
-              mobileDrawer.setAttribute('aria-hidden', open ? 'true' : 'false');
-              if (!open) setTimeout(()=> mobileDrawer.querySelector('.drawer-link')?.focus(), 220);
-              e.preventDefault();
-            }
-          });
-        }
-      } catch(e) { /* ignore */ }
-    })();
-  </script>
-
-  <!-- Terminal demo CTA and modal -->
-  <button id="sysDemoBtn" class="btn-neon" aria-label="Ver estado en linea"><span class="pulse" aria-hidden="true"></span><span style="font-weight:800;">Ver estado en línea</span></button>
-
-  <div class="terminal-demo" id="terminalDemo" aria-hidden="true" role="dialog" aria-label="Simulador de estado">
-    <div class="backdrop" id="terminalBackdrop" data-close-terminal></div>
-    <div class="terminal-box" role="document">
-      <div class="terminal-header">
-        <div class="terminal-title">Fiberlink — Estado y seguridad en línea</div>
-        <div class="terminal-controls"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+    <!-- Header -->
+    <div class="modal-head">
+      <div class="modal-head-meta">
+        <div class="modal-lbl">Fiberlink · Solicitud técnica</div>
+        <h2 id="ticketTitle">Levantar ticket</h2>
+        <p class="modal-head-sub">Completa el formulario y lo enviamos por WhatsApp al instante.</p>
+        <div class="modal-steps" aria-hidden="true">
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot"></div>
+        </div>
       </div>
-      <div class="terminal-content" id="terminalContent" aria-live="polite"></div>
-      <div class="terminal-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
-        <button class="btn btn-ghost" id="terminalClose">Cerrar</button>
-        <button class="btn btn-primary" id="terminalStop">Detener</button>
+      <button class="close-btn" type="button" data-close-modal aria-label="Cerrar modal">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form id="ticketForm" class="form-grid">
+
+        <!-- Grupo 1: Identificación -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Identificación
+          </div>
+          <div class="form-row">
+            <label>Nombre completo<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
+            <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
+          </div>
+          <div class="form-row">
+            <label>Empresa / hogar<input name="company" placeholder="Opcional"></label>
+            <label>Ubicación<input name="location" required placeholder="Colonia o referencia"></label>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 2: Solicitud -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Detalles del servicio
+          </div>
+          <label>Tipo de servicio
+            <select name="service" required>
+              <option value="">Selecciona un servicio…</option>
+              <option>Soporte técnico</option>
+              <option>Punto de venta</option>
+              <option>Redes / WiFi</option>
+              <option>Videovigilancia</option>
+              <option>Diseño web / marketing</option>
+              <option>Otro servicio TIC</option>
+            </select>
+          </label>
+          <label class="onsite-check" for="onsite-cb">
+            <input type="checkbox" name="onsite" id="onsite-cb">
+            <span>Requiere visita a domicilio / en sitio</span>
+          </label>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 3: Prioridad -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Prioridad
+          </div>
+          <div class="priority" role="group" aria-label="Nivel de prioridad">
+            <button type="button" class="active" data-p="Normal">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Normal
+            </button>
+            <button type="button" data-p="Alta">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Alta
+            </button>
+            <button type="button" data-p="Urgente">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Urgente
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 4: Descripción -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Descripción del problema
+          </div>
+          <label>
+            Mensaje
+            <textarea name="message" required placeholder="Describe síntomas, equipos involucrados, horario disponible y cualquier dato relevante…"></textarea>
+          </label>
+        </div>
+
+        <!-- Actions -->
+        <div class="toast" id="ticketToast">Solicitud preparada. Se abrirá WhatsApp para enviarla.</div>
+        <button class="btn btn-primary" type="submit" style="width:100%;min-height:52px;font-size:.95rem;margin-top:4px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Enviar por WhatsApp
+        </button>
+        <p class="modal-foot-note">
+          ¿Prefiere correo? <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
+        </p>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- Terminal demo button -->
+<button id="demoBtn" class="btn-neon" aria-label="Ver estado en línea">
+  <span class="npulse" aria-hidden="true"></span>
+  Ver estado en línea
+</button>
+
+<!-- Terminal demo overlay -->
+<div class="term-overlay" id="termOverlay" aria-hidden="true" role="dialog" aria-label="Estado del sistema">
+  <div class="term-back" id="termBack"></div>
+  <div class="term-box">
+    <div class="term-title">
+      <div class="term-dots">
+        <span class="td r"></span><span class="td y"></span><span class="td g"></span>
       </div>
+      <span class="term-lbl">Fiberlink — Estado y seguridad en línea</span>
+      <button class="btn btn-ghost" id="termClose" style="min-height:30px;padding:0 12px;font-size:.78rem">Cerrar</button>
+    </div>
+    <div class="term-body" id="termContent" aria-live="polite"></div>
+    <div class="term-foot">
+      <button class="btn btn-ghost" id="termStop" style="min-height:30px;padding:0 12px;font-size:.78rem">Detener</button>
     </div>
   </div>
+</div>
 
-  <script>
-    (function(){
-      const demoBtn = document.getElementById('sysDemoBtn');
-      const demo = document.getElementById('terminalDemo');
-      const content = document.getElementById('terminalContent');
-      const backdrop = document.getElementById('terminalBackdrop');
-      const closeBtn = document.getElementById('terminalClose');
-      const stopBtn = document.getElementById('terminalStop');
-      let running = false, stopRequested = false;
-
-      const sequence = [
-        {cmd: 'date', out: new Date().toLocaleString()},
-        {cmd: 'ping noc.fiberlink.mx -c 3', out: 'PING noc.fiberlink.mx (45.55.22.11): 56 data bytes\n64 bytes from 45.55.22.11: icmp_seq=0 ttl=54 time=18.2 ms\n64 bytes from 45.55.22.11: icmp_seq=1 ttl=54 time=17.9 ms\n64 bytes from 45.55.22.11: icmp_seq=2 ttl=54 time=18.1 ms\n--- noc.fiberlink.mx ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss'},
-        {cmd: 'checking certificates', out: 'TLS/SSL: valid (Let\'s Encrypt)\\nCertificate expires: 2026-12-18'},
-        {cmd: 'security-audit --fast', out: 'Auth: OK\nFirewall: OK\nVPN: OK\nIntrusion-detection: OK'},
-        {cmd: 'sync status', out: 'NOC: connected\nLast sync: 0m 12s ago\nServices: all operational'},
-        {cmd: 'connections', out: 'Clients online: 24\nSupport queue: 1\nAvailable engineers: 3'},
-        {cmd: 'exit', out: 'Demo finished — Fiberlink está actualizado, conectado y disponible. Seguridad en línea activa.'}
-      ];
-
-      function sleep(ms){ return new Promise(res => setTimeout(res, ms)); }
-
-      async function typeLine(text, el, speed=18){
-        const line = document.createElement('div');
-        line.className = 'terminal-line';
-        el.appendChild(line);
-        line.innerHTML = '';
-        for (let i=0;i<text.length;i++){
-          if (stopRequested) return false;
-          line.textContent += text[i];
-          el.scrollTop = el.scrollHeight;
-          await sleep(speed + Math.random()*10);
-        }
-        line.classList.add('visible');
-        return true;
-      }
-
-      async function runSequence(){
-        running = true; stopRequested = false; content.innerHTML = '';
-        for (let i=0;i<sequence.length;i++){
-          const step = sequence[i];
-          if (stopRequested) break;
-          const prompt = `> ${step.cmd}`;
-          const ok = await typeLine(prompt, content, 16);
-          if (!ok) break;
-          await sleep(260 + Math.random()*320);
-          if (stopRequested) break;
-          const outLines = String(step.out).split('\n');
-          for (const out of outLines){
-            if (stopRequested) break;
-            await typeLine(out, content, 6);
-            await sleep(40 + Math.random()*60);
-          }
-          await sleep(260 + Math.random()*400);
-        }
-        running = false;
-      }
-
-      function openDemo(){ demo.classList.add('open'); demo.setAttribute('aria-hidden','false'); runSequence(); }
-      function closeDemo(){ stopRequested = true; demo.classList.remove('open'); demo.setAttribute('aria-hidden','true'); content.innerHTML = ''; clearTerminalCTA(); }
-
-      // When the demo completes, show CTA buttons to open ticket or WhatsApp
-      function showTerminalCTA(){
-        try { clearTerminalCTA(); } catch(e){}
-        const cta = document.createElement('div');
-        cta.className = 'terminal-cta';
-        cta.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:12px;';
-
-        const btnTicket = document.createElement('button');
-        btnTicket.className = 'btn btn-primary';
-        btnTicket.textContent = 'Abrir ticket';
-        btnTicket.addEventListener('click', () => {
-          // trigger existing open-ticket button handler (works because handler was bound earlier)
-          const ot = document.querySelector('.open-ticket');
-          if (ot) { ot.click(); }
-          else { alert('Abrir formulario de ticket'); }
-        });
-
-        const btnWa = document.createElement('button');
-        btnWa.className = 'btn btn-ghost';
-        btnWa.textContent = 'Enviar por WhatsApp';
-        btnWa.addEventListener('click', () => {
-          const message = encodeURIComponent('Hola Fiberlink, vi el estado en línea y deseo soporte.');
-          window.open('https://wa.me/522311024672?text='+message, '_blank', 'noopener');
-        });
-
-        cta.appendChild(btnTicket);
-        cta.appendChild(btnWa);
-
-        const actions = demo.querySelector('.terminal-actions');
-        if (actions) actions.parentNode.insertBefore(cta, actions);
-        else demo.querySelector('.terminal-box')?.appendChild(cta);
-      }
-      function clearTerminalCTA(){ const ex = demo.querySelector('.terminal-cta'); if (ex) ex.remove(); }
-
-      // robust binding: direct, delegated and touch
-      function bindDemoHandlers(){
-        // direct
-        demoBtn?.addEventListener('click', () => { if (!running) openDemo(); else { stopRequested = true; } });
-        // delegated (works if element added later)
-        document.addEventListener('click', (e) => {
-          const b = e.target.closest && e.target.closest('#sysDemoBtn');
-          if (!b) return;
-          if (!running) openDemo(); else stopRequested = true;
-        });
-        // touch for mobile
-        demoBtn?.addEventListener('touchstart', (e) => { e.preventDefault(); if (!running) openDemo(); else { stopRequested = true; } }, { passive: false });
-        backdrop?.addEventListener('click', closeDemo);
-        closeBtn?.addEventListener('click', closeDemo);
-        stopBtn?.addEventListener('click', () => { stopRequested = true; });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDemo(); });
-      }
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindDemoHandlers); else bindDemoHandlers();
-    })();
-  </script>
-
-  <script>
-    // Fix mobile 100vh issues: expose --vh unit reflecting actual innerHeight
-    (function(){
-      function setVh(){
-        try{ document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); }catch(e){}
-      }
-      setVh();
-      window.addEventListener('resize', setVh, {passive:true});
-      window.addEventListener('orientationchange', setVh);
-    })();
-  </script>
+<!-- ============================
+     SCRIPTS
+============================ -->
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>

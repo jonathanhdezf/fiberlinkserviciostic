@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesa de Control | Fiberlink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/admin.css" />
+</head>
+<body>
+
+  <!-- ============================
+       LOGIN OVERLAY
+  ============================ -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-brand">
+        <img src="logo.gif" alt="Fiberlink" class="login-logo">
+        <h2>Fiberlink Admin</h2>
+        <p>Mesa de control técnica</p>
+      </div>
+      <form id="loginForm">
+        <label>
+          Usuario
+          <input type="text" id="loginUser" required autocomplete="username">
+        </label>
+        <label>
+          Contraseña
+          <input type="password" id="loginPass" required autocomplete="current-password">
+        </label>
+        <div id="loginError" class="login-error"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       DASHBOARD LAYOUT
+  ============================ -->
+  <div id="dashboard" class="dashboard hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="logo.gif" alt="Fiberlink" class="sidebar-logo">
+        <div class="sidebar-brand">
+          <strong>Fiberlink</strong>
+          <span>Admin</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-view="board">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Tablero
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Salir
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <h1 class="topbar-title">Tablero de Solicitudes</h1>
+        <div class="topbar-actions">
+          <button id="refreshBtn" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Refrescar
+          </button>
+        </div>
+      </header>
+
+      <!-- Kanban Board -->
+      <div class="kanban-board">
+        <!-- Column: Creación -->
+        <div class="kanban-col" data-state="creación">
+          <div class="kcol-header">
+            <h3>Creación</h3>
+            <span class="kcol-count" id="count-creacion">0</span>
+          </div>
+          <div class="kcol-body" id="col-creacion"></div>
+        </div>
+
+        <!-- Column: Diagnóstico -->
+        <div class="kanban-col" data-state="diagnostico">
+          <div class="kcol-header">
+            <h3>Diagnóstico</h3>
+            <span class="kcol-count" id="count-diagnostico">0</span>
+          </div>
+          <div class="kcol-body" id="col-diagnostico"></div>
+        </div>
+
+        <!-- Column: Proceso -->
+        <div class="kanban-col" data-state="proceso">
+          <div class="kcol-header">
+            <h3>En Proceso</h3>
+            <span class="kcol-count" id="count-proceso">0</span>
+          </div>
+          <div class="kcol-body" id="col-proceso"></div>
+        </div>
+
+        <!-- Column: Resuelto -->
+        <div class="kanban-col" data-state="resuelto">
+          <div class="kcol-header">
+            <h3>Resuelto</h3>
+            <span class="kcol-count" id="count-resuelto">0</span>
+          </div>
+          <div class="kcol-body" id="col-resuelto"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================
+       TICKET DETAIL MODAL
+  ============================ -->
+  <div id="ticketDetailModal" class="modal">
+    <div class="modal-back" id="ticketDetailCloseBack"></div>
+    <div class="modal-panel ticket-panel">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" id="tdFolio" style="margin-bottom:6px; font-family: 'JetBrains Mono', monospace;">FL-0000</div>
+          <h2 id="tdName">Nombre del Cliente</h2>
+        </div>
+        <button class="close-btn" id="ticketDetailCloseBtn" aria-label="Cerrar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Ticket Tabs -->
+      <div class="ticket-tabs">
+        <button class="tab-btn active" data-tab="info">Información</button>
+        <button class="tab-btn" data-tab="bitacora">Bitácora</button>
+        <button class="tab-btn" data-tab="pos">Punto de Venta</button>
+      </div>
+
+      <div class="modal-body ticket-body">
+        
+        <!-- INFO TAB -->
+        <div class="tab-content active" id="tab-info">
+          <div class="status-manager">
+            <label>Estado actual:</label>
+            <select id="tdEstado" class="state-select">
+              <option value="creación">Creación</option>
+              <option value="diagnostico">Diagnóstico</option>
+              <option value="proceso">En Proceso</option>
+              <option value="resuelto">Resuelto</option>
+            </select>
+          </div>
+          
+          <div class="info-grid">
+            <div class="ig-item">
+              <span>Teléfono</span>
+              <strong id="tdPhone"></strong>
+            </div>
+            <div class="ig-item">
+              <span>Servicio</span>
+              <strong id="tdService"></strong>
+            </div>
+            <div class="ig-item">
+              <span>Prioridad</span>
+              <strong id="tdPriority"></strong>
+            </div>
+            <div class="ig-item">
+              <span>En sitio</span>
+              <strong id="tdOnsite"></strong>
+            </div>
+            <div class="ig-item full">
+              <span>Ubicación</span>
+              <strong id="tdLocation"></strong>
+            </div>
+            <div class="ig-item full">
+              <span>Descripción del problema</span>
+              <p id="tdDescription" class="desc-text"></p>
+            </div>
+            <div class="ig-item full">
+              <span>Fecha de creación</span>
+              <strong id="tdDate"></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- BITACORA TAB -->
+        <div class="tab-content" id="tab-bitacora">
+          <div class="bitacora-list" id="bitacoraList">
+            <!-- Notes will be injected here -->
+          </div>
+          <form id="bitacoraForm" class="bitacora-form">
+            <textarea id="bitacoraNote" required placeholder="Agregar nota, diagnóstico o reporte técnico..."></textarea>
+            <button type="submit" class="btn btn-primary">Guardar Nota</button>
+          </form>
+        </div>
+
+        <!-- POS TAB -->
+        <div class="tab-content" id="tab-pos">
+          <div class="pos-container">
+            <form id="posForm" class="pos-form">
+              <input type="text" id="posConcept" required placeholder="Concepto (ej. Revisión, Cable UTP, etc.)">
+              <input type="number" id="posPrice" required placeholder="Precio ($)" min="0" step="0.01">
+              <button type="submit" class="btn btn-secondary">Agregar</button>
+            </form>
+
+            <div class="pos-table-wrap">
+              <table class="pos-table">
+                <thead>
+                  <tr>
+                    <th>Concepto</th>
+                    <th style="text-align: right;">Precio</th>
+                    <th style="width: 40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="posList">
+                  <!-- Items will be injected here -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td><strong>Total</strong></td>
+                    <td style="text-align: right;"><strong id="posTotal" class="pos-total-val">$0.00</strong></td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <button id="posPrintBtn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Imprimir Ticket
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>
