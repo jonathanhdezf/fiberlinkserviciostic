@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Fiberlink Servicios TIC en Teziutlan, Puebla: soporte tecnico, redes, videovigilancia, punto de venta, desarrollo web y soluciones digitales.">
+  <title>Fiberlink Servicios TIC | Soporte técnico, redes y soluciones digitales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <script type="module" crossorigin src="/fiberlinkserviciostic/assets/index-D9RH-R6z.js"></script>
+  <link rel="stylesheet" crossorigin href="/fiberlinkserviciostic/assets/index-BxKraUPD.css">
+</head>
+<body>
+
+<!-- Physics canvas background -->
+<div id="webgl-container" aria-hidden="true"></div>
+
+<!-- Scroll progress -->
+<div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
+
+<!-- ============================
+     HEADER
+============================ -->
+<header class="site-header" id="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
+      <div class="brand-mark">
+        <img class="brand-logo" src="/fiberlinkserviciostic/assets/logo-D_He7lIT.gif" alt="" aria-hidden="true">
+      </div>
+    </a>
+
+    <div class="nav-actions">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-back" id="drawerBack"></div>
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menú">
+    <div class="drawer-head">
+      <a class="brand" href="#inicio">
+        <div class="brand-mark" style="width:36px;height:36px"><img class="brand-logo" src="/fiberlinkserviciostic/assets/logo-D_He7lIT.gif" alt="" style="width:24px;height:24px"></div>
+        <div class="brand-text"><strong>Fiberlink</strong></div>
+      </a>
+      <button class="close-btn" id="drawerClose" aria-label="Cerrar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <nav class="drawer-nav">
+      <a class="dl" href="#servicios">Servicios<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#herramientas">Herramientas<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#proceso">Proceso<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#fiberlink-labs">Fiberlink Labs<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#contacto">Contacto<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </nav>
+    <div class="drawer-foot">
+      <a class="btn btn-primary" href="tel:+522311024672">Llamar ahora</a>
+      <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion." target="_blank" rel="noopener">WhatsApp</a>
+      <button class="btn btn-ghost open-ticket" type="button">Solicitar soporte</button>
+    </div>
+  </aside>
+</div>
+
+<!-- ============================
+     HERO
+============================ -->
+<main id="inicio">
+  <section class="hero">
+    <!-- decorative -->
+    <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+    <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
+    <div class="hero-orb hero-orb-3" aria-hidden="true"></div>
+    <div class="hero-ring hero-ring-1" aria-hidden="true"></div>
+    <div class="hero-ring hero-ring-2" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        Teziutlan, Puebla · Soporte TIC activo
+      </div>
+
+      <h1 class="hero-h1">
+        <span class="line"><span>Soporte técnico</span></span>
+        <span class="line"><span>y soluciones TIC</span></span>
+        <span class="line"><span class="grad-text">sin interrupciones.</span></span>
+      </h1>
+
+      <p class="hero-desc">
+        Fiberlink ofrece soporte, redes, cámaras de seguridad, sistemas POS y presencia web para hogares, negocios y oficinas que necesitan tecnología confiable con resultados claros.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary open-ticket" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+          Levantar solicitud
+        </button>
+        <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          WhatsApp
+        </a>
+        <a class="btn btn-ghost" href="#servicios">Ver servicios &rarr;</a>
+      </div>
+
+      <div class="hero-stats" role="list" aria-label="Indicadores de servicio">
+        <div class="hstat" role="listitem">
+          <span class="hstat-num" style="color:var(--c)">4</span>
+          <span class="hstat-lbl">Áreas de servicio</span>
+        </div>
+        <div class="hstat" role="listitem">
+          <span class="hstat-num">Mixto</span>
+          <span class="hstat-lbl">Hogares y negocios</span>
+        </div>
+        <div class="hstat" role="listitem">
+          <span class="hstat-num" style="color:var(--c)">Local</span>
+          <span class="hstat-lbl">Teziutlan y región</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-hint" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span class="scroll-label">scroll</span>
+    </div>
+  </section>
+
+  <!-- ============================
+       SERVICES
+  ============================ -->
+  <section id="servicios" class="services-section">
+    <div class="wrap">
+      <div class="svc-head">
+        <div class="reveal">
+          <div class="lbl">Servicios equilibrados</div>
+          <h2 class="sh">Una mesa técnica para<br>todo tu ecosistema.</h2>
+        </div>
+        <p class="svc-head-right reveal from-right">Resolvemos problemas, instalamos y mejoramos equipos. Explicamos todo con palabras sencillas, sin jerga técnica innecesaria.</p>
+      </div>
+
+      <div class="bento reveal from-scale">
+        <article class="bc">
+          <div class="bc-num mono">01 / SOPORTE</div>
+          <div class="bc-icon" style="background:rgba(72,211,155,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#48d39b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Soporte técnico presencial y remoto</h3>
+          <p>Diagnóstico, mantenimiento, instalación de software, respaldo de información, optimización y recuperación de equipos.</p>
+          <div class="tags"><span class="tag">PC</span><span class="tag">Laptop</span><span class="tag">Software</span><span class="tag">Respaldos</span></div>
+        </article>
+
+        <article class="bc">
+          <div class="bc-num mono">02 / NEGOCIO</div>
+          <div class="bc-icon" style="background:rgba(59,130,246,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          </div>
+          <h3>Punto de venta y operación comercial</h3>
+          <p>Configuración de sistemas POS, impresoras, lectores, inventario, usuarios, respaldos y flujo de caja para comercios.</p>
+          <div class="tags"><span class="tag">POS</span><span class="tag">Inventario</span><span class="tag">Tickets</span><span class="tag">Caja</span></div>
+        </article>
+
+        <article class="bc">
+          <div class="bc-num mono">03 / INFRA</div>
+          <div class="bc-icon" style="background:rgba(139,92,246,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </div>
+          <h3>Redes, WiFi y videovigilancia</h3>
+          <p>Cableado, routers, switches, cámaras, NVR, acceso remoto, revisión de cobertura y ordenamiento de infraestructura.</p>
+          <div class="tags"><span class="tag">Redes</span><span class="tag">CCTV</span><span class="tag">WiFi</span><span class="tag">NVR</span></div>
+        </article>
+
+        <article class="bc">
+          <div class="bc-num mono">04 / DIGITAL</div>
+          <div class="bc-icon" style="background:rgba(245,158,11,.1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          </div>
+          <h3>Sitios web y marketing digital</h3>
+          <p>Landing pages, páginas comerciales, presencia en buscadores, formularios de contacto y mejoras para captar clientes.</p>
+          <div class="tags"><span class="tag">Web</span><span class="tag">SEO</span><span class="tag">Formularios</span><span class="tag">Marca</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       MARQUEE BAND
+  ============================ -->
+  <div class="tools-band" id="herramientas" aria-label="Herramientas y plataformas">
+    <div class="marquee" id="mq">
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Diagnóstico remoto</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mesa de tickets</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>CCTV IP</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Punto de venta</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cableado estructurado</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Respaldos en nube</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>WiFi empresarial</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Landing pages</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Correo y nube</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mantenimiento preventivo</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Ubiquiti</div>
+      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>MikroTik RouterOS</div>
+    </div>
+  </div>
+
+  <!-- ============================
+       PROCESS
+  ============================ -->
+  <section id="proceso" class="process-section">
+    <div class="wrap proc-grid">
+      <div class="proc-sticky">
+        <div class="lbl reveal">Método de trabajo</div>
+        <h2 class="sh reveal">Orden antes que<br>improvisación.</h2>
+        <p class="reveal">Cuando recibimos una solicitud la organizamos en cuatro pasos: qué hay que hacer, qué tan urgente es, evidencia y cuál será el siguiente paso. Así evitamos confusiones y gastos inesperados.</p>
+        <div class="cinfo">
+          <a class="citem" href="tel:+522311024672">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.86 19.86 0 013.08 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.12.99.38 1.97.76 2.88a2 2 0 01-.45 2.11L9.91 10.09a16 16 0 006 6l1.38-1.38a2 2 0 012.11-.45c.91.38 1.89.64 2.88.76A2 2 0 0122 16.92z"/></svg></div>
+            231 102 4672
+          </a>
+          <a class="citem" href="mailto:fiberlinkserviciostic@gmail.com">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            fiberlinkserviciostic@gmail.com
+          </a>
+          <div class="citem">
+            <div class="cicon"><svg viewBox="0 0 24 24"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            Av. Cuauhtémoc 1010, Centro, Teziutlan
+          </div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <article class="step reveal from-right">
+          <div class="step-n mono">STEP<br>01</div>
+          <div>
+            <h3>Levantamiento</h3>
+            <p>Se recopilan datos del equipo, domicilio, síntomas, urgencia y evidencia disponible para documentar el caso.</p>
+          </div>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.08s">
+          <div class="step-n mono">STEP<br>02</div>
+          <div>
+            <h3>Diagnóstico</h3>
+            <p>Se revisa la causa probable y se define si conviene soporte remoto, visita presencial o cotización de proyecto.</p>
+          </div>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.16s">
+          <div class="step-n mono">STEP<br>03</div>
+          <div>
+            <h3>Ejecución</h3>
+            <p>Instalación, reparación, configuración o entrega digital con criterios técnicos claros y comunicación constante.</p>
+          </div>
+        </article>
+        <article class="step reveal from-right" style="transition-delay:.24s">
+          <div class="step-n mono">STEP<br>04</div>
+          <div>
+            <h3>Cierre y seguimiento</h3>
+            <p>Se confirma el funcionamiento, se dejan recomendaciones y se conserva el canal de soporte activo.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       LABS
+  ============================ -->
+  <section class="labs-section" id="fiberlink-labs">
+    <div class="wrap">
+      <div class="labs-grid reveal from-scale">
+        <div class="labs-copy">
+          <div class="lbl">Fiberlink Labs</div>
+          <h2 class="sh">Creación de sitios<br>web profesionales.</h2>
+          <p>Desarrollamos sitios rápidos, seguros y optimizados para conversiones. Diseño moderno, CMS opcional, hosting y despliegue continuo.</p>
+          <div class="labs-actions">
+            <a class="btn btn-primary" href="https://fiberlinklabs.vercel.app" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Visitar Fiberlink Labs
+            </a>
+            <a class="btn btn-secondary" href="#contacto">Pedir presupuesto</a>
+          </div>
+        </div>
+        <div class="labs-visual">
+          <div class="orbit-inner" aria-hidden="true"></div>
+          <div class="labs-badge-wrap">
+            <div class="labs-icon">
+              <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="labs-title">Desarrollo web moderno</div>
+            <div class="labs-sub">React · Next.js · Vercel · SEO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       CONTACT
+  ============================ -->
+  <section class="contact-section" id="contacto">
+    <div class="wrap">
+      <div class="contact-grid reveal from-scale">
+        <div class="contact-copy">
+          <div class="lbl">Contacto</div>
+          <h2 class="sh">Cuéntanos qué<br>necesitas resolver.</h2>
+          <p>Usa el formulario para armar una solicitud lista para enviar por WhatsApp. También puedes llamar o escribir por correo.</p>
+          <ul class="clist">
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.86 19.86 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.86 19.86 0 013.08 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.12.99.38 1.97.76 2.88a2 2 0 01-.45 2.11L9.91 10.09a16 16 0 006 6l1.38-1.38a2 2 0 012.11-.45c.91.38 1.89.64 2.88.76A2 2 0 0122 16.92z"/></svg></div>
+              <a href="tel:+522311024672">231 102 4672</a>
+            </li>
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
+            </li>
+            <li>
+              <div class="cli"><svg viewBox="0 0 24 24"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <span>Teziutlan, Puebla · Servicio a domicilio</span>
+            </li>
+          </ul>
+        </div>
+        <div class="form-wrap">
+          <form id="contactForm" class="form-grid">
+            <div class="form-row">
+              <label>Nombre<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
+              <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
+            </div>
+            <label>Servicio
+              <select name="service" required>
+                <option value="">Selecciona una opción</option>
+                <option>Soporte técnico</option>
+                <option>Punto de venta</option>
+                <option>Redes / WiFi</option>
+                <option>Videovigilancia</option>
+                <option>Diseño web / marketing</option>
+                <option>Otro servicio TIC</option>
+              </select>
+            </label>
+            <label>Mensaje<textarea name="message" required placeholder="Describe el problema, equipo, ubicación y horario ideal."></textarea></label>
+            <button class="btn btn-primary" type="submit" style="width:100%">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Enviar por WhatsApp
+            </button>
+            <p class="form-note">No guarda datos en el sitio — prepara tu mensaje y lo envía desde WhatsApp.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================
+     PARTNERS
+============================ -->
+<section class="partners-section" aria-label="Aliados tecnológicos">
+  <div class="wrap">
+    <div class="partners-head reveal">
+      <div class="lbl" style="justify-content:center">Aliados</div>
+      <h3>Marcas y socios tecnológicos</h3>
+    </div>
+    <div class="partners-row reveal">
+      <a class="partner-item" href="https://www.microsoft.com" target="_blank" rel="noopener" aria-label="Microsoft"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/microsoft.svg" alt="Microsoft"></a>
+      <a class="partner-item" href="https://cloud.google.com" target="_blank" rel="noopener" aria-label="Google"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/google.svg" alt="Google"></a>
+      <a class="partner-item" href="https://aws.amazon.com" target="_blank" rel="noopener" aria-label="AWS"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/amazonaws.svg" alt="AWS"></a>
+      <a class="partner-item" href="https://www.cloudflare.com" target="_blank" rel="noopener" aria-label="Cloudflare"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/cloudflare.svg" alt="Cloudflare"></a>
+      <a class="partner-item" href="https://www.ui.com" target="_blank" rel="noopener" aria-label="Ubiquiti"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/ubiquiti.svg" alt="Ubiquiti"></a>
+      <a class="partner-item" href="https://www.tp-link.com" target="_blank" rel="noopener" aria-label="TP-Link"><img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/tp-link.svg" alt="TP-Link"></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================
+     FOOTER
+============================ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#inicio">
+          <div class="brand-mark"><img class="brand-logo" src="/fiberlinkserviciostic/assets/logo-D_He7lIT.gif" alt="" aria-hidden="true"></div>
+          <div class="brand-text"><strong>Fiberlink</strong><span>Servicios TIC</span></div>
+        </a>
+        <p>Soporte técnico, redes, CCTV, punto de venta y presencia web para Teziutlan, Puebla y región.</p>
+      </div>
+
+      <div class="foot-col">
+        <h4>Servicios</h4>
+        <ul>
+          <li><a href="#servicios">Soporte técnico</a></li>
+          <li><a href="#servicios">Punto de venta</a></li>
+          <li><a href="#servicios">Redes y WiFi</a></li>
+          <li><a href="#servicios">Videovigilancia</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Empresa</h4>
+        <ul>
+          <li><a href="#proceso">Nuestro proceso</a></li>
+          <li><a href="#fiberlink-labs">Fiberlink Labs</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="tel:+522311024672">231 102 4672</a></li>
+          <li><a href="mailto:fiberlinkserviciostic@gmail.com" style="font-size:.78rem;word-break:break-all">fiberlinkserviciostic@gmail.com</a></li>
+          <li><span style="font-size:.82rem;color:var(--muted)">Teziutlan, Puebla</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Fiberlink Servicios TIC — Todos los derechos reservados</span>
+      <div class="social-row" aria-label="Redes sociales">
+        <a class="soc" href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><img src="data:image/svg+xml,%3csvg%20role='img'%20viewBox='0%200%2024%2024'%20xmlns='http://www.w3.org/2000/svg'%3e%3ctitle%3eFacebook%3c/title%3e%3cpath%20d='M9.101%2023.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085%201.848-5.978%205.858-5.978.401%200%20.955.042%201.468.103a8.68%208.68%200%200%201%201.141.195v3.325a8.623%208.623%200%200%200-.653-.036%2026.805%2026.805%200%200%200-.733-.009c-.707%200-1.259.096-1.675.309a1.686%201.686%200%200%200-.679.622c-.258.42-.374.995-.374%201.752v1.297h3.919l-.386%202.103-.287%201.564h-3.246v8.245C19.396%2023.238%2024%2018.179%2024%2012.044c0-6.627-5.373-12-12-12s-12%205.373-12%2012c0%205.628%203.874%2010.35%209.101%2011.647Z'/%3e%3c/svg%3e" alt="Facebook" width="17" height="17"></a>
+        <a class="soc" href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><img src="data:image/svg+xml,%3csvg%20role='img'%20viewBox='0%200%2024%2024'%20xmlns='http://www.w3.org/2000/svg'%3e%3ctitle%3eInstagram%3c/title%3e%3cpath%20d='M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228%201.3877-.6652.6677-1.075%201.3368-1.3802%202.127-.2954.7638-.4956%201.6365-.552%202.914-.0564%201.2775-.0689%201.6882-.0626%204.947.0062%203.2586.0206%203.6671.0825%204.9473.061%201.2765.264%202.1482.5635%202.9107.308.7889.72%201.4573%201.388%202.1228.6679.6655%201.3365%201.0743%202.1285%201.38.7632.295%201.6361.4961%202.9134.552%201.2773.056%201.6884.069%204.9462.0627%203.2578-.0062%203.668-.0207%204.9478-.0814%201.28-.0607%202.147-.2652%202.9098-.5633.7889-.3086%201.4578-.72%202.1228-1.3881.665-.6682%201.0745-1.3378%201.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982%201.33%2020.628.9208%2019.8378.6165%2019.074.321%2018.2017.1197%2016.9244.0645%2015.6471.0093%2015.236-.005%2011.977.0014%208.718.0076%208.31.0215%207.0301.0839m.1402%2021.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814%201.3783-.9003.423-.1651%201.0575-.3614%202.227-.4171%201.2655-.06%201.6447-.072%204.848-.079%203.2033-.007%203.5835.005%204.8495.0608%201.169.0508%201.8053.2445%202.228.408.5608.216.96.4754%201.3816.895.4217.4194.6816.8176.9005%201.3787.1653.4217.3617%201.056.4169%202.2263.0602%201.2655.0739%201.645.0796%204.848.0058%203.203-.0055%203.5834-.061%204.848-.051%201.17-.245%201.8055-.408%202.2294-.216.5604-.4763.96-.8954%201.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953%205.5864A1.44%201.44%200%201%200%2018.39%204.144a1.44%201.44%200%200%200-1.437%201.4424M5.8385%2012.012c.0067%203.4032%202.7706%206.1557%206.173%206.1493%203.4026-.0065%206.157-2.7701%206.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156%202.771-6.1496%206.1738M8%2012.0077a4%204%200%201%201%204.008%203.9921A3.9996%203.9996%200%200%201%208%2012.0077'/%3e%3c/svg%3e" alt="Instagram" width="17" height="17"></a>
+        <a class="soc" href="https://www.tiktok.com" target="_blank" rel="noopener" aria-label="TikTok"><img src="data:image/svg+xml,%3csvg%20role='img'%20viewBox='0%200%2024%2024'%20xmlns='http://www.w3.org/2000/svg'%3e%3ctitle%3eTikTok%3c/title%3e%3cpath%20d='M12.525.02c1.31-.02%202.61-.01%203.91-.02.08%201.53.63%203.09%201.75%204.17%201.12%201.11%202.7%201.62%204.24%201.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01%202.92.01%205.84-.02%208.75-.08%201.4-.54%202.79-1.35%203.94-1.31%201.92-3.58%203.17-5.91%203.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9%201.12-3.72%202.58-4.96%201.66-1.44%203.98-2.13%206.15-1.72.02%201.48-.04%202.96-.04%204.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11%201.04-1.36%201.75-.21.51-.15%201.07-.14%201.61.24%201.64%201.82%203.02%203.5%202.87%201.12-.01%202.19-.66%202.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'/%3e%3c/svg%3e" alt="TikTok" width="17" height="17"></a>
+        <a class="soc" href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><img src="data:image/svg+xml,%3csvg%20role='img'%20viewBox='0%200%2024%2024'%20xmlns='http://www.w3.org/2000/svg'%3e%3ctitle%3eYouTube%3c/title%3e%3cpath%20d='M23.498%206.186a3.016%203.016%200%200%200-2.122-2.136C19.505%203.545%2012%203.545%2012%203.545s-7.505%200-9.377.505A3.017%203.017%200%200%200%20.502%206.186C0%208.07%200%2012%200%2012s0%203.93.502%205.814a3.016%203.016%200%200%200%202.122%202.136c1.871.505%209.376.505%209.376.505s7.505%200%209.377-.505a3.015%203.015%200%200%200%202.122-2.136C24%2015.93%2024%2012%2024%2012s0-3.93-.502-5.814zM9.545%2015.568V8.432L15.818%2012l-6.273%203.568z'/%3e%3c/svg%3e" alt="YouTube" width="17" height="17"></a>
+        <a class="soc" href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><img src="data:image/svg+xml,%3csvg%20role='img'%20viewBox='0%200%2024%2024'%20xmlns='http://www.w3.org/2000/svg'%3e%3ctitle%3eLinkedIn%3c/title%3e%3cpath%20d='M20.447%2020.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853%200-2.136%201.445-2.136%202.939v5.667H9.351V9h3.414v1.561h.046c.477-.9%201.637-1.85%203.37-1.85%203.601%200%204.267%202.37%204.267%205.455v6.286zM5.337%207.433c-1.144%200-2.063-.926-2.063-2.065%200-1.138.92-2.063%202.063-2.063%201.14%200%202.064.925%202.064%202.063%200%201.139-.925%202.065-2.064%202.065zm1.782%2013.019H3.555V9h3.564v11.452zM22.225%200H1.771C.792%200%200%20.774%200%201.729v20.542C0%2023.227.792%2024%201.771%2024h20.451C23.2%2024%2024%2023.227%2024%2022.271V1.729C24%20.774%2023.2%200%2022.222%200h.003z'/%3e%3c/svg%3e" alt="LinkedIn" width="17" height="17"></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================
+     TICKET MODAL — PREMIUM
+============================ -->
+<div class="modal" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle" aria-hidden="true">
+  <div class="modal-back" data-close-modal></div>
+  <div class="modal-panel">
+
+    <!-- Header -->
+    <div class="modal-head">
+      <div class="modal-head-meta">
+        <div class="modal-lbl">Fiberlink · Solicitud técnica</div>
+        <h2 id="ticketTitle">Levantar ticket</h2>
+        <p class="modal-head-sub">Completa el formulario y lo enviamos por WhatsApp al instante.</p>
+        <div class="modal-steps" aria-hidden="true">
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot active"></div>
+          <div class="modal-step-dot"></div>
+        </div>
+      </div>
+      <button class="close-btn" type="button" data-close-modal aria-label="Cerrar modal">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <form id="ticketForm" class="form-grid">
+
+        <!-- Grupo 1: Identificación -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Identificación
+          </div>
+          <div class="form-row">
+            <label>Nombre completo<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
+            <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
+          </div>
+          <div class="form-row">
+            <label>Empresa / hogar<input name="company" placeholder="Opcional"></label>
+            <label>Ubicación<input name="location" required placeholder="Colonia o referencia"></label>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 2: Solicitud -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Detalles del servicio
+          </div>
+          <label>Tipo de servicio
+            <select name="service" required>
+              <option value="">Selecciona un servicio…</option>
+              <option>Soporte técnico</option>
+              <option>Punto de venta</option>
+              <option>Redes / WiFi</option>
+              <option>Videovigilancia</option>
+              <option>Diseño web / marketing</option>
+              <option>Otro servicio TIC</option>
+            </select>
+          </label>
+          <label class="onsite-check" for="onsite-cb">
+            <input type="checkbox" name="onsite" id="onsite-cb">
+            <span>Requiere visita a domicilio / en sitio</span>
+          </label>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 3: Prioridad -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Prioridad
+          </div>
+          <div class="priority" role="group" aria-label="Nivel de prioridad">
+            <button type="button" class="active" data-p="Normal">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Normal
+            </button>
+            <button type="button" data-p="Alta">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Alta
+            </button>
+            <button type="button" data-p="Urgente">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Urgente
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Grupo 4: Descripción -->
+        <div class="field-group">
+          <div class="field-group-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Descripción del problema
+          </div>
+          <label>
+            Mensaje
+            <textarea name="message" required placeholder="Describe síntomas, equipos involucrados, horario disponible y cualquier dato relevante…"></textarea>
+          </label>
+        </div>
+
+        <!-- Actions -->
+        <div class="toast" id="ticketToast">Solicitud preparada. Se abrirá WhatsApp para enviarla.</div>
+        <button class="btn btn-primary" type="submit" style="width:100%;min-height:52px;font-size:.95rem;margin-top:4px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Enviar por WhatsApp
+        </button>
+        <p class="modal-foot-note">
+          ¿Prefiere correo? <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
+        </p>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- Terminal demo button -->
+<button id="demoBtn" class="btn-neon" aria-label="Ver estado en línea">
+  <span class="npulse" aria-hidden="true"></span>
+  Ver estado en línea
+</button>
+
+<!-- Terminal demo overlay -->
+<div class="term-overlay" id="termOverlay" aria-hidden="true" role="dialog" aria-label="Estado del sistema">
+  <div class="term-back" id="termBack"></div>
+  <div class="term-box">
+    <div class="term-title">
+      <div class="term-dots">
+        <span class="td r"></span><span class="td y"></span><span class="td g"></span>
+      </div>
+      <span class="term-lbl">Fiberlink — Estado y seguridad en línea</span>
+      <button class="btn btn-ghost" id="termClose" style="min-height:30px;padding:0 12px;font-size:.78rem">Cerrar</button>
+    </div>
+    <div class="term-body" id="termContent" aria-live="polite"></div>
+    <div class="term-foot">
+      <button class="btn btn-ghost" id="termStop" style="min-height:30px;padding:0 12px;font-size:.78rem">Detener</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     SCRIPTS
+============================ -->
+</body>
+</html>
