@@ -279,42 +279,46 @@ function initUI() {
     });
   }
 
-  // Hover Glow effect on Buttons
-  document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('mousemove', e => {
-      const r = btn.getBoundingClientRect();
-      btn.style.setProperty('--bx', ((e.clientX - r.left) / r.width * 100) + '%');
-      btn.style.setProperty('--by', ((e.clientY - r.top) / r.height * 100) + '%');
-    });
-  });
-  
-  // Bento Cards Glow + 3D Tilt
-  document.querySelectorAll('.bc').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r = card.getBoundingClientRect();
-      const cx = (e.clientX - r.left) / r.width;
-      const cy = (e.clientY - r.top) / r.height;
-      card.style.setProperty('--cx', (cx * 100) + '%');
-      card.style.setProperty('--cy', (cy * 100) + '%');
-      // 3D tilt
-      gsap.to(card, {
-        rotateY: (cx - 0.5) * 9,
-        rotateX: (cy - 0.5) * -7,
-        transformPerspective: 800,
-        duration: 0.38,
-        ease: 'power2.out',
-        overwrite: 'auto'
+  // Hover Glow and 3D Tilt effects (Only on desktop/non-touch devices for maximum performance)
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  if (!isTouch) {
+    // Hover Glow effect on Buttons
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        btn.style.setProperty('--bx', ((e.clientX - r.left) / r.width * 100) + '%');
+        btn.style.setProperty('--by', ((e.clientY - r.top) / r.height * 100) + '%');
       });
     });
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, {
-        rotateY: 0, rotateX: 0,
-        duration: 0.9,
-        ease: 'elastic.out(1, 0.38)',
-        overwrite: 'auto'
+    
+    // Bento Cards Glow + 3D Tilt
+    document.querySelectorAll('.bc').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const cx = (e.clientX - r.left) / r.width;
+        const cy = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--cx', (cx * 100) + '%');
+        card.style.setProperty('--cy', (cy * 100) + '%');
+        // 3D tilt
+        gsap.to(card, {
+          rotateY: (cx - 0.5) * 9,
+          rotateX: (cy - 0.5) * -7,
+          transformPerspective: 800,
+          duration: 0.38,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, {
+          rotateY: 0, rotateX: 0,
+          duration: 0.9,
+          ease: 'elastic.out(1, 0.38)',
+          overwrite: 'auto'
+        });
       });
     });
-  });
+  }
 }
 
 // ============================

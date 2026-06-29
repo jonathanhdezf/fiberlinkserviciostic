@@ -6,22 +6,46 @@ export function initEarth(containerId) {
 
   const scene = new THREE.Scene();
 
+  const isMobile = window.innerWidth < 768;
+
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 15;
-  camera.position.y = 2;
+  camera.position.z = isMobile ? 17 : 15;
+  camera.position.y = isMobile ? 1.2 : 2;
   camera.lookAt(0, 0, 0);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  // Disable antialias on mobile to double rendering speed
+  const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
   container.appendChild(renderer.domElement);
 
   // Group to hold the earth components
   const earthGroup = new THREE.Group();
   scene.add(earthGroup);
 
-  // 1. Core Sphere (Dark)
-  const coreGeometry = new THREE.SphereGeometry(4.8, 64, 64);
+  // Dynamically adjust scale depending on screen width
+  function adjustScale() {
+    const width = window.innerWidth;
+    if (width < 480) {
+      earthGroup.scale.set(0.55, 0.55, 0.55);
+      camera.position.z = 17;
+      camera.position.y = 1.2;
+    } else if (width < 768) {
+      earthGroup.scale.set(0.75, 0.75, 0.75);
+      camera.position.z = 15;
+      camera.position.y = 1.5;
+    } else {
+      earthGroup.scale.set(1, 1, 1);
+      camera.position.z = 15;
+      camera.position.y = 2;
+    }
+    camera.lookAt(0, 0, 0);
+  }
+  adjustScale();
+
+  // 1. Core Sphere (Dark) - lower segments on mobile
+  const coreSegments = isMobile ? 24 : 64;
+  const coreGeometry = new THREE.SphereGeometry(4.8, coreSegments, coreSegments);
   const coreMaterial = new THREE.MeshPhongMaterial({
     color: 0x050a15,
     emissive: 0x020510,
@@ -34,7 +58,7 @@ export function initEarth(containerId) {
   earthGroup.add(core);
 
   // 2. Wireframe / Tech Grid
-  const wireGeometry = new THREE.SphereGeometry(5, 32, 32);
+  const wireGeometry = new THREE.SphereGeometry(5, isMobile ? 20 : 32, isMobile ? 20 : 32);
   const wireMaterial = new THREE.MeshBasicMaterial({
     color: 0x48d39b,
     wireframe: true,
@@ -44,9 +68,9 @@ export function initEarth(containerId) {
   const wireframe = new THREE.Mesh(wireGeometry, wireMaterial);
   earthGroup.add(wireframe);
 
-  // 3. Particles / Data nodes (Vertices of the sphere)
+  // 3. Particles / Data nodes (Vertices of the sphere) - lower count on mobile
   const particlesGeometry = new THREE.BufferGeometry();
-  const particleCount = 2000;
+  const particleCount = isMobile ? 600 : 2000;
   const posArray = new Float32Array(particleCount * 3);
 
   for(let i = 0; i < particleCount * 3; i+=3) {
@@ -62,7 +86,7 @@ export function initEarth(containerId) {
 
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   const particleMaterial = new THREE.PointsMaterial({
-    size: 0.04,
+    size: isMobile ? 0.05 : 0.04,
     color: 0x3ecf8e,
     transparent: true,
     opacity: 0.8,
@@ -73,7 +97,7 @@ export function initEarth(containerId) {
   earthGroup.add(particlesMesh);
 
   // 4. Atmosphere Glow
-  const atmosGeometry = new THREE.SphereGeometry(5.2, 64, 64);
+  const atmosGeometry = new THREE.SphereGeometry(5.2, coreSegments, coreSegments);
   const atmosMaterial = new THREE.MeshPhongMaterial({
     color: 0x3b82f6,
     transparent: true,
@@ -97,9 +121,9 @@ export function initEarth(containerId) {
   pointLight2.position.set(-10, -10, 10);
   scene.add(pointLight2);
 
-  // Floating Particles Background
+  // Floating Particles Background - lower count on mobile
   const bgParticlesGeo = new THREE.BufferGeometry();
-  const bgCount = 1000;
+  const bgCount = isMobile ? 250 : 1000;
   const bgPos = new Float32Array(bgCount * 3);
   for(let i=0; i<bgCount*3; i+=3) {
     bgPos[i] = (Math.random() - 0.5) * 50;
@@ -178,6 +202,7 @@ export function initEarth(containerId) {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    adjustScale();
   });
 
   return { scene, camera, renderer, earthGroup };
