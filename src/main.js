@@ -107,15 +107,14 @@ function initUI() {
     ticketForm.addEventListener('submit', e => {
       e.preventDefault();
       const val = (name) => new FormData(ticketForm).get(name)?.toString().trim() || '';
-      const onsite = ticketForm.querySelector('input[name="onsite"]')?.checked ? 'Sí' : 'No';
       
       const ticketData = {
         name: val('name'),
         phone: val('phone'),
         company: val('company'),
-        location: val('location'),
+        address: val('address') || 'Soporte Remoto (No requiere domicilio)',
         service: val('service'),
-        onsite,
+        modality: val('modality'),
         priority: prio,
         description: val('message'),
         source: 'Ticket Modal'
@@ -128,9 +127,9 @@ function initUI() {
         `Nombre: ${ticketData.name}`,
         `Teléfono: ${ticketData.phone}`,
         `Empresa/Hogar: ${ticketData.company || 'No especificado'}`,
-        `Ubicación: ${ticketData.location}`,
+        `Domicilio: ${ticketData.address}`,
         `Servicio: ${ticketData.service}`,
-        `En sitio: ${ticketData.onsite}`,
+        `Modalidad: ${ticketData.modality}`,
         `Prioridad: ${ticketData.priority}`,
         `Descripción: ${ticketData.description}`,
       ].join('\n');
@@ -153,9 +152,9 @@ function initUI() {
         name: val('name'),
         phone: val('phone'),
         company: '',
-        location: 'No especificada (Formulario de contacto)',
+        address: val('address') || 'Soporte Remoto (No requiere domicilio)',
         service: val('service'),
-        onsite: 'No',
+        modality: val('modality'),
         priority: 'Normal',
         description: val('message'),
         source: 'Contact Form'
@@ -167,7 +166,9 @@ function initUI() {
         `Nuevo Contacto — Fiberlink Servicios TIC`,
         `Nombre: ${ticketData.name}`,
         `Teléfono: ${ticketData.phone}`,
-        `Servicio de interés: ${ticketData.service}`,
+        `Servicio: ${ticketData.service}`,
+        `Modalidad: ${ticketData.modality}`,
+        `Domicilio: ${ticketData.address}`,
         `Mensaje: ${ticketData.description}`,
       ].join('\n');
       
@@ -182,6 +183,24 @@ function initUI() {
       }, 380);
     });
   }
+
+  // Dynamic validation: make address optional when modality is Remote
+  const modalitySelects = document.querySelectorAll('select[name="modality"]');
+  modalitySelects.forEach(select => {
+    select.addEventListener('change', () => {
+      const form = select.closest('form');
+      const addressInput = form.querySelector('input[name="address"]');
+      if (addressInput) {
+        if (select.value === 'Remoto') {
+          addressInput.removeAttribute('required');
+          addressInput.placeholder = 'Opcional para soporte remoto';
+        } else {
+          addressInput.setAttribute('required', '');
+          addressInput.placeholder = 'Calle, número, colonia o referencias';
+        }
+      }
+    });
+  });
 
   // Demo Terminal
   const demoBtn = document.getElementById('demoBtn');

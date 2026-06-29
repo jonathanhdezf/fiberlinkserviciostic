@@ -378,21 +378,34 @@
         <div class="form-wrap">
           <form id="contactForm" class="form-grid">
             <div class="form-row">
-              <label>Nombre<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
+              <label>Nombre completo<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
               <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
             </div>
-            <label>Servicio
-              <select name="service" required>
-                <option value="">Selecciona una opción</option>
-                <option>Soporte técnico</option>
-                <option>Punto de venta</option>
-                <option>Redes / WiFi</option>
-                <option>Videovigilancia</option>
-                <option>Diseño web / marketing</option>
-                <option>Otro servicio TIC</option>
-              </select>
+            <div class="form-row">
+              <label>Servicio
+                <select name="service" required>
+                  <option value="">Selecciona una opción</option>
+                  <option>Soporte técnico</option>
+                  <option>Punto de venta</option>
+                  <option>Redes / WiFi</option>
+                  <option>Videovigilancia</option>
+                  <option>Diseño web / marketing</option>
+                  <option>Otro servicio TIC</option>
+                </select>
+              </label>
+              <label>Modalidad de soporte
+                <select name="modality" required>
+                  <option value="">Selecciona modalidad</option>
+                  <option value="En Sitio / Domicilio">A domicilio / En sitio</option>
+                  <option value="Remoto">Soporte Remoto</option>
+                  <option value="En Taller">Entrega en Taller</option>
+                </select>
+              </label>
+            </div>
+            <label>Domicilio / Dirección
+              <input name="address" required placeholder="Calle, número, colonia o referencias">
             </label>
-            <label>Mensaje<textarea name="message" required placeholder="Describe el problema, equipo, ubicación y horario ideal."></textarea></label>
+            <label>Mensaje / Detalles del problema<textarea name="message" required placeholder="Describe los síntomas del equipo, marca/modelo, y horario de atención ideal."></textarea></label>
             <button class="btn btn-primary" type="submit" style="width:100%">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               Enviar por WhatsApp
@@ -526,7 +539,7 @@
           </div>
           <div class="form-row">
             <label>Empresa / hogar<input name="company" placeholder="Opcional"></label>
-            <label>Ubicación<input name="location" required placeholder="Colonia o referencia"></label>
+            <label>Domicilio / Dirección<input name="address" required placeholder="Calle, número, colonia o referencias"></label>
           </div>
         </div>
 
@@ -538,21 +551,27 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Detalles del servicio
           </div>
-          <label>Tipo de servicio
-            <select name="service" required>
-              <option value="">Selecciona un servicio…</option>
-              <option>Soporte técnico</option>
-              <option>Punto de venta</option>
-              <option>Redes / WiFi</option>
-              <option>Videovigilancia</option>
-              <option>Diseño web / marketing</option>
-              <option>Otro servicio TIC</option>
-            </select>
-          </label>
-          <label class="onsite-check" for="onsite-cb">
-            <input type="checkbox" name="onsite" id="onsite-cb">
-            <span>Requiere visita a domicilio / en sitio</span>
-          </label>
+          <div class="form-row">
+            <label>Tipo de servicio
+              <select name="service" required>
+                <option value="">Selecciona un servicio…</option>
+                <option>Soporte técnico</option>
+                <option>Punto de venta</option>
+                <option>Redes / WiFi</option>
+                <option>Videovigilancia</option>
+                <option>Diseño web / marketing</option>
+                <option>Otro servicio TIC</option>
+              </select>
+            </label>
+            <label>Modalidad de soporte
+              <select name="modality" required>
+                <option value="">Selecciona modalidad…</option>
+                <option value="En Sitio / Domicilio">A domicilio / En sitio</option>
+                <option value="Remoto">Soporte Remoto</option>
+                <option value="En Taller">Entrega en Taller</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         <div class="modal-divider"></div>
