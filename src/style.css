@@ -1182,13 +1182,6 @@ body.cursor-hover .cursor-ring{
   100%{background-position:0 0}
 }
 
-/* ============================
-   TEXT SCRAMBLE CHARS
-============================ */
-.scramble-char{
-  color:var(--c);opacity:.65;
-  font-family:'JetBrains Mono',monospace;
-}
 
 /* ============================
    HERO ORB ENHANCEMENTS

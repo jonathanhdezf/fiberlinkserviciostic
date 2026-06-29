@@ -15,9 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 4. Premium cursor (desktop only)
   initCursor();
-
-  // 5. Text scramble on hero h1
-  initTextScramble();
 });
 
 function initUI() {
@@ -367,58 +364,4 @@ function initCursor() {
   document.addEventListener('mouseenter', () => gsap.to([dot, ring], { opacity: 1, duration: 0.3 }));
 }
 
-// ============================
-// TEXT SCRAMBLE
-// ============================
-class TextScramble {
-  constructor(el) {
-    this.el = el;
-    this.chars = '!<>_\/[]{}=+*^?#@0123456789ABCDEFGabcdefg';
-  }
-  setText(text) {
-    return new Promise(resolve => {
-      const queue = text.split('').map((to, i) => ({
-        to,
-        start: Math.floor(Math.random() * 8),
-        end:   Math.floor(Math.random() * 14) + 12 + i
-      }));
-      let frame = 0;
-      const update = () => {
-        let out = '', done = 0;
-        queue.forEach(q => {
-          if (frame >= q.end) {
-            done++; out += q.to;
-          } else if (frame >= q.start) {
-            if (!q.char || Math.random() < 0.28) {
-              q.char = this.chars[Math.floor(Math.random() * this.chars.length)];
-            }
-            out += `<span class="scramble-char">${q.char}</span>`;
-          } else {
-            out += q.to === ' ' ? '&nbsp;' : `<span style="opacity:.1">${q.to}</span>`;
-          }
-        });
-        this.el.innerHTML = out;
-        if (done === queue.length) { this.el.textContent = text; resolve(); }
-        else { frame++; requestAnimationFrame(update); }
-      };
-      requestAnimationFrame(update);
-    });
-  }
-}
 
-function initTextScramble() {
-  const lines = document.querySelectorAll('.hero-h1 .line span');
-  const targets = [];
-  lines.forEach(el => {
-    if (!el.classList.contains('grad-text')) {
-      targets.push({ el, text: el.textContent.trim() });
-    }
-  });
-  if (!targets.length) return;
-  // Run after hero slideUp animation completes (~1.2s)
-  setTimeout(() => {
-    targets.forEach(({ el, text }, i) => {
-      setTimeout(() => new TextScramble(el).setText(text), i * 260);
-    });
-  }, 1250);
-}
