@@ -197,8 +197,14 @@ export function initEarth(containerId) {
 
   animate();
 
-  // Resize handler
+  let lastWidth = window.innerWidth;
+
+  // Resize handler (ignore height-only changes caused by mobile address bars)
   window.addEventListener('resize', () => {
+    const width = window.innerWidth;
+    if (width === lastWidth) return;
+    lastWidth = width;
+
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
