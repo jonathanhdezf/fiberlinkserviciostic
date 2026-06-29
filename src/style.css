@@ -422,7 +422,7 @@ h2.sh{
   padding:28px 26px;
   display:flex;flex-direction:column;
   position:relative;overflow:hidden;
-  transition:background .3s,transform .25s var(--ease),box-shadow .3s;
+  transition:background .3s,box-shadow .3s;
   min-height:280px;
   will-change:transform;
   transform-style:preserve-3d;
@@ -527,7 +527,7 @@ h2.sh{
   background:var(--s2);border:1px solid var(--line);border-radius:14px;
   position:relative;overflow:hidden;
   counter-increment:step-num;
-  transition:background .3s,border-color .3s,transform .25s var(--ease),box-shadow .3s;
+  transition:background .3s,border-color .3s,box-shadow .3s;
 }
 .step > *{position:relative;z-index:1}
 .step::before{

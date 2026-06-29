@@ -131,8 +131,27 @@ export function initEarth(containerId) {
 
   const clock = new THREE.Clock();
 
+  // Performance optimization: only render when the hero section is visible
+  let isVisible = true;
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isVisible = entry.isIntersecting;
+      });
+    }, { threshold: 0.01 });
+
+    const heroSection = document.querySelector('.hero');
+    if (heroSection) {
+      observer.observe(heroSection);
+    } else {
+      observer.observe(container);
+    }
+  }
+
   function animate() {
     requestAnimationFrame(animate);
+    if (!isVisible) return; // Skip heavy rendering calculations when hidden
+
     const elapsedTime = clock.getElapsedTime();
 
     targetX = mouseX * 0.5;
