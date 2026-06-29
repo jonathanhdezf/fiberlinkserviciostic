@@ -125,4 +125,63 @@ export function initAnimations() {
       });
     });
   });
+
+  // 7. Hero stat counter animation ("4" animates from 0)
+  const numStat = document.querySelector('.hstat-num[style*="color:var(--c)"]');
+  if (numStat && !isNaN(parseInt(numStat.textContent))) {
+    const target = parseInt(numStat.textContent);
+    ScrollTrigger.create({
+      trigger: '.hero-stats',
+      start: 'top 88%',
+      once: true,
+      onEnter: () => {
+        let frame = 0;
+        const total = 60;
+        const tick = () => {
+          frame++;
+          const t = frame / total;
+          const eased = 1 - Math.pow(1 - t, 3);
+          numStat.textContent = Math.round(target * eased);
+          if (frame < total) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    });
+  }
+
+  // 8. Hero orbs multilayer parallax
+  gsap.to('.hero-orb-1', {
+    y: -70, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 }
+  });
+  gsap.to('.hero-orb-2', {
+    y: -45, x: 25, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.4 }
+  });
+  gsap.to('.hero-orb-3', {
+    y: -30, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.8 }
+  });
+
+  // 9. Active section detector for drawer nav
+  const drawerLinks = document.querySelectorAll('.drawer-nav .dl');
+  const sectionIds = ['inicio', 'servicios', 'herramientas', 'proceso', 'fiberlink-labs', 'contacto'];
+  if (drawerLinks.length && 'IntersectionObserver' in window) {
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          drawerLinks.forEach(link => {
+            const href = link.getAttribute('href')?.replace('#', '');
+            link.classList.toggle('nav-active', href === id);
+          });
+        }
+      });
+    }, { rootMargin: '-25% 0px -65% 0px' });
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) sectionObserver.observe(el);
+    });
+  }
 }

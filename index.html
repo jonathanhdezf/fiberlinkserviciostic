@@ -13,6 +13,15 @@
 </head>
 <body>
 
+<!-- ============================
+     CUSTOM CURSOR
+============================ -->
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+<div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+
+<!-- Grain overlay -->
+<div class="grain-overlay" aria-hidden="true"></div>
+
 <!-- Physics canvas background -->
 <div id="webgl-container" aria-hidden="true"></div>
 
@@ -189,19 +198,65 @@
        MARQUEE BAND
   ============================ -->
   <div class="tools-band" id="herramientas" aria-label="Herramientas y plataformas">
-    <div class="marquee" id="mq">
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Diagnóstico remoto</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mesa de tickets</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>CCTV IP</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Punto de venta</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cableado estructurado</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Respaldos en nube</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>WiFi empresarial</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Landing pages</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Correo y nube</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mantenimiento preventivo</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Ubiquiti</div>
-      <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>MikroTik RouterOS</div>
+    <!-- Row 1 — forward -->
+    <div class="marquee-row">
+      <div class="marquee" id="mq">
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Diagnóstico remoto</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mesa de tickets</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>CCTV IP</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Punto de venta</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cableado estructurado</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Respaldos en nube</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>WiFi empresarial</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Landing pages</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Correo y nube</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Mantenimiento preventivo</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Ubiquiti</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>MikroTik RouterOS</div>
+        <!-- Duplicated for seamless loop -->
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Diagnóstico remoto</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Mesa de tickets</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>CCTV IP</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Punto de venta</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Cableado estructurado</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Respaldos en nube</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>WiFi empresarial</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Landing pages</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Correo y nube</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Mantenimiento preventivo</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Soporte Ubiquiti</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>MikroTik RouterOS</div>
+      </div>
+    </div>
+    <!-- Row 2 — reverse -->
+    <div class="marquee-row">
+      <div class="marquee marquee-reverse">
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>React · Next.js</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Cisco</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Antivirus avanzado</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>VPN corporativa</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Monitoreo 24/7</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Switch L2/L3</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>IP Pública estática</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Fibra óptica</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Soporte Dahua</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cámaras IP</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>SEO técnico</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Hosting optimizado</div>
+        <!-- Duplicated for seamless loop -->
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>React · Next.js</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Soporte Cisco</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Antivirus avanzado</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>VPN corporativa</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Monitoreo 24/7</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Switch L2/L3</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>IP Pública estática</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Fibra óptica</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Soporte Dahua</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Cámaras IP</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>SEO técnico</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Hosting optimizado</div>
+      </div>
     </div>
   </div>
 

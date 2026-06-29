@@ -271,6 +271,17 @@ body.menu-open .hamburger span:nth-child(3){transform:translateY(-5px) rotate(-4
   font-size:.78rem;font-weight:600;color:var(--c);
   margin-bottom:28px;
   animation:fadeUp .7s var(--ease) both;
+  position:relative;overflow:hidden;
+}
+.hero-badge::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%);
+  transform:translateX(-100%);
+  animation:badgeShimmer 3.5s ease infinite 2.2s;
+}
+@keyframes badgeShimmer{
+  0%{transform:translateX(-100%)}
+  30%,100%{transform:translateX(200%)}
 }
 .badge-dot{
   width:18px;height:18px;border-radius:50%;
@@ -413,13 +424,19 @@ h2.sh{
   position:relative;overflow:hidden;
   transition:background .3s,transform .25s var(--ease),box-shadow .3s;
   min-height:280px;
+  will-change:transform;
+  transform-style:preserve-3d;
 }
 .bc::after{
   content:'';position:absolute;inset:0;
   background:radial-gradient(circle at var(--cx,50%) var(--cy,50%),rgba(72,211,155,.11),transparent 52%);
   opacity:0;transition:opacity .3s;pointer-events:none;
 }
-.bc:hover{background:rgba(12, 20, 34, 0.85);box-shadow:inset 0 0 0 1px rgba(72,211,155,.14)}
+.bc:hover{background:rgba(10,18,30,.92);box-shadow:
+  inset 0 0 0 1px rgba(72,211,155,.28),
+  inset 0 -1px 0 rgba(72,211,155,.12),
+  0 24px 64px rgba(0,0,0,.35),
+  0 0 48px rgba(72,211,155,.04);}
 .bc:hover::after{opacity:1}
 
 .bc-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:700;color:var(--c);letter-spacing:.1em;margin-bottom:16px}
@@ -429,7 +446,7 @@ h2.sh{
   display:grid;place-items:center;margin-bottom:16px;
   transition:transform .3s var(--ease);flex:0 0 44px;
 }
-.bc:hover .bc-icon{transform:scale(1.1) rotate(-4deg)}
+.bc:hover .bc-icon{transform:scale(1.18) rotate(-7deg);box-shadow:0 0 28px rgba(72,211,155,.22)}
 .bc-icon svg{width:22px;height:22px}
 
 .bc h3{font-family:'Outfit',sans-serif;font-size:1.08rem;font-weight:700;letter-spacing:-.03em;margin-bottom:10px;line-height:1.2}
@@ -450,10 +467,14 @@ h2.sh{
   overflow:hidden;
   border-block:1px solid var(--line);
   background:rgba(255,255,255,.018);
-  padding:18px 0;
+  padding:0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
 }
-.marquee{display:flex;gap:10px;width:max-content;animation:marquee 32s linear infinite}
+.marquee-row{padding:9px 0}
+.marquee{display:flex;gap:10px;width:max-content;animation:marquee 38s linear infinite}
 .marquee:hover{animation-play-state:paused}
+.marquee-reverse{animation-direction:reverse;animation-duration:44s}
 @keyframes marquee{to{transform:translateX(-50%)}}
 
 .tool-pill{
@@ -499,18 +520,29 @@ h2.sh{
 }
 .cicon svg{width:15px;height:15px;stroke:var(--c);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.steps{display:grid;gap:3px}
+.steps{display:grid;gap:3px;counter-reset:step-num}
 .step{
   display:grid;grid-template-columns:72px 1fr;gap:20px;
   padding:26px 22px;
   background:var(--s2);border:1px solid var(--line);border-radius:14px;
   position:relative;overflow:hidden;
+  counter-increment:step-num;
   transition:background .3s,border-color .3s,transform .25s var(--ease),box-shadow .3s;
 }
+.step > *{position:relative;z-index:1}
 .step::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
   background:linear-gradient(to bottom,var(--c),transparent);
   opacity:0;transition:opacity .3s;
+}
+.step::after{
+  content:counter(step-num,decimal-leading-zero);
+  position:absolute;right:-10px;top:50%;
+  transform:translateY(-50%);
+  font-family:'Outfit',sans-serif;font-size:7.5rem;font-weight:800;
+  color:rgba(72,211,155,.055);
+  letter-spacing:-.08em;line-height:1;
+  pointer-events:none;user-select:none;z-index:0;
 }
 .step:hover{
   background:var(--s3);border-color:rgba(72,211,155,.2);
@@ -977,6 +1009,12 @@ textarea{min-height:115px;resize:vertical}
 .drawer.open .drawer-nav a:nth-child(5){transition-delay:.26s}
 .drawer-nav a svg{width:14px;height:14px;opacity:.35}
 .drawer-nav a:hover{border-color:rgba(72,211,155,.2);background:rgba(72,211,155,.06);color:var(--text)}
+.drawer-nav a.nav-active{
+  border-color:rgba(72,211,155,.3);
+  background:rgba(72,211,155,.08);
+  color:var(--c);
+}
+.drawer-nav a.nav-active svg{opacity:.9;stroke:var(--c)}
 
 .drawer-foot{
   padding:18px 16px;border-top:1px solid var(--line);
@@ -1092,3 +1130,72 @@ textarea{min-height:115px;resize:vertical}
 @media(min-width:481px){
   .modal-body .form-row{grid-template-columns:1fr 1fr}
 }
+
+/* ============================
+   CUSTOM CURSOR
+============================ */
+[data-cursor="active"]{cursor:none !important}
+[data-cursor="active"] *{cursor:none !important}
+
+.cursor-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--c);
+  box-shadow:0 0 10px var(--c),0 0 22px rgba(72,211,155,.5);
+  position:fixed;top:0;left:0;z-index:9999;
+  pointer-events:none;will-change:transform;
+  transition:width .18s var(--ease),height .18s var(--ease),opacity .2s,box-shadow .2s;
+}
+.cursor-ring{
+  width:38px;height:38px;border-radius:50%;
+  border:1.5px solid rgba(72,211,155,.5);
+  background:transparent;
+  position:fixed;top:0;left:0;z-index:9998;
+  pointer-events:none;will-change:transform;
+  transition:width .3s var(--ease),height .3s var(--ease),border-color .2s,background .2s,opacity .3s;
+}
+body.cursor-hover .cursor-dot{width:0;height:0;opacity:0}
+body.cursor-hover .cursor-ring{
+  width:58px;height:58px;
+  border-color:rgba(72,211,155,.28);
+  background:rgba(72,211,155,.05);
+}
+@media(pointer:coarse){
+  .cursor-dot,.cursor-ring{display:none!important}
+}
+
+/* ============================
+   GRAIN OVERLAY
+============================ */
+.grain-overlay{
+  position:fixed;inset:0;z-index:2;
+  pointer-events:none;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:220px 220px;
+  animation:grainAnim .35s steps(1) infinite;
+}
+@keyframes grainAnim{
+  0%{background-position:0 0}
+  20%{background-position:-55px 40px}
+  40%{background-position:20px -65px}
+  60%{background-position:-30px 55px}
+  80%{background-position:45px -20px}
+  100%{background-position:0 0}
+}
+
+/* ============================
+   TEXT SCRAMBLE CHARS
+============================ */
+.scramble-char{
+  color:var(--c);opacity:.65;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ============================
+   HERO ORB ENHANCEMENTS
+============================ */
+.hero-orb-1{width:700px;height:700px;background:rgba(72,211,155,.07)}
+.hero-orb-2{width:500px;height:500px;background:rgba(59,130,246,.06)}
+.hero-orb-3{width:380px;height:380px;background:rgba(139,92,246,.055)}
+
+/* Bento perspective for tilt */
+.bento{perspective:900px}

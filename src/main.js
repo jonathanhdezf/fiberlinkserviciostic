@@ -1,4 +1,5 @@
 import './style.css';
+import gsap from 'gsap';
 import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
 
@@ -11,6 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. UI Interactions (Drawer, Modals)
   initUI();
+
+  // 4. Premium cursor (desktop only)
+  initCursor();
+
+  // 5. Text scramble on hero h1
+  initTextScramble();
 });
 
 function initUI() {
@@ -284,12 +291,134 @@ function initUI() {
     });
   });
   
-  // Bento Cards Glow
+  // Bento Cards Glow + 3D Tilt
   document.querySelectorAll('.bc').forEach(card => {
     card.addEventListener('mousemove', e => {
       const r = card.getBoundingClientRect();
-      card.style.setProperty('--cx', ((e.clientX - r.left) / r.width * 100) + '%');
-      card.style.setProperty('--cy', ((e.clientY - r.top) / r.height * 100) + '%');
+      const cx = (e.clientX - r.left) / r.width;
+      const cy = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--cx', (cx * 100) + '%');
+      card.style.setProperty('--cy', (cy * 100) + '%');
+      // 3D tilt
+      gsap.to(card, {
+        rotateY: (cx - 0.5) * 9,
+        rotateX: (cy - 0.5) * -7,
+        transformPerspective: 800,
+        duration: 0.38,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, {
+        rotateY: 0, rotateX: 0,
+        duration: 0.9,
+        ease: 'elastic.out(1, 0.38)',
+        overwrite: 'auto'
+      });
     });
   });
+}
+
+// ============================
+// CUSTOM CURSOR
+// ============================
+function initCursor() {
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!dot || !ring) return;
+
+  document.documentElement.setAttribute('data-cursor', 'active');
+  gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
+
+  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const pos   = { x: mouse.x, y: mouse.y };
+  const xSet  = gsap.quickSetter(ring, 'x', 'px');
+  const ySet  = gsap.quickSetter(ring, 'y', 'px');
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    gsap.set(dot, { x: mouse.x, y: mouse.y });
+  });
+
+  gsap.ticker.add(() => {
+    pos.x += (mouse.x - pos.x) * 0.11;
+    pos.y += (mouse.y - pos.y) * 0.11;
+    xSet(pos.x);
+    ySet(pos.y);
+  });
+
+  const selectors = 'a,button,.bc,.partner-item,.tool-pill,input,select,textarea,.soc,.step,.citem,label';
+  document.querySelectorAll(selectors).forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+
+  document.addEventListener('mousedown', () => {
+    gsap.to(dot,  { scale: 1.6, duration: 0.12, ease: 'power2.out', overwrite: true });
+    gsap.to(ring, { scale: 0.8, duration: 0.12, ease: 'power2.out', overwrite: true });
+  });
+  document.addEventListener('mouseup', () => {
+    gsap.to([dot, ring], { scale: 1, duration: 0.55, ease: 'elastic.out(1.2, 0.4)', overwrite: true });
+  });
+  document.addEventListener('mouseleave', () => gsap.to([dot, ring], { opacity: 0, duration: 0.3 }));
+  document.addEventListener('mouseenter', () => gsap.to([dot, ring], { opacity: 1, duration: 0.3 }));
+}
+
+// ============================
+// TEXT SCRAMBLE
+// ============================
+class TextScramble {
+  constructor(el) {
+    this.el = el;
+    this.chars = '!<>_\/[]{}=+*^?#@0123456789ABCDEFGabcdefg';
+  }
+  setText(text) {
+    return new Promise(resolve => {
+      const queue = text.split('').map((to, i) => ({
+        to,
+        start: Math.floor(Math.random() * 8),
+        end:   Math.floor(Math.random() * 14) + 12 + i
+      }));
+      let frame = 0;
+      const update = () => {
+        let out = '', done = 0;
+        queue.forEach(q => {
+          if (frame >= q.end) {
+            done++; out += q.to;
+          } else if (frame >= q.start) {
+            if (!q.char || Math.random() < 0.28) {
+              q.char = this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+            out += `<span class="scramble-char">${q.char}</span>`;
+          } else {
+            out += q.to === ' ' ? '&nbsp;' : `<span style="opacity:.1">${q.to}</span>`;
+          }
+        });
+        this.el.innerHTML = out;
+        if (done === queue.length) { this.el.textContent = text; resolve(); }
+        else { frame++; requestAnimationFrame(update); }
+      };
+      requestAnimationFrame(update);
+    });
+  }
+}
+
+function initTextScramble() {
+  const lines = document.querySelectorAll('.hero-h1 .line span');
+  const targets = [];
+  lines.forEach(el => {
+    if (!el.classList.contains('grad-text')) {
+      targets.push({ el, text: el.textContent.trim() });
+    }
+  });
+  if (!targets.length) return;
+  // Run after hero slideUp animation completes (~1.2s)
+  setTimeout(() => {
+    targets.forEach(({ el, text }, i) => {
+      setTimeout(() => new TextScramble(el).setText(text), i * 260);
+    });
+  }, 1250);
 }
