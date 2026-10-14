@@ -42,7 +42,9 @@ function initUI() {
     drawer.setAttribute('aria-hidden','false');
     if(menuBtn) menuBtn.setAttribute('aria-expanded','true');
     document.body.classList.add('menu-open');
+    document.documentElement.classList.add('menu-open');
     document.body.style.overflow='hidden';
+    document.documentElement.style.overflow='hidden';
   }
   
   function closeDrawer(){
@@ -51,7 +53,9 @@ function initUI() {
     drawer.setAttribute('aria-hidden','true');
     if(menuBtn) menuBtn.setAttribute('aria-expanded','false');
     document.body.classList.remove('menu-open');
+    document.documentElement.classList.remove('menu-open');
     document.body.style.overflow='';
+    document.documentElement.style.overflow='';
   }
   
   if(menuBtn) menuBtn.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
@@ -506,7 +510,9 @@ function initSmoothNav() {
         drawer.setAttribute('aria-hidden', 'true');
         if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
         document.body.classList.remove('menu-open');
+        document.documentElement.classList.remove('menu-open');
         document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
       }
 
       // Close dropdown if open
@@ -549,7 +555,9 @@ function initSmoothNav() {
         drawer.setAttribute('aria-hidden', 'true');
         if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
         document.body.classList.remove('menu-open');
+        document.documentElement.classList.remove('menu-open');
         document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
       }
     }
   });
