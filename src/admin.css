@@ -1,21 +1,21 @@
 :root {
-  --bg-color: #050505;
-  --panel-bg: rgba(20, 20, 22, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-main: #f0f0f0;
-  --text-muted: #999;
-  --primary: #48d39b;
-  --primary-glow: rgba(72, 211, 155, 0.3);
-  --secondary: #3b82f6;
+  --bg-color: #070803;
+  --panel-bg: rgba(12, 14, 9, 0.88);
+  --border-color: rgba(156, 195, 46, 0.22);
+  --text-main: #f2f4ef;
+  --text-muted: rgba(242, 244, 239, 0.6);
+  --primary: #9cc32e;
+  --primary-glow: rgba(156, 195, 46, 0.35);
+  --secondary: #7ce7ff;
   --danger: #ef4444;
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Archivo', 'Inter', sans-serif;
+  --font-display: 'Eurostar', 'Outfit', sans-serif;
+  --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
   
   --state-creacion: #a855f7;
   --state-diagnostico: #f59e0b;
   --state-proceso: #3b82f6;
-  --state-resuelto: #10b981;
+  --state-resuelto: #9cc32e;
 }
 
 * {

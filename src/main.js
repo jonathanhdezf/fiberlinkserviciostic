@@ -4,16 +4,19 @@ import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize 3D Earth in the Hero
+  // 1. Initialize Cyber Background canvas (floating matrix particles)
+  initCyberBg();
+
+  // 2. Initialize 3D Earth in the Hero
   initEarth('webgl-container');
 
-  // 2. Initialize GSAP and smooth scrolling
+  // 3. Initialize GSAP and smooth scrolling
   initAnimations();
 
-  // 3. UI Interactions (Drawer, Modals)
+  // 4. UI Interactions (Drawer, Modals)
   initUI();
 
-  // 4. Premium cursor (desktop only)
+  // 5. Premium cursor (desktop only)
   initCursor();
 });
 
@@ -234,7 +237,7 @@ function initUI() {
       });
     };
 
-    await typeLine('> INICIANDO ANÁLISIS DE RED Y SEGURIDAD...', 300, '#48d39b');
+    await typeLine('> INICIANDO ANÁLISIS DE RED Y SEGURIDAD...', 300, '#9cc32e');
     await typeLine('> Extrayendo telemetría del cliente...', 600);
     
     const ua = navigator.userAgent;
@@ -257,7 +260,7 @@ function initUI() {
     } catch(e) {
       ip = 'Oculta / Firewall';
     }
-    await typeLine(`  [OK] IP Localizada: ${ip}`, 400, '#3b82f6');
+    await typeLine(`  [OK] IP Localizada: ${ip}`, 400, '#7ce7ff');
     
     await typeLine('> Evaluando parámetros de enlace...', 700);
     await typeLine(`  [INFO] Tipo de red: ${type ? type.toUpperCase() : 'N/A'}`, 300);
@@ -269,7 +272,7 @@ function initUI() {
     await typeLine(`  [PASS] Filtrado DNS Leaks: Limpio`, 500);
     await typeLine(`  [WARN] Puertos críticos: 1 expuesto (Revisión recomendada)`, 600, '#f59e0b');
     
-    await typeLine('> GENERANDO DIAGNÓSTICO FINAL...', 1000, '#48d39b');
+    await typeLine('> GENERANDO DIAGNÓSTICO FINAL...', 1000, '#9cc32e');
     await typeLine(`  Su conexión presenta variaciones que pueden afectar servicios críticos. Para máxima estabilidad corporativa, se sugiere migrar a Fibra Óptica Simétrica <a href="https://fibergravitymx.vercel.app/" target="_blank" style="color:var(--primary);text-decoration:underline;">Fibergravity Teziutlan</a>.`, 500, '#f0f0f0');
     await typeLine('> SESIÓN FINALIZADA.', 800);
     termActive = false;
@@ -387,4 +390,73 @@ function initCursor() {
   document.addEventListener('mouseenter', () => gsap.to([dot, ring], { opacity: 1, duration: 0.3 }));
 }
 
+// ============================
+// CYBER BACKGROUND CANVAS (AI-DAY)
+// ============================
+function initCyberBg() {
+  const canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let raf = null;
+  let w = 0, h = 0;
+  let digits = [];
+  const S = 18;
 
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+
+    const cols = Math.ceil(w / S) + 1;
+    const rows = Math.ceil(h / S) + 1;
+    digits = [];
+    for (let x = 0; x < cols; x++) {
+      for (let y = 0; y < rows; y++) {
+        if (Math.random() > 0.48) continue;
+        digits.push({
+          x: x * S,
+          y: y * S + 12,
+          c: Math.random() > 0.5 ? '0' : '7',
+          p: Math.random() * Math.PI * 2,
+          s: 0.01 + Math.random() * 0.028,
+          lime: Math.random() > 0.93,
+          vy: (Math.random() > 0.5 ? 1 : -1) * (0.06 + Math.random() * 0.22),
+          dx: Math.random() * Math.PI * 2,
+          flip: 0.002 + Math.random() * 0.004
+        });
+      }
+    }
+  }
+
+  resize();
+  window.addEventListener('resize', () => {
+    if (Math.abs(window.innerWidth - w) > 10) {
+      resize();
+    }
+  });
+
+  function loop() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.font = '13px "Share Tech Mono", monospace';
+    for (let i = 0; i < digits.length; i++) {
+      const d = digits[i];
+      d.p += d.s;
+      d.dx += 0.012;
+      d.y += d.vy;
+      if (d.y > h + 14) d.y = -2;
+      else if (d.y < -14) d.y = h + 2;
+      if (Math.random() < d.flip) d.c = d.c === '0' ? '7' : '0';
+      const a = (Math.sin(d.p) + 1) / 2;
+      ctx.fillStyle = d.lime
+        ? 'rgba(156,195,46,' + (0.14 + a * 0.40).toFixed(3) + ')'
+        : 'rgba(242,244,239,' + (0.025 + a * 0.08).toFixed(3) + ')';
+      ctx.fillText(d.c, d.x + Math.sin(d.dx) * 1.6, d.y);
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  loop();
+}

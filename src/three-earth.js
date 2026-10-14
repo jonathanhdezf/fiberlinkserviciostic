@@ -47,10 +47,10 @@ export function initEarth(containerId) {
   const coreSegments = isMobile ? 24 : 64;
   const coreGeometry = new THREE.SphereGeometry(4.8, coreSegments, coreSegments);
   const coreMaterial = new THREE.MeshPhongMaterial({
-    color: 0x050a15,
-    emissive: 0x020510,
-    specular: 0x111111,
-    shininess: 10,
+    color: 0x070803,
+    emissive: 0x050603,
+    specular: 0x1a220a,
+    shininess: 12,
     transparent: true,
     opacity: 0.95,
   });
@@ -60,10 +60,10 @@ export function initEarth(containerId) {
   // 2. Wireframe / Tech Grid
   const wireGeometry = new THREE.SphereGeometry(5, isMobile ? 20 : 32, isMobile ? 20 : 32);
   const wireMaterial = new THREE.MeshBasicMaterial({
-    color: 0x48d39b,
+    color: 0x9cc32e,
     wireframe: true,
     transparent: true,
-    opacity: 0.08,
+    opacity: 0.14,
   });
   const wireframe = new THREE.Mesh(wireGeometry, wireMaterial);
   earthGroup.add(wireframe);
@@ -86,10 +86,10 @@ export function initEarth(containerId) {
 
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   const particleMaterial = new THREE.PointsMaterial({
-    size: isMobile ? 0.05 : 0.04,
-    color: 0x3ecf8e,
+    size: isMobile ? 0.05 : 0.045,
+    color: 0x9cc32e,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.9,
     blending: THREE.AdditiveBlending
   });
   
@@ -99,9 +99,9 @@ export function initEarth(containerId) {
   // 4. Atmosphere Glow
   const atmosGeometry = new THREE.SphereGeometry(5.2, coreSegments, coreSegments);
   const atmosMaterial = new THREE.MeshPhongMaterial({
-    color: 0x3b82f6,
+    color: 0x9cc32e,
     transparent: true,
-    opacity: 0.12,
+    opacity: 0.10,
     side: THREE.BackSide,
     blending: THREE.AdditiveBlending,
     depthWrite: false
@@ -110,14 +110,14 @@ export function initEarth(containerId) {
   earthGroup.add(atmosphere);
 
   // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+  const ambientLight = new THREE.AmbientLight(0xf2f4ef, 0.25);
   scene.add(ambientLight);
 
-  const pointLight = new THREE.PointLight(0x48d39b, 2, 50);
+  const pointLight = new THREE.PointLight(0x9cc32e, 2.5, 50);
   pointLight.position.set(10, 10, 10);
   scene.add(pointLight);
 
-  const pointLight2 = new THREE.PointLight(0x8b5cf6, 2, 50);
+  const pointLight2 = new THREE.PointLight(0xb8dc3e, 1.5, 50);
   pointLight2.position.set(-10, -10, 10);
   scene.add(pointLight2);
 
@@ -133,9 +133,9 @@ export function initEarth(containerId) {
   bgParticlesGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
   const bgParticleMat = new THREE.PointsMaterial({
     size: 0.05,
-    color: 0x7ce7ff,
+    color: 0x9cc32e,
     transparent: true,
-    opacity: 0.4
+    opacity: 0.35
   });
   const bgParticles = new THREE.Points(bgParticlesGeo, bgParticleMat);
   scene.add(bgParticles);

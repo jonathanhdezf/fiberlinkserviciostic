@@ -7,7 +7,7 @@
   <title>Fiberlink Servicios TIC | Soporte técnico, redes y soluciones digitales</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Archivo:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="/src/style.css" />
 </head>
@@ -19,11 +19,22 @@
 <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
 <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
 
+<!-- ============================
+     CYBER BACKGROUND LAYERS (AI-DAY)
+============================ -->
+<div class="bg bg--base" aria-hidden="true"></div>
+<div class="bg bg--wash" aria-hidden="true"></div>
+<div class="bg bg--glow" aria-hidden="true"></div>
+<div class="bg--scan" aria-hidden="true"></div>
+<canvas id="bgCanvas" class="bg--canvas" aria-hidden="true"></canvas>
+<div class="bg bg--lines" aria-hidden="true"></div>
+<div class="bg bg--vignette" aria-hidden="true"></div>
+
+<!-- Physics canvas background (3D Earth) -->
+<div id="webgl-container" aria-hidden="true"></div>
+
 <!-- Grain overlay -->
 <div class="grain-overlay" aria-hidden="true"></div>
-
-<!-- Physics canvas background -->
-<div id="webgl-container" aria-hidden="true"></div>
 
 <!-- Scroll progress -->
 <div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
@@ -152,9 +163,12 @@
 
       <div class="bento reveal from-scale">
         <article class="bc">
+          <div class="card-spin" aria-hidden="true"></div>
+          <div class="card-blob" aria-hidden="true"></div>
+          <div class="card-inner-overlay" aria-hidden="true"></div>
           <div class="bc-num mono">01 / SOPORTE</div>
-          <div class="bc-icon" style="background:rgba(72,211,155,.1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#48d39b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <div class="bc-icon" style="background:rgba(156,195,46,.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9cc32e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
           <h3>Soporte técnico presencial y remoto</h3>
           <p>Diagnóstico, mantenimiento, instalación de software, respaldo de información, optimización y recuperación de equipos.</p>
@@ -162,9 +176,12 @@
         </article>
 
         <article class="bc">
+          <div class="card-spin" aria-hidden="true"></div>
+          <div class="card-blob" aria-hidden="true"></div>
+          <div class="card-inner-overlay" aria-hidden="true"></div>
           <div class="bc-num mono">02 / NEGOCIO</div>
-          <div class="bc-icon" style="background:rgba(59,130,246,.1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <div class="bc-icon" style="background:rgba(156,195,46,.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9cc32e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           </div>
           <h3>Punto de venta y operación comercial</h3>
           <p>Configuración de sistemas POS, impresoras, lectores, inventario, usuarios, respaldos y flujo de caja para comercios.</p>
@@ -172,9 +189,12 @@
         </article>
 
         <article class="bc">
+          <div class="card-spin" aria-hidden="true"></div>
+          <div class="card-blob" aria-hidden="true"></div>
+          <div class="card-inner-overlay" aria-hidden="true"></div>
           <div class="bc-num mono">03 / INFRA</div>
-          <div class="bc-icon" style="background:rgba(139,92,246,.1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          <div class="bc-icon" style="background:rgba(156,195,46,.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9cc32e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
           </div>
           <h3>Redes, WiFi y videovigilancia</h3>
           <p>Cableado, routers, switches, cámaras, NVR, acceso remoto, revisión de cobertura y ordenamiento de infraestructura.</p>
@@ -182,9 +202,12 @@
         </article>
 
         <article class="bc">
+          <div class="card-spin" aria-hidden="true"></div>
+          <div class="card-blob" aria-hidden="true"></div>
+          <div class="card-inner-overlay" aria-hidden="true"></div>
           <div class="bc-num mono">04 / DIGITAL</div>
-          <div class="bc-icon" style="background:rgba(245,158,11,.1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <div class="bc-icon" style="background:rgba(156,195,46,.12)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9cc32e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
           </div>
           <h3>Sitios web y marketing digital</h3>
           <p>Landing pages, páginas comerciales, presencia en buscadores, formularios de contacto y mejoras para captar clientes.</p>
@@ -450,7 +473,7 @@
           <div class="brand-mark"><img class="brand-logo" src="logo.gif" alt="" aria-hidden="true"></div>
           <div class="brand-text"><strong>Fiberlink</strong><span>Servicios TIC</span></div>
         </a>
-        <div class="footer-status live-pill" style="margin-top: 10px; margin-bottom: 2px; padding: 4px 10px; font-size: 0.68rem; width: fit-content; pointer-events: none; border-color: rgba(72,211,155,.15); background: rgba(72,211,155,.04);">
+        <div class="footer-status live-pill" style="margin-top: 10px; margin-bottom: 2px; padding: 4px 10px; font-size: 0.68rem; width: fit-content; pointer-events: none; border-color: rgba(156,195,46,.25); background: rgba(156,195,46,.08);">
           <span class="live-dot"></span>Soporte Activo
         </div>
         <p>Soporte técnico, redes, CCTV, punto de venta y presencia web para Teziutlan, Puebla y región.</p>
