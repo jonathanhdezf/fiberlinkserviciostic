@@ -2,6 +2,7 @@ import './style.css';
 import gsap from 'gsap';
 import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
+import { ticketService } from './services/ticketService.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Cyber Background canvas (floating matrix particles)
@@ -78,19 +79,103 @@ function initUI() {
   if(drawerClose) drawerClose.addEventListener('click', closeDrawer);
   document.querySelectorAll('.dl').forEach(a => a.addEventListener('click', closeDrawer));
 
-  // Ticket Modal
+  // ==========================================
+  // STEPPER TICKET MODAL & BACKEND INTEGRATION
+  // ==========================================
   const modal = document.getElementById('ticketModal');
   const ticketForm = document.getElementById('ticketForm');
   const toast = document.getElementById('ticketToast');
   const PHONE = '522311024672';
-  let prio = 'Normal';
+  function waUrl(msg){ return `https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}` }
+
+  let currentStep = 1;
+  const stepperProgressBar = document.getElementById('stepperProgressBar');
+  const stepSubHeading = document.getElementById('stepSubHeading');
+  const stepPrevBtn = document.getElementById('stepPrevBtn');
+  const stepNextBtn = document.getElementById('stepNextBtn');
+  const stepperControls = document.getElementById('stepperControls');
+  const stepBadges = document.querySelectorAll('.step-badge');
+  const formSteps = document.querySelectorAll('.form-step');
+
+  const subHeadings = {
+    1: 'Selecciona el tipo de servicio y modalidad que requieres.',
+    2: 'Describe la situación técnica e indica la prioridad del caso.',
+    3: 'Ingresa tus datos de contacto para coordinar la atención técnica.',
+    4: '¡Solicitud registrada con éxito! Folio generado.'
+  };
+
+  function goToStep(step) {
+    currentStep = Math.max(1, Math.min(4, step));
+
+    // Update active form panes
+    formSteps.forEach(pane => {
+      const pStep = parseInt(pane.getAttribute('data-step'));
+      if (pStep === currentStep) {
+        pane.classList.add('active');
+      } else {
+        pane.classList.remove('active');
+      }
+    });
+
+    // Update step badges
+    stepBadges.forEach(badge => {
+      const target = parseInt(badge.getAttribute('data-step-target'));
+      badge.classList.remove('active', 'completed');
+      if (target === currentStep) {
+        badge.classList.add('active');
+      } else if (target < currentStep) {
+        badge.classList.add('completed');
+      }
+    });
+
+    // Update Progress Bar
+    const progressMap = { 1: '25%', 2: '50%', 3: '75%', 4: '100%' };
+    if (stepperProgressBar) {
+      stepperProgressBar.style.width = progressMap[currentStep] || '25%';
+    }
+
+    // Update Subheading
+    if (stepSubHeading) {
+      stepSubHeading.textContent = subHeadings[currentStep] || '';
+    }
+
+    // Update Controls visibility
+    if (stepperControls) {
+      if (currentStep === 4) {
+        stepperControls.style.display = 'none';
+      } else {
+        stepperControls.style.display = 'flex';
+      }
+    }
+
+    if (stepPrevBtn) {
+      stepPrevBtn.style.display = (currentStep > 1 && currentStep < 4) ? 'inline-flex' : 'none';
+    }
+
+    if (stepNextBtn) {
+      if (currentStep === 3) {
+        stepNextBtn.innerHTML = '<span>⚡ Generar Ticket</span>';
+      } else {
+        stepNextBtn.innerHTML = '<span>Continuar &rarr;</span>';
+      }
+    }
+
+    // Focus first relevant field per step
+    if (currentStep === 2) {
+      setTimeout(() => document.getElementById('ticketMessage')?.focus(), 150);
+    } else if (currentStep === 3) {
+      setTimeout(() => document.getElementById('ticketName')?.focus(), 150);
+    }
+  }
 
   function openModal(){
     if(!modal) return;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden','false');
     document.body.style.overflow='hidden';
-    setTimeout(() => modal.querySelector('input[name="name"]')?.focus(), 140);
+    if (currentStep === 4) {
+      resetStepperForm();
+    }
   }
   
   function closeModal(){
@@ -104,78 +189,279 @@ function initUI() {
   document.querySelectorAll('.open-ticket').forEach(b => b.addEventListener('click', openModal));
   document.querySelectorAll('[data-close-modal]').forEach(b => b.addEventListener('click', closeModal));
 
-  document.querySelectorAll('.priority button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.priority button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      prio = btn.dataset.p;
+  // Allow clicking back to completed steps via badges
+  stepBadges.forEach(badge => {
+    badge.addEventListener('click', () => {
+      const target = parseInt(badge.getAttribute('data-step-target'));
+      if (target < currentStep) {
+        goToStep(target);
+      }
     });
   });
 
-  function saveTicketToLocalStorage(ticketData) {
-    const tickets = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
-    const folioNum = tickets.length > 0 ? Math.max(...tickets.map(t => parseInt(t.folio.split('-')[1]) || 1000)) + 1 : 1001;
-    const folio = `FL-${folioNum}`;
-    
-    const newTicket = {
-      id: Date.now().toString(),
-      folio,
-      estado: 'creación',
-      createdAt: new Date().toISOString(),
-      ...ticketData,
-      bitacora: [],
-      pos: { items: [], total: 0 }
-    };
-    
-    tickets.push(newTicket);
-    localStorage.setItem('fiberlink_tickets', JSON.stringify(tickets));
-    return newTicket;
-  }
+  // Step 1: Service Tiles & Modality Pills
+  const serviceTiles = document.querySelectorAll('.service-tile');
+  serviceTiles.forEach(tile => {
+    tile.addEventListener('click', () => {
+      serviceTiles.forEach(t => t.classList.remove('active'));
+      tile.classList.add('active');
+      const radio = tile.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    });
+  });
 
-  function waUrl(msg){ return `https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}` }
-  
-  if(ticketForm) {
-    ticketForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const val = (name) => new FormData(ticketForm).get(name)?.toString().trim() || '';
-      
-      const ticketData = {
-        name: val('name'),
-        phone: val('phone'),
-        company: val('company'),
-        address: val('address') || 'Soporte Remoto (No requiere domicilio)',
-        service: val('service'),
-        modality: val('modality'),
-        priority: prio,
-        description: val('message'),
-        source: 'Ticket Modal'
-      };
-      
-      saveTicketToLocalStorage(ticketData);
+  const modPills = document.querySelectorAll('.mod-pill');
+  const addressInput = document.getElementById('ticketAddress');
+  modPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      modPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const radio = pill.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+        if (addressInput) {
+          if (radio.value === 'Remoto') {
+            addressInput.removeAttribute('required');
+            addressInput.placeholder = 'Opcional (Atención remota vía AnyDesk / TeamViewer)';
+          } else {
+            addressInput.setAttribute('required', '');
+            addressInput.placeholder = 'Calle, número, colonia, local o referencias claras';
+          }
+        }
+      }
+    });
+  });
 
-      const msg = [
-        `Ticket Nuevo — Fiberlink Servicios TIC`,
-        `Nombre: ${ticketData.name}`,
-        `Teléfono: ${ticketData.phone}`,
-        `Empresa/Hogar: ${ticketData.company || 'No especificado'}`,
-        `Domicilio: ${ticketData.address}`,
-        `Servicio: ${ticketData.service}`,
-        `Modalidad: ${ticketData.modality}`,
-        `Prioridad: ${ticketData.priority}`,
-        `Descripción: ${ticketData.description}`,
-      ].join('\n');
-      if(toast) toast.classList.add('show');
-      setTimeout(() => {
-        window.open(waUrl(msg), '_blank', 'noopener');
-        closeModal();
-        ticketForm.reset();
-      }, 380);
+  // Step 2: Priority Tiles & Character Counter
+  const prioTiles = document.querySelectorAll('.prio-tile');
+  prioTiles.forEach(pt => {
+    pt.addEventListener('click', () => {
+      prioTiles.forEach(p => p.classList.remove('active'));
+      pt.classList.add('active');
+      const radio = pt.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    });
+  });
+
+  const ticketMsg = document.getElementById('ticketMessage');
+  const ticketCharCount = document.getElementById('ticketCharCount');
+  if (ticketMsg && ticketCharCount) {
+    ticketMsg.addEventListener('input', () => {
+      ticketCharCount.textContent = `${ticketMsg.value.length} / 400`;
+      ticketMsg.style.borderColor = '';
     });
   }
 
+  // Stepper Back Button
+  if (stepPrevBtn) {
+    stepPrevBtn.addEventListener('click', () => {
+      if (currentStep > 1) goToStep(currentStep - 1);
+    });
+  }
+
+  // Stepper Next / Submit Button
+  if (stepNextBtn) {
+    stepNextBtn.addEventListener('click', async () => {
+      // Validate Step 1
+      if (currentStep === 1) {
+        goToStep(2);
+        return;
+      }
+
+      // Validate Step 2
+      if (currentStep === 2) {
+        const desc = ticketMsg?.value.trim() || '';
+        if (desc.length < 6) {
+          if (ticketMsg) {
+            ticketMsg.style.borderColor = '#ef4444';
+            ticketMsg.focus();
+          }
+          return;
+        }
+        ticketMsg.style.borderColor = '';
+        goToStep(3);
+        return;
+      }
+
+      // Validate & Submit Step 3
+      if (currentStep === 3) {
+        const nameEl = document.getElementById('ticketName');
+        const phoneEl = document.getElementById('ticketPhone');
+        const emailEl = document.getElementById('ticketEmail');
+        const companyEl = document.getElementById('ticketCompany');
+        const addressEl = document.getElementById('ticketAddress');
+
+        const nameVal = nameEl?.value.trim() || '';
+        const phoneVal = phoneEl?.value.trim() || '';
+        const emailVal = emailEl?.value.trim() || '';
+        const compVal = companyEl?.value.trim() || '';
+        const addrVal = addressEl?.value.trim() || '';
+
+        const activeModality = document.querySelector('input[name="modality"]:checked')?.value || 'En Sitio / Domicilio';
+        const activeService = document.querySelector('input[name="service"]:checked')?.value || 'Soporte técnico';
+        const activePriority = document.querySelector('input[name="priority"]:checked')?.value || 'Normal';
+        const descVal = ticketMsg?.value.trim() || '';
+
+        let hasError = false;
+
+        if (nameVal.length < 3) {
+          if (nameEl) nameEl.style.borderColor = '#ef4444';
+          nameEl?.focus();
+          hasError = true;
+        } else if (nameEl) {
+          nameEl.style.borderColor = '';
+        }
+
+        if (phoneVal.length < 7) {
+          if (phoneEl) phoneEl.style.borderColor = '#ef4444';
+          if (!hasError) phoneEl?.focus();
+          hasError = true;
+        } else if (phoneEl) {
+          phoneEl.style.borderColor = '';
+        }
+
+        if (activeModality !== 'Remoto' && addrVal.length < 3) {
+          if (addressEl) addressEl.style.borderColor = '#ef4444';
+          if (!hasError) addressEl?.focus();
+          hasError = true;
+        } else if (addressEl) {
+          addressEl.style.borderColor = '';
+        }
+
+        if (hasError) return;
+
+        // Visual loading state
+        stepNextBtn.disabled = true;
+        const originalBtnHtml = stepNextBtn.innerHTML;
+        stepNextBtn.innerHTML = '<span>⚡ Generando Folio...</span>';
+
+        try {
+          const ticketData = {
+            name: nameVal,
+            phone: phoneVal,
+            email: emailVal,
+            company: compVal,
+            address: addrVal || (activeModality === 'Remoto' ? 'Soporte Remoto' : 'Teziutlán, Pue.'),
+            service: activeService,
+            modality: activeModality,
+            priority: activePriority,
+            description: descVal,
+            source: 'Portal Web (Asistente en Pasos)'
+          };
+
+          // Save to backend REST API (with resilient localStorage sync)
+          const newTicket = await ticketService.createTicket(ticketData);
+
+          // Populate Confirmation Screen (Step 4)
+          const confFolio = document.getElementById('confFolio');
+          const confState = document.getElementById('confState');
+          const confClient = document.getElementById('confClient');
+          const confPhone = document.getElementById('confPhone');
+          const confService = document.getElementById('confService');
+          const confPriority = document.getElementById('confPriority');
+          const confWaBtn = document.getElementById('confWaBtn');
+
+          if (confFolio) confFolio.textContent = newTicket.folio;
+          if (confState) confState.textContent = '[ REGISTRADO // MESA TÉCNICA ]';
+          if (confClient) confClient.textContent = newTicket.name;
+          if (confPhone) confPhone.textContent = newTicket.phone;
+          if (confService) confService.textContent = `${newTicket.service} (${newTicket.modality})`;
+          if (confPriority) {
+            confPriority.textContent = newTicket.priority;
+            if (newTicket.priority === 'Alta') confPriority.style.color = '#f59e0b';
+            else if (newTicket.priority === 'Urgente') confPriority.style.color = '#ef4444';
+            else confPriority.style.color = 'var(--verde)';
+          }
+
+          // Setup WhatsApp trigger button
+          if (confWaBtn) {
+            const waMsg = [
+              `*Nuevo Ticket Técnico — Fiberlink*`,
+              `*Folio:* ${newTicket.folio}`,
+              `*Cliente:* ${newTicket.name}`,
+              `*Teléfono:* ${newTicket.phone}`,
+              newTicket.company ? `*Empresa:* ${newTicket.company}` : '',
+              `*Servicio:* ${newTicket.service}`,
+              `*Modalidad:* ${newTicket.modality}`,
+              `*Prioridad:* ${newTicket.priority}`,
+              `*Domicilio:* ${newTicket.address}`,
+              `*Descripción:* ${newTicket.description}`
+            ].filter(Boolean).join('\n');
+
+            confWaBtn.onclick = () => {
+              window.open(waUrl(waMsg), '_blank', 'noopener');
+            };
+          }
+
+          // Advance to Step 4
+          goToStep(4);
+
+        } catch (err) {
+          console.error('[TicketModal] Error al crear ticket:', err);
+          alert('Hubo un inconveniente al generar el ticket. Por favor intenta de nuevo.');
+        } finally {
+          stepNextBtn.disabled = false;
+          stepNextBtn.innerHTML = originalBtnHtml;
+        }
+      }
+    });
+  }
+
+  function resetStepperForm() {
+    if (ticketForm) ticketForm.reset();
+    if (ticketCharCount) ticketCharCount.textContent = '0 / 400';
+    
+    // Reset service tiles to first
+    serviceTiles.forEach((t, i) => {
+      if (i === 0) {
+        t.classList.add('active');
+        const r = t.querySelector('input[type="radio"]');
+        if (r) r.checked = true;
+      } else {
+        t.classList.remove('active');
+      }
+    });
+
+    // Reset modality
+    modPills.forEach((p, i) => {
+      if (i === 0) {
+        p.classList.add('active');
+        const r = p.querySelector('input[type="radio"]');
+        if (r) r.checked = true;
+      } else {
+        p.classList.remove('active');
+      }
+    });
+
+    // Reset priority
+    prioTiles.forEach((p, i) => {
+      if (i === 0) {
+        p.classList.add('active');
+        const r = p.querySelector('input[type="radio"]');
+        if (r) r.checked = true;
+      } else {
+        p.classList.remove('active');
+      }
+    });
+
+    // Clear border colors
+    document.querySelectorAll('#ticketModal input, #ticketModal textarea').forEach(el => {
+      el.style.borderColor = '';
+    });
+
+    goToStep(1);
+  }
+
+  // "Crear Otro Ticket" button
+  const confNewBtn = document.getElementById('confNewBtn');
+  if (confNewBtn) {
+    confNewBtn.addEventListener('click', resetStepperForm);
+  }
+
+  // Contact Form in Footer (also connected to backend)
   const contactForm = document.getElementById('contactForm');
   if(contactForm) {
-    contactForm.addEventListener('submit', e => {
+    contactForm.addEventListener('submit', async e => {
       e.preventDefault();
       const val = (name) => new FormData(contactForm).get(name)?.toString().trim() || '';
       
@@ -188,50 +474,37 @@ function initUI() {
         modality: val('modality'),
         priority: 'Normal',
         description: val('message'),
-        source: 'Contact Form'
+        source: 'Formulario de Contacto'
       };
       
-      saveTicketToLocalStorage(ticketData);
-
-      const msg = [
-        `Nuevo Contacto — Fiberlink Servicios TIC`,
-        `Nombre: ${ticketData.name}`,
-        `Teléfono: ${ticketData.phone}`,
-        `Servicio: ${ticketData.service}`,
-        `Modalidad: ${ticketData.modality}`,
-        `Domicilio: ${ticketData.address}`,
-        `Mensaje: ${ticketData.description}`,
-      ].join('\n');
-      
       const btn = contactForm.querySelector('button[type="submit"]');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '✓ Preparando...';
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '✓ Registrando...';
       
-      setTimeout(() => {
-        window.open(waUrl(msg), '_blank', 'noopener');
-        btn.innerHTML = originalText;
-        contactForm.reset();
-      }, 380);
-    });
-  }
-
-  // Dynamic validation: make address optional when modality is Remote
-  const modalitySelects = document.querySelectorAll('select[name="modality"]');
-  modalitySelects.forEach(select => {
-    select.addEventListener('change', () => {
-      const form = select.closest('form');
-      const addressInput = form.querySelector('input[name="address"]');
-      if (addressInput) {
-        if (select.value === 'Remoto') {
-          addressInput.removeAttribute('required');
-          addressInput.placeholder = 'Opcional para soporte remoto';
-        } else {
-          addressInput.setAttribute('required', '');
-          addressInput.placeholder = 'Calle, número, colonia o referencias';
-        }
+      try {
+        const saved = await ticketService.createTicket(ticketData);
+        const msg = [
+          `*Nuevo Contacto — Fiberlink Servicios TIC*`,
+          `*Folio:* ${saved.folio}`,
+          `*Nombre:* ${ticketData.name}`,
+          `*Teléfono:* ${ticketData.phone}`,
+          `*Servicio:* ${ticketData.service}`,
+          `*Modalidad:* ${ticketData.modality}`,
+          `*Domicilio:* ${ticketData.address}`,
+          `*Mensaje:* ${ticketData.description}`,
+        ].join('\n');
+        
+        setTimeout(() => {
+          window.open(waUrl(msg), '_blank', 'noopener');
+          if (btn) btn.innerHTML = originalText;
+          contactForm.reset();
+        }, 300);
+      } catch (err) {
+        console.error('[ContactForm] Error:', err);
+        if (btn) btn.innerHTML = originalText;
       }
     });
-  });
+  }
 
   // Demo Terminal
   const demoBtn = document.getElementById('demoBtn');

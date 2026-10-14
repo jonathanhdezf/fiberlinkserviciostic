@@ -1,0 +1,138 @@
+[
+  {
+    "id": "1712000000001",
+    "folio": "FL-1001",
+    "estado": "creación",
+    "name": "Carlos Mendoza",
+    "phone": "2311029988",
+    "email": "carlos.mendoza@email.com",
+    "company": "Café La Sierra",
+    "address": "Av. Juárez 45, Centro, Teziutlán",
+    "service": "Punto de Venta POS",
+    "modality": "En Sitio / Domicilio",
+    "priority": "Alta",
+    "description": "La impresora de tickets no responde tras apagón y el sistema marca error de comunicación COM3.",
+    "createdAt": "2026-10-13T23:13:29.986Z",
+    "updatedAt": "2026-10-13T23:13:29.987Z",
+    "bitacora": [
+      {
+        "id": "b1",
+        "date": "2026-10-14T01:13:29.987Z",
+        "author": "Mesa Técnica",
+        "note": "Solicitud ingresada desde portal web. Se agenda visita técnica para revisión en sitio."
+      }
+    ],
+    "pos": {
+      "items": [
+        {
+          "concept": "Diagnóstico en sitio de hardware POS",
+          "price": 250
+        }
+      ],
+      "total": 250
+    }
+  },
+  {
+    "id": "1712000000002",
+    "folio": "FL-1002",
+    "estado": "diagnostico",
+    "name": "Dra. Elena Ramos",
+    "phone": "2311054433",
+    "email": "clinica.ramos@gmail.com",
+    "company": "Clínica Dental Ramos",
+    "address": "Calle Hidalgo 12, Teziutlán",
+    "service": "Redes / WiFi",
+    "modality": "En Sitio / Domicilio",
+    "priority": "Urgente",
+    "description": "Caída de red WiFi en consultorios 2 y 3. El switch principal muestra luces rojas parpadeando.",
+    "createdAt": "2026-10-14T05:13:29.987Z",
+    "updatedAt": "2026-10-14T13:13:29.987Z",
+    "bitacora": [
+      {
+        "id": "b2",
+        "date": "2026-10-14T11:13:29.987Z",
+        "author": "Ing. Redes",
+        "note": "Se detecta bucle de red por cable duplicado en recepción. Se procede a aislar el puerto."
+      }
+    ],
+    "pos": {
+      "items": [
+        {
+          "concept": "Reconfiguración de red LAN y AP Ubiquiti",
+          "price": 450
+        }
+      ],
+      "total": 450
+    }
+  },
+  {
+    "id": "1712000000003",
+    "folio": "FL-1003",
+    "estado": "proceso",
+    "name": "Miguel Ángel Torres",
+    "phone": "2311082211",
+    "email": "m.torres@constructora.mx",
+    "company": "Torres & Asociados",
+    "address": "Plaza Crystal Local 8, Teziutlán",
+    "service": "Videovigilancia CCTV",
+    "modality": "En Sitio / Domicilio",
+    "priority": "Normal",
+    "description": "Instalación de 4 cámaras IP Hikvision y configuración de app móvil en celulares de gerencia.",
+    "createdAt": "2026-10-12T23:13:29.987Z",
+    "updatedAt": "2026-10-14T19:13:29.987Z",
+    "bitacora": [
+      {
+        "id": "b3",
+        "date": "2026-10-13T17:13:29.987Z",
+        "author": "Técnico CCTV",
+        "note": "Cableado UTP categoría 6 terminado al 100%. Falta enfocar lente en cámara de estacionamiento."
+      }
+    ],
+    "pos": {
+      "items": [
+        {
+          "concept": "Mano de obra instalación 4 cámaras IP",
+          "price": 1200
+        },
+        {
+          "concept": "Bobina UTP Cat6 100m + conectores",
+          "price": 850
+        }
+      ],
+      "total": 2050
+    }
+  },
+  {
+    "id": "1712000000004",
+    "folio": "FL-1004",
+    "estado": "resuelto",
+    "name": "Lic. Patricia Vega",
+    "phone": "2311123344",
+    "email": "patricia@notariavega.com",
+    "company": "Notaría Pública No. 2",
+    "address": "Allende 302, Teziutlán",
+    "service": "Soporte técnico",
+    "modality": "Remoto",
+    "priority": "Normal",
+    "description": "Mantenimiento preventivo, limpieza de temporales y renovación de antivirus en 3 equipos de oficina.",
+    "createdAt": "2026-10-11T23:13:29.987Z",
+    "updatedAt": "2026-10-14T03:13:29.987Z",
+    "bitacora": [
+      {
+        "id": "b4",
+        "date": "2026-10-14T03:13:29.987Z",
+        "author": "Mesa Técnica",
+        "note": "Mantenimiento remoto completado exitosamente. Cliente confirma óptimo rendimiento."
+      }
+    ],
+    "pos": {
+      "items": [
+        {
+          "concept": "Mantenimiento preventivo lógico x3 PCs",
+          "price": 600
+        }
+      ],
+      "total": 600
+    }
+  }
+]

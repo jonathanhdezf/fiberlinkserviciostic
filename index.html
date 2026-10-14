@@ -792,124 +792,299 @@
 ============================ -->
 <div class="modal" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle" aria-hidden="true">
   <div class="modal-back" data-close-modal></div>
-  <div class="modal-panel">
+  <div class="modal-panel stepper-modal-panel">
 
-    <!-- Header -->
+    <!-- Modal Head with Stepper -->
     <div class="modal-head">
       <div class="modal-head-meta">
-        <div class="modal-lbl">Fiberlink · Solicitud técnica</div>
-        <h2 id="ticketTitle">Levantar ticket</h2>
-        <p class="modal-head-sub">Completa el formulario y lo enviamos por WhatsApp al instante.</p>
-        <div class="modal-steps" aria-hidden="true">
-          <div class="modal-step-dot active"></div>
-          <div class="modal-step-dot active"></div>
-          <div class="modal-step-dot active"></div>
-          <div class="modal-step-dot"></div>
+        <div class="modal-lbl">
+          <span class="live-dot" aria-hidden="true"></span>
+          Fiberlink // Mesa Técnica
+        </div>
+        <h2 id="ticketTitle">Levantar Solicitud</h2>
+        <p class="modal-head-sub" id="stepSubHeading">Selecciona el tipo de servicio y modalidad que requieres.</p>
+
+        <!-- Minimalist Stepper Progress -->
+        <div class="stepper-nav" role="tablist" aria-label="Pasos de la solicitud">
+          <div class="stepper-track">
+            <div class="stepper-bar" id="stepperProgressBar" style="width: 25%;"></div>
+          </div>
+          <div class="stepper-steps">
+            <div class="step-badge active" data-step-target="1">
+              <span class="step-num">01</span>
+              <span class="step-text">Servicio</span>
+            </div>
+            <div class="step-badge" data-step-target="2">
+              <span class="step-num">02</span>
+              <span class="step-text">Detalles</span>
+            </div>
+            <div class="step-badge" data-step-target="3">
+              <span class="step-num">03</span>
+              <span class="step-text">Contacto</span>
+            </div>
+            <div class="step-badge" data-step-target="4">
+              <span class="step-num">04</span>
+              <span class="step-text">Folio</span>
+            </div>
+          </div>
         </div>
       </div>
+
       <button class="close-btn" type="button" data-close-modal aria-label="Cerrar modal">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
-    <!-- Body -->
+    <!-- Modal Body: Multi-Step Container -->
     <div class="modal-body">
-      <form id="ticketForm" class="form-grid">
+      <form id="ticketForm" class="stepper-form" novalidate>
 
-        <!-- Grupo 1: Identificación -->
-        <div class="field-group">
-          <div class="field-group-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Identificación
+        <!-- STEP 1: Servicio y Modalidad -->
+        <div class="form-step active" data-step="1">
+          <div class="step-pane-header">
+            <h3>¿Qué solución técnica necesitas?</h3>
+            <p>Elige el área principal correspondiente a tu requerimiento.</p>
           </div>
-          <div class="form-row">
-            <label>Nombre completo<input name="name" autocomplete="name" required placeholder="Tu nombre"></label>
-            <label>Teléfono<input name="phone" autocomplete="tel" required placeholder="231 xxx xxxx"></label>
-          </div>
-          <div class="form-row">
-            <label>Empresa / hogar<input name="company" placeholder="Opcional"></label>
-            <label>Domicilio / Dirección<input name="address" required placeholder="Calle, número, colonia o referencias"></label>
-          </div>
-        </div>
 
-        <div class="modal-divider"></div>
-
-        <!-- Grupo 2: Solicitud -->
-        <div class="field-group">
-          <div class="field-group-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            Detalles del servicio
-          </div>
-          <div class="form-row">
-            <label>Tipo de servicio
-              <select name="service" required>
-                <option value="">Selecciona un servicio…</option>
-                <option>Soporte técnico</option>
-                <option>Punto de venta</option>
-                <option>Redes / WiFi</option>
-                <option>Videovigilancia</option>
-                <option>Diseño web / marketing</option>
-                <option>Otro servicio TIC</option>
-              </select>
+          <div class="service-tiles-grid" role="radiogroup" aria-label="Tipo de servicio">
+            <label class="service-tile active">
+              <input type="radio" name="service" value="Soporte técnico" checked>
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Soporte Técnico</strong>
+                <span>Mantenimiento, hardware, formateo, laptops y PCs</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
             </label>
-            <label>Modalidad de soporte
-              <select name="modality" required>
-                <option value="">Selecciona modalidad…</option>
-                <option value="En Sitio / Domicilio">A domicilio / En sitio</option>
-                <option value="Remoto">Soporte Remoto</option>
-                <option value="En Taller">Entrega en Taller</option>
-              </select>
+
+            <label class="service-tile">
+              <input type="radio" name="service" value="Redes / WiFi">
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Redes / WiFi</strong>
+                <span>Cableado UTP, fibra, access points y enlaces</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
+            </label>
+
+            <label class="service-tile">
+              <input type="radio" name="service" value="Videovigilancia CCTV">
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Videovigilancia CCTV</strong>
+                <span>Cámaras IP, grabadores NVR/DVR y visualización móvil</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
+            </label>
+
+            <label class="service-tile">
+              <input type="radio" name="service" value="Punto de Venta POS">
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Punto de Venta POS</strong>
+                <span>Impresoras térmicas, lectores de barras y sistemas de cobro</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
+            </label>
+
+            <label class="service-tile">
+              <input type="radio" name="service" value="Presencia Web / Nube">
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Presencia Web & Nube</strong>
+                <span>Sitios web corporativos, hosting y correos de empresa</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
+            </label>
+
+            <label class="service-tile">
+              <input type="radio" name="service" value="Otro servicio TIC">
+              <div class="stile-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div class="stile-info">
+                <strong>Otro Requerimiento TIC</strong>
+                <span>Proyectos especiales o consultoría tecnológica</span>
+              </div>
+              <span class="stile-check" aria-hidden="true"></span>
             </label>
           </div>
-        </div>
 
-        <div class="modal-divider"></div>
-
-        <!-- Grupo 3: Prioridad -->
-        <div class="field-group">
-          <div class="field-group-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Prioridad
-          </div>
-          <div class="priority" role="group" aria-label="Nivel de prioridad">
-            <button type="button" class="active" data-p="Normal">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Normal
-            </button>
-            <button type="button" data-p="Alta">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              Alta
-            </button>
-            <button type="button" data-p="Urgente">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Urgente
-            </button>
+          <div class="modality-box">
+            <label class="input-lbl">Modalidad de atención requerida:</label>
+            <div class="modality-options">
+              <label class="mod-pill active">
+                <input type="radio" name="modality" value="En Sitio / Domicilio" checked>
+                <span>🏠 En Sitio / Domicilio</span>
+              </label>
+              <label class="mod-pill">
+                <input type="radio" name="modality" value="Remoto">
+                <span>⚡ Soporte Remoto</span>
+              </label>
+              <label class="mod-pill">
+                <input type="radio" name="modality" value="En Taller">
+                <span>🏢 Recepción en Taller</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="modal-divider"></div>
-
-        <!-- Grupo 4: Descripción -->
-        <div class="field-group">
-          <div class="field-group-title">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:5px;vertical-align:middle"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            Descripción del problema
+        <!-- STEP 2: Detalles y Prioridad -->
+        <div class="form-step" data-step="2">
+          <div class="step-pane-header">
+            <h3>Describe la situación técnica</h3>
+            <p>Ayúdanos a preparar las herramientas o piezas adecuadas antes de contactarte.</p>
           </div>
-          <label>
-            Mensaje
-            <textarea name="message" required placeholder="Describe síntomas, equipos involucrados, horario disponible y cualquier dato relevante…"></textarea>
-          </label>
+
+          <div class="priority-box">
+            <label class="input-lbl">Nivel de prioridad e impacto:</label>
+            <div class="priority-tiles" role="radiogroup">
+              <label class="prio-tile active" data-p="Normal">
+                <input type="radio" name="priority" value="Normal" checked>
+                <div class="pt-top">
+                  <span class="pt-dot normal"></span>
+                  <strong>Normal</strong>
+                </div>
+                <span>Atención estándar programada (24-48 hrs)</span>
+              </label>
+
+              <label class="prio-tile" data-p="Alta">
+                <input type="radio" name="priority" value="Alta">
+                <div class="pt-top">
+                  <span class="pt-dot alta"></span>
+                  <strong>Alta</strong>
+                </div>
+                <span>Urgencia operativa durante el mismo día</span>
+              </label>
+
+              <label class="prio-tile" data-p="Urgente">
+                <input type="radio" name="priority" value="Urgente">
+                <div class="pt-top">
+                  <span class="pt-dot urgente"></span>
+                  <strong>Urgente</strong>
+                </div>
+                <span>Negocio detenido o falla crítica inmediata</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-wrap">
+            <label class="input-lbl" for="ticketMessage">
+              Descripción del problema o requerimiento: <span class="req">*</span>
+            </label>
+            <textarea id="ticketMessage" name="message" required rows="4" placeholder="Describe síntomas, equipos involucrados, marcas, mensajes de error y horarios en que podemos atenderte…"></textarea>
+            <div class="textarea-footer">
+              <span class="char-count" id="ticketCharCount">0 / 400</span>
+              <span class="hint-tag">Sé lo más específico posible</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Actions -->
-        <div class="toast" id="ticketToast">Solicitud preparada. Se abrirá WhatsApp para enviarla.</div>
-        <button class="btn btn-primary" type="submit" style="width:100%;min-height:52px;font-size:.95rem;margin-top:4px">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          Enviar por WhatsApp
-        </button>
-        <p class="modal-foot-note">
-          ¿Prefiere correo? <a href="mailto:fiberlinkserviciostic@gmail.com">fiberlinkserviciostic@gmail.com</a>
-        </p>
+        <!-- STEP 3: Contacto y Ubicación -->
+        <div class="form-step" data-step="3">
+          <div class="step-pane-header">
+            <h3>Datos de contacto y atención</h3>
+            <p>¿Con quién nos coordinamos y dónde se realizará el servicio?</p>
+          </div>
+
+          <div class="inputs-grid">
+            <div class="field-wrap">
+              <label class="input-lbl" for="ticketName">Nombre completo o contacto: <span class="req">*</span></label>
+              <input type="text" id="ticketName" name="name" required autocomplete="name" placeholder="Ej. Ing. Roberto Sánchez">
+            </div>
+
+            <div class="field-wrap">
+              <label class="input-lbl" for="ticketPhone">Teléfono móvil / WhatsApp: <span class="req">*</span></label>
+              <input type="tel" id="ticketPhone" name="phone" required autocomplete="tel" placeholder="Ej. 231 102 4672">
+            </div>
+
+            <div class="field-wrap">
+              <label class="input-lbl" for="ticketEmail">Correo electrónico: <span class="opt">(Opcional)</span></label>
+              <input type="email" id="ticketEmail" name="email" autocomplete="email" placeholder="contacto@tuempresa.com">
+            </div>
+
+            <div class="field-wrap">
+              <label class="input-lbl" for="ticketCompany">Empresa o Negocio: <span class="opt">(Opcional)</span></label>
+              <input type="text" id="ticketCompany" name="company" placeholder="Ej. Negocio, Hogar o Consultoría">
+            </div>
+
+            <div class="field-wrap full" id="addressWrap">
+              <label class="input-lbl" for="ticketAddress">Domicilio o Referencias en Teziutlán / Región: <span class="req">*</span></label>
+              <input type="text" id="ticketAddress" name="address" required placeholder="Calle, número, colonia, local o referencias claras">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Confirmación y Folio -->
+        <div class="form-step" data-step="4">
+          <div class="confirmation-card">
+            <div class="conf-badge-header">
+              <div class="conf-pulse-dot"></div>
+              <span>SOLICITUD GENERADA EXITOSAMENTE</span>
+            </div>
+
+            <div class="conf-folio-box">
+              <span class="folio-lbl">FOLIO DE SEGUIMIENTO</span>
+              <strong class="folio-code" id="confFolio">FL-1005</strong>
+              <span class="folio-state" id="confState">[ REGISTRADO // MESA TÉCNICA ]</span>
+            </div>
+
+            <div class="conf-summary-grid">
+              <div class="cs-item">
+                <span class="cs-lbl">Cliente</span>
+                <strong id="confClient">-</strong>
+              </div>
+              <div class="cs-item">
+                <span class="cs-lbl">Teléfono</span>
+                <strong id="confPhone">-</strong>
+              </div>
+              <div class="cs-item">
+                <span class="cs-lbl">Servicio</span>
+                <strong id="confService">-</strong>
+              </div>
+              <div class="cs-item">
+                <span class="cs-lbl">Prioridad</span>
+                <strong id="confPriority" class="prio-tag">-</strong>
+              </div>
+            </div>
+
+            <div class="conf-instructions">
+              <p>Tu solicitud ha sido guardada en nuestra base de datos. Para asignación inmediata, envía el reporte directo a nuestro WhatsApp técnico con un solo clic.</p>
+            </div>
+
+            <div class="conf-actions">
+              <button type="button" class="btn btn-primary conf-wa-btn" id="confWaBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span>Enviar Notificación a WhatsApp</span>
+              </button>
+              <div class="conf-secondary-actions">
+                <button type="button" class="btn btn-secondary" id="confNewBtn">Crear Otro Ticket</button>
+                <a href="/admin.html" target="_blank" class="btn btn-ghost" title="Acceso a mesa de control de tickets">Mesa de Control Admin &rarr;</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stepper Navigation Controls -->
+        <div class="stepper-controls" id="stepperControls">
+          <button type="button" class="btn btn-ghost" id="stepPrevBtn" style="display: none;">
+            &larr; Volver
+          </button>
+          <div class="stepper-spacer"></div>
+          <button type="button" class="btn btn-primary" id="stepNextBtn">
+            <span>Continuar &rarr;</span>
+          </button>
+        </div>
 
       </form>
     </div>
