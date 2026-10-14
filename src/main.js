@@ -16,9 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. UI Interactions (Drawer, Modals)
   initUI();
 
-  // 5. Gamer HUD Audio Synthesizer & Matrix Glitch Scramble
+  // 5. Gamer HUD Audio Synthesizer, Matrix Glitch Scramble & Button Animations
   initCyberAudio();
   setupMatrixScramble();
+  initHeroTicketAnimation();
 
   // 6. Premium cursor (desktop only)
   initCursor();
@@ -49,6 +50,14 @@ function initUI() {
     document.documentElement.classList.add('menu-open');
     document.body.style.overflow='hidden';
     document.documentElement.style.overflow='hidden';
+
+    // Trigger gamer glitch animation on the "crear ticket" button in drawer
+    const drawerTicketBtn = document.getElementById('drawerTicketBtn');
+    if (drawerTicketBtn) {
+      setTimeout(() => {
+        triggerButtonGlitch(drawerTicketBtn);
+      }, 260);
+    }
   }
   
   function closeDrawer(){
@@ -848,3 +857,83 @@ function setupMatrixScramble() {
     el.addEventListener('focus', runScramble);
   });
 }
+
+// ============================
+// DYNAMIC BUTTON GLITCH & RADAR TRIGGER
+// ============================
+export function triggerButtonGlitch(buttonEl) {
+  if (!buttonEl) return;
+
+  // 1. Play subtle cyber tone
+  playCyberClickTone();
+
+  // 2. Restart cyber shockwave animation
+  buttonEl.classList.remove('btn-cyber-pulse');
+  void buttonEl.offsetWidth; // Force reflow
+  buttonEl.classList.add('btn-cyber-pulse');
+
+  // 3. Matrix text scramble decode
+  const targetText = buttonEl.getAttribute('data-glitch') || buttonEl.innerText.trim();
+  const displaySpan = buttonEl.querySelector('.glitch-txt') || buttonEl;
+  const GLYPHS = '010101<>/\\_X[]#%$&⚡*+=~';
+
+  buttonEl.classList.add('is-glitching');
+  let iteration = 0;
+  const totalFrames = 12;
+  const len = targetText.length;
+
+  if (buttonEl._glitchInterval) {
+    clearInterval(buttonEl._glitchInterval);
+  }
+
+  buttonEl._glitchInterval = setInterval(() => {
+    displaySpan.innerText = targetText
+      .split('')
+      .map((char, index) => {
+        if (char === ' ') return ' ';
+        if (index < (iteration / totalFrames) * len) {
+          return targetText[index];
+        }
+        return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      })
+      .join('');
+
+    iteration++;
+    if (iteration > totalFrames) {
+      clearInterval(buttonEl._glitchInterval);
+      buttonEl._glitchInterval = null;
+      displaySpan.innerText = targetText;
+      buttonEl.classList.remove('is-glitching');
+    }
+  }, 24);
+
+  setTimeout(() => {
+    buttonEl.classList.remove('btn-cyber-pulse');
+  }, 950);
+}
+
+// ============================
+// HERO TICKET BUTTON GLITCH SYNCHRONIZATION
+// ============================
+function initHeroTicketAnimation() {
+  const heroBtn = document.getElementById('heroTicketBtn');
+  if (!heroBtn) return;
+
+  // Initial trigger once page animations settle
+  setTimeout(() => {
+    triggerButtonGlitch(heroBtn);
+  }, 1300);
+
+  // Periodic ambient pulse every 7 seconds when in viewport
+  setInterval(() => {
+    const rect = heroBtn.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      triggerButtonGlitch(heroBtn);
+    }
+  }, 7000);
+
+  // Interaction triggers (mouse & touch)
+  heroBtn.addEventListener('mouseenter', () => triggerButtonGlitch(heroBtn));
+  heroBtn.addEventListener('touchstart', () => triggerButtonGlitch(heroBtn), { passive: true });
+}
+

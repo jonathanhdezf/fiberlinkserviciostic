@@ -825,6 +825,110 @@ html.menu-open, body.menu-open {
 .btn svg{flex:0 0 auto;pointer-events:none}
 
 /* ============================
+   CYBER BUTTON GAMER GLITCH & RADAR PULSE
+============================ */
+.btn-cyber-pulse {
+  animation: btnGlitchShock 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+@keyframes btnGlitchShock {
+  0% {
+    transform: scale(1);
+    border-color: var(--verde);
+    box-shadow: 0 0 16px rgba(156, 195, 46, 0.3);
+  }
+  12% {
+    transform: scale(1.05) translate(-2px, 1px);
+    border-color: #00ffff;
+    box-shadow: 0 0 35px 10px rgba(156, 195, 46, 0.85), 0 0 20px #00ffff, inset 0 0 14px rgba(156, 195, 46, 0.5);
+  }
+  24% {
+    transform: scale(1.04) translate(2px, -1px);
+    border-color: #ff0055;
+    box-shadow: 0 0 42px 12px rgba(156, 195, 46, 0.9), 0 0 24px #ff0055;
+  }
+  38% {
+    transform: scale(1.03) translate(-1px, 0.5px);
+    border-color: #00ffff;
+    box-shadow: 0 0 32px 8px rgba(156, 195, 46, 0.75), 0 0 16px #00ffff;
+  }
+  55% {
+    transform: scale(1.02);
+    border-color: var(--verde);
+    box-shadow: 0 0 28px 6px rgba(156, 195, 46, 0.6);
+  }
+  75% {
+    transform: scale(1.01);
+    box-shadow: 0 0 22px 4px rgba(156, 195, 46, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    border-color: var(--verde);
+    box-shadow: 0 0 20px rgba(156, 195, 46, 0.35);
+  }
+}
+
+/* Diagonal Laser Beam Shimmer on Trigger */
+.btn-cyber-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 45%,
+    var(--verde) 55%,
+    transparent 100%
+  );
+  transform: translateX(-150%) skewX(-25deg);
+  animation: btnLaserBeam 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes btnLaserBeam {
+  0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(220%) skewX(-25deg); opacity: 0; }
+}
+
+/* Ambient Radar Wave on Hero Button */
+.hero-ticket-btn {
+  position: relative;
+  isolation: isolate;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.hero-ticket-btn::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1.5px solid var(--verde);
+  opacity: 0;
+  pointer-events: none;
+  animation: heroRadarWave 3.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  z-index: -1;
+}
+@keyframes heroRadarWave {
+  0% { transform: scale(0.96); opacity: 0.85; border-color: var(--verde); }
+  50% { transform: scale(1.18); opacity: 0; border-color: #7ce7ff; }
+  100% { transform: scale(1.28); opacity: 0; }
+}
+
+.drawer-ticket-btn {
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================
    CANVAS PHYSICS BG
 ============================ */
 #webgl-container{
