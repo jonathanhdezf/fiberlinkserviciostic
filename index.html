@@ -42,71 +42,112 @@
 <!-- ============================
      HEADER
 ============================ -->
-<header class="site-header" id="site-header">
-  <div class="wrap nav">
-    <!-- Brand -->
-    <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC - Inicio">
+<header class="site-header gamer-hud" id="site-header">
+  <!-- Scanline / Laser beam sweep -->
+  <div class="hud-laser" aria-hidden="true"></div>
+  <div class="hud-grid-bg" aria-hidden="true"></div>
+
+  <!-- HUD Corner Chamfers -->
+  <span class="hud-notch tl" aria-hidden="true"></span>
+  <span class="hud-notch tr" aria-hidden="true"></span>
+  <span class="hud-notch bl" aria-hidden="true"></span>
+  <span class="hud-notch br" aria-hidden="true"></span>
+
+  <div class="hud-inner">
+    <!-- Left: Brand Core -->
+    <a class="brand hud-brand" href="#inicio" aria-label="Fiberlink Servicios TIC - Inicio">
       <div class="brand-mark">
         <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo">
       </div>
       <div class="brand-text">
-        <strong>Fiberlink</strong>
-        <span>Servicios TIC</span>
+        <strong data-glitch="FIBERLINK"><span class="glitch-txt">FIBERLINK</span></strong>
+        <span class="hud-tag">TIC // SYS.OK</span>
       </div>
     </a>
 
-    <!-- Desktop Navigation (Elevated UX/UI) -->
-    <nav class="nav-desktop" id="navDesktop" aria-label="Navegación principal">
+    <div class="hud-divider" aria-hidden="true"></div>
+
+    <!-- Desktop Gamer HUD Navigation -->
+    <nav class="nav-desktop gamer-nav" id="navDesktop" aria-label="Navegación principal">
       <div class="nav-indicator" id="navIndicator" aria-hidden="true"></div>
 
-      <!-- Servicios with Mega-Dropdown -->
+      <!-- [01] Servicios with Tactical Mega-Dropdown -->
       <div class="nav-item has-dropdown">
-        <a class="nav-link" href="#servicios" id="navServicios" aria-haspopup="true" aria-expanded="false">
-          <span>Servicios</span>
+        <a class="nav-link hud-link" href="#servicios" id="navServicios" aria-haspopup="true" aria-expanded="false" data-glitch="SERVICIOS">
+          <span class="hud-num">01</span>
+          <span class="glitch-txt">SERVICIOS</span>
           <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </a>
 
-        <!-- Mega-Dropdown menu -->
-        <div class="nav-dropdown" role="menu" aria-label="Submenú de Servicios">
+        <!-- Gamer Tactical Dropdown -->
+        <div class="nav-dropdown gamer-dropdown" role="menu" aria-label="Submenú de Servicios">
+          <div class="dropdown-header-bar">
+            <span class="dhead-tag">// PROTOCOLOS Y SERVICIOS ACTIVOS</span>
+            <span class="dhead-status">[SYS.READY]</span>
+          </div>
           <div class="dropdown-arrow"></div>
           <div class="dropdown-grid">
-            <a class="dropdown-card" href="#card-redes" data-target="card-redes" role="menuitem">
-              <div class="dcard-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <a class="dropdown-card gamer-card" href="#card-redes" data-target="card-redes" role="menuitem">
+              <div class="dcard-header">
+                <span class="dcard-badge">[01//NET]</span>
+                <span class="dcard-ping">● ONLINE</span>
               </div>
-              <div class="dcard-info">
-                <strong>Redes & Conectividad</strong>
-                <p>Cableado estructurado, fibra óptica, routers, switches y Wi-Fi empresarial.</p>
-              </div>
-            </a>
-
-            <a class="dropdown-card" href="#card-redes" data-target="card-redes" role="menuitem">
-              <div class="dcard-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
-              <div class="dcard-info">
-                <strong>CCTV & Seguridad</strong>
-                <p>Cámaras IP inteligentes, NVR/DVR 4K, monitoreo remoto y alarmas perimetrales.</p>
+              <div class="dcard-body">
+                <div class="dcard-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                </div>
+                <div class="dcard-info">
+                  <strong data-glitch="Redes & Fibra">Redes & Fibra</strong>
+                  <p>Cableado estructurado, fibra óptica, routers y Wi-Fi empresarial.</p>
+                </div>
               </div>
             </a>
 
-            <a class="dropdown-card" href="#card-pos" data-target="card-pos" role="menuitem">
-              <div class="dcard-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <a class="dropdown-card gamer-card" href="#card-redes" data-target="card-redes" role="menuitem">
+              <div class="dcard-header">
+                <span class="dcard-badge">[02//CCTV]</span>
+                <span class="dcard-ping">● 4K ACTIVE</span>
               </div>
-              <div class="dcard-info">
-                <strong>Puntos de Venta (POS)</strong>
-                <p>Hardware touch, software de facturación, lectores e impresoras térmicas.</p>
+              <div class="dcard-body">
+                <div class="dcard-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+                <div class="dcard-info">
+                  <strong data-glitch="CCTV & Vigilancia">CCTV & Vigilancia</strong>
+                  <p>Cámaras IP inteligentes, NVR 4K, monitoreo remoto y alarmas.</p>
+                </div>
               </div>
             </a>
 
-            <a class="dropdown-card" href="#card-soporte" data-target="card-soporte" role="menuitem">
-              <div class="dcard-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <a class="dropdown-card gamer-card" href="#card-pos" data-target="card-pos" role="menuitem">
+              <div class="dcard-header">
+                <span class="dcard-badge">[03//POS]</span>
+                <span class="dcard-ping">● SYNC</span>
               </div>
-              <div class="dcard-info">
-                <strong>Soporte Especializado</strong>
-                <p>Mantenimiento preventivo y correctivo, PC, laptops y pólizas de atención.</p>
+              <div class="dcard-body">
+                <div class="dcard-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                </div>
+                <div class="dcard-info">
+                  <strong data-glitch="Puntos de Venta">Puntos de Venta</strong>
+                  <p>Hardware touch, facturación fiscal, escáneres e impresoras térmicas.</p>
+                </div>
+              </div>
+            </a>
+
+            <a class="dropdown-card gamer-card" href="#card-soporte" data-target="card-soporte" role="menuitem">
+              <div class="dcard-header">
+                <span class="dcard-badge">[04//FIX]</span>
+                <span class="dcard-ping">● 24/7 SLA</span>
+              </div>
+              <div class="dcard-body">
+                <div class="dcard-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="dcard-info">
+                  <strong data-glitch="Soporte Técnico">Soporte Técnico</strong>
+                  <p>Mantenimiento preventivo, diagnósticos de hardware y pólizas TIC.</p>
+                </div>
               </div>
             </a>
           </div>
@@ -114,57 +155,73 @@
           <div class="dropdown-foot">
             <span class="dfoot-status">
               <span class="pulse-dot"></span>
-              Atención presencial en Teziutlán y soporte remoto nacional
+              SOPORTE LOCAL TEZIUTLÁN & ASISTENCIA REMOTA
             </span>
-            <button class="dfoot-btn open-ticket" type="button">Agendar visita técnica &rarr;</button>
+            <button class="dfoot-btn open-ticket" type="button">SOLICITAR DIAGNÓSTICO &rarr;</button>
           </div>
         </div>
       </div>
 
-      <!-- Herramientas -->
-      <a class="nav-link" href="#herramientas">
-        <span>Herramientas</span>
+      <!-- [02] Herramientas -->
+      <a class="nav-link hud-link" href="#herramientas" data-glitch="HERRAMIENTAS">
+        <span class="hud-num">02</span>
+        <span class="glitch-txt">HERRAMIENTAS</span>
       </a>
 
-      <!-- Proceso -->
-      <a class="nav-link" href="#proceso">
-        <span>Proceso</span>
+      <!-- [03] Proceso -->
+      <a class="nav-link hud-link" href="#proceso" data-glitch="PROCESO">
+        <span class="hud-num">03</span>
+        <span class="glitch-txt">PROCESO</span>
       </a>
 
-      <!-- Fiberlink Labs -->
-      <a class="nav-link" href="#fiberlink-labs">
-        <span>Labs</span>
-        <span class="nav-badge">IA</span>
+      <!-- [04] Fiberlink Labs -->
+      <a class="nav-link hud-link" href="#fiberlink-labs" data-glitch="LABS // IA">
+        <span class="hud-num">04</span>
+        <span class="glitch-txt">LABS // IA</span>
+        <span class="hud-chip">BETA</span>
       </a>
 
-      <!-- Contacto -->
-      <a class="nav-link" href="#contacto">
-        <span>Contacto</span>
+      <!-- [05] Contacto -->
+      <a class="nav-link hud-link" href="#contacto" data-glitch="CONTACTO">
+        <span class="hud-num">05</span>
+        <span class="glitch-txt">CONTACTO</span>
       </a>
     </nav>
 
-    <!-- Header Actions (CTA + Status + Mobile Toggle) -->
+    <!-- Header Actions (SFX + Live Status + Ticket + Mobile) -->
     <div class="nav-actions">
+      <!-- SFX Sound FX Toggle Button -->
+      <button class="hud-sfx-btn" id="sfxToggle" type="button" aria-label="Alternar efectos de sonido gamer" title="Activar/Desactivar efectos de sonido UI">
+        <svg class="sfx-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path class="sfx-sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <line class="sfx-mute-line" x1="23" y1="1" x2="1" y2="23" stroke-width="2.5" />
+        </svg>
+        <span class="sfx-label">SFX</span>
+        <span class="sfx-indicator" aria-hidden="true"></span>
+      </button>
+
       <!-- Live Status Pill (Desktop) -->
-      <div class="live-pill" title="Mesa de ayuda y servicios TIC operativos">
+      <div class="live-pill hud-status" title="Mesa técnica y servicios operativos">
         <span class="live-dot" aria-hidden="true"></span>
-        <span class="live-text">En línea</span>
+        <span class="hud-status-code">SYS.OK</span>
       </div>
 
       <!-- Direct WhatsApp Action -->
-      <a class="nav-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20soporte%20o%20informacion%20de%20sus%20servicios." target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>WhatsApp</span>
+      <a class="nav-btn-wa hud-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20soporte%20o%20informacion%20de%20sus%20servicios." target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>WA</span>
       </a>
 
       <!-- Main Action: Solicitar Ticket -->
-      <button class="btn btn-primary nav-cta open-ticket" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
-        <span>Crear Ticket</span>
+      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        <span class="glitch-txt">[ TICKET ]</span>
       </button>
 
       <!-- Mobile hamburger toggle button -->
-      <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
+      <button class="menu-btn hud-menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <span class="menu-label">CMD</span>
         <span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
     </div>
@@ -174,15 +231,16 @@
 <!-- Mobile drawer -->
 <div class="drawer" id="drawer" aria-hidden="true">
   <div class="drawer-back" id="drawerBack"></div>
-  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menú principal">
+  <aside class="drawer-panel gamer-drawer" role="dialog" aria-modal="true" aria-label="Menú táctico principal">
+    <div class="drawer-laser" aria-hidden="true"></div>
     <div class="drawer-head">
       <a class="brand" href="#inicio">
         <div class="brand-mark" style="width:36px;height:36px">
           <img class="brand-logo" src="logo.gif" alt="" style="width:24px;height:24px">
         </div>
         <div class="brand-text">
-          <strong>Fiberlink</strong>
-          <span>Servicios TIC</span>
+          <strong data-glitch="Fiberlink"><span class="glitch-txt">Fiberlink</span></strong>
+          <span>TIC // SYS.OK</span>
         </div>
       </a>
       <button class="close-btn" id="drawerClose" aria-label="Cerrar menú">
@@ -192,62 +250,67 @@
 
     <div class="drawer-status">
       <span class="live-dot" aria-hidden="true"></span>
-      <span>Mesa técnica activa · Teziutlán y Región</span>
+      <span>[SYS.ONLINE] · Teziutlán & Región TIC</span>
     </div>
 
     <nav class="drawer-nav">
-      <a class="dl" href="#servicios">
+      <a class="dl" href="#servicios" data-glitch="Servicios">
         <div class="dl-left">
+          <span class="dl-code">[01]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
           </span>
-          <span>Servicios</span>
+          <span class="glitch-txt">Servicios</span>
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
-      <a class="dl" href="#herramientas">
+      <a class="dl" href="#herramientas" data-glitch="Herramientas">
         <div class="dl-left">
+          <span class="dl-code">[02]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </span>
-          <span>Herramientas</span>
+          <span class="glitch-txt">Herramientas</span>
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
-      <a class="dl" href="#proceso">
+      <a class="dl" href="#proceso" data-glitch="Proceso">
         <div class="dl-left">
+          <span class="dl-code">[03]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </span>
-          <span>Proceso</span>
+          <span class="glitch-txt">Proceso</span>
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
-      <a class="dl" href="#fiberlink-labs">
+      <a class="dl" href="#fiberlink-labs" data-glitch="Labs // IA">
         <div class="dl-left">
+          <span class="dl-code">[04]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="m9 12 2 2 4-4"/></svg>
           </span>
-          <span>Fiberlink Labs</span>
-          <span class="nav-badge" style="margin-left:6px">IA</span>
+          <span class="glitch-txt">Labs // IA</span>
+          <span class="nav-badge" style="margin-left:6px">BETA</span>
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
-      <a class="dl" href="#contacto">
+      <a class="dl" href="#contacto" data-glitch="Contacto">
         <div class="dl-left">
+          <span class="dl-code">[05]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
           </span>
-          <span>Contacto</span>
+          <span class="glitch-txt">Contacto</span>
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
     </nav>
 
     <div class="drawer-foot">
-      <button class="btn btn-primary open-ticket" type="button">
+      <button class="btn btn-primary open-ticket" type="button" data-glitch="[ CREAR TICKET ]">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
-        Levantar ticket de soporte
+        <span class="glitch-txt">[ LEVANTAR TICKET TIC ]</span>
       </button>
       <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
