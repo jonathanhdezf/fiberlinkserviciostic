@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 6. Premium cursor (desktop only)
   initCursor();
+
+  // 7. Progressive Web App (PWA) Registration
+  initPWA();
 });
 
 function initUI() {
@@ -819,4 +822,32 @@ function initHeroTicketAnimation() {
   heroBtn.addEventListener('mouseenter', () => triggerButtonGlitch(heroBtn));
   heroBtn.addEventListener('touchstart', () => triggerButtonGlitch(heroBtn), { passive: true });
 }
+
+// ============================
+// PWA SERVICE WORKER REGISTRATION & STATUS
+// ============================
+function initPWA() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] Nueva versión disponible');
+                }
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service worker registration error:', err);
+        });
+    });
+  }
+}
+
 

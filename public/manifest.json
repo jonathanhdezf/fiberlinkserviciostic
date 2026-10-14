@@ -1,0 +1,86 @@
+{
+  "name": "Fiberlink Servicios TIC",
+  "short_name": "Fiberlink",
+  "description": "Soporte técnico, redes, cámaras de seguridad, sistemas POS y presencia web en Teziutlán y región.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0b08",
+  "theme_color": "#0a0b08",
+  "lang": "es-MX",
+  "categories": [
+    "business",
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.gif",
+      "sizes": "320x320",
+      "type": "image/gif"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Levantar Ticket",
+      "short_name": "Ticket",
+      "description": "Reportar incidencia o solicitar soporte técnico",
+      "url": "/#contacto",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Servicios TIC",
+      "short_name": "Servicios",
+      "description": "Catálogo de soluciones y servicios Fiberlink",
+      "url": "/#servicios",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Atención WhatsApp",
+      "short_name": "WhatsApp",
+      "description": "Contacto directo vía WhatsApp con mesa técnica",
+      "url": "https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20soporte%20tecnico.",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
