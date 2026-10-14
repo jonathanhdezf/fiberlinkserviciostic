@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. UI Interactions (Drawer, Modals)
   initUI();
 
-  // 5. Gamer HUD Audio Synthesizer, Matrix Glitch Scramble & Button Animations
-  initCyberAudio();
+  // 5. Matrix Glitch Scramble & Button Animations
   setupMatrixScramble();
   initHeroTicketAnimation();
 
@@ -695,119 +694,6 @@ function initCyberBg() {
 }
 
 // ============================
-// CYBER AUDIO SYNTHESIZER (WEB AUDIO API)
-// ============================
-let audioCtx = null;
-let sfxEnabled = localStorage.getItem('fiberlink_sfx') !== 'false';
-
-function getAudioCtx() {
-  if (!audioCtx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      audioCtx = new AudioContext();
-    }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-}
-
-export function playCyberHoverTone() {
-  if (!sfxEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    const now = ctx.currentTime;
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1100, now);
-    osc.frequency.exponentialRampToValueAtTime(1700, now + 0.035);
-
-    gain.gain.setValueAtTime(0.02, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.042);
-  } catch (e) {}
-}
-
-export function playCyberClickTone() {
-  if (!sfxEnabled) return;
-  try {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    const now = ctx.currentTime;
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(440, now + 0.055);
-
-    gain.gain.setValueAtTime(0.03, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.065);
-  } catch (e) {}
-}
-
-function initCyberAudio() {
-  const sfxToggle = document.getElementById('sfxToggle');
-
-  function updateSfxButtonUI() {
-    if (!sfxToggle) return;
-    if (sfxEnabled) {
-      sfxToggle.classList.remove('sfx-muted');
-      sfxToggle.setAttribute('title', 'Efectos de sonido: ACTIVADOS (clic para silenciar)');
-      const label = sfxToggle.querySelector('.sfx-label');
-      if (label) label.textContent = 'SFX';
-    } else {
-      sfxToggle.classList.add('sfx-muted');
-      sfxToggle.setAttribute('title', 'Efectos de sonido: SILENCIADOS (clic para activar)');
-      const label = sfxToggle.querySelector('.sfx-label');
-      if (label) label.textContent = 'MUTE';
-    }
-  }
-
-  updateSfxButtonUI();
-
-  if (sfxToggle) {
-    sfxToggle.addEventListener('click', () => {
-      sfxEnabled = !sfxEnabled;
-      localStorage.setItem('fiberlink_sfx', sfxEnabled ? 'true' : 'false');
-      updateSfxButtonUI();
-      if (sfxEnabled) {
-        getAudioCtx();
-        playCyberClickTone();
-      }
-    });
-  }
-
-  const resumeOnInteraction = () => {
-    getAudioCtx();
-    window.removeEventListener('pointerdown', resumeOnInteraction);
-    window.removeEventListener('keydown', resumeOnInteraction);
-  };
-  window.addEventListener('pointerdown', resumeOnInteraction, { once: true });
-  window.addEventListener('keydown', resumeOnInteraction, { once: true });
-
-  // Add click tones to interactive buttons
-  document.querySelectorAll('.btn, .nav-cta, .hud-link, .dropdown-card, .menu-btn, .close-btn').forEach(btn => {
-    btn.addEventListener('click', () => playCyberClickTone());
-  });
-}
-
-// ============================
 // MATRIX TEXT DECRYPTION SCRAMBLER (GAMER DISTORTION)
 // ============================
 function setupMatrixScramble() {
@@ -823,7 +709,6 @@ function setupMatrixScramble() {
     const runScramble = () => {
       if (running) return;
       running = true;
-      playCyberHoverTone();
       el.classList.add('is-glitching');
 
       let iteration = 0;
@@ -859,20 +744,17 @@ function setupMatrixScramble() {
 }
 
 // ============================
-// DYNAMIC BUTTON GLITCH & RADAR TRIGGER
+// DYNAMIC BUTTON GLITCH & RADAR TRIGGER (SILENT)
 // ============================
 export function triggerButtonGlitch(buttonEl) {
   if (!buttonEl) return;
 
-  // 1. Play subtle cyber tone
-  playCyberClickTone();
-
-  // 2. Restart cyber shockwave animation
+  // 1. Restart cyber shockwave animation
   buttonEl.classList.remove('btn-cyber-pulse');
   void buttonEl.offsetWidth; // Force reflow
   buttonEl.classList.add('btn-cyber-pulse');
 
-  // 3. Matrix text scramble decode
+  // 2. Matrix text scramble decode
   const targetText = buttonEl.getAttribute('data-glitch') || buttonEl.innerText.trim();
   const displaySpan = buttonEl.querySelector('.glitch-txt') || buttonEl;
   const GLYPHS = '010101<>/\\_X[]#%$&⚡*+=~';
@@ -911,6 +793,7 @@ export function triggerButtonGlitch(buttonEl) {
     buttonEl.classList.remove('btn-cyber-pulse');
   }, 950);
 }
+
 
 // ============================
 // HERO TICKET BUTTON GLITCH SYNCHRONIZATION
