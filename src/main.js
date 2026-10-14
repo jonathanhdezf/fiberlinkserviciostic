@@ -501,7 +501,7 @@ function initScrollSpy() {
 // ============================
 function initSmoothNav() {
   const allNavAnchors = document.querySelectorAll(
-    '.nav-desktop a[href^="#"], .drawer-nav a[href^="#"], .dropdown-card[href^="#"], .hero-actions a[href^="#"], a.brand[href^="#"]'
+    '.nav-desktop a[href^="#"], .drawer-nav a[href^="#"], .dropdown-card[href^="#"], .hero-actions a[href^="#"], a.brand[href^="#"], .scroll-hint[href^="#"]'
   );
 
   allNavAnchors.forEach(anchor => {
