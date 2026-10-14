@@ -53,15 +53,20 @@ export const ticketService = {
       if (response.ok) {
         const result = await response.json();
         if (result && result.ticket) {
+          console.log('[TicketService] ✓ Ticket creado en backend con éxito:', result.ticket.folio);
           // Sync into local cache as well
           const local = getLocalTickets();
-          local.unshift(result.ticket);
-          saveLocalTickets(local);
+          // Avoid duplicate folio in local
+          const filtered = local.filter(t => t.folio !== result.ticket.folio);
+          filtered.unshift(result.ticket);
+          saveLocalTickets(filtered);
           return result.ticket;
         }
+      } else {
+        console.warn('[TicketService] Respuesta no exitosa del backend:', response.status);
       }
     } catch (err) {
-      console.info('[TicketService] Servidor API no disponible, usando almacenamiento local persistente.');
+      console.info('[TicketService] Servidor API no disponible, usando fallback local persistente:', err.message);
     }
 
     // Fallback: LocalStorage

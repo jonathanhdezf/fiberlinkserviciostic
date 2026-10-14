@@ -107,6 +107,12 @@ function initUI() {
   function goToStep(step) {
     currentStep = Math.max(1, Math.min(4, step));
 
+    // Reset scroll position immediately so title and step header are always at top
+    const panel = modal ? modal.querySelector('.modal-panel') : null;
+    if (panel) {
+      panel.scrollTop = 0;
+    }
+
     // Update active form panes
     formSteps.forEach(pane => {
       const pStep = parseInt(pane.getAttribute('data-step'));
@@ -160,11 +166,15 @@ function initUI() {
       }
     }
 
-    // Focus first relevant field per step
+    // Focus without scrolling the panel down
     if (currentStep === 2) {
-      setTimeout(() => document.getElementById('ticketMessage')?.focus(), 150);
+      setTimeout(() => {
+        document.getElementById('ticketMessage')?.focus({ preventScroll: true });
+      }, 50);
     } else if (currentStep === 3) {
-      setTimeout(() => document.getElementById('ticketName')?.focus(), 150);
+      setTimeout(() => {
+        document.getElementById('ticketName')?.focus({ preventScroll: true });
+      }, 50);
     }
   }
 
@@ -173,6 +183,10 @@ function initUI() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden','false');
     document.body.style.overflow='hidden';
+    const panel = modal.querySelector('.modal-panel');
+    if (panel) {
+      panel.scrollTop = 0;
+    }
     if (currentStep === 4) {
       resetStepperForm();
     }
