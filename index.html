@@ -44,13 +44,126 @@
 ============================ -->
 <header class="site-header" id="site-header">
   <div class="wrap nav">
-    <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC">
+    <!-- Brand -->
+    <a class="brand" href="#inicio" aria-label="Fiberlink Servicios TIC - Inicio">
       <div class="brand-mark">
-        <img class="brand-logo" src="logo.gif" alt="" aria-hidden="true">
+        <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo">
+      </div>
+      <div class="brand-text">
+        <strong>Fiberlink</strong>
+        <span>Servicios TIC</span>
       </div>
     </a>
 
+    <!-- Desktop Navigation (Elevated UX/UI) -->
+    <nav class="nav-desktop" id="navDesktop" aria-label="Navegación principal">
+      <div class="nav-indicator" id="navIndicator" aria-hidden="true"></div>
+
+      <!-- Servicios with Mega-Dropdown -->
+      <div class="nav-item has-dropdown">
+        <a class="nav-link" href="#servicios" id="navServicios" aria-haspopup="true" aria-expanded="false">
+          <span>Servicios</span>
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </a>
+
+        <!-- Mega-Dropdown menu -->
+        <div class="nav-dropdown" role="menu" aria-label="Submenú de Servicios">
+          <div class="dropdown-arrow"></div>
+          <div class="dropdown-grid">
+            <a class="dropdown-card" href="#card-redes" data-target="card-redes" role="menuitem">
+              <div class="dcard-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+              </div>
+              <div class="dcard-info">
+                <strong>Redes & Conectividad</strong>
+                <p>Cableado estructurado, fibra óptica, routers, switches y Wi-Fi empresarial.</p>
+              </div>
+            </a>
+
+            <a class="dropdown-card" href="#card-redes" data-target="card-redes" role="menuitem">
+              <div class="dcard-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div class="dcard-info">
+                <strong>CCTV & Seguridad</strong>
+                <p>Cámaras IP inteligentes, NVR/DVR 4K, monitoreo remoto y alarmas perimetrales.</p>
+              </div>
+            </a>
+
+            <a class="dropdown-card" href="#card-pos" data-target="card-pos" role="menuitem">
+              <div class="dcard-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              </div>
+              <div class="dcard-info">
+                <strong>Puntos de Venta (POS)</strong>
+                <p>Hardware touch, software de facturación, lectores e impresoras térmicas.</p>
+              </div>
+            </a>
+
+            <a class="dropdown-card" href="#card-soporte" data-target="card-soporte" role="menuitem">
+              <div class="dcard-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="dcard-info">
+                <strong>Soporte Especializado</strong>
+                <p>Mantenimiento preventivo y correctivo, PC, laptops y pólizas de atención.</p>
+              </div>
+            </a>
+          </div>
+
+          <div class="dropdown-foot">
+            <span class="dfoot-status">
+              <span class="pulse-dot"></span>
+              Atención presencial en Teziutlán y soporte remoto nacional
+            </span>
+            <button class="dfoot-btn open-ticket" type="button">Agendar visita técnica &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Herramientas -->
+      <a class="nav-link" href="#herramientas">
+        <span>Herramientas</span>
+      </a>
+
+      <!-- Proceso -->
+      <a class="nav-link" href="#proceso">
+        <span>Proceso</span>
+      </a>
+
+      <!-- Fiberlink Labs -->
+      <a class="nav-link" href="#fiberlink-labs">
+        <span>Labs</span>
+        <span class="nav-badge">IA</span>
+      </a>
+
+      <!-- Contacto -->
+      <a class="nav-link" href="#contacto">
+        <span>Contacto</span>
+      </a>
+    </nav>
+
+    <!-- Header Actions (CTA + Status + Mobile Toggle) -->
     <div class="nav-actions">
+      <!-- Live Status Pill (Desktop) -->
+      <div class="live-pill" title="Mesa de ayuda y servicios TIC operativos">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="live-text">En línea</span>
+      </div>
+
+      <!-- Direct WhatsApp Action -->
+      <a class="nav-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20soporte%20o%20informacion%20de%20sus%20servicios." target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>WhatsApp</span>
+      </a>
+
+      <!-- Main Action: Solicitar Ticket -->
+      <button class="btn btn-primary nav-cta open-ticket" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        <span>Crear Ticket</span>
+      </button>
+
+      <!-- Mobile hamburger toggle button -->
       <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-expanded="false">
         <span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
@@ -61,27 +174,89 @@
 <!-- Mobile drawer -->
 <div class="drawer" id="drawer" aria-hidden="true">
   <div class="drawer-back" id="drawerBack"></div>
-  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menú">
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Menú principal">
     <div class="drawer-head">
       <a class="brand" href="#inicio">
-        <div class="brand-mark" style="width:36px;height:36px"><img class="brand-logo" src="logo.gif" alt="" style="width:24px;height:24px"></div>
-        <div class="brand-text"><strong>Fiberlink</strong></div>
+        <div class="brand-mark" style="width:36px;height:36px">
+          <img class="brand-logo" src="logo.gif" alt="" style="width:24px;height:24px">
+        </div>
+        <div class="brand-text">
+          <strong>Fiberlink</strong>
+          <span>Servicios TIC</span>
+        </div>
       </a>
-      <button class="close-btn" id="drawerClose" aria-label="Cerrar">
+      <button class="close-btn" id="drawerClose" aria-label="Cerrar menú">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
+
+    <div class="drawer-status">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span>Mesa técnica activa · Teziutlán y Región</span>
+    </div>
+
     <nav class="drawer-nav">
-      <a class="dl" href="#servicios">Servicios<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
-      <a class="dl" href="#herramientas">Herramientas<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
-      <a class="dl" href="#proceso">Proceso<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
-      <a class="dl" href="#fiberlink-labs">Fiberlink Labs<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
-      <a class="dl" href="#contacto">Contacto<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+      <a class="dl" href="#servicios">
+        <div class="dl-left">
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </span>
+          <span>Servicios</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#herramientas">
+        <div class="dl-left">
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          <span>Herramientas</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#proceso">
+        <div class="dl-left">
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </span>
+          <span>Proceso</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#fiberlink-labs">
+        <div class="dl-left">
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <span>Fiberlink Labs</span>
+          <span class="nav-badge" style="margin-left:6px">IA</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#contacto">
+        <div class="dl-left">
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+          </span>
+          <span>Contacto</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
     </nav>
+
     <div class="drawer-foot">
-      <a class="btn btn-primary" href="tel:+522311024672">Llamar ahora</a>
-      <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion." target="_blank" rel="noopener">WhatsApp</a>
-      <button class="btn btn-ghost open-ticket" type="button">Solicitar soporte</button>
+      <button class="btn btn-primary open-ticket" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        Levantar ticket de soporte
+      </button>
+      <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20informacion%20sobre%20sus%20servicios%20TIC." target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        WhatsApp directo
+      </a>
+      <a class="btn btn-ghost" href="tel:+522311024672">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Llamar al (231) 102 4672
+      </a>
     </div>
   </aside>
 </div>
@@ -162,7 +337,7 @@
       </div>
 
       <div class="bento reveal from-scale">
-        <article class="bc">
+        <article class="bc" id="card-soporte">
           <div class="card-spin" aria-hidden="true"></div>
           <div class="card-blob" aria-hidden="true"></div>
           <div class="card-inner-overlay" aria-hidden="true"></div>
@@ -175,7 +350,7 @@
           <div class="tags"><span class="tag">PC</span><span class="tag">Laptop</span><span class="tag">Software</span><span class="tag">Respaldos</span></div>
         </article>
 
-        <article class="bc">
+        <article class="bc" id="card-pos">
           <div class="card-spin" aria-hidden="true"></div>
           <div class="card-blob" aria-hidden="true"></div>
           <div class="card-inner-overlay" aria-hidden="true"></div>
@@ -188,7 +363,7 @@
           <div class="tags"><span class="tag">POS</span><span class="tag">Inventario</span><span class="tag">Tickets</span><span class="tag">Caja</span></div>
         </article>
 
-        <article class="bc">
+        <article class="bc" id="card-redes">
           <div class="card-spin" aria-hidden="true"></div>
           <div class="card-blob" aria-hidden="true"></div>
           <div class="card-inner-overlay" aria-hidden="true"></div>
@@ -201,7 +376,7 @@
           <div class="tags"><span class="tag">Redes</span><span class="tag">CCTV</span><span class="tag">WiFi</span><span class="tag">NVR</span></div>
         </article>
 
-        <article class="bc">
+        <article class="bc" id="card-digital">
           <div class="card-spin" aria-hidden="true"></div>
           <div class="card-blob" aria-hidden="true"></div>
           <div class="card-inner-overlay" aria-hidden="true"></div>

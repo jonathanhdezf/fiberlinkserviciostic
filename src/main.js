@@ -21,6 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initUI() {
+  // Desktop Navigation & Sliding Indicator
+  initDesktopNav();
+
+  // ScrollSpy for Active Section Highlighting
+  initScrollSpy();
+
+  // Smooth Navigation & Card Highlights
+  initSmoothNav();
+
   // Mobile Drawer
   const menuBtn = document.getElementById('menuBtn');
   const drawer = document.getElementById('drawer');
@@ -341,6 +350,209 @@ function initUI() {
       });
     });
   }
+}
+
+// ============================
+// DESKTOP NAVIGATION & SLIDING PILL INDICATOR
+// ============================
+function initDesktopNav() {
+  const navDesktop = document.getElementById('navDesktop');
+  const indicator = document.getElementById('navIndicator');
+  if (!navDesktop || !indicator) return;
+
+  const navLinks = navDesktop.querySelectorAll('.nav-link');
+  const dropdownItem = navDesktop.querySelector('.has-dropdown');
+
+  function moveIndicatorTo(el) {
+    if (!el) {
+      indicator.style.opacity = '0';
+      return;
+    }
+    const navRect = navDesktop.getBoundingClientRect();
+    const linkRect = el.getBoundingClientRect();
+    const left = linkRect.left - navRect.left;
+    const width = linkRect.width;
+
+    indicator.style.width = `${width}px`;
+    indicator.style.transform = `translateX(${left}px)`;
+    indicator.style.opacity = '1';
+  }
+
+  function resetIndicator() {
+    const activeLink = navDesktop.querySelector('.nav-link.nav-active');
+    if (activeLink) {
+      moveIndicatorTo(activeLink);
+    } else {
+      indicator.style.opacity = '0';
+    }
+  }
+
+  navLinks.forEach(link => {
+    link.addEventListener('mouseenter', () => moveIndicatorTo(link));
+    link.addEventListener('focus', () => moveIndicatorTo(link));
+  });
+
+  navDesktop.addEventListener('mouseleave', () => resetIndicator());
+
+  // Dropdown keyboard & click outside
+  if (dropdownItem) {
+    const trigger = dropdownItem.querySelector('.nav-link');
+    if (trigger) {
+      trigger.addEventListener('click', () => {
+        if (window.innerWidth >= 1024) {
+          dropdownItem.classList.toggle('open');
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dropdownItem.classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdownItem.contains(e.target)) {
+        dropdownItem.classList.remove('open');
+      }
+    });
+  }
+
+  setTimeout(resetIndicator, 300);
+}
+
+// ============================
+// SCROLLSPY (ACTIVE SECTION INDICATOR)
+// ============================
+function initScrollSpy() {
+  const sections = [
+    { id: 'inicio', selector: '#inicio' },
+    { id: 'servicios', selector: '#servicios' },
+    { id: 'herramientas', selector: '#herramientas' },
+    { id: 'proceso', selector: '#proceso' },
+    { id: 'fiberlink-labs', selector: '#fiberlink-labs' },
+    { id: 'contacto', selector: '#contacto' }
+  ];
+
+  const desktopLinks = document.querySelectorAll('.nav-desktop .nav-link');
+  const drawerLinks = document.querySelectorAll('.drawer-nav .dl');
+  const indicator = document.getElementById('navIndicator');
+
+  const onScroll = () => {
+    const scrollPos = window.scrollY + 180;
+    let currentId = 'inicio';
+
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const sec = document.querySelector(sections[i].selector);
+      if (sec && sec.offsetTop <= scrollPos) {
+        currentId = sections[i].id;
+        break;
+      }
+    }
+
+    desktopLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${currentId}`) {
+        link.classList.add('nav-active');
+        const navDesktop = document.getElementById('navDesktop');
+        if (navDesktop && !navDesktop.matches(':hover') && indicator) {
+          const navRect = navDesktop.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          indicator.style.width = `${linkRect.width}px`;
+          indicator.style.transform = `translateX(${linkRect.left - navRect.left}px)`;
+          indicator.style.opacity = '1';
+        }
+      } else {
+        link.classList.remove('nav-active');
+      }
+    });
+
+    drawerLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${currentId}`) {
+        link.classList.add('nav-active');
+      } else {
+        link.classList.remove('nav-active');
+      }
+    });
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+// ============================
+// SMOOTH NAVIGATION & INTERACTIVE CARD HIGHLIGHTS
+// ============================
+function initSmoothNav() {
+  const allNavAnchors = document.querySelectorAll(
+    '.nav-desktop a[href^="#"], .drawer-nav a[href^="#"], .dropdown-card[href^="#"], .hero-actions a[href^="#"], a.brand[href^="#"]'
+  );
+
+  allNavAnchors.forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#') return;
+
+      const targetEl = document.querySelector(href);
+      if (!targetEl) return;
+
+      e.preventDefault();
+
+      // Close mobile drawer if open
+      const drawer = document.getElementById('drawer');
+      const menuBtn = document.getElementById('menuBtn');
+      if (drawer && drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
+        document.body.style.overflow = '';
+      }
+
+      // Close dropdown if open
+      const dropdownItem = document.querySelector('.has-dropdown');
+      if (dropdownItem) {
+        dropdownItem.classList.remove('open');
+      }
+
+      // Smooth scroll via Lenis or native
+      if (window.lenis) {
+        window.lenis.scrollTo(targetEl, { offset: -70, duration: 1.1 });
+      } else {
+        const top = targetEl.getBoundingClientRect().top + window.pageYOffset - 70;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+
+      // If clicking a dropdown card with data-target, trigger pulse highlight on bento card
+      const targetCardId = anchor.getAttribute('data-target');
+      if (targetCardId) {
+        setTimeout(() => {
+          const card = document.getElementById(targetCardId);
+          if (card) {
+            card.classList.remove('card-highlighted');
+            void card.offsetWidth; // trigger reflow
+            card.classList.add('card-highlighted');
+            setTimeout(() => card.classList.remove('card-highlighted'), 2000);
+          }
+        }, 300);
+      }
+    });
+  });
+
+  // Global Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const drawer = document.getElementById('drawer');
+      const menuBtn = document.getElementById('menuBtn');
+      if (drawer && drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
+        document.body.style.overflow = '';
+      }
+    }
+  });
 }
 
 // ============================

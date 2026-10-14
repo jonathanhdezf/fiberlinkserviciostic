@@ -23,6 +23,8 @@ export function initAnimations() {
   });
   gsap.ticker.lagSmoothing(0);
 
+  window.lenis = lenis;
+
   // 2. Reveal Animations (Staggered fade up)
   const revealElements = document.querySelectorAll('.reveal');
   revealElements.forEach((el) => {
@@ -76,11 +78,11 @@ export function initAnimations() {
   const header = document.querySelector('.site-header');
   if (header) {
     ScrollTrigger.create({
-      start: 'top -50',
+      start: 'top -20',
       onUpdate: (self) => {
-        if (self.direction === 1) {
+        if (self.scroll() > 20) {
           header.classList.add('scrolled');
-        } else if (self.progress === 0) {
+        } else {
           header.classList.remove('scrolled');
         }
       }
