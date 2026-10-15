@@ -1,13 +1,14 @@
 // ============================
 // FIBERLINK PWA SERVICE WORKER
-// Cache Version: fiberlink-v1.0.4
+// Cache Version: fiberlink-v1.0.5
 // ============================
 
-const CACHE_NAME = 'fiberlink-v1.0.4';
+const CACHE_NAME = 'fiberlink-v1.0.5';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/soluciones.html',
   '/manifest.webmanifest',
   '/logo.gif',
   '/favicon.png',

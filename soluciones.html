@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Soluciones Inmediatas y Artículos de Ayuda TIC por Fiberlink. Respuestas sencillas y asistencia rápida para dueños de negocios y PyMEs.">
+  <title>Soluciones Inmediatas & Blog de Ayuda TIC | Fiberlink</title>
+
+  <!-- PWA Manifest & Web App Config -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0a0b08">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/gif" href="/logo.gif">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+
+  <!-- Typography Preconnect & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+<!-- Progress indicator -->
+<div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
+
+<!-- Background matrix canvas -->
+<canvas id="bgCanvas" aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35;"></canvas>
+
+<!-- ============================
+     HEADER
+============================ -->
+<header class="site-header gamer-hud" id="site-header">
+  <div class="hud-laser" aria-hidden="true"></div>
+  <div class="hud-grid-bg" aria-hidden="true"></div>
+
+  <div class="hud-inner">
+    <!-- Brand -->
+    <a class="brand hud-brand" href="/" aria-label="Fiberlink Servicios TIC - Inicio">
+      <div class="brand-mark">
+        <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
+      </div>
+      <div class="brand-text">
+        <strong data-glitch="Fiberlink"><span class="glitch-txt">Fiberlink</span></strong>
+        <span>Servicios TIC</span>
+      </div>
+    </a>
+
+    <!-- Nav buttons -->
+    <nav class="nav-desktop gamer-nav" aria-label="Navegación secundaria">
+      <a class="nav-link hud-link" href="/" style="display:inline-flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>VOLVER AL INICIO</span>
+      </a>
+      <a class="nav-link hud-link nav-active" href="/soluciones.html">
+        <span class="hud-num">02</span>
+        <span>SOLUCIONES & BLOG</span>
+      </a>
+      <a class="nav-link hud-link" href="/#contacto">
+        <span class="hud-num">05</span>
+        <span>CONTACTO</span>
+      </a>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="nav-actions">
+      <div class="live-pill hud-status" title="Soporte técnico activo">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="hud-status-code">SYS.READY</span>
+      </div>
+
+      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        <span class="glitch-txt">[ TICKET ]</span>
+      </button>
+
+      <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20necesito%20asistencia%20inmediata" target="_blank" rel="noopener" style="min-height:36px; padding:0 14px; font-size:.84rem;">
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============================
+       HERO
+  ============================ -->
+  <section class="sol-page-hero">
+    <div class="wrap sol-page-hero-inner">
+      <div class="lbl">// ASISTENCIA TÉCNICA EXPRÉS & GUÍAS TIC</div>
+      <h1>Respuestas claras y soluciones que te sacan del apuro <span class="accent-text">hoy mismo.</span></h1>
+      <p>Artículos prácticos escritos para dueños de negocios, emprendedores y usuarios cotidianos. Aprende a evitar fallas costosas y conoce cómo resolvemos tus emergencias sin tecnicismos.</p>
+
+      <!-- Category Filter Tabs -->
+      <div class="sol-filter-tabs" id="filterTabs">
+        <button class="sol-tab-btn active" data-category="all" type="button">Todos los Artículos (3)</button>
+        <button class="sol-tab-btn" data-category="soporte" type="button">Soporte Técnico</button>
+        <button class="sol-tab-btn" data-category="pos" type="button">Puntos de Venta (POS)</button>
+        <button class="sol-tab-btn" data-category="inmediato" type="button">Servicios Inmediatos</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       ARTICLES LIST
+  ============================ -->
+  <section class="wrap">
+    <div class="sol-articles-grid" id="articlesContainer">
+
+      <!-- ARTÍCULO 1: Soporte Técnico -->
+      <article class="article-card" data-category="soporte">
+        <div class="article-meta">
+          <span class="cat-badge">// SOPORTE TÉCNICO</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            3 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+        </div>
+
+        <h2>¿Tu computadora se volvió lenta de la noche a la mañana? Señales de que te está pidiendo auxilio</h2>
+
+        <div class="article-body">
+          <p><strong>Son las 10 de la mañana de un martes concurrido.</strong> Tienes a un cliente esperando en el mostrador, tres pedidos por confirmar y necesitas abrir una factura urgente. Das doble clic en el archivo y… nada. Aparece ese pequeño círculo girando en la pantalla. Pasan diez segundos, luego veinte. La pantalla se congela, el cursor del ratón no responde y sientes ese típico nudo en el estómago: <em>«Por favor, que no se apague ahora»</em>.</p>
+
+          <p>Si alguna vez has tenido que pedirle paciencia a un cliente mientras reinicias tu equipo con los dedos cruzados, créenos: no estás solo. Es una de las situaciones más frustrantes a las que se enfrenta cualquier dueño de negocio en su día a día.</p>
+
+          <h3>El costo de dejarlo pasar</h3>
+          <p>Cuando una computadora empieza a tardar más de la cuenta en encender o se queda «pensando» para abrir un simple documento, la reacción natural suele ser dejarlo pasar: <em>«Bueno, todavía funciona, solo hay que tenerle paciencia»</em>. El problema es que las computadoras casi nunca fallan de golpe sin avisar; casi siempre nos dan señales antes de que sea demasiado tarde.</p>
+          <p>Ignorar esas pequeñas alertas no solo te roba entre 20 y 40 minutos diarios de pura espera, sino que suele terminar en el peor escenario posible: un lunes en el que el equipo simplemente ya no prende, dejándote sin acceso a tus cobros, notas de venta o archivos importantes.</p>
+
+          <h3>La solución sin enredos</h3>
+          <p>Imagina tu computadora como el escritorio físico de tu oficina:</p>
+          <ul>
+            <li>Si con los meses vas acumulando papeles que ya no usas, cajas en el suelo y polvo en los cajones, llega un punto en el que ni siquiera puedes apoyar una taza de café sin tirar algo.</li>
+            <li>Por dentro, a tu máquina le pasa exactamente lo mismo: acumula archivos temporales que ya no sirven, programas que se abren solos sin que lo notes y polvo físico en los ventiladores que hace que trabaje forzada y caliente.</li>
+          </ul>
+
+          <p>Con nuestro servicio de <strong>Soporte Técnico (presencial y a distancia)</strong>, limpiamos y afinamos tu equipo como nuevo:</p>
+          <ul>
+            <li><strong>Atención rápida a distancia:</strong> Nos conectamos de forma segura y transparente a tu pantalla mientras tú te tomas un café, resolviendo el problema en minutos sin que tengas que desconectar cables.</li>
+            <li><strong>Mantenimiento preventivo en tu negocio:</strong> Si el equipo necesita limpieza interna a fondo o revisión física, vamos hasta tu local para que no pierdas tiempo trasladando aparatos pesados.</li>
+          </ul>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Sientes que tu computadora trabaja forzada o lenta?</strong>
+            <p>Diagnóstico honesto y optimización rápida para que vuelvas a trabajar con fluidez.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Soporte Técnico">
+              <span>Solicitar Diagnóstico &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola,%20leí%20su%20artículo%20sobre%20computadoras%20lentas%20y%20necesito%20ayuda" target="_blank" rel="noopener">
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ARTÍCULO 2: Punto de Venta -->
+      <article class="article-card" data-category="pos">
+        <div class="article-meta">
+          <span class="cat-badge">// CONTROL & PUNTOS DE VENTA (POS)</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            4 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+        </div>
+
+        <h2>¿El dinero no cuadra al final del día? Cómo dejar atrás las libretas y recuperar la tranquilidad en tu negocio</h2>
+
+        <div class="article-body">
+          <p><strong>Son las 9:30 de la noche.</strong> Ya bajaste la cortina de tu local, tus pies están cansados de estar de pie todo el día y lo único que quieres es llegar a casa a descansar con tu familia. Pero antes de poder irte, tienes una cita obligada con una libreta llena de números tachados, un puñado de notas arrugadas y una calculadora. Sumas, restas… y el número de la pantalla no coincide con el efectivo en caja. Vuelves a contar. Faltan doscientos pesos.</p>
+
+          <p><em>«¿Di mal un cambio? ¿Olvidé apuntar el refresco que se llevó el cliente de la tarde? ¿O me cobraron de más un pedido?»</em>. Esa sensación de incertidumbre y de irte a dormir pensando si tu negocio realmente está ganando o perdiendo dinero es un desgaste que ningún emprendedor merece vivir.</p>
+
+          <h3>El costo invisible de las cuentas a mano</h3>
+          <p>Llevar las cuentas en un cuaderno o en notas sueltas no es falta de ganas ni de esfuerzo. El problema es que atender a clientes, cobrar, despachar mercancía y vigilar el mostrador al mismo tiempo es agotador; es inevitable que algún detalle se escape.</p>
+          <ul>
+            <li><strong>No sabes con certeza qué producto se te está acabando</strong> hasta que un cliente te lo pide y tienes que decirle con pena: <em>«se me acaba de terminar»</em>.</li>
+            <li><strong>No sabes qué productos te dejan verdadera ganancia</strong> y cuáles llevan meses en la repisa comiéndose tu inversión.</li>
+            <li><strong>Te vuelves esclavo de tu negocio:</strong> no puedes dejar a nadie encargado en el mostrador porque solo tú sabes los precios de memoria o cómo apuntar las notas.</li>
+          </ul>
+
+          <h3>La solución: tu copiloto en el mostrador</h3>
+          <p>Un <strong>Punto de Venta (POS)</strong> no es un sistema complicado para ingenieros; es tan fácil de usar como tu teléfono celular:</p>
+          <ul>
+            <li><strong>Cobros rápidos y sin equivocaciones:</strong> Con un lector de código de barras o tocando la foto en pantalla, el sistema pone el precio exacto, calcula el cambio al instante e imprime el comprobante para tu cliente.</li>
+            <li><strong>Tu inventario se cuida solo:</strong> Cada vez que vendes un artículo, se descuenta de tu almacén de forma automática. Cuando algo está por terminarse, te avisa a tiempo para surtir antes de perder ventas.</li>
+            <li><strong>Cortes de caja en un solo clic:</strong> Al final del día, presionas un botón y en 3 segundos sabes con exactitud cuánto dinero entró en efectivo, cuánto con tarjeta y cuánto vendiste en total. Cuentas claras, cortina abajo y a descansar temprano.</li>
+          </ul>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Quieres despedirte de la libreta y cerrar caja en segundos?</strong>
+            <p>Te instalamos y enseñamos a usar tu punto de venta paso a paso sin complicaciones.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Punto de Venta">
+              <span>Cotizar Punto de Venta &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola,%20me%20interesa%20un%20Punto%20de%20Venta%20para%20mi%20negocio" target="_blank" rel="noopener">
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ARTÍCULO 3: Servicios Inmediatos -->
+      <article class="article-card" data-category="inmediato">
+        <div class="article-meta">
+          <span class="cat-badge">// SERVICIOS INMEDIATOS & EMERGENCIAS</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            3 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+        </div>
+
+        <h2>¿Atorado con la tecnología hoy? 5 problemas comunes que te resolvemos de inmediato (sin moverte de tu lugar)</h2>
+
+        <div class="article-body">
+          <p><strong>Son las 11:30 de la mañana.</strong> Tienes que imprimir un contrato urgente o estás a punto de enviar una cotización decisiva y, de repente: la computadora no reconoce la impresora. Desconectas el cable, lo vuelves a conectar, apagas y prendes el equipo… y nada. O una ventana emergente extraña no deja de salir en tu pantalla, el programa de cobro se trabó o la máquina parece trabajar en cámara lenta.</p>
+
+          <p>En momentos así, lo último que necesitas es que te digan: <em>«Desconecte todos los cables, traiga el equipo al taller y se lo revisamos en tres días»</em>. En tu trabajo diario, <strong>tú no puedes poner tu vida en pausa durante tres días</strong>.</p>
+
+          <h3>5 Problemas cotidianos que te solucionamos hoy mismo</h3>
+          <p>Gracias a nuestras herramientas de <strong>asistencia remota y soporte presencial ágil</strong>, hay una gran cantidad de fallas que podemos dejarte funcionando hoy mismo:</p>
+          <ul>
+            <li><strong>1. «La impresora no quiere imprimir» o «no detecta el escáner»:<br></strong>
+            Configuramos y enlazamos tus equipos de inmediato para que imprimas tus tickets, facturas o contratos sin batallar.</li>
+            <li><strong>2. «Se abren ventanas raras y la pantalla está lentísima»:<br></strong>
+            Hacemos una limpieza digital rápida para quitar programas molestos y archivos basura que ahogan tu equipo.</li>
+            <li><strong>3. «No puedo entrar a mi correo o perdí un archivo»:<br></strong>
+            Te ayudamos a recuperar accesos, restablecer cuentas trabadas y rescatar documentos que creías borrados.</li>
+            <li><strong>4. «El sistema de cobro o la terminal no responde»:<br></strong>
+            Entramos de emergencia a destrabar el programa de punto de venta para que no dejes ir ventas.</li>
+            <li><strong>5. «El internet se desconectó de tu máquina o no llega al mostrador»:<br></strong>
+            Diagnosticamos si es tu proveedor, el cable o el router y restablecemos la conexión en el momento.</li>
+          </ul>
+
+          <p>Con tu autorización y de forma 100% segura, nos conectamos a tu pantalla a distancia y vemos exactamente lo que tú ves, resolviendo el detalle frente a tus ojos mientras tú te tomas un café.</p>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Tienes un problema atorado justo en este momento?</strong>
+            <p>Atención inmediata remota o presencial para que tu día vuelva a fluir.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Soporte Técnico">
+              <span>Abrir Ticket Exprés &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola,%20tengo%20una%20urgencia%20técnica%20ahora%20mismo%20y%20necesito%20ayuda" target="_blank" rel="noopener">
+              WhatsApp Directo
+            </a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============================
+       EMERGENCY BANNER
+  ============================ -->
+  <section class="wrap">
+    <div class="emergency-banner">
+      <div class="emergency-info">
+        <h3>¿Necesitas auxilio técnico hoy mismo?</h3>
+        <p>No pierdas horas buscando tutoriales. Escríbenos y un especialista te atenderá sin rodeos técnicos.</p>
+      </div>
+      <div class="emergency-actions">
+        <a class="btn btn-primary" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20solicito%20asistencia%20inmediata" target="_blank" rel="noopener">
+          <span>Escribir por WhatsApp &rarr;</span>
+        </a>
+        <button class="btn btn-ghost open-ticket" type="button">
+          Levantar Solicitud
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================
+     FOOTER
+============================ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Fiberlink Inicio">
+          <div class="brand-mark">
+            <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
+          </div>
+          <div class="brand-text">
+            <strong>Fiberlink</strong>
+            <span>Servicios TIC</span>
+          </div>
+        </a>
+        <p style="font-size:0.88rem; color:var(--muted); max-width:320px; line-height:1.5;">
+          Soporte técnico, redes, videovigilancia y soluciones digitales para negocios en Teziutlán y la región.
+        </p>
+      </div>
+      <div>
+        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ENLACES RÁPIDOS</div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
+          <a href="/" style="color:var(--muted); text-decoration:none;">Inicio</a>
+          <a href="/#servicios" style="color:var(--muted); text-decoration:none;">Servicios</a>
+          <a href="/#proceso" style="color:var(--muted); text-decoration:none;">Método de Trabajo</a>
+          <a href="/soluciones.html" style="color:var(--verde); text-decoration:none;">Soluciones & Blog</a>
+          <a href="/#contacto" style="color:var(--muted); text-decoration:none;">Contacto</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ATENCIÓN DIRECTA</div>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Teléfono: 231 102 4672</p>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Email: fiberlinkserviciostic@gmail.com</p>
+        <p style="font-size:0.88rem; color:var(--muted);">Teziutlán, Puebla</p>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(156,195,46,0.15); padding-top:20px; text-align:center; font-size:0.8rem; color:var(--muted);">
+      © 2026 Fiberlink Servicios TIC. Todos los derechos reservados.
+    </div>
+  </div>
+</footer>
+
+<!-- Filter Tabs Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('#filterTabs .sol-tab-btn');
+    const articles = document.querySelectorAll('#articlesContainer .article-card');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const cat = tab.getAttribute('data-category');
+        articles.forEach(art => {
+          if (cat === 'all' || art.getAttribute('data-category') === cat) {
+            art.style.display = 'block';
+          } else {
+            art.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Handle ticket buttons on this page
+    document.querySelectorAll('.open-ticket').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const srv = btn.getAttribute('data-service') || 'Soporte Técnico';
+        window.location.href = `/?ticket=${encodeURIComponent(srv)}#inicio`;
+      });
+    });
+  });
+</script>
+
+<!-- Main App Scripts (PWA, animations, etc.) -->
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

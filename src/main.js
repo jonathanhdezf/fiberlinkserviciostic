@@ -734,7 +734,7 @@ function initScrollSpy() {
   const sections = [
     { id: 'inicio', selector: '#inicio' },
     { id: 'servicios', selector: '#servicios' },
-    { id: 'herramientas', selector: '#herramientas' },
+    { id: 'soluciones', selector: '#soluciones' },
     { id: 'proceso', selector: '#proceso' },
     { id: 'fiberlink-labs', selector: '#fiberlink-labs' },
     { id: 'contacto', selector: '#contacto' }
