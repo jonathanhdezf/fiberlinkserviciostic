@@ -1053,139 +1053,153 @@
         </div>
       </div>
 
-      <!-- Reviews Grid -->
-      <div class="reviews-grid">
-        <!-- Review 1: Don Ricardo -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
-            </div>
-            <span class="review-service-badge">[PUNTO DE VENTA]</span>
+      <!-- Carrusel de Reseñas y Agradecimientos -->
+      <div class="cyber-carousel reveal" id="reviewsCarousel" data-carousel="reviews">
+        <div class="carousel-nav-bar">
+          <div class="carousel-dots" id="reviewsDots" aria-label="Indicadores de carrusel de agradecimientos"></div>
+          <div class="carousel-arrows">
+            <button class="carousel-btn prev" id="reviewsPrevBtn" aria-label="Anterior agradecimiento" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="carousel-btn next" id="reviewsNextBtn" aria-label="Siguiente agradecimiento" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
-          <p class="review-quote">«Se me congeló el sistema de cobro un sábado a las 2 de la tarde con fila de clientes en la caja. Les mandé WhatsApp y en menos de 10 minutos entraron por remoto, destrabaron la base de datos y me salvaron el día. Trato de amigos y súper honesto.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">RG</div>
-            <div class="review-author-info">
-              <strong>Don Ricardo Gómez</strong>
-              <span>Abarrotes y Cremería La Central · Teziutlán Centro</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
-            </div>
-          </div>
-        </article>
+        </div>
 
-        <!-- Review 2: Dra. Marcela -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
+        <div class="carousel-track" id="reviewsTrack">
+          <!-- Review 1: Don Ricardo -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[PUNTO DE VENTA]</span>
             </div>
-            <span class="review-service-badge">[CÁMARAS & WI-FI]</span>
-          </div>
-          <p class="review-quote">«Instalaron 6 cámaras IP de seguridad y dejaron el internet estable en todos los consultorios. La señal ya nunca se cae y puedo vigilar mi clínica desde el celular cuando salgo de viaje a capacitaciones. 100% profesionales y limpios para trabajar.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">MV</div>
-            <div class="review-author-info">
-              <strong>Dra. Marcela Valdés</strong>
-              <span>Clínica OdontoSalud · Chignautla</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
+            <p class="review-quote">«Se me congeló el sistema de cobro un sábado a las 2 de la tarde con fila de clientes en la caja. Les mandé WhatsApp y en menos de 10 minutos entraron por remoto, destrabaron la base de datos y me salvaron el día. Trato de amigos y súper honesto.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">RG</div>
+              <div class="review-author-info">
+                <strong>Don Ricardo Gómez</strong>
+                <span>Abarrotes y Cremería La Central · Teziutlán Centro</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Review 3: Lic. Fernando -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
+          <!-- Review 2: Dra. Marcela -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[CÁMARAS & WI-FI]</span>
             </div>
-            <span class="review-service-badge">[SOPORTE & LICENCIAS]</span>
-          </div>
-          <p class="review-quote">«Teníamos problemas diarios con computadoras lentas y licencias piratas que nos bloqueaban el Excel en pleno cierre de declaraciones. Fiberlink limpió los equipos, nos instaló Windows 11 Pro original y nos dio póliza de mantenimiento. Trabajar así da gusto.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">FM</div>
-            <div class="review-author-info">
-              <strong>Lic. Fernando Morales</strong>
-              <span>Despacho Contable Morales & Asoc. · Teziutlán</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
+            <p class="review-quote">«Instalaron 6 cámaras IP de seguridad y dejaron el internet estable en todos los consultorios. La señal ya nunca se cae y puedo vigilar mi clínica desde el celular cuando salgo de viaje a capacitaciones. 100% profesionales y limpios para trabajar.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">MV</div>
+              <div class="review-author-info">
+                <strong>Dra. Marcela Valdés</strong>
+                <span>Clínica OdontoSalud · Chignautla</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Review 4: Sra. Carmen -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
+          <!-- Review 3: Lic. Fernando -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[SOPORTE & LICENCIAS]</span>
             </div>
-            <span class="review-service-badge">[EQUIPAMIENTO POS]</span>
-          </div>
-          <p class="review-quote">«Nos armaron todo el punto de venta con lector de código de barras, cajón automático y la impresora de tickets. Yo no sabía nada de computación y nos tuvieron toda la paciencia del mundo para enseñarnos a cobrar y hacer corte de caja sin enredos.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">CB</div>
-            <div class="review-author-info">
-              <strong>Sra. Carmen Benítez</strong>
-              <span>Boutique & Calzado D'Moda · Plaza Cristal</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
+            <p class="review-quote">«Teníamos problemas diarios con computadoras lentas y licencias piratas que nos bloqueaban el Excel en pleno cierre de declaraciones. Fiberlink limpió los equipos, nos instaló Windows 11 Pro original y nos dio póliza de mantenimiento. Trabajar así da gusto.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">FM</div>
+              <div class="review-author-info">
+                <strong>Lic. Fernando Morales</strong>
+                <span>Despacho Contable Morales & Asoc. · Teziutlán</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Review 5: Ing. Roberto -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
+          <!-- Review 4: Sra. Carmen -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[EQUIPAMIENTO POS]</span>
             </div>
-            <span class="review-service-badge">[INVENTARIOS & REDES]</span>
-          </div>
-          <p class="review-quote">«El lector inalámbrico de largo alcance que nos vendieron para la bodega nos ahorró horas enteras de trabajo en el inventario de fin de mes. Además, siempre responden los mensajes inmediatamente cuando tenemos alguna duda técnica.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">RT</div>
-            <div class="review-author-info">
-              <strong>Ing. Roberto Téllez</strong>
-              <span>Refaccionaria Serrana · Xiutetelco</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
+            <p class="review-quote">«Nos armaron todo el punto de venta con lector de código de barras, cajón automático y la impresora de tickets. Yo no sabía nada de computación y nos tuvieron toda la paciencia del mundo para enseñarnos a cobrar y hacer corte de caja sin enredos.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">CB</div>
+              <div class="review-author-info">
+                <strong>Sra. Carmen Benítez</strong>
+                <span>Boutique & Calzado D'Moda · Plaza Cristal</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Review 6: Profa. Elena -->
-        <article class="review-card reveal">
-          <div class="review-card-top">
-            <div class="review-stars" aria-label="5 de 5 estrellas">
-              ★★★★★
+          <!-- Review 5: Ing. Roberto -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[INVENTARIOS & REDES]</span>
             </div>
-            <span class="review-service-badge">[MANTENIMIENTO PC]</span>
-          </div>
-          <p class="review-quote">«Mi laptop de trabajo no encendía y tenía guardadas todas las calificaciones y planeaciones del ciclo escolar. En Fiberlink rescataron todos mis archivos intactos y le cambiaron el disco por uno más rápido. Excelente trato y precio justo.»</p>
-          <div class="review-author-wrap">
-            <div class="review-avatar">EG</div>
-            <div class="review-author-info">
-              <strong>Mtra. Elena Gutiérrez</strong>
-              <span>Docente y Particular · Teziutlán</span>
-              <span class="review-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Cliente Verificado
-              </span>
+            <p class="review-quote">«El lector inalámbrico de largo alcance que nos vendieron para la bodega nos ahorró horas enteras de trabajo en el inventario de fin de mes. Además, siempre responden los mensajes inmediatamente cuando tenemos alguna duda técnica.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">RT</div>
+              <div class="review-author-info">
+                <strong>Ing. Roberto Téllez</strong>
+                <span>Refaccionaria Serrana · Xiutetelco</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
+
+          <!-- Review 6: Profa. Elena -->
+          <article class="review-card">
+            <div class="review-card-top">
+              <div class="review-stars" aria-label="5 de 5 estrellas">
+                ★★★★★
+              </div>
+              <span class="review-service-badge">[MANTENIMIENTO PC]</span>
+            </div>
+            <p class="review-quote">«Mi laptop de trabajo no encendía y tenía guardadas todas las calificaciones y planeaciones del ciclo escolar. En Fiberlink rescataron todos mis archivos intactos y le cambiaron el disco por uno más rápido. Excelente trato y precio justo.»</p>
+            <div class="review-author-wrap">
+              <div class="review-avatar">EG</div>
+              <div class="review-author-info">
+                <strong>Mtra. Elena Gutiérrez</strong>
+                <span>Docente y Particular · Teziutlán</span>
+                <span class="review-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Cliente Verificado
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
 
       <!-- Caja para invitar a dejar reseña -->

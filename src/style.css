@@ -4120,6 +4120,15 @@ body.cursor-hover .cursor-ring{
   margin-bottom: 40px;
 }
 
+.reviews-section .cyber-carousel {
+  margin-bottom: 40px;
+}
+
+.carousel-track .review-card {
+  height: 100%;
+  min-height: 290px;
+}
+
 .review-card {
   background: rgba(12, 17, 10, 0.88);
   border: 1px solid rgba(156, 195, 46, 0.22);
