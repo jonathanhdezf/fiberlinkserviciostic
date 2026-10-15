@@ -116,32 +116,52 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
   display: flex;
   align-items: center;
   padding: 0 24px;
-  background: rgba(8, 12, 6, 0.92);
-  border: 1px solid rgba(156, 195, 46, 0.35);
+  background: rgba(8, 12, 6, 0.88);
+  border: 1px solid rgba(156, 195, 46, 0.32);
+  border-radius: 16px;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   box-shadow:
-    0 20px 48px -15px rgba(0, 0, 0, 0.95),
-    0 0 25px rgba(156, 195, 46, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  clip-path: polygon(
-    14px 0, calc(100% - 14px) 0,
-    100% 14px, 100% calc(100% - 14px),
-    calc(100% - 14px) 100%, 14px 100%,
-    0 calc(100% - 14px), 0 14px
-  );
+    0 20px 48px -12px rgba(0, 0, 0, 0.92),
+    0 0 0 1px rgba(156, 195, 46, 0.12),
+    0 0 24px -2px rgba(156, 195, 46, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(156, 195, 46, 0.08);
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible;
 }
 
+/* Luminous upper-rim cyber accent */
+.site-header.gamer-hud::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 28px;
+  right: 28px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(124, 231, 255, 0.45) 20%, var(--verde) 50%, rgba(124, 231, 255, 0.45) 80%, transparent);
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.85;
+  transition: all 0.35s ease;
+}
+
 .site-header.gamer-hud.scrolled {
   top: 10px;
-  background: rgba(6, 9, 5, 0.97);
-  border-color: rgba(156, 195, 46, 0.65);
+  background: rgba(6, 9, 5, 0.96);
+  border-color: rgba(156, 195, 46, 0.58);
   box-shadow:
-    0 24px 55px rgba(0, 0, 0, 0.98),
-    0 0 35px rgba(156, 195, 46, 0.25),
-    inset 0 0 15px rgba(156, 195, 46, 0.08);
+    0 24px 52px -10px rgba(0, 0, 0, 0.98),
+    0 0 0 1px rgba(156, 195, 46, 0.32),
+    0 0 35px 0 rgba(156, 195, 46, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.site-header.gamer-hud.scrolled::before {
+  left: 14px;
+  right: 14px;
+  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(124, 231, 255, 0.75) 20%, var(--verde) 50%, rgba(124, 231, 255, 0.75) 80%, transparent);
 }
 
 @media(max-width: 768px) {
@@ -153,12 +173,12 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
     max-width: 540px;
     height: 58px;
     padding: 0 16px;
-    clip-path: polygon(
-      10px 0, calc(100% - 10px) 0,
-      100% 10px, 100% calc(100% - 10px),
-      calc(100% - 10px) 100%, 10px 100%,
-      0 calc(100% - 10px), 0 10px
-    );
+    border-radius: 14px;
+  }
+
+  .site-header.gamer-hud::before {
+    left: 16px;
+    right: 16px;
   }
 }
 
@@ -195,20 +215,10 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
   z-index: 1;
 }
 
-/* Corner Chamfer Accents */
+/* Corner Chamfer Accents (hidden for clean rounded border) */
 .hud-notch {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--verde);
-  pointer-events: none;
-  z-index: 11;
-  opacity: 0.75;
+  display: none;
 }
-.hud-notch.tl { top: 3px; left: 3px; border-right: none; border-bottom: none; }
-.hud-notch.tr { top: 3px; right: 3px; border-left: none; border-bottom: none; }
-.hud-notch.bl { bottom: 3px; left: 3px; border-right: none; border-top: none; }
-.hud-notch.br { bottom: 3px; right: 3px; border-left: none; border-top: none; }
 
 /* HUD Inner wrapper — Spacious 3-zone layout */
 .hud-inner {
