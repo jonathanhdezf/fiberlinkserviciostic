@@ -1362,7 +1362,6 @@ function initLabsScrollReveal() {
   const section = document.getElementById('fiberlink-labs');
   if (!section) return;
 
-  const viewportEl = section.querySelector('.labs-sticky-viewport');
   const statements = section.querySelectorAll('.reveal-statement');
   if (!statements.length) return;
 
@@ -1376,21 +1375,25 @@ function initLabsScrollReveal() {
   let ticking = false;
 
   function update() {
+    const rect = section.getBoundingClientRect();
     const isMobile = window.innerWidth <= 900;
     const topStickyOffset = isMobile ? 64 : 76;
-    const rect = section.getBoundingClientRect();
-    const vHeight = (viewportEl && viewportEl.offsetHeight) ? viewportEl.offsetHeight : (window.innerHeight - topStickyOffset);
-    const maxStickyScroll = Math.max(1, section.offsetHeight - vHeight);
+    const totalScrollable = section.offsetHeight - window.innerHeight;
+
+    if (totalScrollable <= 0) {
+      ticking = false;
+      return;
+    }
 
     // Distance scrolled past sticky onset
     const scrolled = topStickyOffset - rect.top;
-    const progress = Math.max(0, Math.min(1, scrolled / maxStickyScroll));
+    const rawProgress = scrolled / totalScrollable;
+    const progress = Math.max(0, Math.min(1, rawProgress));
 
-    // Determine active index [0 .. totalSteps - 1]
+    // Determine active index
     const totalSteps = statements.length;
-    let activeIndex = Math.floor(progress * totalSteps);
-    if (activeIndex >= totalSteps) activeIndex = totalSteps - 1;
-    if (activeIndex < 0) activeIndex = 0;
+    const stepProgress = progress * totalSteps;
+    const activeIndex = Math.min(totalSteps - 1, Math.max(0, Math.floor(stepProgress)));
 
     // Update statements classes
     statements.forEach((stmt, idx) => {
@@ -1445,9 +1448,6 @@ function initLabsScrollReveal() {
 
   window.addEventListener('scroll', requestUpdate, { passive: true });
   window.addEventListener('resize', requestUpdate, { passive: true });
-  if (window.lenis) {
-    window.lenis.on('scroll', requestUpdate);
-  }
 
   // Initial call
   update();
