@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 7. Progressive Web App (PWA) Registration
   initPWA();
+
+  // 8. Cyber-Carousels (Soluciones & Catálogo)
+  initCyberCarousels();
+
+  // 9. Social Share & Copy Link button
+  initSocialShare();
 });
 
 function initUI() {
@@ -737,6 +743,8 @@ function initScrollSpy() {
     { id: 'soluciones', selector: '#soluciones' },
     { id: 'catalogo', selector: '#catalogo' },
     { id: 'proceso', selector: '#proceso' },
+    { id: 'testimonios', selector: '#testimonios' },
+    { id: 'compartir', selector: '#compartir' },
     { id: 'fiberlink-labs', selector: '#fiberlink-labs' },
     { id: 'contacto', selector: '#contacto' }
   ];
@@ -1137,5 +1145,158 @@ function initPWA() {
     });
   }
 }
+
+// ============================
+// CYBER-CAROUSEL CONTROLLER (SOLUCIONES & CATÁLOGO)
+// ============================
+function initCyberCarousels() {
+  const carousels = document.querySelectorAll('.cyber-carousel');
+  if (!carousels.length) return;
+
+  carousels.forEach(carousel => {
+    const track = carousel.querySelector('.carousel-track');
+    const prevBtn = carousel.querySelector('.carousel-btn.prev');
+    const nextBtn = carousel.querySelector('.carousel-btn.next');
+    const dotsContainer = carousel.querySelector('.carousel-dots');
+    if (!track) return;
+
+    const cards = Array.from(track.children);
+    if (!cards.length) return;
+
+    // Dynamically generate navigation dots
+    if (dotsContainer) {
+      dotsContainer.innerHTML = '';
+      cards.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = `carousel-dot ${idx === 0 ? 'active' : ''}`;
+        dot.setAttribute('aria-label', `Ir al elemento ${idx + 1}`);
+        dot.addEventListener('click', () => {
+          const cardLeft = cards[idx].offsetLeft - track.offsetLeft;
+          track.scrollTo({ left: cardLeft, behavior: 'smooth' });
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    const dots = dotsContainer ? dotsContainer.querySelectorAll('.carousel-dot') : [];
+
+    // Helper to calculate scroll step
+    function getScrollStep() {
+      const firstCard = cards[0];
+      return firstCard ? firstCard.offsetWidth + 22 : 320;
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        track.scrollBy({ left: -getScrollStep(), behavior: 'smooth' });
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        track.scrollBy({ left: getScrollStep(), behavior: 'smooth' });
+      });
+    }
+
+    // Scroll listener to update active dot and button states
+    let scrollDebounce;
+    track.addEventListener('scroll', () => {
+      clearTimeout(scrollDebounce);
+      scrollDebounce = setTimeout(() => {
+        const scrollLeft = track.scrollLeft;
+        let activeIdx = 0;
+        let minDiff = Infinity;
+
+        cards.forEach((card, idx) => {
+          const cardLeft = card.offsetLeft - track.offsetLeft;
+          const diff = Math.abs(cardLeft - scrollLeft);
+          if (diff < minDiff) {
+            minDiff = diff;
+            activeIdx = idx;
+          }
+        });
+
+        dots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === activeIdx);
+        });
+
+        if (prevBtn) {
+          prevBtn.disabled = track.scrollLeft <= 5;
+        }
+        if (nextBtn) {
+          const maxScroll = track.scrollWidth - track.clientWidth;
+          nextBtn.disabled = track.scrollLeft >= maxScroll - 5;
+        }
+      }, 50);
+    }, { passive: true });
+
+    // Initial arrow state
+    if (prevBtn) prevBtn.disabled = track.scrollLeft <= 5;
+
+    // Desktop Mouse Drag to scroll
+    let isDown = false;
+    let startX = 0;
+    let scrollLeftStart = 0;
+
+    track.addEventListener('mousedown', (e) => {
+      // Ignore if clicking on interactive elements inside card
+      if (e.target.closest('a, button, input, select, textarea')) return;
+      isDown = true;
+      track.classList.add('is-dragging');
+      startX = e.pageX - track.offsetLeft;
+      scrollLeftStart = track.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      track.classList.remove('is-dragging');
+    });
+
+    track.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - startX) * 1.4;
+      track.scrollLeft = scrollLeftStart - walk;
+    });
+  });
+}
+
+// ============================
+// SOCIAL SHARE & COPY LINK
+// ============================
+function initSocialShare() {
+  const copyBtn = document.getElementById('copyShareLinkBtn');
+  const copyText = document.getElementById('copyShareBtnText');
+  if (!copyBtn) return;
+
+  copyBtn.addEventListener('click', async () => {
+    const url = window.location.origin || 'https://fiberlinkserviciostic.vercel.app';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      copyBtn.classList.add('copied');
+      if (copyText) copyText.textContent = '¡Enlace Copiado! ✓';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        if (copyText) copyText.textContent = 'Copiar Enlace';
+      }, 2500);
+    } catch (err) {
+      console.warn('[Share] Error al copiar enlace:', err);
+    }
+  });
+}
+
 
 

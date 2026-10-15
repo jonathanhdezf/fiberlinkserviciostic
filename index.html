@@ -214,16 +214,22 @@
         <span class="glitch-txt">PROCESO</span>
       </a>
 
-      <!-- [05] Fiberlink Labs -->
-      <a class="nav-link hud-link" href="#fiberlink-labs" data-glitch="LABS // IA">
+      <!-- [05] Opiniones -->
+      <a class="nav-link hud-link" href="#testimonios" data-glitch="OPINIONES">
         <span class="hud-num">05</span>
+        <span class="glitch-txt">OPINIONES</span>
+      </a>
+
+      <!-- [06] Fiberlink Labs -->
+      <a class="nav-link hud-link" href="#fiberlink-labs" data-glitch="LABS // IA">
+        <span class="hud-num">06</span>
         <span class="glitch-txt">LABS // IA</span>
         <span class="hud-chip">BETA</span>
       </a>
 
-      <!-- [06] Contacto -->
+      <!-- [07] Contacto -->
       <a class="nav-link hud-link" href="#contacto" data-glitch="CONTACTO">
-        <span class="hud-num">06</span>
+        <span class="hud-num">07</span>
         <span class="glitch-txt">CONTACTO</span>
       </a>
     </nav>
@@ -317,9 +323,29 @@
         </div>
         <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </a>
-      <a class="dl" href="#fiberlink-labs" data-glitch="Labs // IA">
+      <a class="dl" href="#testimonios" data-glitch="Opiniones">
         <div class="dl-left">
           <span class="dl-code">[05]</span>
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </span>
+          <span class="glitch-txt">Opiniones</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#compartir" data-glitch="Compártenos">
+        <div class="dl-left">
+          <span class="dl-code">[06]</span>
+          <span class="dl-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </span>
+          <span class="glitch-txt">Compártenos</span>
+        </div>
+        <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <a class="dl" href="#fiberlink-labs" data-glitch="Labs // IA">
+        <div class="dl-left">
+          <span class="dl-code">[07]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"/><path d="m9 12 2 2 4-4"/></svg>
           </span>
@@ -330,7 +356,7 @@
       </a>
       <a class="dl" href="#contacto" data-glitch="Contacto">
         <div class="dl-left">
-          <span class="dl-code">[06]</span>
+          <span class="dl-code">[08]</span>
           <span class="dl-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
           </span>
@@ -587,102 +613,116 @@
         </div>
       </div>
 
-      <!-- Grid de 5 soluciones inmediatas + Promo Blog -->
-      <div class="sol-grid">
-        <!-- Card 1 -->
-        <div class="sol-card reveal">
-          <div class="sol-card-header">
-            <span class="sol-badge">[REMOTO // &lt; 15 MIN]</span>
-            <span class="sol-status-dot"></span>
-          </div>
-          <div class="sol-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </div>
-          <h3>Impresoras y Escáneres</h3>
-          <p class="sol-desc">«No quiere imprimir», «no detecta el escáner» o cola de impresión trabada. Lo configuramos y enlazamos a distancia en minutos.</p>
-          <div class="sol-card-foot">
-            <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Solicitar Auxilio &rarr;</button>
+      <!-- Carrusel de 5 soluciones inmediatas + Promo Blog -->
+      <div class="cyber-carousel" id="solucionesCarousel" data-carousel="soluciones">
+        <div class="carousel-nav-bar">
+          <div class="carousel-dots" id="solDots" aria-label="Indicadores de carrusel de soluciones"></div>
+          <div class="carousel-arrows">
+            <button class="carousel-btn prev" id="solPrevBtn" aria-label="Anterior solución" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="carousel-btn next" id="solNextBtn" aria-label="Siguiente solución" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
           </div>
         </div>
 
-        <!-- Card 2 -->
-        <div class="sol-card reveal">
-          <div class="sol-card-header">
-            <span class="sol-badge urgent">[URGENTE // CAJA]</span>
-            <span class="sol-status-dot pulse"></span>
+        <div class="carousel-track" id="solTrack">
+          <!-- Card 1 -->
+          <div class="sol-card">
+            <div class="sol-card-header">
+              <span class="sol-badge">[REMOTO // &lt; 15 MIN]</span>
+              <span class="sol-status-dot"></span>
+            </div>
+            <div class="sol-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <h3>Impresoras y Escáneres</h3>
+            <p class="sol-desc">«No quiere imprimir», «no detecta el escáner» o cola de impresión trabada. Lo configuramos y enlazamos a distancia en minutos.</p>
+            <div class="sol-card-foot">
+              <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Solicitar Auxilio &rarr;</button>
+            </div>
           </div>
-          <div class="sol-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          </div>
-          <h3>Punto de Venta Trabado</h3>
-          <p class="sol-desc">Sistema de cobro congelado, error en terminal de tarjetas o corte de caja con descuadre. Asistencia de emergencia al instante.</p>
-          <div class="sol-card-foot">
-            <button class="btn-sol-action open-ticket" type="button" data-service="Punto de Venta">Destrabar Caja &rarr;</button>
-          </div>
-        </div>
 
-        <!-- Card 3 -->
-        <div class="sol-card reveal">
-          <div class="sol-card-header">
-            <span class="sol-badge">[LIMPIEZA DIGITAL]</span>
-            <span class="sol-status-dot"></span>
+          <!-- Card 2 -->
+          <div class="sol-card">
+            <div class="sol-card-header">
+              <span class="sol-badge urgent">[URGENTE // CAJA]</span>
+              <span class="sol-status-dot pulse"></span>
+            </div>
+            <div class="sol-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <h3>Punto de Venta Trabado</h3>
+            <p class="sol-desc">Sistema de cobro congelado, error en terminal de tarjetas o corte de caja con descuadre. Asistencia de emergencia al instante.</p>
+            <div class="sol-card-foot">
+              <button class="btn-sol-action open-ticket" type="button" data-service="Punto de Venta">Destrabar Caja &rarr;</button>
+            </div>
           </div>
-          <div class="sol-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </div>
-          <h3>Computadora Lenta o Virus</h3>
-          <p class="sol-desc">Ventanas que no cierran, anuncios invasivos o lentitud insoportable. Limpieza remota segura sin borrar tus documentos importantes.</p>
-          <div class="sol-card-foot">
-            <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Optimizar Equipo &rarr;</button>
-          </div>
-        </div>
 
-        <!-- Card 4 -->
-        <div class="sol-card reveal">
-          <div class="sol-card-header">
-            <span class="sol-badge">[RECUPERACIÓN]</span>
-            <span class="sol-status-dot"></span>
+          <!-- Card 3 -->
+          <div class="sol-card">
+            <div class="sol-card-header">
+              <span class="sol-badge">[LIMPIEZA DIGITAL]</span>
+              <span class="sol-status-dot"></span>
+            </div>
+            <div class="sol-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>Computadora Lenta o Virus</h3>
+            <p class="sol-desc">Ventanas que no cierran, anuncios invasivos o lentitud insoportable. Limpieza remota segura sin borrar tus documentos importantes.</p>
+            <div class="sol-card-foot">
+              <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Optimizar Equipo &rarr;</button>
+            </div>
           </div>
-          <div class="sol-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <h3>Cuentas y Archivos Perdidos</h3>
-          <p class="sol-desc">Contraseña olvidada, correo corporativo bloqueado o un archivo que borraste sin querer. Rescate de datos y restablecimiento de accesos.</p>
-          <div class="sol-card-foot">
-            <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Recuperar Acceso &rarr;</button>
-          </div>
-        </div>
 
-        <!-- Card 5 -->
-        <div class="sol-card reveal">
-          <div class="sol-card-header">
-            <span class="sol-badge">[CONEXIÓN // WI-FI]</span>
-            <span class="sol-status-dot"></span>
+          <!-- Card 4 -->
+          <div class="sol-card">
+            <div class="sol-card-header">
+              <span class="sol-badge">[RECUPERACIÓN]</span>
+              <span class="sol-status-dot"></span>
+            </div>
+            <div class="sol-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3>Cuentas y Archivos Perdidos</h3>
+            <p class="sol-desc">Contraseña olvidada, correo corporativo bloqueado o un archivo que borraste sin querer. Rescate de datos y restablecimiento de accesos.</p>
+            <div class="sol-card-foot">
+              <button class="btn-sol-action open-ticket" type="button" data-service="Soporte Técnico">Recuperar Acceso &rarr;</button>
+            </div>
           </div>
-          <div class="sol-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-          </div>
-          <h3>Caída de Internet en Mostrador</h3>
-          <p class="sol-desc">La terminal o la caja se quedaron sin red. Diagnosticamos si es tu proveedor, el cable o el router y restablecemos tu conexión.</p>
-          <div class="sol-card-foot">
-            <button class="btn-sol-action open-ticket" type="button" data-service="Redes & Seguridad">Restablecer Red &rarr;</button>
-          </div>
-        </div>
 
-        <!-- Card 6: Promo to Blog / Guias -->
-        <div class="sol-card sol-card-featured reveal">
-          <div class="sol-feat-glow" aria-hidden="true"></div>
-          <span class="sol-badge highlighted">[BLOG & GUÍAS TIC]</span>
-          <h3>¿Quieres evitar estas fallas?</h3>
-          <p class="sol-desc">Aprende con artículos semanales escritos en lenguaje humano para dueños de negocios y PyMEs.</p>
-          <ul class="sol-feat-list">
-            <li>✓ Señales de que tu computadora va a fallar</li>
-            <li>✓ Cómo dejar las libretas y cuadrar caja en 1 clic</li>
-            <li>✓ Qué hacer cuando el internet se cae en hora pico</li>
-          </ul>
-          <a href="/soluciones.html" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:auto;">
-            <span>Ver Artículos Completos &rarr;</span>
-          </a>
+          <!-- Card 5 -->
+          <div class="sol-card">
+            <div class="sol-card-header">
+              <span class="sol-badge">[CONEXIÓN // WI-FI]</span>
+              <span class="sol-status-dot"></span>
+            </div>
+            <div class="sol-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            </div>
+            <h3>Caída de Internet en Mostrador</h3>
+            <p class="sol-desc">La terminal o la caja se quedaron sin red. Diagnosticamos si es tu proveedor, el cable o el router y restablecemos tu conexión.</p>
+            <div class="sol-card-foot">
+              <button class="btn-sol-action open-ticket" type="button" data-service="Redes & Seguridad">Restablecer Red &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Card 6: Promo to Blog / Guias -->
+          <div class="sol-card sol-card-featured">
+            <div class="sol-feat-glow" aria-hidden="true"></div>
+            <span class="sol-badge highlighted">[BLOG & GUÍAS TIC]</span>
+            <h3>¿Quieres evitar estas fallas?</h3>
+            <p class="sol-desc">Aprende con artículos semanales escritos en lenguaje humano para dueños de negocios y PyMEs.</p>
+            <ul class="sol-feat-list">
+              <li>✓ Señales de que tu computadora va a fallar</li>
+              <li>✓ Cómo dejar las libretas y cuadrar caja en 1 clic</li>
+              <li>✓ Qué hacer cuando el internet se cae en hora pico</li>
+            </ul>
+            <a href="/soluciones.html" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:auto;">
+              <span>Ver Artículos Completos &rarr;</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -706,7 +746,21 @@
         </div>
       </div>
 
-      <div class="cat-home-grid">
+      <!-- Carrusel de Catálogo Destacado -->
+      <div class="cyber-carousel" id="catalogoCarousel" data-carousel="catalogo">
+        <div class="carousel-nav-bar">
+          <div class="carousel-dots" id="catDots" aria-label="Indicadores de carrusel de catálogo"></div>
+          <div class="carousel-arrows">
+            <button class="carousel-btn prev" id="catPrevBtn" aria-label="Anterior producto" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="carousel-btn next" id="catNextBtn" aria-label="Siguiente producto" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="carousel-track" id="catTrack">
         <!-- Item 1: Impresora de Tickets 80mm -->
         <article class="prod-card reveal">
           <div class="prod-meta-bar">
@@ -844,6 +898,7 @@
             </a>
           </div>
         </article>
+        </div>
       </div>
 
       <!-- Banner de acceso al catálogo completo -->
@@ -949,6 +1004,268 @@
             </div>
             <div class="labs-title">Desarrollo web moderno</div>
             <div class="labs-sub">React · Next.js · Vercel · SEO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       RESEÑAS Y AGRADECIMIENTOS
+  ============================ -->
+  <section class="reviews-section" id="testimonios">
+    <div class="wrap">
+      <div class="cat-header-row">
+        <div class="cat-header-text">
+          <div class="lbl reveal">// OPINIONES & CASOS DE ÉXITO // CLIENTES 100% REALES</div>
+          <h2 class="sh reveal">Comentarios y agradecimientos<br>de quienes confían en nosotros.</h2>
+          <p class="reveal">Dueños de negocios, abarrotes, consultorios y profesionistas de Teziutlán y municipios vecinos que resolvieron sus fallas técnicas y optimizaron sus operaciones con Fiberlink.</p>
+        </div>
+        <div class="reveal">
+          <a class="btn btn-secondary" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20gustar%C3%ADa%20dejar%20un%20comentario%20sobre%20su%20servicio" target="_blank" rel="noopener">
+            <span>Dejar mi Agradecimiento &rarr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Trust Metrics Bar -->
+      <div class="reviews-trust-bar reveal">
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div>
+            <span class="trust-item-val">4.9 / 5.0</span>
+            <span class="trust-item-lbl">Calificación de Servicio</span>
+          </div>
+        </div>
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <div>
+            <span class="trust-item-val">+150 Clientes</span>
+            <span class="trust-item-lbl">Atendidos en la Región</span>
+          </div>
+        </div>
+        <div class="trust-item">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div>
+            <span class="trust-item-val">&lt; 15 Minutos</span>
+            <span class="trust-item-lbl">Respuesta en Urgencias</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Grid -->
+      <div class="reviews-grid">
+        <!-- Review 1: Don Ricardo -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[PUNTO DE VENTA]</span>
+          </div>
+          <p class="review-quote">«Se me congeló el sistema de cobro un sábado a las 2 de la tarde con fila de clientes en la caja. Les mandé WhatsApp y en menos de 10 minutos entraron por remoto, destrabaron la base de datos y me salvaron el día. Trato de amigos y súper honesto.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">RG</div>
+            <div class="review-author-info">
+              <strong>Don Ricardo Gómez</strong>
+              <span>Abarrotes y Cremería La Central · Teziutlán Centro</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Review 2: Dra. Marcela -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[CÁMARAS & WI-FI]</span>
+          </div>
+          <p class="review-quote">«Instalaron 6 cámaras IP de seguridad y dejaron el internet estable en todos los consultorios. La señal ya nunca se cae y puedo vigilar mi clínica desde el celular cuando salgo de viaje a capacitaciones. 100% profesionales y limpios para trabajar.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">MV</div>
+            <div class="review-author-info">
+              <strong>Dra. Marcela Valdés</strong>
+              <span>Clínica OdontoSalud · Chignautla</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Review 3: Lic. Fernando -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[SOPORTE & LICENCIAS]</span>
+          </div>
+          <p class="review-quote">«Teníamos problemas diarios con computadoras lentas y licencias piratas que nos bloqueaban el Excel en pleno cierre de declaraciones. Fiberlink limpió los equipos, nos instaló Windows 11 Pro original y nos dio póliza de mantenimiento. Trabajar así da gusto.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">FM</div>
+            <div class="review-author-info">
+              <strong>Lic. Fernando Morales</strong>
+              <span>Despacho Contable Morales & Asoc. · Teziutlán</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Review 4: Sra. Carmen -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[EQUIPAMIENTO POS]</span>
+          </div>
+          <p class="review-quote">«Nos armaron todo el punto de venta con lector de código de barras, cajón automático y la impresora de tickets. Yo no sabía nada de computación y nos tuvieron toda la paciencia del mundo para enseñarnos a cobrar y hacer corte de caja sin enredos.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">CB</div>
+            <div class="review-author-info">
+              <strong>Sra. Carmen Benítez</strong>
+              <span>Boutique & Calzado D'Moda · Plaza Cristal</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Review 5: Ing. Roberto -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[INVENTARIOS & REDES]</span>
+          </div>
+          <p class="review-quote">«El lector inalámbrico de largo alcance que nos vendieron para la bodega nos ahorró horas enteras de trabajo en el inventario de fin de mes. Además, siempre responden los mensajes inmediatamente cuando tenemos alguna duda técnica.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">RT</div>
+            <div class="review-author-info">
+              <strong>Ing. Roberto Téllez</strong>
+              <span>Refaccionaria Serrana · Xiutetelco</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Review 6: Profa. Elena -->
+        <article class="review-card reveal">
+          <div class="review-card-top">
+            <div class="review-stars" aria-label="5 de 5 estrellas">
+              ★★★★★
+            </div>
+            <span class="review-service-badge">[MANTENIMIENTO PC]</span>
+          </div>
+          <p class="review-quote">«Mi laptop de trabajo no encendía y tenía guardadas todas las calificaciones y planeaciones del ciclo escolar. En Fiberlink rescataron todos mis archivos intactos y le cambiaron el disco por uno más rápido. Excelente trato y precio justo.»</p>
+          <div class="review-author-wrap">
+            <div class="review-avatar">EG</div>
+            <div class="review-author-info">
+              <strong>Mtra. Elena Gutiérrez</strong>
+              <span>Docente y Particular · Teziutlán</span>
+              <span class="review-verified">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Caja para invitar a dejar reseña -->
+      <div class="review-leave-box reveal">
+        <div class="review-leave-text">
+          <h3>¿Has recibido atención o servicio de Fiberlink?</h3>
+          <p>Tu opinión y recomendación nos impulsan a seguir brindando el soporte técnico más honesto, rápido y cercano de la sierra nororiental.</p>
+        </div>
+        <a class="btn btn-primary" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20quiero%20compartir%20mi%20agradecimiento%20y%20comentario%20sobre%20el%20servicio%20que%20me%20brindaron:" target="_blank" rel="noopener">
+          <span>Enviar mi Comentario por WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       COMPÁRTENOS EN REDES SOCIALES
+  ============================ -->
+  <section class="share-section" id="compartir">
+    <div class="wrap">
+      <div class="share-banner reveal">
+        <div class="share-header-copy">
+          <div class="lbl" style="color:var(--verde); margin-bottom:8px;">// COMUNIDAD & RECOMENDACIONES TIC // RECOMIÉNDANOS</div>
+          <h2>¿Te ha servido nuestro servicio? Compártenos con un conocido.</h2>
+          <p>Una computadora lenta, un punto de venta trabado o un internet inestable le quitan ventas y tranquilidad a cualquier negocio. Si conoces a alguien en Teziutlán o la región que necesite soporte de confianza, compártele nuestra página con un solo clic.</p>
+        </div>
+
+        <!-- 1-Click Share Buttons -->
+        <div class="share-buttons-grid">
+          <!-- WhatsApp Share -->
+          <a class="share-action-btn share-btn-wa" href="https://api.whatsapp.com/send?text=Te%20recomiendo%20a%20Fiberlink%20Servicios%20TIC%20en%20Teziutl%C3%A1n%20para%20soporte%20t%C3%A9cnico,%20c%C3%A1maras,%20redes%20y%20puntos%20de%20venta:%20https://fiberlinkserviciostic.vercel.app" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>WhatsApp</span>
+          </a>
+
+          <!-- Facebook Share -->
+          <a class="share-action-btn share-btn-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://fiberlinkserviciostic.vercel.app" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <span>Facebook</span>
+          </a>
+
+          <!-- X / Twitter Share -->
+          <a class="share-action-btn share-btn-x" href="https://twitter.com/intent/tweet?text=Soporte%20t%C3%A9cnico,%20c%C3%A1maras,%20redes%20y%20puntos%20de%20venta%20para%20negocios%20con%20@FiberlinkTIC&url=https://fiberlinkserviciostic.vercel.app" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <span>X (Twitter)</span>
+          </a>
+
+          <!-- Telegram Share -->
+          <a class="share-action-btn share-btn-tg" href="https://t.me/share/url?url=https://fiberlinkserviciostic.vercel.app&text=Soporte%20t%C3%A9cnico%20y%20soluciones%20digitales%20en%20Teziutl%C3%A1n" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.197 1.006.128.832.942z"/></svg>
+            <span>Telegram</span>
+          </a>
+
+          <!-- Copy Link -->
+          <button class="share-action-btn share-btn-copy" id="copyShareLinkBtn" type="button">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="copyShareBtnText">Copiar Enlace</span>
+          </button>
+        </div>
+
+        <!-- Síguenos en Redes Oficiales -->
+        <div class="share-follow-bar">
+          <span class="share-follow-lbl">O conéctate con nuestras redes:</span>
+          <div class="share-social-pills">
+            <a class="share-social-pill" href="https://facebook.com" target="_blank" rel="noopener">
+              <img src="assets/facebook.svg" alt="Facebook" width="14" height="14">
+              <span>Facebook</span>
+            </a>
+            <a class="share-social-pill" href="https://instagram.com" target="_blank" rel="noopener">
+              <img src="assets/instagram.svg" alt="Instagram" width="14" height="14">
+              <span>Instagram</span>
+            </a>
+            <a class="share-social-pill" href="https://tiktok.com" target="_blank" rel="noopener">
+              <img src="assets/tiktok.svg" alt="TikTok" width="14" height="14">
+              <span>TikTok</span>
+            </a>
+            <a class="share-social-pill" href="https://youtube.com" target="_blank" rel="noopener">
+              <img src="assets/youtube.svg" alt="YouTube" width="14" height="14">
+              <span>YouTube</span>
+            </a>
           </div>
         </div>
       </div>
