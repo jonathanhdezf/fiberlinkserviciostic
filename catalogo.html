@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Catálogo de productos tecnológicos por Fiberlink: Cámaras de seguridad, impresoras de tickets y etiquetas, cajones de dinero, lectores láser y licencias originales en Teziutlán y la región.">
+  <title>Catálogo de Productos & Equipamiento TIC | Fiberlink</title>
+
+  <!-- PWA Manifest & Web App Config -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#0a0b08">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Favicons & App Icons -->
+  <link rel="icon" type="image/gif" href="/logo.gif">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+
+  <!-- Typography Preconnect & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+<!-- Progress indicator -->
+<div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
+
+<!-- Background matrix canvas -->
+<canvas id="bgCanvas" aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35;"></canvas>
+
+<!-- ============================
+     HEADER
+============================ -->
+<header class="site-header gamer-hud" id="site-header">
+  <div class="hud-laser" aria-hidden="true"></div>
+  <div class="hud-grid-bg" aria-hidden="true"></div>
+
+  <div class="hud-inner">
+    <!-- Brand -->
+    <a class="brand hud-brand" href="/" aria-label="Fiberlink Servicios TIC - Inicio">
+      <div class="brand-mark">
+        <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
+      </div>
+      <div class="brand-text">
+        <strong data-glitch="Fiberlink"><span class="glitch-txt">Fiberlink</span></strong>
+        <span>Servicios TIC</span>
+      </div>
+    </a>
+
+    <!-- Nav buttons -->
+    <nav class="nav-desktop gamer-nav" aria-label="Navegación secundaria">
+      <a class="nav-link hud-link" href="/" style="display:inline-flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>VOLVER AL INICIO</span>
+      </a>
+      <a class="nav-link hud-link" href="/#servicios">
+        <span class="hud-num">01</span>
+        <span>SERVICIOS</span>
+      </a>
+      <a class="nav-link hud-link" href="/soluciones.html">
+        <span class="hud-num">02</span>
+        <span>SOLUCIONES & BLOG</span>
+      </a>
+      <a class="nav-link hud-link nav-active" href="/catalogo.html">
+        <span class="hud-num">03</span>
+        <span>CATÁLOGO</span>
+      </a>
+      <a class="nav-link hud-link" href="/#contacto">
+        <span class="hud-num">05</span>
+        <span>CONTACTO</span>
+      </a>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="nav-actions">
+      <div class="live-pill hud-status" title="Catálogo con inventario disponible">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span class="hud-status-code">STOCK.OK</span>
+      </div>
+
+      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]" data-service="Equipamiento / Catálogo">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        <span class="glitch-txt">[ TICKET ]</span>
+      </button>
+
+      <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20gustar%C3%ADa%20cotizar%20equipos%20del%20cat%C3%A1logo" target="_blank" rel="noopener" style="min-height:36px; padding:0 14px; font-size:.84rem;">
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============================
+       HERO
+  ============================ -->
+  <section class="cat-page-hero">
+    <div class="wrap cat-page-hero-inner">
+      <div class="lbl">// HARDWARE & SOFTWARE PROFESIONAL // ASESORÍA LOCAL EN TEZIUTLÁN</div>
+      <h1>Equipos y licencias probadas para que tu negocio <span class="accent-text">trabaje sin pausas.</span></h1>
+      <p>Cámaras de vigilancia de alta definición, impresoras de tickets sin tinta, cajones de dinero metálicos, lectores láser y software legal. Te lo entregamos configurado, con garantía local y soporte técnico directo.</p>
+
+      <!-- Search Box with Live Filter -->
+      <div class="cat-search-box-wrap">
+        <div class="cat-search-input-inner">
+          <span class="cat-search-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="search" id="catalogSearch" class="cat-search-input" placeholder="Buscar por producto (ej. cámara, ticket, lector, windows, cajón)..." autocomplete="off" />
+          <button type="button" id="catalogClearSearch" class="cat-clear-btn" aria-label="Limpiar búsqueda">✕</button>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="cat-filter-tabs" id="catalogFilterTabs">
+        <button class="cat-tab-btn active" data-category="all" type="button">Todos los Productos (12)</button>
+        <button class="cat-tab-btn" data-category="pos" type="button">Puntos de Venta (POS)</button>
+        <button class="cat-tab-btn" data-category="cctv" type="button">Cámaras & Seguridad</button>
+        <button class="cat-tab-btn" data-category="software" type="button">Licencias & Software</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================
+       PRODUCTS GRID
+  ============================ -->
+  <section class="wrap">
+    <div class="cat-products-grid" id="catalogProductsContainer">
+
+      <!-- PRODUCTO 1: Cajón de Dinero Automático -->
+      <article class="prod-card" data-category="pos" data-keywords="cajon dinero caja registradora metalico rj11 apertura automatica">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="12" cy="15" r="1.5"/></svg>
+        </div>
+        <h2 class="prod-title">Cajón de Dinero Automático Metálico</h2>
+        <p class="prod-desc">Protege las ventas del día con apertura automática coordinada con tu ticket de cobro o llave manual de alta seguridad.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>5 divisiones para billetes con pisa-billetes metálicos y 8 para monedas</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión RJ11 para apertura automática con tu impresora de tickets</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Estructura de acero reforzado resistente a golpes y trabajo continuo</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Cerradura de 3 posiciones: bloqueado, automático y manual con llave</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía directa de 1 año + soporte Fiberlink</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20el%20Cajon%20de%20Dinero%20Automatico%20Metalico" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Cajón de Dinero">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 2: Impresora Térmica 80mm -->
+      <article class="prod-card" data-category="pos" data-keywords="impresora termica tickets 80mm autocorte rollo recibos usb ethernet pos">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Alta Demanda</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        </div>
+        <h2 class="prod-title">Impresora Térmica de Tickets 80mm (Auto-Corte)</h2>
+        <p class="prod-desc">Despacha a tus clientes en segundos sin gastar un solo peso en cartuchos de tinta. Corte de papel limpio y silencioso.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Cero tinta ni cartuchos: tecnología térmica que imprime con calor</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Guillotina de corte automático para no romper el papel a mano</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión USB y puerto Ethernet para imprimir desde varias PCs a la vez</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Compatible con Eleventa, Soft Restaurant, Abarrotes y sistemas POS</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía de 1 año + instalación inicial incluida</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20la%20Impresora%20Termica%20de%20Tickets%2080mm" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Impresora 80mm">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 3: Impresora Térmica 58mm -->
+      <article class="prod-card" data-category="pos" data-keywords="impresora 58mm chica economica mini termica tickets mostrador rollos">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        </div>
+        <h2 class="prod-title">Impresora Térmica de Tickets 58mm Compacta</h2>
+        <p class="prod-desc">La opción más económica y práctica para tiendas pequeñas, papelerías o mostradores con espacio reducido.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Diseño compacto que ocupa el mínimo espacio en tu mostrador</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Rollos de 58mm estándar muy económicos y fáciles de conseguir</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión USB directa Plug & Play con configuración inmediata</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Puerto RJ11 para accionar cajón de dinero automáticamente</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>1 año de garantía local Fiberlink</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20la%20Impresora%20Termica%2058mm" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Impresora 58mm">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 4: Lector de Código de Barras y QR 2D con Base -->
+      <article class="prod-card" data-category="pos" data-keywords="lector barras qr 1d 2d scanner escaner base manos libres laser">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+        </div>
+        <h2 class="prod-title">Lector de Códigos 1D y 2D / QR con Base</h2>
+        <p class="prod-desc">Olvídate de teclear códigos a mano o equivocarte de precio. Cobra a gran velocidad con detección automática en manos libres.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Lee códigos de barras tradicionales y códigos 2D / QR al instante</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Capaz de leer códigos mal impresos, curvos o directo en pantallas de celular</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Base articulada incluida para cobro continuo sin oprimir el gatillo</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión USB compatible con cualquier computadora y software de cobro</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía de 1 año + soporte técnico</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20el%20Lector%20de%20Codigos%201D/2D%20con%20Base" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Lector 1D/2D">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 5: Lector Inalámbrico Bluetooth -->
+      <article class="prod-card" data-category="pos" data-keywords="lector inalambrico bluetooth bodega inventarios largo alcance almacen">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><line x1="12" y1="18" x2="12.01" y2="18"/><circle cx="12" cy="18" r="1"/></svg>
+        </div>
+        <h2 class="prod-title">Lector Inalámbrico para Bodegas e Inventarios</h2>
+        <p class="prod-desc">Haz inventarios sin cables estorbosos. Camina libremente por tus pasillos o almacén mientras registras cada producto.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Alcance inalámbrico de hasta 50 metros en interiores sin pérdida de señal</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Modo almacenamiento: guarda hasta 100,000 códigos si sales del rango</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Batería recargable de alta duración para jornadas de inventario completas</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión por receptor USB 2.4GHz o Bluetooth a PC, tablet y celular</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía de 1 año + soporte Fiberlink</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20el%20Lector%20Inalambrico%20de%20Codigos" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Lector Inalámbrico">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 6: Impresora de Etiquetas Térmicas Adhesivas -->
+      <article class="prod-card" data-category="pos" data-keywords="impresora etiquetas adhesivas codigo barras precios rotuladora envios">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[PUNTO DE VENTA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <h2 class="prod-title">Impresora de Etiquetas Térmicas para Precios</h2>
+        <p class="prod-desc">Etiqueta toda tu mercancía con precio, código de barras y logotipo sin pagar caras tintas ni cintas de transferencia.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Impresión térmica directa sobre etiquetas autoadheribles (cero tinta)</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Ancho ajustable: desde pequeñas etiquetas de joyería hasta etiquetas de envío</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Alta resolución de 203 DPI para códigos nítidos que leen a la primera</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Incluye software para diseñar plantillas con tu logo y precios en minutos</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>1 año de garantía + asesoría de plantilla inicial</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20la%20Impresora%20de%20Etiquetas%20Termicas" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Impresora de Etiquetas">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 7: Kit 4 Cámaras IP 4K -->
+      <article class="prod-card" data-category="cctv" data-keywords="camaras seguridad kit 4k nvr dvr cctv vision nocturna color audio celular">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[VIDEOVIGILANCIA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Con Instalación</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </div>
+        <h2 class="prod-title">Kit 4 Cámaras IP 4K con NVR y Visión Nocturna</h2>
+        <p class="prod-desc">Cuida tu negocio o domicilio las 24 horas. Visualiza todo en vivo desde tu celular con máxima claridad y grabación continua.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Resolución Ultra HD 4K para distinguir rostros, placas y billetes en caja</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Visión nocturna a color y micrófono integrado para escuchar audio en directo</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Grabador con disco duro de grado vigilancia que graba semanas enteras</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Alertas instantáneas a tu teléfono celular al detectar personas sospechosas</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>2 años de garantía + instalación profesional certificada</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20el%20Kit%20de%204%20Camaras%20IP%204K" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Videovigilancia - Kit 4K">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 8: Cámara Domo Exterior Antivandálica -->
+      <article class="prod-card" data-category="cctv" data-keywords="camara domo exterior metalica antivandalica lluvia intemperie cctv">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[VIDEOVIGILANCIA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> En Stock</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2 class="prod-title">Cámara Domo Antivandálica para Exterior IP67</h2>
+        <p class="prod-desc">Diseñada para resistir fuertes lluvias, niebla, humedad y golpes directos en fachadas, banquetas y patios.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Carcasa de aluminio blindada con protección contra impactos IK10</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sellado hermético IP67 resistente al clima y humedad de Teziutlán</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Infrarrojo inteligente con visión nítida de hasta 30 metros en la noche</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Lente gran angular para cubrir un área amplia sin puntos ciegos</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>1 año de garantía local Fiberlink</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20la%20Camara%20Domo%20Antivandalica%20Exterior" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Videovigilancia - Cámara Domo">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 9: Cámara Wi-Fi 360° Interior -->
+      <article class="prod-card" data-category="cctv" data-keywords="camara wifi 360 interior consultorio oficina microfono audio celular microsd">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[VIDEOVIGILANCIA]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Entrega Inmediata</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0"/><path d="M16.24 7.76a6 6 0 0 0-8.48 0"/></svg>
+        </div>
+        <h2 class="prod-title">Cámara Wi-Fi 360° con Audio Dos Vías</h2>
+        <p class="prod-desc">Ideal para consultorios, mostradores y oficinas. Gira la cámara desde tu celular y habla o escucha en tiempo real.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Giro horizontal 355° y vertical 90° con control remoto desde la app</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Bocina y micrófono integrados: habla con empleados o visitantes</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Ranura para memoria MicroSD: graba sin necesidad de comprar grabador</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Conexión Wi-Fi rápida y configuración en tu teléfono en 5 minutos</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>1 año de garantía Fiberlink</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20la%20Camara%20WiFi%20360" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Videovigilancia - Cámara Wi-Fi">Solicitar Cotización Formal &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 10: Licencia Windows 11 Pro Original -->
+      <article class="prod-card" data-category="software" data-keywords="licencia windows 11 pro original oem legal permanente activacion clave">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[SOFTWARE ORIGINAL]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Entrega Digital</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+        </div>
+        <h2 class="prod-title">Licencia Original Windows 11 Pro (Permanente)</h2>
+        <p class="prod-desc">Elimina la marca de agua y los virus de activadores piratas. Clave genuina para mantener tu equipo 100% legal y veloz.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Clave de activación genuina de 25 caracteres validada en servidores Microsoft</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Permanente de por vida en tu equipo (sin mensualidades ni caducidad)</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Acceso completo a parches oficiales de seguridad y optimización</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Habilita Escritorio Remoto y cifrado BitLocker para cuidar tu información</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía de activación genuina 100% garantizada</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20adquirir%20la%20Licencia%20Windows%2011%20Pro" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Comprar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Software - Windows 11 Pro">Solicitar Cotización &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 11: Licencia Microsoft Office -->
+      <article class="prod-card" data-category="software" data-keywords="licencia office word excel powerpoint outlook 365 permanente microsoft">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[SOFTWARE ORIGINAL]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Entrega Digital</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <h2 class="prod-title">Microsoft Office (Excel, Word, PowerPoint)</h2>
+        <p class="prod-desc">Crea presupuestos, reportes y cotizaciones con la seguridad de que tus archivos no se van a dañar ni bloquear.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Paquete completo: Excel, Word, PowerPoint y Outlook sin restricciones</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sin avisos molestos de "Producto no activado" ni riesgos de programas piratas</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Opciones de compra definitiva o suscripción familiar / empresas</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Asistencia remota Fiberlink para instalación sin complicaciones</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Garantía de autenticidad + soporte de instalación</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20adquirir%20la%20Licencia%20de%20Microsoft%20Office" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Comprar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Software - Office Original">Solicitar Cotización &rarr;</button>
+        </div>
+      </article>
+
+      <!-- PRODUCTO 12: Software Punto de Venta con Inventarios -->
+      <article class="prod-card" data-category="software" data-keywords="software punto de venta pos inventario eleventa control de caja facturacion">
+        <div class="prod-meta-bar">
+          <span class="prod-cat-badge">[SOFTWARE ORIGINAL]</span>
+          <span class="prod-status-tag"><span class="prod-status-dot"></span> Capacitación Incluida</span>
+        </div>
+        <div class="prod-icon-box">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h2 class="prod-title">Software de Punto de Venta con Inventarios</h2>
+        <p class="prod-desc">El sistema más fácil de usar para saber tus ganancias exactas, controlar existencias y hacer corte de caja en 1 minuto.</p>
+        <ul class="prod-specs">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Control automático de inventarios con aviso antes de que se agote la mercancía</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Corte de caja ciego: evita diferencias de dinero y fugas con tus cajeros</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Acepta cobros con tarjeta, vales, transferencias y créditos a clientes</span>
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Sin rentas obligatorias: licencia de un solo pago instalada en tu equipo</span>
+          </li>
+        </ul>
+        <div class="prod-warranty-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Instalación, carga de productos y capacitación a tu personal</span>
+        </div>
+        <div class="prod-actions">
+          <a class="prod-btn-wa" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20interesa%20cotizar%20el%20Software%20de%20Punto%20de%20Venta" target="_blank" rel="noopener">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            <span>Cotizar por WhatsApp</span>
+          </a>
+          <button class="prod-btn-sub open-ticket" type="button" data-service="Punto de Venta - Software con Inventarios">Agendar Demostración &rarr;</button>
+        </div>
+      </article>
+
+      <!-- Estado Vacío cuando la búsqueda no coincide -->
+      <div class="cat-empty-state" id="catalogEmptyState">
+        <h3>No encontramos productos que coincidan</h3>
+        <p>Prueba con otra palabra o dinos qué equipo necesitas por WhatsApp para verificar disponibilidad de inmediato.</p>
+        <button type="button" class="btn btn-secondary" id="catalogResetFilters">Restablecer Búsqueda</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================
+       ASSURANCE BANNER
+  ============================ -->
+  <section class="wrap">
+    <div class="cat-assurance-banner">
+      <div class="cat-assurance-text">
+        <div class="lbl" style="color:var(--verde); margin-bottom:8px;">// ASESORÍA PERSONALIZADA EN HARDWARE Y SOFTWARE</div>
+        <h3>¿Quieres armar tu Punto de Venta o Kit de Seguridad completo?</h3>
+        <p>Diseñamos combos completos (Cajón + Impresora + Lector + Software + Cámaras) adaptados al presupuesto de tu negocio, con instalación y capacitación a domicilio en Teziutlán y municipios vecinos.</p>
+      </div>
+      <div class="cat-assurance-actions">
+        <a class="btn btn-primary" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20gustar%C3%ADa%20que%20me%20armen%20un%20paquete%20completo%20para%20mi%20negocio" target="_blank" rel="noopener">
+          <span>Armar Paquete por WhatsApp</span>
+        </a>
+        <button class="btn btn-secondary open-ticket" type="button" data-service="Paquete Completo Equipamiento">
+          Solicitar Diagnóstico en Local
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================
+     FOOTER
+============================ -->
+<footer style="border-top:1px solid rgba(156,195,46,0.2); padding:50px 0 30px; background:rgba(6,10,5,0.9); font-family:var(--texto);">
+  <div class="wrap">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:36px; margin-bottom:40px;">
+      <div>
+        <a class="brand" href="/" style="display:flex; align-items:center; gap:10px; margin-bottom:14px; text-decoration:none;">
+          <div class="brand-mark">
+            <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
+          </div>
+          <div class="brand-text">
+            <strong>Fiberlink</strong>
+            <span>Servicios TIC</span>
+          </div>
+        </a>
+        <p style="font-size:0.88rem; color:var(--muted); max-width:320px; line-height:1.5;">
+          Equipamiento de punto de venta, cámaras de vigilancia, redes y licencias de software para negocios en Teziutlán y la región.
+        </p>
+      </div>
+      <div>
+        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ENLACES RÁPIDOS</div>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
+          <a href="/" style="color:var(--muted); text-decoration:none;">Inicio</a>
+          <a href="/#servicios" style="color:var(--muted); text-decoration:none;">Servicios</a>
+          <a href="/soluciones.html" style="color:var(--muted); text-decoration:none;">Soluciones & Blog</a>
+          <a href="/catalogo.html" style="color:var(--verde); text-decoration:none;">Catálogo de Productos</a>
+          <a href="/#contacto" style="color:var(--muted); text-decoration:none;">Contacto Directo</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ATENCIÓN DIRECTA</div>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Teléfono: 231 102 4672</p>
+        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Email: fiberlinkserviciostic@gmail.com</p>
+        <p style="font-size:0.88rem; color:var(--muted);">Teziutlán, Puebla · Entrega y soporte a domicilio</p>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(156,195,46,0.15); padding-top:20px; text-align:center; font-size:0.8rem; color:var(--muted);">
+      © 2026 Fiberlink Servicios TIC. Todos los derechos reservados.
+    </div>
+  </div>
+</footer>
+
+<!-- Interactive Filter and Search Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('#catalogFilterTabs .cat-tab-btn');
+    const cards = document.querySelectorAll('#catalogProductsContainer .prod-card');
+    const searchInput = document.getElementById('catalogSearch');
+    const clearBtn = document.getElementById('catalogClearSearch');
+    const emptyState = document.getElementById('catalogEmptyState');
+    const resetBtn = document.getElementById('catalogResetFilters');
+
+    let currentCategory = 'all';
+    let searchQuery = '';
+
+    function filterProducts() {
+      let visibleCount = 0;
+      const q = searchQuery.toLowerCase().trim();
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
+        const title = (card.querySelector('.prod-title')?.textContent || '').toLowerCase();
+        const desc = (card.querySelector('.prod-desc')?.textContent || '').toLowerCase();
+
+        const matchesCat = (currentCategory === 'all' || cat === currentCategory);
+        const matchesQuery = (!q || title.includes(q) || desc.includes(q) || keywords.includes(q));
+
+        if (matchesCat && matchesQuery) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    // Category Tabs click
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.getAttribute('data-category');
+        filterProducts();
+      });
+    });
+
+    // Search Input event
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        if (clearBtn) {
+          clearBtn.style.display = searchQuery ? 'flex' : 'none';
+        }
+        filterProducts();
+      });
+    }
+
+    // Clear search button
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          searchQuery = '';
+          clearBtn.style.display = 'none';
+          filterProducts();
+          searchInput.focus();
+        }
+      });
+    }
+
+    // Reset filters button
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          searchQuery = '';
+        }
+        if (clearBtn) clearBtn.style.display = 'none';
+        currentCategory = 'all';
+        tabs.forEach(t => {
+          if (t.getAttribute('data-category') === 'all') t.classList.add('active');
+          else t.classList.remove('active');
+        });
+        filterProducts();
+      });
+    }
+
+    // Ticket buttons redirect to homepage ticket modal with service prefilled
+    document.querySelectorAll('.open-ticket').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const srv = btn.getAttribute('data-service') || 'Equipamiento y Licencias';
+        window.location.href = `/?ticket=${encodeURIComponent(srv)}#inicio`;
+      });
+    });
+  });
+</script>
+
+<!-- Main App Scripts (PWA, canvas, etc.) -->
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

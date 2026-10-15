@@ -735,6 +735,7 @@ function initScrollSpy() {
     { id: 'inicio', selector: '#inicio' },
     { id: 'servicios', selector: '#servicios' },
     { id: 'soluciones', selector: '#soluciones' },
+    { id: 'catalogo', selector: '#catalogo' },
     { id: 'proceso', selector: '#proceso' },
     { id: 'fiberlink-labs', selector: '#fiberlink-labs' },
     { id: 'contacto', selector: '#contacto' }
