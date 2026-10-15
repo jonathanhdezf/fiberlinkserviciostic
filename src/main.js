@@ -27,11 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. Progressive Web App (PWA) Registration
   initPWA();
 
-  // 8. Cyber-Carousels (Soluciones & Catálogo)
+  // 8. Cyber-Carousels (Soluciones, Catálogo & Testimonios)
   initCyberCarousels();
 
   // 9. Social Share & Copy Link button
   initSocialShare();
+
+  // 10. Process Pipeline Timeline Highlighting
+  initProcessPipeline();
 });
 
 function initUI() {
@@ -1298,5 +1301,27 @@ function initSocialShare() {
   });
 }
 
+// ==========================================
+// PROCESO: PIPELINE TIMELINE SCROLL SPY
+// ==========================================
+function initProcessPipeline() {
+  const steps = document.querySelectorAll('.step.proc-step');
+  if (!steps.length) return;
 
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-focus');
+        } else {
+          entry.target.classList.remove('in-focus');
+        }
+      });
+    }, {
+      rootMargin: '-15% 0px -35% 0px',
+      threshold: 0.1
+    });
 
+    steps.forEach(step => observer.observe(step));
+  }
+}
