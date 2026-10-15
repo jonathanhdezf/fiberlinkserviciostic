@@ -89,17 +89,36 @@ export function initAnimations() {
     });
   }
 
-  // 5. Scroll Progress Bar
-  gsap.to('#sp-fill', {
-    width: "100%",
-    ease: "none",
-    scrollTrigger: {
+  // 5. Scroll Progress Bar (Top on Desktop, Right Edge on Mobile)
+  const spFill = document.getElementById('sp-fill');
+  if (spFill) {
+    const spTrigger = ScrollTrigger.create({
       trigger: document.body,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 0.3
-    }
-  });
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: (self) => {
+        const p = (self.progress * 100).toFixed(2) + '%';
+        if (window.innerWidth <= 768) {
+          spFill.style.height = p;
+          spFill.style.width = '100%';
+        } else {
+          spFill.style.width = p;
+          spFill.style.height = '100%';
+        }
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      const p = (spTrigger.progress * 100).toFixed(2) + '%';
+      if (window.innerWidth <= 768) {
+        spFill.style.height = p;
+        spFill.style.width = '100%';
+      } else {
+        spFill.style.width = p;
+        spFill.style.height = '100%';
+      }
+    }, { passive: true });
+  }
 
   // 6. Magnetic Buttons
   const magneticEls = document.querySelectorAll('.magnetic');
