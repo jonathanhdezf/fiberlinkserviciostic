@@ -174,12 +174,27 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
     height: 58px;
     padding: 0 16px;
     border-radius: 14px;
+    overflow: hidden;
   }
 
-  .site-header.gamer-hud::before {
-    left: 16px;
-    right: 16px;
+  .site-header.gamer-hud::before,
+  .site-header.gamer-hud.scrolled::before {
+    left: 20px;
+    right: 20px;
+    border-radius: 14px 14px 0 0;
   }
+
+  .hud-laser {
+    width: 80px;
+    animation: hudLaserSweepMobile 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes hudLaserSweepMobile {
+  0% { transform: translateX(-80px); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(540px); opacity: 0; }
 }
 
 /* HUD Laser Beam Sweep */
