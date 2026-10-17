@@ -1988,22 +1988,21 @@ function renderPosCatalog() {
     const bc = p.barcode || p.sku;
     return `
       <div class="pos-prod-item ${qtyInCart > 0 ? 'in-cart' : ''}" data-id="${p.id}">
-        <div>
+        <div style="min-width:0;">
           <div class="pos-prod-top-meta">
             <span class="pos-prod-sku">${p.sku}</span>
             <span class="pos-prod-barcode" title="Código de Barras">|||| ${bc}</span>
           </div>
-          <div class="pos-prod-name" style="margin-top:4px;">${p.name}</div>
+          <div class="pos-prod-name">${p.name}</div>
         </div>
         <div class="pos-prod-bottom">
-          <div>
+          <div style="min-width:0;">
             <div class="pos-prod-price tabular">${formatMoney(p.price)}</div>
             <div class="pos-prod-stock tabular">${p.isService ? 'Servicio' : 'Stock: ' + p.stock}</div>
           </div>
-          ${qtyInCart > 0
-            ? `<span class="pos-in-cart-pill">En carrito: ${qtyInCart}</span>`
-            : `<span class="kbd-tag" style="color:var(--primary); border-color:var(--border-color);">+ Agregar</span>`
-          }
+          <span class="pos-card-action-tag ${qtyInCart > 0 ? 'active' : ''}">
+            ${qtyInCart > 0 ? `✓ ${qtyInCart} en carrito` : '+ Agregar'}
+          </span>
         </div>
       </div>
     `;
