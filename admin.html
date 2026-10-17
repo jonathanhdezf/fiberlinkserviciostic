@@ -520,15 +520,128 @@
              VIEW 4: PUNTO DE VENTA (CAJA POS)
         ========================================== -->
         <section id="view-pos" class="erp-view">
-          <div class="pos-terminal-layout">
-            <!-- Left: Product Catalog Picker -->
-            <div class="pos-catalog-pane panel-card">
-              <div class="toolbar-bar pos-Catalog-bar">
-                <div class="search-wrap">
-                  <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input type="search" id="posCatalogSearch" placeholder="Escanear código SKU o buscar producto, refacción, servicio...">
+          <!-- POS Two-Tab Segmented Header -->
+          <div class="pos-tabs-header surface-card">
+            <div class="pos-tabs-nav" role="tablist" aria-label="Modo de Punto de Venta">
+              <button type="button" class="pos-main-tab active" id="btnPosTabCatalog" data-postab="catalog" role="tab" aria-selected="true">
+                <div class="pos-tab-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
                 </div>
-                <select id="posCategoryFilter" style="max-width:190px;">
+                <div class="pos-tab-text">
+                  <span class="pos-tab-title">1. Catálogo & Escáner</span>
+                  <span class="pos-tab-sub">Cámara móvil · Código de barras · SKU</span>
+                </div>
+              </button>
+
+              <button type="button" class="pos-main-tab" id="btnPosTabCart" data-postab="cart" role="tab" aria-selected="false">
+                <div class="pos-tab-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                </div>
+                <div class="pos-tab-text">
+                  <span class="pos-tab-title">
+                    2. Carrito & Cobro
+                    <span class="pos-cart-count-pill mono tabular" id="posTabCartCount">0</span>
+                  </span>
+                  <span class="pos-tab-sub mono tabular" id="posTabCartTotal">$0.00 por liquidar</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               POS TAB 1: CATÁLOGO & ESCÁNER DE CÓDIGO DE BARRAS
+          ========================================== -->
+          <div id="posSubTabCatalog" class="pos-tab-pane active">
+            <div class="pos-catalog-pane panel-card">
+              <!-- Barcode Search & Camera Trigger Bar -->
+              <div class="pos-scanner-bar">
+                <div class="search-wrap pos-barcode-search-wrap">
+                  <svg class="search-icon barcode-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                    <path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/>
+                  </svg>
+                  <input
+                    type="search"
+                    id="posCatalogSearch"
+                    inputmode="search"
+                    autocomplete="off"
+                    placeholder="Escanea código de barras (EAN/QR) o escribe SKU / nombre y presiona Enter..."
+                  >
+                  <button type="button" class="pos-clear-search-btn hidden" id="btnClearPosSearch" title="Limpiar búsqueda">✕</button>
+                </div>
+
+                <div class="pos-scanner-actions">
+                  <button type="button" class="btn btn-primary pos-camera-btn" id="btnToggleCameraScanner">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85">
+                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                      <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span id="posCameraBtnLabel">Escanear con Cámara</span>
+                  </button>
+
+                  <label class="pos-autoadd-toggle" title="Agrega automáticamente el producto al carrito al detectar su código de barras">
+                    <input type="checkbox" id="posAutoAddToggle" checked>
+                    <span class="pos-autoadd-label">Auto-agregar</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Live Mobile Camera Barcode Scanner Panel -->
+              <div id="posCameraScannerPanel" class="pos-camera-panel hidden">
+                <div class="pos-camera-header">
+                  <div class="pos-camera-status">
+                    <span class="status-dot dot-lime"></span>
+                    <span id="posScannerStatusText">Cámara activa — Apunta al código de barras o QR</span>
+                  </div>
+                  <div class="pos-camera-controls">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnSwitchCamera" title="Cambiar cámara frontal/trasera">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/><path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"/><circle cx="12" cy="12" r="3"/><path d="m18 22-3-3 3-3"/><path d="m6 2 3 3-3 3"/></svg>
+                      <span>Rotar</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm hidden" id="btnToggleTorch" title="Activar linterna / flash">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      <span>Flash</span>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" id="btnCloseCameraScanner">
+                      <span>Cerrar Cámara</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pos-camera-viewport-wrap">
+                  <div id="posBarcodeReader" class="pos-barcode-reader"></div>
+                  <div class="pos-laser-overlay" aria-hidden="true">
+                    <div class="pos-reticle">
+                      <span class="reticle-corner tl"></span>
+                      <span class="reticle-corner tr"></span>
+                      <span class="reticle-corner bl"></span>
+                      <span class="reticle-corner br"></span>
+                      <div class="pos-laser-line"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Last Scanned Feedback Banner -->
+                <div id="posLastScannedBanner" class="pos-last-scanned hidden"></div>
+
+                <!-- Quick Demo Scan Chips (useful when testing without physical barcode labels) -->
+                <div class="pos-demo-scans">
+                  <span class="pos-demo-label">Prueba rápida de escaneo:</span>
+                  <div class="pos-demo-chips" id="posDemoBarcodesBar"></div>
+                </div>
+              </div>
+
+              <!-- Category Filter Pills -->
+              <div class="pos-category-filter-row">
+                <div class="filter-pills" id="posCategoryPills">
+                  <button type="button" class="pill-btn active" data-poscat="all">Todos</button>
+                  <button type="button" class="pill-btn" data-poscat="pos">Punto de Venta</button>
+                  <button type="button" class="pill-btn" data-poscat="cctv">CCTV & Cámaras</button>
+                  <button type="button" class="pill-btn" data-poscat="redes">Redes & Fibra</button>
+                  <button type="button" class="pill-btn" data-poscat="software">Software</button>
+                  <button type="button" class="pill-btn" data-poscat="refacciones">Refacciones</button>
+                  <button type="button" class="pill-btn" data-poscat="servicios">Servicios</button>
+                </div>
+                <select id="posCategoryFilter" style="display:none;">
                   <option value="all">Todas las categorías</option>
                   <option value="pos">Punto de Venta (POS)</option>
                   <option value="cctv">Cámaras & CCTV</option>
@@ -538,99 +651,159 @@
                   <option value="servicios">Servicios Técnicos</option>
                 </select>
               </div>
+
+              <!-- Product Catalog Grid -->
               <div class="pos-products-grid" id="posCatalogGrid"></div>
             </div>
 
-            <!-- Right: Checkout Register -->
-            <div class="pos-register-pane panel-card">
-              <div class="panel-head">
+            <!-- Sticky Floating Bar to Jump to Cart Tab when items > 0 -->
+            <div id="posFloatingCartBar" class="pos-floating-cart-bar hidden">
+              <div class="pos-floating-info">
+                <span class="pos-floating-badge mono tabular" id="posFloatingCount">0 art.</span>
                 <div>
-                  <div class="panel-eyebrow">CAJA REGISTRADORA</div>
-                  <h3>Terminal de Cobro</h3>
-                </div>
-                <button class="btn btn-ghost btn-sm" id="posClearCartBtn">Vaciar</button>
-              </div>
-
-              <!-- Link Ticket or Workshop Order -->
-              <div class="pos-link-box">
-                <label for="posImportFolioSelect">Liquidar cargos de Ticket (FL-) u Orden Taller (OS-):</label>
-                <div style="display:flex; gap:8px; margin-top:6px;">
-                  <select id="posImportFolioSelect">
-                    <option value="">— Venta directa de mostrador —</option>
-                  </select>
-                  <button type="button" class="btn btn-secondary btn-sm" id="posLoadFolioBtn">Importar</button>
+                  <div class="pos-floating-label">Total en Carrito</div>
+                  <strong class="pos-floating-total mono tabular" id="posFloatingTotal">$0.00</strong>
                 </div>
               </div>
-
-              <div class="pos-cart-list" id="posCartList"></div>
-
-              <div class="pos-checkout-form">
-                <div class="pos-row">
-                  <span>Cliente / Razón Social:</span>
-                  <input type="text" id="posClientName" value="Mostrador / Público en General">
-                </div>
-                <div class="pos-row">
-                  <span>Subtotal:</span>
-                  <strong id="posSummarySubtotal" class="mono tabular">$0.00</strong>
-                </div>
-                <div class="pos-row">
-                  <span>Descuento / Anticipo ($):</span>
-                  <input type="number" id="posDiscountInput" class="tabular" value="0" min="0" step="1" style="width:120px; text-align:right;">
-                </div>
-                <div class="pos-row total-row">
-                  <span>TOTAL A LIQUIDAR:</span>
-                  <strong id="posSummaryTotal" class="pos-big-total tabular">$0.00</strong>
-                </div>
-                <div class="pos-row">
-                  <span>Método de Pago:</span>
-                  <select id="posPaymentMethod" style="width:155px;">
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Tarjeta">Tarjeta</option>
-                    <option value="Transferencia">Transferencia SPEI</option>
-                  </select>
-                </div>
-                <div class="pos-row" id="posCashRow">
-                  <span>Efectivo Recibido ($):</span>
-                  <input type="number" id="posAmountReceived" class="tabular" placeholder="0.00" min="0" step="0.5" style="width:130px; text-align:right;">
-                </div>
-                <div class="pos-row" id="posChangeRow">
-                  <span>Cambio a entregar:</span>
-                  <strong id="posChangeDisplay" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
-                </div>
-
-                <button type="button" class="btn btn-primary btn-full" id="posCompleteSaleBtn" style="margin-top:10px; padding:13px; font-size:0.95rem;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-                  <span>Procesar Venta e Imprimir Ticket</span>
-                </button>
-              </div>
+              <button type="button" class="btn btn-primary" id="btnPosGoToCart">
+                <span>Ir al Carrito y Cobrar</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
             </div>
           </div>
 
-          <!-- Recent Sales History -->
-          <div class="panel-card" style="margin-top:20px;">
-            <div class="panel-head">
-              <div>
-                <div class="panel-eyebrow">AUDITORÍA DE CAJA</div>
-                <h3>Historial de Ventas y Cobros Recientes</h3>
+          <!-- ==========================================
+               POS TAB 2: CARRITO & TERMINAL DE COBRO
+          ========================================== -->
+          <div id="posSubTabCart" class="pos-tab-pane">
+            <div class="pos-cart-workspace-grid">
+              <!-- Left/Main Column: Cart Items & Linked Orders -->
+              <div class="pos-register-pane panel-card">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">PARTIDAS DE LA VENTA</div>
+                    <h3>Carrito de Compra</h3>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnPosBackToCatalog">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m15 18-6-6 6-6"/></svg>
+                      <span>+ Agregar / Escanear</span>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="posClearCartBtn">Vaciar</button>
+                  </div>
+                </div>
+
+                <!-- Link Ticket or Workshop Order -->
+                <div class="pos-link-box">
+                  <label for="posImportFolioSelect">Liquidar cargos de Ticket (FL-) u Orden Taller (OS-):</label>
+                  <div style="display:flex; gap:8px; margin-top:6px;">
+                    <select id="posImportFolioSelect">
+                      <option value="">— Venta directa de mostrador —</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary btn-sm" id="posLoadFolioBtn">Importar</button>
+                  </div>
+                </div>
+
+                <div class="pos-cart-list" id="posCartList"></div>
+              </div>
+
+              <!-- Right Column: Checkout & Payment Summary -->
+              <div class="pos-register-pane panel-card">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">CAJA REGISTRADORA</div>
+                    <h3>Liquidación y Cobro</h3>
+                  </div>
+                </div>
+
+                <div class="pos-checkout-form" style="border-top:none; padding-top:0;">
+                  <div class="pos-row" style="flex-direction:column; align-items:stretch; gap:5px;">
+                    <span>Cliente / Razón Social:</span>
+                    <input type="text" id="posClientName" value="Mostrador / Público en General">
+                  </div>
+
+                  <div class="pos-row">
+                    <span>Subtotal:</span>
+                    <strong id="posSummarySubtotal" class="mono tabular">$0.00</strong>
+                  </div>
+
+                  <div class="pos-row">
+                    <span>Descuento / Anticipo ($):</span>
+                    <input type="number" id="posDiscountInput" class="tabular" value="0" min="0" step="1" style="width:120px; text-align:right;">
+                  </div>
+
+                  <div class="pos-row total-row">
+                    <span>TOTAL A LIQUIDAR:</span>
+                    <strong id="posSummaryTotal" class="pos-big-total tabular">$0.00</strong>
+                  </div>
+
+                  <div class="pos-row" style="flex-direction:column; align-items:stretch; gap:6px;">
+                    <span>Método de Pago:</span>
+                    <div class="pos-pay-methods-pills" id="posPayMethodPills">
+                      <button type="button" class="pay-pill active" data-method="Efectivo">💵 Efectivo</button>
+                      <button type="button" class="pay-pill" data-method="Tarjeta">💳 Tarjeta</button>
+                      <button type="button" class="pay-pill" data-method="Transferencia">🏦 SPEI</button>
+                    </div>
+                    <select id="posPaymentMethod" style="display:none;">
+                      <option value="Efectivo">Efectivo</option>
+                      <option value="Tarjeta">Tarjeta</option>
+                      <option value="Transferencia">Transferencia SPEI</option>
+                    </select>
+                  </div>
+
+                  <div class="pos-row" id="posCashRow" style="flex-direction:column; align-items:stretch; gap:6px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span>Efectivo Recibido ($):</span>
+                      <input type="number" id="posAmountReceived" class="tabular" placeholder="0.00" min="0" step="0.5" style="width:130px; text-align:right;">
+                    </div>
+                    <div class="pos-quick-cash" id="posQuickCashBtns">
+                      <button type="button" class="quick-cash-btn mono" data-cash="exact">Exacto</button>
+                      <button type="button" class="quick-cash-btn mono" data-cash="100">$100</button>
+                      <button type="button" class="quick-cash-btn mono" data-cash="200">$200</button>
+                      <button type="button" class="quick-cash-btn mono" data-cash="500">$500</button>
+                      <button type="button" class="quick-cash-btn mono" data-cash="1000">$1,000</button>
+                    </div>
+                  </div>
+
+                  <div class="pos-row" id="posChangeRow">
+                    <span>Cambio a entregar:</span>
+                    <strong id="posChangeDisplay" class="mono tabular" style="color:var(--secondary); font-size:1.05rem;">$0.00</strong>
+                  </div>
+
+                  <button type="button" class="btn btn-primary btn-full" id="posCompleteSaleBtn" style="margin-top:10px; padding:14px; font-size:0.95rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                    <span>Procesar Venta e Imprimir Ticket</span>
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="table-responsive">
-              <table class="erp-table">
-                <thead>
-                  <tr>
-                    <th>Folio</th>
-                    <th>Fecha / Hora</th>
-                    <th>Cliente</th>
-                    <th>Ref. Origen</th>
-                    <th>Cajero</th>
-                    <th>Método</th>
-                    <th style="text-align:right;">Total</th>
-                    <th>Estado</th>
-                    <th style="text-align:right;">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="posSalesHistoryBody"></tbody>
-              </table>
+
+            <!-- Recent Sales History -->
+            <div class="panel-card" style="margin-top:18px;">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">AUDITORÍA DE CAJA</div>
+                  <h3>Historial de Ventas y Cobros Recientes</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio</th>
+                      <th>Fecha / Hora</th>
+                      <th>Cliente</th>
+                      <th>Ref. Origen</th>
+                      <th>Cajero</th>
+                      <th>Método</th>
+                      <th style="text-align:right;">Total</th>
+                      <th>Estado</th>
+                      <th style="text-align:right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="posSalesHistoryBody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -1180,7 +1353,10 @@
         <label>Código SKU *
           <input type="text" id="prodSku" required placeholder="Ej. POS-IMP-80">
         </label>
-        <label>Categoría *
+        <label>Código de Barras (EAN / QR)
+          <input type="text" id="prodBarcode" class="mono tabular" placeholder="Ej. 750104500101 (o escanea aquí)">
+        </label>
+        <label class="full">Categoría *
           <select id="prodCategory">
             <option value="pos">Punto de Venta (POS)</option>
             <option value="cctv">Cámaras & Seguridad (CCTV)</option>

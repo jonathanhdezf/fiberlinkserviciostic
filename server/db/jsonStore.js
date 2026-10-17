@@ -672,7 +672,14 @@ export function readCollection(name) {
   if (!filePath) throw new Error(`Colección desconocida: ${name}`);
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (name === 'products' && Array.isArray(parsed)) {
+      return parsed.map((p, idx) => ({
+        ...p,
+        barcode: p.barcode || `7501045${String(100101 + idx).slice(-6)}`
+      }));
+    }
+    return parsed;
   } catch (err) {
     console.error(`[jsonStore] Error leyendo ${name}:`, err.message);
     return [];

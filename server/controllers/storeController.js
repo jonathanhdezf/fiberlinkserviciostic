@@ -26,6 +26,7 @@ export function handleListProducts(searchParams) {
     products = products.filter(p =>
       (p.name && p.name.toLowerCase().includes(query)) ||
       (p.sku && p.sku.toLowerCase().includes(query)) ||
+      (p.barcode && String(p.barcode).toLowerCase().includes(query)) ||
       (p.category && p.category.toLowerCase().includes(query)) ||
       (p.description && p.description.toLowerCase().includes(query))
     );
@@ -42,11 +43,13 @@ export function handleCreateProduct(body, currentUser) {
   }
 
   const sku = (body.sku || `FL-${Date.now().toString().slice(-4)}`).trim().toUpperCase();
+  const barcode = (body.barcode || `7501045${Date.now().toString().slice(-6)}`).trim();
   const isService = Boolean(body.isService || body.category === 'servicios');
 
   const newProduct = {
     id: `prod-${Date.now()}`,
     sku,
+    barcode,
     name: body.name.trim(),
     category: body.category || 'pos',
     cost: parseFloat(body.cost) || 0,
@@ -89,6 +92,7 @@ export function handleUpdateProduct(id, body, currentUser) {
 
   const p = products[idx];
   if (body.sku !== undefined) p.sku = body.sku.trim().toUpperCase();
+  if (body.barcode !== undefined) p.barcode = String(body.barcode).trim();
   if (body.name !== undefined) p.name = body.name.trim();
   if (body.category !== undefined) p.category = body.category;
   if (body.cost !== undefined) p.cost = parseFloat(body.cost) || 0;
