@@ -1,0 +1,130 @@
+[
+  {
+    "id": "ws-1001",
+    "folio": "OS-1001",
+    "estado": "en_reparacion",
+    "clientName": "Contadora Laura Domínguez",
+    "clientPhone": "2311048821",
+    "clientEmail": "laura.despacho@gmail.com",
+    "deviceType": "Laptop",
+    "brand": "HP",
+    "model": "Pavilion 15-eh100",
+    "serialNumber": "5CD14299XK",
+    "accessories": "Cargador original 45W, funda negra",
+    "reportedFault": "Se apaga a los 10 minutos de encender, calienta mucho en la parte inferior y va muy lenta al abrir Contpaq.",
+    "technicalDiagnosis": "Ventilador obstruido con pelusa compactada, pasta térmica seca y disco mecánico HDD con sectores lentos. Se recomienda cambio a SSD 480GB + mantenimiento térmico.",
+    "assignedTech": "Ing. Alejandro Luna",
+    "priority": "Alta",
+    "parts": [
+      {
+        "id": "wp-1",
+        "productId": "prod-111",
+        "concept": "Unidad de Estado Sólido SSD 480GB Kingston SATA III",
+        "qty": 1,
+        "price": 890
+      },
+      {
+        "id": "wp-2",
+        "productId": "prod-113",
+        "concept": "Mantenimiento Preventivo Completo + Clonación de Sistema",
+        "qty": 1,
+        "price": 350
+      }
+    ],
+    "laborCost": 0,
+    "advancePayment": 500,
+    "total": 1240,
+    "paid": false,
+    "promisedDate": "2026-10-17T21:22:34.461Z",
+    "createdAt": "2026-10-15T15:22:34.464Z",
+    "updatedAt": "2026-10-16T17:22:34.464Z",
+    "bitacora": [
+      {
+        "id": "wb-1",
+        "date": "2026-10-15T15:22:34.464Z",
+        "author": "Mariana Salazar",
+        "note": "Equipo recibido en mostrador. Presenta rayón leve en tapa superior. Enciende pero ventilador hace ruido."
+      },
+      {
+        "id": "wb-2",
+        "date": "2026-10-16T03:22:34.464Z",
+        "author": "Ing. Alejandro Luna",
+        "note": "Diagnóstico completado. Cliente autoriza instalación de SSD 480GB y deja anticipo de $500."
+      }
+    ]
+  },
+  {
+    "id": "ws-1002",
+    "folio": "OS-1002",
+    "estado": "listo_entrega",
+    "clientName": "Abarrotes El Progreso (Sr. Jorge)",
+    "clientPhone": "2311194410",
+    "clientEmail": "",
+    "deviceType": "Impresora POS",
+    "brand": "Xprinter",
+    "model": "XP-80C Autocorte",
+    "serialNumber": "XP80-992811",
+    "accessories": "Eliminador 24V y cable USB",
+    "reportedFault": "Cuchilla de autocorte trabada, no abre la tapa del rollo de papel.",
+    "technicalDiagnosis": "Engrane de guillotina atascado por residuo de papel térmico adhesivo. Se realizó desarme, limpieza, lubricación de mecanismo y ajuste de sensor óptico.",
+    "assignedTech": "Ing. Alejandro Luna",
+    "priority": "Urgente",
+    "parts": [
+      {
+        "id": "wp-3",
+        "productId": null,
+        "concept": "Reparación y ajuste de mecanismo de guillotina térmica",
+        "qty": 1,
+        "price": 420
+      }
+    ],
+    "laborCost": 0,
+    "advancePayment": 0,
+    "total": 420,
+    "paid": false,
+    "promisedDate": "2026-10-17T01:22:34.464Z",
+    "createdAt": "2026-10-16T01:22:34.464Z",
+    "updatedAt": "2026-10-16T19:22:34.464Z",
+    "bitacora": [
+      {
+        "id": "wb-3",
+        "date": "2026-10-16T19:22:34.464Z",
+        "author": "Ing. Alejandro Luna",
+        "note": "Pruebas de 50 cortes continuos exitosas. Equipo listo para entrega en mostrador."
+      }
+    ]
+  },
+  {
+    "id": "ws-1003",
+    "folio": "OS-1003",
+    "estado": "diagnostico",
+    "clientName": "Arq. Fernando Cuevas",
+    "clientPhone": "2311309912",
+    "clientEmail": "fcuevas.arq@outlook.com",
+    "deviceType": "PC / Workstation",
+    "brand": "Custom Ensamble",
+    "model": "Ryzen 7 / RTX 3060",
+    "serialNumber": "S/N-ENSAMBLE",
+    "accessories": "Solo gabinete (sin cables)",
+    "reportedFault": "Da pantallazo azul al renderizar en Lumion y se reinicia sola.",
+    "technicalDiagnosis": "En pruebas de estrés de fuente de poder y memoria RAM.",
+    "assignedTech": "Ing. Alejandro Luna",
+    "priority": "Normal",
+    "parts": [],
+    "laborCost": 0,
+    "advancePayment": 200,
+    "total": 200,
+    "paid": false,
+    "promisedDate": "2026-10-18T21:22:34.464Z",
+    "createdAt": "2026-10-16T15:22:34.464Z",
+    "updatedAt": "2026-10-16T16:22:34.464Z",
+    "bitacora": [
+      {
+        "id": "wb-4",
+        "date": "2026-10-16T15:22:34.464Z",
+        "author": "Mariana Salazar",
+        "note": "Ingreso a laboratorio. Se cobra revisión inicial de $200 a cuenta de reparación."
+      }
+    ]
+  }
+]

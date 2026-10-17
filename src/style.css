@@ -630,6 +630,47 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
   flex: 0 0 auto;
 }
 
+/* Discreet Admin Link in Header */
+.nav-admin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.22s ease;
+  position: relative;
+}
+.nav-admin-link:hover {
+  color: var(--verde);
+  border-color: rgba(156, 195, 46, 0.4);
+  background: rgba(156, 195, 46, 0.08);
+  box-shadow: 0 0 12px rgba(156, 195, 46, 0.25);
+  transform: translateY(-1px);
+}
+.nav-admin-link svg {
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.nav-admin-link:hover svg {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.dl-admin-discreet {
+  opacity: 0.75 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.015) !important;
+}
+.dl-admin-discreet:hover {
+  opacity: 1 !important;
+  border-color: rgba(156, 195, 46, 0.35) !important;
+}
 
 /* Live Status Pill in HUD */
 .live-pill.hud-status {

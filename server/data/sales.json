@@ -1,0 +1,98 @@
+[
+  {
+    "id": "sale-1001",
+    "folio": "VTA-1001",
+    "date": "2026-10-15T19:22:34.464Z",
+    "cashier": "Lic. Sofía Navarro",
+    "clientName": "Farmacia San José",
+    "paymentMethod": "Transferencia",
+    "linkedRef": "",
+    "status": "completada",
+    "items": [
+      {
+        "productId": "prod-101",
+        "sku": "POS-CAJ-01",
+        "name": "Cajón de Dinero Automático Metálico RJ11",
+        "qty": 1,
+        "price": 1150,
+        "cost": 680,
+        "subtotal": 1150
+      },
+      {
+        "productId": "prod-102",
+        "sku": "POS-IMP-58",
+        "name": "Impresora Térmica de Tickets 58mm USB",
+        "qty": 1,
+        "price": 890,
+        "cost": 490,
+        "subtotal": 890
+      }
+    ],
+    "subtotal": 2040,
+    "discount": 40,
+    "total": 2000,
+    "amountReceived": 2000,
+    "change": 0
+  },
+  {
+    "id": "sale-1002",
+    "folio": "VTA-1002",
+    "date": "2026-10-16T02:22:34.464Z",
+    "cashier": "Ing. Roberto Méndez",
+    "clientName": "Lic. Patricia Vega (Notaría No. 2)",
+    "paymentMethod": "Efectivo",
+    "linkedRef": "FL-1004",
+    "status": "completada",
+    "items": [
+      {
+        "productId": "prod-113",
+        "sku": "SRV-MANT-PC",
+        "name": "Mantenimiento preventivo lógico x3 PCs",
+        "qty": 1,
+        "price": 600,
+        "cost": 80,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 600,
+    "discount": 0,
+    "total": 600,
+    "amountReceived": 1000,
+    "change": 400
+  },
+  {
+    "id": "sale-1003",
+    "folio": "VTA-1003",
+    "date": "2026-10-16T16:22:34.464Z",
+    "cashier": "Lic. Sofía Navarro",
+    "clientName": "Mostrador / Público en General",
+    "paymentMethod": "Tarjeta",
+    "linkedRef": "",
+    "status": "completada",
+    "items": [
+      {
+        "productId": "prod-104",
+        "sku": "POS-LEC-2D",
+        "name": "Lector de Código de Barras 1D/2D QR Inalámbrico",
+        "qty": 1,
+        "price": 950,
+        "cost": 520,
+        "subtotal": 950
+      },
+      {
+        "productId": "prod-109",
+        "sku": "SW-WIN11-PRO",
+        "name": "Licencia Original Windows 11 Pro OEM Vitalicia",
+        "qty": 1,
+        "price": 650,
+        "cost": 280,
+        "subtotal": 650
+      }
+    ],
+    "subtotal": 1600,
+    "discount": 0,
+    "total": 1600,
+    "amountReceived": 1600,
+    "change": 0
+  }
+]

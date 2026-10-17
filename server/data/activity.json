@@ -1,0 +1,18 @@
+[
+  {
+    "id": "act-1",
+    "date": "2026-10-16T16:22:34.465Z",
+    "user": "Lic. Sofía Navarro",
+    "role": "ventas",
+    "module": "pos",
+    "action": "Registró venta VTA-1003 por $1,600.00 (Tarjeta)"
+  },
+  {
+    "id": "act-2",
+    "date": "2026-10-16T19:22:34.465Z",
+    "user": "Ing. Alejandro Luna",
+    "role": "tecnico",
+    "module": "workshop",
+    "action": "Marcó orden de taller OS-1002 como Listo para Entrega"
+  }
+]

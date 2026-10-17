@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mesa de Control | Fiberlink</title>
+  <title>Fiberlink ERP & Mesa de Control | Gestión Integral TIC</title>
+  <link rel="icon" type="image/gif" href="/logo.gif">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -12,195 +13,641 @@
 <body>
 
   <!-- ============================
-       LOGIN OVERLAY
+       LOGIN OVERLAY (WITH RBAC ROLES)
   ============================ -->
   <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
       <div class="login-brand">
         <img src="logo.gif" alt="Fiberlink" class="login-logo">
-        <h2>Fiberlink Admin</h2>
-        <p>Mesa de control técnica</p>
+        <div class="login-badge">ERP & MESA DE CONTROL v2.0</div>
+        <h2>Fiberlink Servicios TIC</h2>
+        <p>Sistema integral de Tickets, Taller, POS, Tienda y Reportes</p>
       </div>
       <form id="loginForm">
         <label>
           Usuario
-          <input type="text" id="loginUser" required autocomplete="username">
+          <input type="text" id="loginUser" required autocomplete="username" placeholder="Ej. admin, tecnico, caja, recepcion">
         </label>
         <label>
           Contraseña
-          <input type="password" id="loginPass" required autocomplete="current-password">
+          <input type="password" id="loginPass" required autocomplete="current-password" placeholder="••••••••">
         </label>
         <div id="loginError" class="login-error"></div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Ingresar</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Iniciar Sesión</button>
       </form>
+
+      <div class="quick-roles">
+        <span class="qr-title">Acceso rápido por Rol (Demo):</span>
+        <div class="qr-grid">
+          <button type="button" class="qr-btn" data-user="admin" data-pass="admin123">
+            <strong>Admin General</strong>
+            <span>Acceso Total</span>
+          </button>
+          <button type="button" class="qr-btn" data-user="tecnico" data-pass="tec123">
+            <strong>Técnico Taller</strong>
+            <span>Tickets & Taller</span>
+          </button>
+          <button type="button" class="qr-btn" data-user="caja" data-pass="caja123">
+            <strong>Ventas / POS</strong>
+            <span>Caja & Tienda</span>
+          </button>
+          <button type="button" class="qr-btn" data-user="recepcion" data-pass="recep123">
+            <strong>Recepción</strong>
+            <span>Mesa de Ayuda</span>
+          </button>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:16px;">
+        <a href="/" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">← Volver al portal público</a>
+      </div>
     </div>
   </div>
 
   <!-- ============================
-       DASHBOARD LAYOUT
+       MAIN ERP DASHBOARD
   ============================ -->
   <div id="dashboard" class="dashboard hidden">
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <img src="logo.gif" alt="Fiberlink" class="sidebar-logo">
-        <div class="sidebar-brand">
-          <strong>Fiberlink</strong>
-          <span>Admin</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="logo.gif" alt="Fiberlink" class="sidebar-logo">
+          <div class="sidebar-brand">
+            <strong>Fiberlink</strong>
+            <span>ERP Control</span>
+          </div>
         </div>
       </div>
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" data-view="board">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          Tablero
+
+      <div class="user-card" id="sidebarUserCard">
+        <div class="uc-avatar" id="ucAvatar">RM</div>
+        <div class="uc-info">
+          <strong id="ucName">Cargando...</strong>
+          <span class="role-pill" id="ucRole">ROL</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <button class="nav-btn active" data-view="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          <span>Resumen General</span>
+        </button>
+        <button class="nav-btn" data-view="tickets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Tickets Soporte</span>
+          <span class="nav-badge" id="navBadgeTickets">0</span>
+        </button>
+        <button class="nav-btn" data-view="workshop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span>Taller Técnico</span>
+          <span class="nav-badge" id="navBadgeWorkshop">0</span>
+        </button>
+        <button class="nav-btn" data-view="pos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="6.01" y2="15"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
+          <span>Punto de Venta</span>
+        </button>
+        <button class="nav-btn" data-view="store">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span>Tienda & Almacén</span>
+          <span class="nav-badge warn" id="navBadgeLowStock" style="display:none;">!</span>
+        </button>
+        <button class="nav-btn" data-view="reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Reportes & Caja</span>
+        </button>
+        <button class="nav-btn" data-view="users">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Usuarios y Roles</span>
         </button>
       </nav>
+
       <div class="sidebar-footer">
+        <a href="/catalogo.html" target="_blank" class="btn btn-secondary" style="margin-bottom:8px; text-decoration:none; font-size:0.82rem;">
+          Ver Catálogo Público ↗
+        </a>
         <button id="logoutBtn" class="btn btn-ghost">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          Salir
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar Sesión
         </button>
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Workspace -->
     <main class="main-content">
       <header class="topbar">
-        <h1 class="topbar-title">Tablero de Solicitudes</h1>
+        <div>
+          <h1 class="topbar-title" id="topbarTitle">Resumen General</h1>
+          <p class="topbar-sub" id="topbarSub">Panel operativo en tiempo real · Fiberlink Teziutlán</p>
+        </div>
         <div class="topbar-actions">
-          <button id="refreshBtn" class="btn btn-secondary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            Refrescar
+          <button id="quickNewTicketBtn" class="btn btn-secondary btn-sm">+ Ticket</button>
+          <button id="quickNewWorkshopBtn" class="btn btn-secondary btn-sm">+ Orden Taller</button>
+          <button id="refreshBtn" class="btn btn-secondary btn-sm" title="Sincronizar con servidor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sincronizar
           </button>
         </div>
       </header>
 
-      <!-- Kanban Board -->
-      <div class="kanban-board">
-        <!-- Column: Creación -->
-        <div class="kanban-col" data-state="creación">
-          <div class="kcol-header">
-            <h3>Creación</h3>
-            <span class="kcol-count" id="count-creacion">0</span>
-          </div>
-          <div class="kcol-body" id="col-creacion"></div>
-        </div>
+      <div class="views-container">
 
-        <!-- Column: Diagnóstico -->
-        <div class="kanban-col" data-state="diagnostico">
-          <div class="kcol-header">
-            <h3>Diagnóstico</h3>
-            <span class="kcol-count" id="count-diagnostico">0</span>
-          </div>
-          <div class="kcol-body" id="col-diagnostico"></div>
-        </div>
+        <!-- ==========================================
+             VIEW 1: OVERVIEW (RESUMEN GENERAL)
+        ========================================== -->
+        <section id="view-overview" class="erp-view active">
+          <div class="kpi-grid" id="overviewKpis"></div>
 
-        <!-- Column: Proceso -->
-        <div class="kanban-col" data-state="proceso">
-          <div class="kcol-header">
-            <h3>En Proceso</h3>
-            <span class="kcol-count" id="count-proceso">0</span>
-          </div>
-          <div class="kcol-body" id="col-proceso"></div>
-        </div>
+          <div class="overview-columns">
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Distribución de Tickets de Soporte</h3>
+                <button class="btn btn-ghost btn-sm" data-goto="tickets">Ver Tablero →</button>
+              </div>
+              <div id="overviewTicketsSummary" class="status-bars"></div>
+            </div>
 
-        <!-- Column: Resuelto -->
-        <div class="kanban-col" data-state="resuelto">
-          <div class="kcol-header">
-            <h3>Resuelto</h3>
-            <span class="kcol-count" id="count-resuelto">0</span>
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Estado del Laboratorio / Taller</h3>
+                <button class="btn btn-ghost btn-sm" data-goto="workshop">Ir a Taller →</button>
+              </div>
+              <div id="overviewWorkshopSummary" class="status-bars"></div>
+            </div>
           </div>
-          <div class="kcol-body" id="col-resuelto"></div>
-        </div>
+
+          <div class="overview-columns" style="margin-top:20px;">
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Alertas de Stock Bajo en Almacén</h3>
+                <button class="btn btn-ghost btn-sm" data-goto="store">Gestionar Stock →</button>
+              </div>
+              <div id="overviewLowStockList"></div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Bitácora de Actividad Reciente</h3>
+              </div>
+              <div id="overviewActivityList" class="activity-feed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 2: TICKETS KANBAN & GESTIÓN
+        ========================================== -->
+        <section id="view-tickets" class="erp-view">
+          <div class="toolbar-bar">
+            <div class="search-wrap">
+              <input type="search" id="ticketSearchInput" placeholder="Buscar por folio (FL-), cliente, empresa, teléfono o falla...">
+            </div>
+            <div class="toolbar-filters">
+              <select id="ticketPriorityFilter">
+                <option value="">Todas las prioridades</option>
+                <option value="Urgente">Urgente</option>
+                <option value="Alta">Alta</option>
+                <option value="Normal">Normal</option>
+              </select>
+              <select id="ticketTechFilter">
+                <option value="">Todos los técnicos</option>
+              </select>
+              <button class="btn btn-primary" id="btnOpenNewTicketModal">+ Nuevo Ticket</button>
+            </div>
+          </div>
+
+          <div class="kanban-board">
+            <!-- Column: Creación -->
+            <div class="kanban-col" data-state="creación">
+              <div class="kcol-header">
+                <h3>Creación / Nuevos</h3>
+                <span class="kcol-count" id="count-creacion">0</span>
+              </div>
+              <div class="kcol-body" id="col-creacion"></div>
+            </div>
+
+            <!-- Column: Diagnóstico -->
+            <div class="kanban-col" data-state="diagnostico">
+              <div class="kcol-header">
+                <h3>Diagnóstico</h3>
+                <span class="kcol-count" id="count-diagnostico">0</span>
+              </div>
+              <div class="kcol-body" id="col-diagnostico"></div>
+            </div>
+
+            <!-- Column: Proceso -->
+            <div class="kanban-col" data-state="proceso">
+              <div class="kcol-header">
+                <h3>En Proceso</h3>
+                <span class="kcol-count" id="count-proceso">0</span>
+              </div>
+              <div class="kcol-body" id="col-proceso"></div>
+            </div>
+
+            <!-- Column: Resuelto -->
+            <div class="kanban-col" data-state="resuelto">
+              <div class="kcol-header">
+                <h3>Resuelto / Cerrado</h3>
+                <span class="kcol-count" id="count-resuelto">0</span>
+              </div>
+              <div class="kcol-body" id="col-resuelto"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 3: TALLER TÉCNICO (WORKSHOP)
+        ========================================== -->
+        <section id="view-workshop" class="erp-view">
+          <div class="toolbar-bar">
+            <div class="search-wrap">
+              <input type="search" id="wsSearchInput" placeholder="Buscar orden (OS-), cliente, serie, marca o modelo...">
+            </div>
+            <div class="toolbar-filters">
+              <select id="wsStateFilter">
+                <option value="all">Todos los estados de taller</option>
+                <option value="recepcion">Recepción</option>
+                <option value="diagnostico">En Diagnóstico</option>
+                <option value="esperando_refaccion">Esperando Refacción</option>
+                <option value="en_reparacion">En Reparación</option>
+                <option value="listo_entrega">Listo para Entrega</option>
+                <option value="entregado">Entregado</option>
+                <option value="garantia">Garantía</option>
+              </select>
+              <button class="btn btn-primary" id="btnOpenNewWorkshopModal">+ Ingresar Equipo a Taller</button>
+            </div>
+          </div>
+
+          <div class="workshop-grid" id="workshopCardsContainer"></div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 4: PUNTO DE VENTA (CAJA POS)
+        ========================================== -->
+        <section id="view-pos" class="erp-view">
+          <div class="pos-terminal-layout">
+            <!-- Left: Product Catalog Picker -->
+            <div class="pos-catalog-pane panel-card">
+              <div class="toolbar-bar" style="margin-bottom:14px;">
+                <input type="search" id="posCatalogSearch" placeholder="Buscar producto, refacción, servicio o código SKU...">
+                <select id="posCategoryFilter" style="max-width:200px;">
+                  <option value="all">Todas las categorías</option>
+                  <option value="pos">Punto de Venta (POS)</option>
+                  <option value="cctv">Cámaras & CCTV</option>
+                  <option value="redes">Redes & Fibra</option>
+                  <option value="software">Licencias & Software</option>
+                  <option value="refacciones">Refacciones</option>
+                  <option value="servicios">Servicios Técnicos</option>
+                </select>
+              </div>
+              <div class="pos-products-grid" id="posCatalogGrid"></div>
+            </div>
+
+            <!-- Right: Checkout Register -->
+            <div class="pos-register-pane panel-card">
+              <div class="panel-head">
+                <h3>Terminal de Cobro</h3>
+                <button class="btn btn-ghost btn-sm" id="posClearCartBtn">Vaciar</button>
+              </div>
+
+              <!-- Link Ticket or Workshop Order -->
+              <div class="pos-link-box">
+                <label style="font-size:0.78rem; color:var(--text-muted);">Importar cargos de Ticket (FL-) u Orden Taller (OS-):</label>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                  <select id="posImportFolioSelect">
+                    <option value="">— Venta directa de mostrador —</option>
+                  </select>
+                  <button type="button" class="btn btn-secondary btn-sm" id="posLoadFolioBtn">Cargar</button>
+                </div>
+              </div>
+
+              <div class="pos-cart-list" id="posCartList"></div>
+
+              <div class="pos-checkout-form">
+                <div class="pos-row">
+                  <span>Cliente:</span>
+                  <input type="text" id="posClientName" value="Mostrador / Público en General">
+                </div>
+                <div class="pos-row">
+                  <span>Subtotal:</span>
+                  <strong id="posSummarySubtotal" class="mono">$0.00</strong>
+                </div>
+                <div class="pos-row">
+                  <span>Descuento ($):</span>
+                  <input type="number" id="posDiscountInput" value="0" min="0" step="1" style="width:110px; text-align:right;">
+                </div>
+                <div class="pos-row total-row">
+                  <span>TOTAL A COBRAR:</span>
+                  <strong id="posSummaryTotal" class="pos-big-total">$0.00</strong>
+                </div>
+                <div class="pos-row">
+                  <span>Método de Pago:</span>
+                  <select id="posPaymentMethod" style="width:150px;">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Transferencia">Transferencia</option>
+                  </select>
+                </div>
+                <div class="pos-row" id="posCashRow">
+                  <span>Efectivo Recibido ($):</span>
+                  <input type="number" id="posAmountReceived" placeholder="0.00" min="0" step="0.5" style="width:130px; text-align:right;">
+                </div>
+                <div class="pos-row" id="posChangeRow">
+                  <span>Cambio a entregar:</span>
+                  <strong id="posChangeDisplay" class="mono" style="color:var(--secondary);">$0.00</strong>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="posCompleteSaleBtn" style="width:100%; margin-top:12px; padding:14px; font-size:1rem; font-weight:700;">
+                  Cobrar e Imprimir Ticket
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Sales History -->
+          <div class="panel-card" style="margin-top:20px;">
+            <div class="panel-head">
+              <h3>Historial de Ventas y Cobros Recientes</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Folio</th>
+                    <th>Fecha / Hora</th>
+                    <th>Cliente</th>
+                    <th>Ref.</th>
+                    <th>Cajero</th>
+                    <th>Método</th>
+                    <th style="text-align:right;">Total</th>
+                    <th>Estado</th>
+                    <th style="text-align:right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="posSalesHistoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 5: TIENDA E INVENTARIO (STORE)
+        ========================================== -->
+        <section id="view-store" class="erp-view">
+          <div class="toolbar-bar">
+            <div class="search-wrap">
+              <input type="search" id="storeSearchInput" placeholder="Buscar por código SKU, nombre de producto o categoría...">
+            </div>
+            <div class="toolbar-filters">
+              <select id="storeCategoryFilter">
+                <option value="all">Todas las categorías</option>
+                <option value="pos">Punto de Venta (POS)</option>
+                <option value="cctv">Cámaras & CCTV</option>
+                <option value="redes">Redes & Fibra</option>
+                <option value="software">Licencias & Software</option>
+                <option value="refacciones">Refacciones</option>
+                <option value="servicios">Servicios Técnicos</option>
+              </select>
+              <button class="btn btn-primary" id="btnOpenNewProductModal">+ Nuevo Producto / Servicio</button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Producto / Servicio</th>
+                    <th>Categoría</th>
+                    <th style="text-align:right;">Costo</th>
+                    <th style="text-align:right;">Precio Venta</th>
+                    <th style="text-align:center;">Existencia</th>
+                    <th style="text-align:center;">Catálogo Web</th>
+                    <th style="text-align:right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="storeProductsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 6: REPORTES Y ANALÍTICA
+        ========================================== -->
+        <section id="view-reports" class="erp-view">
+          <div class="toolbar-bar">
+            <div>
+              <h3 style="font-size:1.05rem;">Reporte Ejecutivo y Corte Financiero</h3>
+              <p style="font-size:0.82rem; color:var(--text-muted);">Métricas consolidadas de Ventas, Tickets, Taller e Inventario</p>
+            </div>
+            <div class="toolbar-filters">
+              <button class="btn btn-secondary" id="btnExportSalesCsv">Exportar Ventas (CSV)</button>
+              <button class="btn btn-primary" id="btnPrintExecutiveReport">Imprimir Reporte Ejecutivo</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid" id="reportsFinancialKpis"></div>
+
+          <div class="overview-columns" style="margin-top:20px;">
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Ingresos por Método de Pago (Corte de Caja)</h3>
+              </div>
+              <div id="reportsPaymentBreakdown" class="status-bars"></div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Productos y Servicios Más Vendidos</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>SKU</th>
+                      <th>Concepto</th>
+                      <th style="text-align:center;">Cant.</th>
+                      <th style="text-align:right;">Ingresos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportsTopProductsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="overview-columns" style="margin-top:20px;">
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Rendimiento y Carga de Trabajo por Técnico</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Técnico</th>
+                      <th style="text-align:center;">Tickets Activos</th>
+                      <th style="text-align:center;">Tickets Resueltos</th>
+                      <th style="text-align:center;">Taller Activos</th>
+                      <th style="text-align:center;">Taller Listos/Entregados</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportsTechPerformanceBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-head">
+                <h3>Valoración de Inventario y Almacén</h3>
+              </div>
+              <div id="reportsInventoryValuation" class="status-bars"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 7: USUARIOS Y ROLES (RBAC)
+        ========================================== -->
+        <section id="view-users" class="erp-view">
+          <div class="toolbar-bar">
+            <div>
+              <h3 style="font-size:1.05rem;">Control de Personal, Roles y Permisos</h3>
+              <p style="font-size:0.82rem; color:var(--text-muted);">Administración de accesos por área operativa</p>
+            </div>
+            <button class="btn btn-primary" id="btnOpenNewUserModal">+ Nuevo Usuario</button>
+          </div>
+
+          <div class="panel-card">
+            <div class="table-responsive">
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Rol del Sistema</th>
+                    <th>Especialidad / Área</th>
+                    <th>Contacto</th>
+                    <th>Estado</th>
+                    <th style="text-align:right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
 
   <!-- ============================
-       TICKET DETAIL MODAL
+       MODAL 1: TICKET DETAIL
   ============================ -->
   <div id="ticketDetailModal" class="modal">
-    <div class="modal-back" id="ticketDetailCloseBack"></div>
+    <div class="modal-back" data-close="ticketDetailModal"></div>
     <div class="modal-panel ticket-panel">
       <div class="modal-head">
         <div>
-          <div class="lbl" id="tdFolio" style="margin-bottom:6px; font-family: 'JetBrains Mono', monospace;">FL-0000</div>
+          <div class="lbl" id="tdFolio" style="margin-bottom:4px; font-family: var(--font-mono); color:var(--primary);">FL-0000</div>
           <h2 id="tdName">Nombre del Cliente</h2>
         </div>
-        <button class="close-btn" id="ticketDetailCloseBtn" aria-label="Cerrar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-secondary btn-sm" id="tdSendToPosBtn" title="Cargar cobro en Punto de Venta">Cobrar en POS →</button>
+          <button class="close-btn" data-close="ticketDetailModal" aria-label="Cerrar">✕</button>
+        </div>
       </div>
 
-      <!-- Ticket Tabs -->
       <div class="ticket-tabs">
-        <button class="tab-btn active" data-tab="info">Información</button>
-        <button class="tab-btn" data-tab="bitacora">Bitácora</button>
-        <button class="tab-btn" data-tab="pos">Punto de Venta</button>
+        <button class="tab-btn active" data-tab="info">Información & Asignación</button>
+        <button class="tab-btn" data-tab="bitacora">Bitácora Técnica</button>
+        <button class="tab-btn" data-tab="pos">Cargos y Cotización</button>
       </div>
 
       <div class="modal-body ticket-body">
-        
         <!-- INFO TAB -->
         <div class="tab-content active" id="tab-info">
           <div class="status-manager">
-            <label>Estado actual:</label>
-            <select id="tdEstado" class="state-select">
-              <option value="creación">Creación</option>
-              <option value="diagnostico">Diagnóstico</option>
-              <option value="proceso">En Proceso</option>
-              <option value="resuelto">Resuelto</option>
-            </select>
+            <div>
+              <label style="font-size:0.78rem; color:var(--text-muted);">Estado:</label>
+              <select id="tdEstado" class="state-select">
+                <option value="creación">Creación</option>
+                <option value="diagnostico">Diagnóstico</option>
+                <option value="proceso">En Proceso</option>
+                <option value="resuelto">Resuelto</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.78rem; color:var(--text-muted);">Prioridad:</label>
+              <select id="tdPrioritySelect" class="state-select">
+                <option value="Normal">Normal</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.78rem; color:var(--text-muted);">Técnico Asignado:</label>
+              <select id="tdAssignedSelect" class="state-select"></select>
+            </div>
           </div>
-          
+
           <div class="info-grid">
             <div class="ig-item">
               <span>Teléfono</span>
               <strong id="tdPhone"></strong>
             </div>
             <div class="ig-item">
-              <span>Servicio</span>
+              <span>Servicio Solicitado</span>
               <strong id="tdService"></strong>
             </div>
             <div class="ig-item">
-              <span>Prioridad</span>
-              <strong id="tdPriority"></strong>
-            </div>
-            <div class="ig-item">
-              <span>En sitio</span>
+              <span>Modalidad</span>
               <strong id="tdOnsite"></strong>
             </div>
+            <div class="ig-item">
+              <span>Fecha de Registro</span>
+              <strong id="tdDate"></strong>
+            </div>
             <div class="ig-item full">
-              <span>Ubicación</span>
+              <span>Ubicación / Dirección</span>
               <strong id="tdLocation"></strong>
             </div>
             <div class="ig-item full">
-              <span>Descripción del problema</span>
+              <span>Descripción del Problema</span>
               <p id="tdDescription" class="desc-text"></p>
             </div>
-            <div class="ig-item full">
-              <span>Fecha de creación</span>
-              <strong id="tdDate"></strong>
-            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:15px; border-top:1px solid var(--border-color);">
+            <button type="button" class="btn btn-danger btn-sm" id="tdDeleteTicketBtn">Eliminar Ticket</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="tdPrintOrderBtn">Imprimir Orden de Servicio</button>
           </div>
         </div>
 
         <!-- BITACORA TAB -->
         <div class="tab-content" id="tab-bitacora">
-          <div class="bitacora-list" id="bitacoraList">
-            <!-- Notes will be injected here -->
-          </div>
+          <div class="bitacora-list" id="bitacoraList"></div>
           <form id="bitacoraForm" class="bitacora-form">
-            <textarea id="bitacoraNote" required placeholder="Agregar nota, diagnóstico o reporte técnico..."></textarea>
-            <button type="submit" class="btn btn-primary">Guardar Nota</button>
+            <textarea id="bitacoraNote" required placeholder="Registrar diagnóstico, avance o acuerdo con el cliente..."></textarea>
+            <button type="submit" class="btn btn-primary">Guardar en Bitácora</button>
           </form>
         </div>
 
-        <!-- POS TAB -->
+        <!-- POS / CHARGES TAB -->
         <div class="tab-content" id="tab-pos">
           <div class="pos-container">
+            <div style="margin-bottom:12px;">
+              <label style="font-size:0.8rem; color:var(--text-muted);">Agregar desde catálogo de Tienda / Servicios:</label>
+              <div style="display:flex; gap:8px; margin-top:4px;">
+                <select id="tdCatalogPicker"></select>
+                <button type="button" class="btn btn-secondary btn-sm" id="tdAddCatalogItemBtn">+ Añadir</button>
+              </div>
+            </div>
+
             <form id="posForm" class="pos-form">
-              <input type="text" id="posConcept" required placeholder="Concepto (ej. Revisión, Cable UTP, etc.)">
+              <input type="text" id="posConcept" required placeholder="O escribe un concepto libre (ej. Viáticos, Cableado)">
               <input type="number" id="posPrice" required placeholder="Precio ($)" min="0" step="0.01">
               <button type="submit" class="btn btn-secondary">Agregar</button>
             </form>
@@ -210,16 +657,14 @@
                 <thead>
                   <tr>
                     <th>Concepto</th>
-                    <th style="text-align: right;">Precio</th>
+                    <th style="text-align: right;">Importe</th>
                     <th style="width: 40px;"></th>
                   </tr>
                 </thead>
-                <tbody id="posList">
-                  <!-- Items will be injected here -->
-                </tbody>
+                <tbody id="posList"></tbody>
                 <tfoot>
                   <tr>
-                    <td><strong>Total</strong></td>
+                    <td><strong>Total Cotizado</strong></td>
                     <td style="text-align: right;"><strong id="posTotal" class="pos-total-val">$0.00</strong></td>
                     <td></td>
                   </tr>
@@ -228,15 +673,287 @@
             </div>
 
             <button id="posPrintBtn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 8px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              Imprimir Ticket
+              Imprimir Comprobante del Ticket
             </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
+
+  <!-- ============================
+       MODAL 2: NEW TICKET
+  ============================ -->
+  <div id="newTicketModal" class="modal">
+    <div class="modal-back" data-close="newTicketModal"></div>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2>Registrar Nuevo Ticket de Soporte</h2>
+        <button class="close-btn" data-close="newTicketModal">✕</button>
+      </div>
+      <form id="newTicketForm" class="modal-body form-grid">
+        <label>Nombre del Cliente *
+          <input type="text" name="name" required placeholder="Ej. Lic. Roberto Gómez">
+        </label>
+        <label>Teléfono / WhatsApp *
+          <input type="tel" name="phone" required placeholder="231 000 0000">
+        </label>
+        <label>Empresa / Negocio
+          <input type="text" name="company" placeholder="Ej. Hotel Colonial">
+        </label>
+        <label>Servicio Solicitado *
+          <select name="service">
+            <option value="Soporte técnico">Soporte técnico</option>
+            <option value="Redes / WiFi">Redes / WiFi</option>
+            <option value="Videovigilancia CCTV">Videovigilancia CCTV</option>
+            <option value="Punto de Venta POS">Punto de Venta POS</option>
+            <option value="Desarrollo Web / Sistemas">Desarrollo Web / Sistemas</option>
+          </select>
+        </label>
+        <label>Modalidad
+          <select name="modality">
+            <option value="En Sitio / Domicilio">En Sitio / Domicilio</option>
+            <option value="Remoto">Soporte Remoto</option>
+            <option value="Mostrador / Taller">Mostrador / Taller</option>
+          </select>
+        </label>
+        <label>Prioridad
+          <select name="priority">
+            <option value="Normal">Normal</option>
+            <option value="Alta">Alta</option>
+            <option value="Urgente">Urgente</option>
+          </select>
+        </label>
+        <label class="full">Dirección / Ubicación
+          <input type="text" name="address" placeholder="Calle, número, colonia o referencia en Teziutlán">
+        </label>
+        <label class="full">Técnico Asignado
+          <select name="assignedTo" id="newTicketTechSelect"></select>
+        </label>
+        <label class="full">Descripción de la Falla o Solicitud *
+          <textarea name="description" required rows="3" placeholder="Describe el requerimiento o problema reportado..."></textarea>
+        </label>
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="newTicketModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 3: WORKSHOP ORDER (CREATE / DETAIL)
+  ============================ -->
+  <div id="workshopModal" class="modal">
+    <div class="modal-back" data-close="workshopModal"></div>
+    <div class="modal-panel" style="max-width:780px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" id="wsModalFolio" style="color:var(--primary); font-family:var(--font-mono);">NUEVA ORDEN DE TALLER</div>
+          <h2 id="wsModalTitle">Recepción de Equipo en Laboratorio</h2>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="wsSendToPosBtn" style="display:none;">Cobrar en POS →</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="wsPrintOrderBtn" style="display:none;">Imprimir Orden</button>
+          <button class="close-btn" data-close="workshopModal">✕</button>
+        </div>
+      </div>
+
+      <form id="workshopForm" class="modal-body form-grid">
+        <input type="hidden" id="wsOrderId">
+        <label>Nombre del Cliente *
+          <input type="text" id="wsClientName" required placeholder="Nombre completo">
+        </label>
+        <label>Teléfono / WhatsApp *
+          <input type="tel" id="wsClientPhone" required placeholder="231 000 0000">
+        </label>
+        <label>Tipo de Equipo *
+          <select id="wsDeviceType">
+            <option value="Laptop">Laptop / Portátil</option>
+            <option value="PC / Workstation">PC de Escritorio / Gamer</option>
+            <option value="Impresora POS">Impresora de Tickets / Etiquetas</option>
+            <option value="DVR / NVR / Cámara">DVR / NVR / Cámara CCTV</option>
+            <option value="Router / Switch / AP">Router / Switch / Antena</option>
+            <option value="Monitor / All-in-One">Monitor / All-in-One</option>
+            <option value="Otro">Otro Equipo</option>
+          </select>
+        </label>
+        <label>Marca
+          <input type="text" id="wsBrand" placeholder="Ej. HP, Lenovo, Dell, Hikvision, Xprinter">
+        </label>
+        <label>Modelo
+          <input type="text" id="wsModel" placeholder="Ej. Pavilion 15, Optiplex 3080">
+        </label>
+        <label>Número de Serie (S/N)
+          <input type="text" id="wsSerial" placeholder="Ej. 5CD14299XK">
+        </label>
+        <label>Estado en Taller
+          <select id="wsEstado">
+            <option value="recepcion">Recepción</option>
+            <option value="diagnostico">En Diagnóstico</option>
+            <option value="esperando_refaccion">Esperando Refacción</option>
+            <option value="en_reparacion">En Reparación</option>
+            <option value="listo_entrega">Listo para Entrega</option>
+            <option value="entregado">Entregado</option>
+            <option value="garantia">Reingreso Garantía</option>
+          </select>
+        </label>
+        <label>Técnico Responsable
+          <select id="wsAssignedTech"></select>
+        </label>
+        <label class="full">Accesorios Recibidos y Estado Físico
+          <input type="text" id="wsAccessories" placeholder="Ej. Cargador original, maletín, presenta rayón leve en tapa">
+        </label>
+        <label class="full">Falla Reportada por el Cliente *
+          <textarea id="wsReportedFault" required rows="2" placeholder="¿Qué problema presenta el equipo según el cliente?"></textarea>
+        </label>
+        <label class="full">Diagnóstico Técnico y Solución Aplicada
+          <textarea id="wsDiagnosis" rows="2" placeholder="Informe técnico de laboratorio..."></textarea>
+        </label>
+        <label>Mano de Obra / Servicio ($)
+          <input type="number" id="wsLaborCost" value="0" min="0" step="10">
+        </label>
+        <label>Anticipo Dejado ($)
+          <input type="number" id="wsAdvancePayment" value="0" min="0" step="10">
+        </label>
+
+        <!-- Spare parts section -->
+        <div class="full" style="border-top:1px solid var(--border-color); padding-top:12px;">
+          <label style="font-size:0.82rem; color:var(--text-muted);">Refacciones / Servicios adicionales desde Almacén:</label>
+          <div style="display:flex; gap:8px; margin-top:6px;">
+            <select id="wsPartPicker"></select>
+            <button type="button" class="btn btn-secondary btn-sm" id="wsAddPartBtn">+ Agregar Refacción</button>
+          </div>
+          <div id="wsPartsList" style="margin-top:10px;"></div>
+          <div style="display:flex; justify-content:space-between; margin-top:10px; padding:10px; background:rgba(156,195,46,0.08); border-radius:8px;">
+            <span>Total Orden: <strong id="wsTotalLabel" class="mono">$0.00</strong></span>
+            <span>Saldo Pendiente: <strong id="wsBalanceLabel" class="mono" style="color:var(--primary);">$0.00</strong></span>
+          </div>
+        </div>
+
+        <div class="full modal-actions" style="justify-content:space-between;">
+          <button type="button" class="btn btn-danger btn-sm" id="wsDeleteBtn" style="display:none;">Eliminar Orden</button>
+          <div style="display:flex; gap:10px; margin-left:auto;">
+            <button type="button" class="btn btn-ghost" data-close="workshopModal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar Orden de Taller</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 4: PRODUCT / STORE ITEM
+  ============================ -->
+  <div id="productModal" class="modal">
+    <div class="modal-back" data-close="productModal"></div>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="prodModalTitle">Producto / Servicio de Tienda</h2>
+        <button class="close-btn" data-close="productModal">✕</button>
+      </div>
+      <form id="productForm" class="modal-body form-grid">
+        <input type="hidden" id="prodId">
+        <label>Código SKU *
+          <input type="text" id="prodSku" required placeholder="Ej. POS-IMP-80">
+        </label>
+        <label>Categoría *
+          <select id="prodCategory">
+            <option value="pos">Punto de Venta (POS)</option>
+            <option value="cctv">Cámaras & Seguridad (CCTV)</option>
+            <option value="redes">Redes & Fibra Óptica</option>
+            <option value="software">Licencias & Software</option>
+            <option value="refacciones">Refacciones & Cómputo</option>
+            <option value="servicios">Servicios Técnicos</option>
+          </select>
+        </label>
+        <label class="full">Nombre del Producto o Servicio *
+          <input type="text" id="prodName" required placeholder="Ej. Impresora Térmica 80mm Autocorte USB + LAN">
+        </label>
+        <label>Costo de Compra ($)
+          <input type="number" id="prodCost" value="0" min="0" step="0.01">
+        </label>
+        <label>Precio de Venta Público ($) *
+          <input type="number" id="prodPrice" required value="0" min="0" step="0.01">
+        </label>
+        <label>Stock Actual
+          <input type="number" id="prodStock" value="10" min="0">
+        </label>
+        <label>Stock Mínimo (Alerta)
+          <input type="number" id="prodMinStock" value="3" min="0">
+        </label>
+        <label class="full">Descripción comercial / técnica
+          <textarea id="prodDescription" rows="2" placeholder="Descripción breve para mostrador y catálogo..."></textarea>
+        </label>
+        <label class="full">Especificaciones (separadas por coma)
+          <input type="text" id="prodSpecs" placeholder="Ej. USB + LAN, Autocorte, Garantía 1 año">
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; flex-direction:row;">
+          <input type="checkbox" id="prodPublicVisible" checked style="width:auto; margin:0;">
+          <span>Mostrar en Catálogo Web Público</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; flex-direction:row;">
+          <input type="checkbox" id="prodIsService" style="width:auto; margin:0;">
+          <span>Es un Servicio / Intangible (Sin límite de stock)</span>
+        </label>
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="productModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar en Catálogo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 5: USER & ROLE MANAGEMENT
+  ============================ -->
+  <div id="userModal" class="modal">
+    <div class="modal-back" data-close="userModal"></div>
+    <div class="modal-panel" style="max-width:520px;">
+      <div class="modal-head">
+        <h2 id="userModalTitle">Registrar Usuario del Sistema</h2>
+        <button class="close-btn" data-close="userModal">✕</button>
+      </div>
+      <form id="userForm" class="modal-body form-grid">
+        <input type="hidden" id="usrId">
+        <label class="full">Nombre Completo *
+          <input type="text" id="usrName" required placeholder="Ej. Ing. Carlos Rivera">
+        </label>
+        <label>Nombre de Usuario (Login) *
+          <input type="text" id="usrUsername" required placeholder="Ej. crivera">
+        </label>
+        <label>Contraseña *
+          <input type="password" id="usrPassword" placeholder="Contraseña de acceso">
+        </label>
+        <label>Rol Operativo *
+          <select id="usrRole">
+            <option value="admin">Administrador General (Acceso Total)</option>
+            <option value="tecnico">Técnico (Tickets y Taller)</option>
+            <option value="ventas">Ventas / Caja (POS, Tienda y Corte)</option>
+            <option value="recepcion">Recepción (Mesa de Ayuda y Taller)</option>
+          </select>
+        </label>
+        <label>Teléfono
+          <input type="tel" id="usrPhone" placeholder="231 000 0000">
+        </label>
+        <label class="full">Especialidad / Cargo
+          <input type="text" id="usrSpecialty" placeholder="Ej. Soporte Redes y CCTV">
+        </label>
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="userModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       DEDICATED PRINT AREA
+  ============================ -->
+  <div id="printArea" class="print-area"></div>
+
+  <!-- Toast notification -->
+  <div id="erpToast" class="erp-toast"></div>
 
   <script type="module" src="/src/admin.js"></script>
 </body>

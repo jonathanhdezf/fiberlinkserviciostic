@@ -1,0 +1,268 @@
+[
+  {
+    "id": "prod-101",
+    "sku": "POS-CAJ-01",
+    "name": "Cajón de Dinero Automático Metálico RJ11",
+    "category": "pos",
+    "cost": 680,
+    "price": 1150,
+    "stock": 14,
+    "minStock": 4,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cajón metálico de uso rudo con 5 divisiones de billetes, 8 de monedas y apertura automática RJ11.",
+    "specs": [
+      "5 billetes / 8 monedas",
+      "Interfaz RJ11 a impresora",
+      "Cerradura de 3 posiciones"
+    ]
+  },
+  {
+    "id": "prod-102",
+    "sku": "POS-IMP-58",
+    "name": "Impresora Térmica de Tickets 58mm USB",
+    "category": "pos",
+    "cost": 490,
+    "price": 890,
+    "stock": 9,
+    "minStock": 3,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Impresora térmica directa sin tinta de 58mm, alta velocidad 90mm/s compatible con Windows y POS.",
+    "specs": [
+      "Térmica directa 58mm",
+      "Puerto USB + RJ11 para cajón",
+      "Compatible con Eleventa y Loyverse"
+    ]
+  },
+  {
+    "id": "prod-103",
+    "sku": "POS-IMP-80",
+    "name": "Impresora Térmica 80mm Autocorte USB + LAN",
+    "category": "pos",
+    "cost": 1250,
+    "price": 1980,
+    "stock": 6,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Impresora de tickets 80mm con cortador automático de guillotina y doble interfaz USB + Red Ethernet.",
+    "specs": [
+      "Ancho 80mm con autocorte",
+      "USB + Ethernet LAN",
+      "Velocidad 260mm/s"
+    ]
+  },
+  {
+    "id": "prod-104",
+    "sku": "POS-LEC-2D",
+    "name": "Lector de Código de Barras 1D/2D QR Inalámbrico",
+    "category": "pos",
+    "cost": 520,
+    "price": 950,
+    "stock": 11,
+    "minStock": 3,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Escáner omnidireccional e inalámbrico 2.4GHz + USB capaz de leer códigos en papel y pantallas de celular.",
+    "specs": [
+      "Lectura 1D, 2D y QR",
+      "Inalámbrico 2.4GHz + cable USB",
+      "Batería de larga duración"
+    ]
+  },
+  {
+    "id": "prod-105",
+    "sku": "CCTV-HIK-2MP",
+    "name": "Cámara Bala Hikvision Full HD 1080p ColorVu",
+    "category": "cctv",
+    "cost": 480,
+    "price": 850,
+    "stock": 18,
+    "minStock": 6,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara de videovigilancia exterior IP67 con visión nocturna a todo color ColorVu 24/7.",
+    "specs": [
+      "Resolución 2MP 1080p",
+      "Visión nocturna a color 20m",
+      "Protección intemperie IP67"
+    ]
+  },
+  {
+    "id": "prod-106",
+    "sku": "CCTV-KIT-4CH",
+    "name": "Kit DVR 4 Canales + 4 Cámaras HD + Disco 1TB",
+    "category": "cctv",
+    "cost": 2950,
+    "price": 4650,
+    "stock": 3,
+    "minStock": 2,
+    "unit": "kit",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Paquete completo de seguridad con grabación continua y visualización en celular iOS/Android.",
+    "specs": [
+      "DVR 4CH pentahíbrido H.265+",
+      "4 cámaras 1080p exterior/interior",
+      "Disco Duro 1TB vigilancia incluido"
+    ]
+  },
+  {
+    "id": "prod-107",
+    "sku": "NET-UTP-CAT6",
+    "name": "Bobina Cable UTP Cat6 100% Cobre (Metro)",
+    "category": "redes",
+    "cost": 7.5,
+    "price": 15,
+    "stock": 280,
+    "minStock": 50,
+    "unit": "metro",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cable de red categoría 6 certificado 100% cobre para enlaces gigabit y PoE estable.",
+    "specs": [
+      "100% Cobre calibre 23 AWG",
+      "Soporta Gigabit y PoE",
+      "Venta por metro o bobina"
+    ]
+  },
+  {
+    "id": "prod-108",
+    "sku": "NET-AP-U6",
+    "name": "Access Point Ubiquiti UniFi U6+ Dual Band WiFi 6",
+    "category": "redes",
+    "cost": 1980,
+    "price": 2890,
+    "stock": 2,
+    "minStock": 3,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Punto de acceso empresarial WiFi 6 de alta densidad para hoteles, clínicas y oficinas.",
+    "specs": [
+      "WiFi 6 MIMO 2x2",
+      "Soporta +300 clientes concurrentes",
+      "Alimentación PoE"
+    ]
+  },
+  {
+    "id": "prod-109",
+    "sku": "SW-WIN11-PRO",
+    "name": "Licencia Original Windows 11 Pro OEM Vitalicia",
+    "category": "software",
+    "cost": 280,
+    "price": 650,
+    "stock": 25,
+    "minStock": 5,
+    "unit": "licencia",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Activación genuina permanente para equipos de trabajo con soporte de dominio y BitLocker.",
+    "specs": [
+      "100% Original activación directa",
+      "Actualizaciones oficiales Microsoft",
+      "1 PC Permanente"
+    ]
+  },
+  {
+    "id": "prod-110",
+    "sku": "SW-POS-PRO",
+    "name": "Sistema Punto de Venta Local (Licencia Vitalicia)",
+    "category": "software",
+    "cost": 350,
+    "price": 1200,
+    "stock": 50,
+    "minStock": 5,
+    "unit": "licencia",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Software de control de ventas, inventarios, corte de caja, clientes y tickets sin rentas mensuales.",
+    "specs": [
+      "Control de inventario y alertas",
+      "Multicaja y corte por turno",
+      "Sin anualidades forzosas"
+    ]
+  },
+  {
+    "id": "prod-111",
+    "sku": "REF-SSD-480",
+    "name": "Unidad de Estado Sólido SSD 480GB Kingston SATA III",
+    "category": "refacciones",
+    "cost": 520,
+    "price": 890,
+    "stock": 2,
+    "minStock": 4,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Reemplazo de alta velocidad para acelerar laptops y PCs de escritorio hasta 10x.",
+    "specs": [
+      "480GB SATA 3 6Gb/s",
+      "Lectura 500MB/s",
+      "3 años de garantía"
+    ]
+  },
+  {
+    "id": "prod-112",
+    "sku": "REF-RAM-8G",
+    "name": "Memoria RAM DDR4 8GB 3200MHz SODIMM Laptop",
+    "category": "refacciones",
+    "cost": 340,
+    "price": 620,
+    "stock": 7,
+    "minStock": 3,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Módulo de memoria RAM DDR4 para actualización de portátiles y Mini PCs.",
+    "specs": [
+      "8GB DDR4 3200MHz",
+      "Bajo voltaje 1.2V",
+      "Compatible Intel y AMD"
+    ]
+  },
+  {
+    "id": "prod-113",
+    "sku": "SRV-MANT-PC",
+    "name": "Mantenimiento Preventivo Completo (Físico + Lógico)",
+    "category": "servicios",
+    "cost": 50,
+    "price": 350,
+    "stock": 999,
+    "minStock": 0,
+    "unit": "servicio",
+    "isService": true,
+    "publicVisible": true,
+    "description": "Limpieza interna ultrasónica, cambio de pasta térmica de alta conductividad y optimización de sistema.",
+    "specs": [
+      "Pasta térmica Arctic MX-4",
+      "Limpieza de ventilación",
+      "Optimización de arranque"
+    ]
+  },
+  {
+    "id": "prod-114",
+    "sku": "SRV-DIAG-SITIO",
+    "name": "Diagnóstico Técnico en Sitio / Domicilio (Teziutlán)",
+    "category": "servicios",
+    "cost": 50,
+    "price": 250,
+    "stock": 999,
+    "minStock": 0,
+    "unit": "servicio",
+    "isService": true,
+    "publicVisible": true,
+    "description": "Visita técnica para revisión de red, punto de venta o equipo de cómputo en negocio o domicilio.",
+    "specs": [
+      "Cobertura en Teziutlán",
+      "Bonificable en reparación mayor",
+      "Reporte técnico incluido"
+    ]
+  }
+]

@@ -6,7 +6,13 @@
 const API_BASE = '/api';
 const LOCAL_STORAGE_KEY = 'fiberlink_tickets';
 
-// Helper: Read local cache
+function getAuthHeaders() {
+  const token = sessionStorage.getItem('fiberlink_token') || '';
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
 function getLocalTickets() {
   try {
     return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
@@ -15,7 +21,6 @@ function getLocalTickets() {
   }
 }
 
-// Helper: Save local cache
 function saveLocalTickets(tickets) {
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tickets));
@@ -24,7 +29,6 @@ function saveLocalTickets(tickets) {
   }
 }
 
-// Helper: Next local folio FL-XXXX
 function generateLocalFolio() {
   const tickets = getLocalTickets();
   let max = 1000;
@@ -32,7 +36,7 @@ function generateLocalFolio() {
     if (t.folio) {
       const match = t.folio.match(/FL-(\d+)/);
       if (match) {
-        const n = parseInt(match[1]);
+        const n = parseInt(match[1], 10);
         if (n > max) max = n;
       }
     }
@@ -46,30 +50,24 @@ export const ticketService = {
     try {
       const response = await fetch(`${API_BASE}/tickets`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(ticketData)
       });
 
       if (response.ok) {
         const result = await response.json();
         if (result && result.ticket) {
-          console.log('[TicketService] ✓ Ticket creado en backend con éxito:', result.ticket.folio);
-          // Sync into local cache as well
           const local = getLocalTickets();
-          // Avoid duplicate folio in local
           const filtered = local.filter(t => t.folio !== result.ticket.folio);
           filtered.unshift(result.ticket);
           saveLocalTickets(filtered);
           return result.ticket;
         }
-      } else {
-        console.warn('[TicketService] Respuesta no exitosa del backend:', response.status);
       }
     } catch (err) {
-      console.info('[TicketService] Servidor API no disponible, usando fallback local persistente:', err.message);
+      console.info('[TicketService] Servidor API no disponible, usando fallback local:', err.message);
     }
 
-    // Fallback: LocalStorage
     const local = getLocalTickets();
     const newTicket = {
       id: Date.now().toString(),
@@ -85,6 +83,7 @@ export const ticketService = {
       service: ticketData.service || 'Soporte técnico',
       modality: ticketData.modality || 'En Sitio / Domicilio',
       priority: ticketData.priority || 'Normal',
+      assignedTo: ticketData.assignedTo || 'Sin asignar',
       description: ticketData.description || '',
       source: ticketData.source || 'Portal Web',
       bitacora: [
@@ -97,7 +96,8 @@ export const ticketService = {
       ],
       pos: {
         items: [],
-        total: 0
+        total: 0,
+        paid: false
       }
     };
 
@@ -112,26 +112,24 @@ export const ticketService = {
       const queryParams = new URLSearchParams();
       if (filters.estado) queryParams.set('estado', filters.estado);
       if (filters.priority) queryParams.set('priority', filters.priority);
+      if (filters.assignedTo) queryParams.set('assignedTo', filters.assignedTo);
       if (filters.q) queryParams.set('q', filters.q);
 
       const url = `${API_BASE}/tickets${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: getAuthHeaders() });
       if (res.ok) {
         const data = await res.json();
-        // Update local cache
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data) && !filters.estado && !filters.priority && !filters.q) {
           saveLocalTickets(data);
         }
         return data;
       }
-    } catch (e) {
-      // Fallback below
-    }
+    } catch (e) {}
 
-    // Fallback filter locally
     let list = getLocalTickets();
     if (filters.estado) list = list.filter(t => t.estado === filters.estado);
     if (filters.priority) list = list.filter(t => t.priority === filters.priority);
+    if (filters.assignedTo) list = list.filter(t => t.assignedTo === filters.assignedTo);
     if (filters.q) {
       const q = filters.q.toLowerCase();
       list = list.filter(t =>
@@ -148,7 +146,7 @@ export const ticketService = {
   // 3. Get Single Ticket
   async getTicketById(id) {
     try {
-      const res = await fetch(`${API_BASE}/tickets/${id}`);
+      const res = await fetch(`${API_BASE}/tickets/${id}`, { headers: getAuthHeaders() });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -156,13 +154,13 @@ export const ticketService = {
     return local.find(t => t.id === id || t.folio === id) || null;
   },
 
-  // 4. Update Status
-  async updateStatus(id, newStatus) {
+  // 4. Update Ticket (status, priority, assignedTo, fields)
+  async updateTicket(id, payload) {
     try {
       const res = await fetch(`${API_BASE}/tickets/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: newStatus })
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const data = await res.json();
@@ -170,24 +168,18 @@ export const ticketService = {
       }
     } catch (e) {}
 
-    // Fallback
     const local = getLocalTickets();
     const idx = local.findIndex(t => t.id === id || t.folio === id);
     if (idx !== -1) {
-      const prev = local[idx].estado;
-      local[idx].estado = newStatus;
-      local[idx].updatedAt = new Date().toISOString();
-      if (!local[idx].bitacora) local[idx].bitacora = [];
-      local[idx].bitacora.push({
-        id: `b-${Date.now()}`,
-        date: new Date().toISOString(),
-        author: 'Mesa de Control',
-        note: `Estado modificado: "${prev}" ➔ "${newStatus}"`
-      });
+      local[idx] = { ...local[idx], ...payload, updatedAt: new Date().toISOString() };
       saveLocalTickets(local);
       return local[idx];
     }
     return null;
+  },
+
+  async updateStatus(id, newStatus, author) {
+    return this.updateTicket(id, { estado: newStatus, author });
   },
 
   // 5. Add Bitacora Note
@@ -195,7 +187,7 @@ export const ticketService = {
     try {
       const res = await fetch(`${API_BASE}/tickets/${id}/bitacora`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ note, author })
       });
       if (res.ok) {
@@ -204,7 +196,6 @@ export const ticketService = {
       }
     } catch (e) {}
 
-    // Fallback
     const local = getLocalTickets();
     const idx = local.findIndex(t => t.id === id || t.folio === id);
     if (idx !== -1) {
@@ -223,13 +214,17 @@ export const ticketService = {
     return null;
   },
 
-  // 6. Add POS item
-  async addPosItem(id, concept, price) {
+  async addBitacoraEntry(id, note, author) {
+    return this.addBitacoraNote(id, note, author);
+  },
+
+  // 6. Save POS items array
+  async savePos(id, items, total) {
     try {
       const res = await fetch(`${API_BASE}/tickets/${id}/pos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ concept, price })
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ items, total })
       });
       if (res.ok) {
         const data = await res.json();
@@ -237,18 +232,10 @@ export const ticketService = {
       }
     } catch (e) {}
 
-    // Fallback
     const local = getLocalTickets();
     const idx = local.findIndex(t => t.id === id || t.folio === id);
     if (idx !== -1) {
-      if (!local[idx].pos) local[idx].pos = { items: [], total: 0 };
-      const numPrice = parseFloat(price) || 0;
-      local[idx].pos.items.push({
-        id: `pos-${Date.now()}`,
-        concept: concept.trim(),
-        price: numPrice
-      });
-      local[idx].pos.total = local[idx].pos.items.reduce((s, i) => s + i.price, 0);
+      local[idx].pos = { items, total };
       local[idx].updatedAt = new Date().toISOString();
       saveLocalTickets(local);
       return local[idx];
@@ -256,17 +243,38 @@ export const ticketService = {
     return null;
   },
 
-  // 7. Stats
+  async addPosItem(id, concept, price) {
+    const ticket = await this.getTicketById(id);
+    if (!ticket) return null;
+    const items = Array.isArray(ticket.pos?.items) ? [...ticket.pos.items] : [];
+    items.push({ id: `pos-${Date.now()}`, concept, price: parseFloat(price) || 0, qty: 1 });
+    const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
+    return this.savePos(id, items, total);
+  },
+
+  async deleteTicket(id) {
+    try {
+      const res = await fetch(`${API_BASE}/tickets/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (res.ok) return true;
+    } catch (e) {}
+    const local = getLocalTickets().filter(t => t.id !== id && t.folio !== id);
+    saveLocalTickets(local);
+    return true;
+  },
+
   async getStats() {
     try {
-      const res = await fetch(`${API_BASE}/tickets/stats`);
+      const res = await fetch(`${API_BASE}/tickets/stats`, { headers: getAuthHeaders() });
       if (res.ok) return await res.json();
     } catch (e) {}
 
     const list = getLocalTickets();
     return {
       total: list.length,
-      creacion: list.filter(t => t.estado === 'creación').length,
+      creacion: list.filter(t => t.estado === 'creación' || t.estado === 'creacion').length,
       diagnostico: list.filter(t => t.estado === 'diagnostico').length,
       proceso: list.filter(t => t.estado === 'proceso').length,
       resuelto: list.filter(t => t.estado === 'resuelto').length,

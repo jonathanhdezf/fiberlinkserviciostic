@@ -1,0 +1,62 @@
+[
+  {
+    "id": "u-admin",
+    "username": "admin",
+    "password": "admin123",
+    "name": "Ing. Roberto Méndez",
+    "role": "admin",
+    "email": "admin@fiberlink.mx",
+    "phone": "2311024672",
+    "specialty": "Dirección General & Redes",
+    "active": true,
+    "createdAt": "2026-01-01T09:00:00.000Z"
+  },
+  {
+    "id": "u-tec1",
+    "username": "tecnico",
+    "password": "tec123",
+    "name": "Ing. Alejandro Luna",
+    "role": "tecnico",
+    "email": "soporte@fiberlink.mx",
+    "phone": "2311158890",
+    "specialty": "Taller Electrónico & CCTV",
+    "active": true,
+    "createdAt": "2026-01-10T09:00:00.000Z"
+  },
+  {
+    "id": "u-tec2",
+    "username": "redes",
+    "password": "redes123",
+    "name": "Téc. Daniel Ortega",
+    "role": "tecnico",
+    "email": "redes@fiberlink.mx",
+    "phone": "2311203344",
+    "specialty": "Fibra Óptica & MikroTik/Ubiquiti",
+    "active": true,
+    "createdAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+    "id": "u-ventas",
+    "username": "caja",
+    "password": "caja123",
+    "name": "Lic. Sofía Navarro",
+    "role": "ventas",
+    "email": "ventas@fiberlink.mx",
+    "phone": "2311097711",
+    "specialty": "Mostrador, POS & Facturación",
+    "active": true,
+    "createdAt": "2026-02-15T09:00:00.000Z"
+  },
+  {
+    "id": "u-recep",
+    "username": "recepcion",
+    "password": "recep123",
+    "name": "Mariana Salazar",
+    "role": "recepcion",
+    "email": "atencion@fiberlink.mx",
+    "phone": "2311045566",
+    "specialty": "Mesa de Ayuda & Ingreso a Taller",
+    "active": true,
+    "createdAt": "2026-03-01T09:00:00.000Z"
+  }
+]
