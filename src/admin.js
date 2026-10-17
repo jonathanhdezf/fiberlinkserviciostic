@@ -704,9 +704,9 @@ function renderOverview() {
         <tbody>
           ${lowStock.slice(0, 4).map(p => `
             <tr>
-              <td class="mono">${p.sku}</td>
-              <td>${p.name}</td>
-              <td style="text-align:right;"><span class="badge badge-red"><span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}</span></td>
+              <td data-label="SKU" class="mono">${p.sku}</td>
+              <td data-label="Artículo">${p.name}</td>
+              <td data-label="Stock" style="text-align:right;"><span class="badge badge-red"><span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -900,15 +900,14 @@ function renderOverviewUnifiedTransactions() {
 
   tbody.innerHTML = filtered.map((r, idx) => `
     <tr class="tx-clickable-row" data-idx="${idx}" style="cursor:pointer;">
-      <td class="mono"><strong>${r.folio}</strong></td>
-      <td><span class="kbd-tag">${r.moduleLabel}</span></td>
-      <td>
-        <strong>${r.client}</strong>
-        <div style="font-size:0.74rem; color:var(--text-muted);">${r.concept}</div>
+      <td data-label="Folio" class="mono"><strong>${r.folio}</strong></td>
+      <td data-label="Módulo"><span class="kbd-tag">${r.moduleLabel}</span></td>
+      <td data-label="Cliente / Concepto">
+        <div><strong>${r.client}</strong><div style="font-size:0.74rem; color:var(--text-muted);">${r.concept}</div></div>
       </td>
-      <td>${r.owner}</td>
-      <td><span class="badge ${r.badge}"><span class="status-dot ${r.dot}"></span>${r.statusLabel}</span></td>
-      <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(r.amount)}</strong></td>
+      <td data-label="Responsable">${r.owner}</td>
+      <td data-label="Estado"><span class="badge ${r.badge}"><span class="status-dot ${r.dot}"></span>${r.statusLabel}</span></td>
+      <td data-label="Monto" style="text-align:right;" class="mono tabular"><strong>${formatMoney(r.amount)}</strong></td>
     </tr>
   `).join('');
 
@@ -1138,20 +1137,18 @@ function renderTicketsKanban() {
         const prioBadge = t.priority === 'Urgente' ? 'badge-red' : t.priority === 'Alta' ? 'badge-amber' : 'badge-blue';
         return `
           <tr class="ticket-row-item" data-id="${t.id}" style="cursor:pointer;">
-            <td class="mono"><strong>${t.folio}</strong></td>
-            <td>
-              <strong>${t.name}</strong>
-              <div style="font-size:0.74rem; color:var(--text-muted);">${t.company || t.phone || ''}</div>
+            <td data-label="Folio" class="mono"><strong>${t.folio}</strong></td>
+            <td data-label="Cliente / Empresa">
+              <div><strong>${t.name}</strong><div style="font-size:0.74rem; color:var(--text-muted);">${t.company || t.phone || ''}</div></div>
             </td>
-            <td>
-              <div>${t.service}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">${t.modality || ''}</div>
+            <td data-label="Servicio">
+              <div><div>${t.service}</div><div style="font-size:0.72rem; color:var(--text-muted);">${t.modality || ''}</div></div>
             </td>
-            <td><span class="badge ${prioBadge}">${t.priority}</span></td>
-            <td>${t.assignedTo || 'Sin asignar'}</td>
-            <td><span class="kbd-tag">${t.estado.toUpperCase()}</span></td>
-            <td style="text-align:right;" class="mono tabular">${formatMoney(total)}</td>
-            <td style="text-align:right;">
+            <td data-label="Prioridad"><span class="badge ${prioBadge}">${t.priority}</span></td>
+            <td data-label="Técnico">${t.assignedTo || 'Sin asignar'}</td>
+            <td data-label="Estado"><span class="kbd-tag">${t.estado.toUpperCase()}</span></td>
+            <td data-label="Cargos POS" style="text-align:right;" class="mono tabular">${formatMoney(total)}</td>
+            <td data-label="Acción" style="text-align:right;">
               <button type="button" class="btn btn-ghost btn-sm">Abrir →</button>
             </td>
           </tr>
@@ -1260,9 +1257,9 @@ function renderTicketPOS(posData) {
 
   list.innerHTML = items.map(item => `
     <tr>
-      <td>${item.concept}</td>
-      <td style="text-align:right;" class="mono tabular">${formatMoney(item.price)}</td>
-      <td style="text-align:right;">
+      <td data-label="Concepto">${item.concept}</td>
+      <td data-label="Importe" style="text-align:right;" class="mono tabular">${formatMoney(item.price)}</td>
+      <td data-label="Acción" style="text-align:right;">
         <button type="button" class="del-item-btn" data-id="${item.id}">✕</button>
       </td>
     </tr>
@@ -1782,17 +1779,19 @@ function renderPosSalesHistory() {
     const isCancelled = s.status === 'cancelada';
     return `
       <tr style="${isCancelled ? 'opacity:0.5;' : ''}">
-        <td class="mono"><strong>${s.folio}</strong></td>
-        <td class="tabular">${d}</td>
-        <td>${s.clientName}</td>
-        <td class="mono">${s.linkedRef || '-'}</td>
-        <td>${s.cashier}</td>
-        <td><span class="badge badge-blue">${s.paymentMethod}</span></td>
-        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(s.total)}</strong></td>
-        <td><span class="badge ${isCancelled ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isCancelled ? 'dot-red' : 'dot-lime'}"></span>${s.status}</span></td>
-        <td style="text-align:right;">
-          <button class="btn btn-ghost btn-sm btn-print-sale" data-id="${s.id}">Ticket</button>
-          ${!isCancelled && currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-cancel-sale" data-id="${s.id}">Cancelar</button>` : ''}
+        <td data-label="Folio" class="mono"><strong>${s.folio}</strong></td>
+        <td data-label="Fecha" class="tabular">${d}</td>
+        <td data-label="Cliente">${s.clientName}</td>
+        <td data-label="Ref." class="mono">${s.linkedRef || '-'}</td>
+        <td data-label="Cajero">${s.cashier}</td>
+        <td data-label="Método"><span class="badge badge-blue">${s.paymentMethod}</span></td>
+        <td data-label="Total" style="text-align:right;" class="mono tabular"><strong>${formatMoney(s.total)}</strong></td>
+        <td data-label="Estado"><span class="badge ${isCancelled ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isCancelled ? 'dot-red' : 'dot-lime'}"></span>${s.status}</span></td>
+        <td data-label="Acciones" style="text-align:right;">
+          <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm btn-print-sale" data-id="${s.id}">Ticket</button>
+            ${!isCancelled && currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-cancel-sale" data-id="${s.id}">Cancelar</button>` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -1899,31 +1898,32 @@ function renderStoreTable() {
     const margin = p.price > 0 ? Math.round(((p.price - (p.cost || 0)) / p.price) * 100) : 0;
     return `
       <tr>
-        <td class="mono"><strong>${p.sku}</strong></td>
-        <td>
-          <strong>${p.name}</strong>
-          <div style="font-size:0.74rem; color:var(--text-muted);">${p.description || ''}</div>
+        <td data-label="SKU" class="mono"><strong>${p.sku}</strong></td>
+        <td data-label="Producto / Servicio">
+          <div><strong>${p.name}</strong><div style="font-size:0.74rem; color:var(--text-muted);">${p.description || ''}</div></div>
         </td>
-        <td><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
-        <td style="text-align:right;" class="mono tabular">${formatMoney(p.cost)}</td>
-        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(p.price)}</strong></td>
-        <td style="text-align:right;" class="mono tabular"><span style="color:var(--primary); font-weight:600;">+${margin}%</span></td>
-        <td style="text-align:center;">
+        <td data-label="Categoría"><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
+        <td data-label="Costo" style="text-align:right;" class="mono tabular">${formatMoney(p.cost)}</td>
+        <td data-label="Precio Púb." style="text-align:right;" class="mono tabular"><strong>${formatMoney(p.price)}</strong></td>
+        <td data-label="Margen" style="text-align:right;" class="mono tabular"><span style="color:var(--primary); font-weight:600;">+${margin}%</span></td>
+        <td data-label="Existencia" style="text-align:center;">
           ${p.isService
             ? '<span class="badge badge-purple">Intangible</span>'
             : `<span class="badge ${isLow ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>`
           }
         </td>
-        <td style="text-align:center;">
+        <td data-label="Catálogo Web" style="text-align:center;">
           <span class="badge ${p.publicVisible !== false ? 'badge-green' : 'badge-amber'}">${p.publicVisible !== false ? 'Público' : 'Oculto'}</span>
         </td>
-        <td style="text-align:right; white-space:nowrap;">
-          ${!p.isService ? `
-            <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="1" title="Entrada rápida +1">+1</button>
-            <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="-1" title="Salida rápida -1">-1</button>
-          ` : ''}
-          <button class="btn btn-ghost btn-sm btn-edit-prod" data-id="${p.id}">Editar</button>
-          ${currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}">✕</button>` : ''}
+        <td data-label="Acciones" style="text-align:right; white-space:nowrap;">
+          <div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+            ${!p.isService ? `
+              <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="1" title="Entrada rápida +1">+1</button>
+              <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="-1" title="Salida rápida -1">-1</button>
+            ` : ''}
+            <button class="btn btn-ghost btn-sm btn-edit-prod" data-id="${p.id}">Editar</button>
+            ${currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}">✕</button>` : ''}
+          </div>
         </td>
       </tr>
     `;
@@ -2034,10 +2034,10 @@ function renderReportsView() {
     const top = reportsData.topProducts || [];
     topBody.innerHTML = top.map(item => `
       <tr>
-        <td class="mono">${item.sku}</td>
-        <td>${item.name}</td>
-        <td style="text-align:center;" class="mono tabular">${item.qty}</td>
-        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(item.revenue)}</strong></td>
+        <td data-label="SKU" class="mono">${item.sku}</td>
+        <td data-label="Concepto">${item.name}</td>
+        <td data-label="Unidades" style="text-align:center;" class="mono tabular">${item.qty}</td>
+        <td data-label="Ingreso Generado" style="text-align:right;" class="mono tabular"><strong>${formatMoney(item.revenue)}</strong></td>
       </tr>
     `).join('');
   }
@@ -2047,11 +2047,11 @@ function renderReportsView() {
     const techs = reportsData.technicians || [];
     techBody.innerHTML = techs.map(t => `
       <tr>
-        <td><strong>${t.name}</strong></td>
-        <td style="text-align:center;" class="mono tabular">${t.ticketsActive}</td>
-        <td style="text-align:center;" class="mono tabular"><span class="badge badge-green">${t.ticketsResolved}</span></td>
-        <td style="text-align:center;" class="mono tabular">${t.workshopActive}</td>
-        <td style="text-align:center;" class="mono tabular"><span class="badge badge-blue">${t.workshopReady}</span></td>
+        <td data-label="Ingeniero / Técnico"><strong>${t.name}</strong></td>
+        <td data-label="Tickets Activos" style="text-align:center;" class="mono tabular">${t.ticketsActive}</td>
+        <td data-label="Tickets Resueltos" style="text-align:center;" class="mono tabular"><span class="badge badge-green">${t.ticketsResolved}</span></td>
+        <td data-label="Taller Activos" style="text-align:center;" class="mono tabular">${t.workshopActive}</td>
+        <td data-label="Taller Listos" style="text-align:center;" class="mono tabular"><span class="badge badge-blue">${t.workshopReady}</span></td>
       </tr>
     `).join('');
   }
@@ -2142,15 +2142,17 @@ function renderUsersTable() {
 
   tbody.innerHTML = allUsers.map(u => `
     <tr>
-      <td><strong>${u.name}</strong></td>
-      <td class="mono">@${u.username}</td>
-      <td><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
-      <td>${u.specialty || '-'}</td>
-      <td class="tabular">${u.phone || u.email || '-'}</td>
-      <td><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}"><span class="status-dot ${u.active !== false ? 'dot-lime' : 'dot-red'}"></span>${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
-      <td style="text-align:right;">
-        <button class="btn btn-ghost btn-sm btn-edit-usr" data-id="${u.id}">Editar</button>
-        ${u.username !== 'admin' ? `<button class="btn btn-danger btn-sm btn-del-usr" data-id="${u.id}">✕</button>` : ''}
+      <td data-label="Nombre"><strong>${u.name}</strong></td>
+      <td data-label="Usuario" class="mono">@${u.username}</td>
+      <td data-label="Rol"><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
+      <td data-label="Especialidad">${u.specialty || '-'}</td>
+      <td data-label="Contacto" class="tabular">${u.phone || u.email || '-'}</td>
+      <td data-label="Estado"><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}"><span class="status-dot ${u.active !== false ? 'dot-lime' : 'dot-red'}"></span>${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
+      <td data-label="Acciones" style="text-align:right;">
+        <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
+          <button class="btn btn-ghost btn-sm btn-edit-usr" data-id="${u.id}">Editar</button>
+          ${u.username !== 'admin' ? `<button class="btn btn-danger btn-sm btn-del-usr" data-id="${u.id}">✕</button>` : ''}
+        </div>
       </td>
     </tr>
   `).join('');

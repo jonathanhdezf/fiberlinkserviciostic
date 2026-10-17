@@ -1339,15 +1339,81 @@ input:focus, textarea:focus, select:focus {
 .erp-table tbody tr:hover {
   background: var(--table-row-hover);
 }
-/* Sticky first column on small viewports */
+/* Single-Column Card Restructuring on Mobile Viewports */
 @media (max-width: 767px) {
-  .erp-table th:first-child,
-  .erp-table td:first-child {
-    position: sticky;
-    left: 0;
-    background: var(--bg-surface-1);
-    z-index: 3;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+  .table-responsive {
+    overflow-x: visible;
+  }
+  .erp-table,
+  .erp-table tbody {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .erp-table thead {
+    display: none;
+  }
+  .erp-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    gap: 4px;
+    box-shadow: var(--inner-highlight);
+  }
+  .erp-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+  .erp-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border-subtle);
+    text-align: right !important;
+    white-space: normal !important;
+    position: static;
+    background: transparent;
+    box-shadow: none;
+  }
+  .erp-table tbody td:first-child {
+    padding-top: 2px;
+  }
+  .erp-table tbody td:last-child {
+    border-bottom: none;
+    padding-bottom: 2px;
+    padding-top: 8px;
+  }
+  .erp-table tbody td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .erp-table tbody td[colspan] {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center !important;
+    border-bottom: none;
+    padding: 12px 0;
+  }
+  .erp-table tbody td[colspan]::before {
+    display: none;
+  }
+  .workshop-grid,
+  .kanban-board {
+    grid-template-columns: 1fr;
   }
 }
 
