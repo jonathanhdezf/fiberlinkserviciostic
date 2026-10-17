@@ -1,255 +1,479 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fiberlink ERP & Mesa de Control | Gestión Integral TIC</title>
+  <title>Fiberlink Enterprise ERP | Mesa de Control & Operaciones TIC</title>
   <link rel="icon" type="image/gif" href="/logo.gif">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/admin.css" />
 </head>
 <body>
 
   <!-- ============================
-       LOGIN OVERLAY (WITH RBAC ROLES)
+       AMBIENT LIGHTING & SVG NOISE TEXTURE
+  ============================ -->
+  <div class="ambient-glow" aria-hidden="true"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- ============================
+       LOGIN OVERLAY (ENTERPRISE GLASS)
   ============================ -->
   <div id="loginOverlay" class="login-overlay">
-    <div class="login-box">
+    <div class="login-box surface-elevated">
       <div class="login-brand">
-        <img src="logo.gif" alt="Fiberlink" class="login-logo">
-        <div class="login-badge">ERP & MESA DE CONTROL v2.0</div>
-        <h2>Fiberlink Servicios TIC</h2>
-        <p>Sistema integral de Tickets, Taller, POS, Tienda y Reportes</p>
+        <div class="login-logo-wrap">
+          <img src="logo.gif" alt="Fiberlink" class="login-logo">
+        </div>
+        <div class="login-badge">
+          <span class="status-dot dot-lime"></span>
+          FIBERLINK ENTERPRISE OS v2.4
+        </div>
+        <h2>Acceso a Mesa de Control</h2>
+        <p>Gestión unificada de Tickets, Laboratorio, POS, Almacén y Finanzas</p>
       </div>
-      <form id="loginForm">
-        <label>
-          Usuario
-          <input type="text" id="loginUser" required autocomplete="username" placeholder="Ej. admin, tecnico, caja, recepcion">
-        </label>
-        <label>
-          Contraseña
-          <input type="password" id="loginPass" required autocomplete="current-password" placeholder="••••••••">
-        </label>
-        <div id="loginError" class="login-error"></div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Iniciar Sesión</button>
+
+      <form id="loginForm" class="login-form">
+        <div class="field-group">
+          <label for="loginUser">Identificador de Usuario</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="loginUser" required autocomplete="username" placeholder="admin, tecnico, caja, recepcion">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="loginPass">Clave de Seguridad</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="loginPass" required autocomplete="current-password" placeholder="••••••••">
+          </div>
+        </div>
+
+        <div id="loginError" class="login-error" role="alert"></div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Autenticar en Consola</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
       </form>
 
       <div class="quick-roles">
-        <span class="qr-title">Acceso rápido por Rol (Demo):</span>
+        <div class="qr-header">
+          <span>Simulación instantánea de Rol (RBAC)</span>
+        </div>
         <div class="qr-grid">
           <button type="button" class="qr-btn" data-user="admin" data-pass="admin123">
-            <strong>Admin General</strong>
-            <span>Acceso Total</span>
+            <div class="qr-top">
+              <strong>Admin General</strong>
+              <span class="kbd-tag">ROOT</span>
+            </div>
+            <span>Control total y finanzas</span>
           </button>
           <button type="button" class="qr-btn" data-user="tecnico" data-pass="tec123">
-            <strong>Técnico Taller</strong>
-            <span>Tickets & Taller</span>
+            <div class="qr-top">
+              <strong>Ing. Soporte</strong>
+              <span class="kbd-tag">TECH</span>
+            </div>
+            <span>Tickets y Laboratorio</span>
           </button>
           <button type="button" class="qr-btn" data-user="caja" data-pass="caja123">
-            <strong>Ventas / POS</strong>
-            <span>Caja & Tienda</span>
+            <div class="qr-top">
+              <strong>Cajero / POS</strong>
+              <span class="kbd-tag">POS</span>
+            </div>
+            <span>Mostrador, caja y stock</span>
           </button>
           <button type="button" class="qr-btn" data-user="recepcion" data-pass="recep123">
-            <strong>Recepción</strong>
-            <span>Mesa de Ayuda</span>
+            <div class="qr-top">
+              <strong>Recepción</strong>
+              <span class="kbd-tag">DESK</span>
+            </div>
+            <span>Mesa de ayuda e ingreso</span>
           </button>
         </div>
       </div>
-      <div style="text-align:center; margin-top:16px;">
-        <a href="/" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">← Volver al portal público</a>
+
+      <div class="login-footer">
+        <a href="/" class="back-portal-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m15 18-6-6 6-6"/></svg>
+          <span>Volver al portal público de Fiberlink</span>
+        </a>
       </div>
     </div>
   </div>
 
   <!-- ============================
-       MAIN ERP DASHBOARD
+       ENTERPRISE APP SHELL
   ============================ -->
   <div id="dashboard" class="dashboard hidden">
-    <!-- Sidebar -->
-    <aside class="sidebar">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <!-- Collapsible Sidebar (Desktop) / Slide Drawer (Mobile) -->
+    <aside id="appSidebar" class="sidebar" aria-label="Navegación principal del ERP">
       <div class="sidebar-header">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="logo.gif" alt="Fiberlink" class="sidebar-logo">
+        <a href="/admin.html" class="sidebar-brand-wrap">
+          <div class="sidebar-logo-box">
+            <img src="logo.gif" alt="Fiberlink" class="sidebar-logo">
+          </div>
           <div class="sidebar-brand">
             <strong>Fiberlink</strong>
-            <span>ERP Control</span>
+            <span>ENTERPRISE OS</span>
           </div>
-        </div>
+        </a>
+        <button id="sidebarCollapseBtn" class="icon-btn desktop-only" type="button" title="Colapsar / Expandir barra lateral (⌘B)" aria-label="Colapsar barra lateral">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+        <button id="sidebarMobileCloseBtn" class="icon-btn mobile-only" type="button" aria-label="Cerrar menú">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
       </div>
 
-      <div class="user-card" id="sidebarUserCard">
-        <div class="uc-avatar" id="ucAvatar">RM</div>
-        <div class="uc-info">
-          <strong id="ucName">Cargando...</strong>
-          <span class="role-pill" id="ucRole">ROL</span>
-        </div>
+      <!-- Command Palette Trigger inside Sidebar -->
+      <div class="sidebar-cmd-wrap">
+        <button type="button" id="sidebarCmdBtn" class="cmd-trigger-btn" title="Búsqueda global y comandos rápidos (Ctrl+K)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="cmd-trigger-text">Buscar o ejecutar...</span>
+          <kbd class="kbd-shortcut">⌘K</kbd>
+        </button>
       </div>
 
+      <!-- Grouped Navigation -->
       <nav class="sidebar-nav" id="sidebarNav">
-        <button class="nav-btn active" data-view="overview">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-          <span>Resumen General</span>
+        <div class="nav-group-label">CENTRO DE MANDO</div>
+        <button class="nav-btn active" data-view="overview" title="Resumen General">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span class="nav-label">Resumen Bento</span>
         </button>
-        <button class="nav-btn" data-view="tickets">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          <span>Tickets Soporte</span>
-          <span class="nav-badge" id="navBadgeTickets">0</span>
+
+        <div class="nav-group-label">OPERACIONES TÉCNICAS</div>
+        <button class="nav-btn" data-view="tickets" title="Tickets de Soporte">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+          <span class="nav-label">Tickets Soporte</span>
+          <span class="nav-badge tabular" id="navBadgeTickets">0</span>
         </button>
-        <button class="nav-btn" data-view="workshop">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          <span>Taller Técnico</span>
-          <span class="nav-badge" id="navBadgeWorkshop">0</span>
+        <button class="nav-btn" data-view="workshop" title="Laboratorio y Taller">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span class="nav-label">Taller & Lab</span>
+          <span class="nav-badge tabular" id="navBadgeWorkshop">0</span>
         </button>
-        <button class="nav-btn" data-view="pos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="6.01" y2="15"/><line x1="10" y1="15" x2="14" y2="15"/></svg>
-          <span>Punto de Venta</span>
+
+        <div class="nav-group-label">COMERCIO & INVENTARIO</div>
+        <button class="nav-btn" data-view="pos" title="Terminal Punto de Venta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          <span class="nav-label">Punto de Venta</span>
         </button>
-        <button class="nav-btn" data-view="store">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span>Tienda & Almacén</span>
-          <span class="nav-badge warn" id="navBadgeLowStock" style="display:none;">!</span>
+        <button class="nav-btn" data-view="store" title="Tienda y Almacén">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          <span class="nav-label">Tienda & Stock</span>
+          <span class="nav-badge warn tabular" id="navBadgeLowStock" style="display:none;">!</span>
         </button>
-        <button class="nav-btn" data-view="reports">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          <span>Reportes & Caja</span>
+
+        <div class="nav-group-label">INTELIGENCIA & SISTEMA</div>
+        <button class="nav-btn" data-view="reports" title="Reportes Financieros y Corte">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span class="nav-label">Reportes & Caja</span>
         </button>
-        <button class="nav-btn" data-view="users">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>Usuarios y Roles</span>
+        <button class="nav-btn" data-view="users" title="Usuarios y Roles RBAC">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="nav-label">Usuarios & Roles</span>
         </button>
       </nav>
 
+      <!-- Sidebar Footer: Profile & Actions -->
       <div class="sidebar-footer">
-        <a href="/catalogo.html" target="_blank" class="btn btn-secondary" style="margin-bottom:8px; text-decoration:none; font-size:0.82rem;">
-          Ver Catálogo Público ↗
-        </a>
-        <button id="logoutBtn" class="btn btn-ghost">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Cerrar Sesión
-        </button>
+        <div class="user-card" id="sidebarUserCard">
+          <div class="uc-avatar" id="ucAvatar">RM</div>
+          <div class="uc-info">
+            <strong id="ucName">Cargando...</strong>
+            <span class="role-pill" id="ucRole">ROL</span>
+          </div>
+          <button id="logoutBtn" class="icon-btn logout-icon-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="sidebar-links-row">
+          <a href="/" class="sidebar-ext-link" title="Ir al sitio principal">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <span>Portal Web</span>
+          </a>
+          <a href="/catalogo.html" target="_blank" class="sidebar-ext-link" title="Abrir catálogo público">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+            <span>Catálogo</span>
+          </a>
+        </div>
       </div>
     </aside>
 
-    <!-- Main Workspace -->
+    <!-- Main Content Workspace -->
     <main class="main-content">
+      <!-- Sticky Glassmorphic Header -->
       <header class="topbar">
-        <div>
-          <h1 class="topbar-title" id="topbarTitle">Resumen General</h1>
-          <p class="topbar-sub" id="topbarSub">Panel operativo en tiempo real · Fiberlink Teziutlán</p>
+        <div class="topbar-left">
+          <button id="mobileMenuBtn" class="icon-btn mobile-only" type="button" aria-label="Abrir navegación">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+          <div class="breadcrumb-title">
+            <div class="bc-trail">
+              <span>Fiberlink ERP</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 18 6-6-6-6"/></svg>
+              <span id="bcCurrent" class="bc-active">Resumen Bento</span>
+            </div>
+            <h1 class="topbar-title" id="topbarTitle">Resumen General</h1>
+          </div>
         </div>
+
         <div class="topbar-actions">
-          <button id="quickNewTicketBtn" class="btn btn-secondary btn-sm">+ Ticket</button>
-          <button id="quickNewWorkshopBtn" class="btn btn-secondary btn-sm">+ Orden Taller</button>
-          <button id="refreshBtn" class="btn btn-secondary btn-sm" title="Sincronizar con servidor">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Sincronizar
+          <!-- Command Palette Topbar Trigger -->
+          <button type="button" id="topbarCmdBtn" class="topbar-search-pill" aria-label="Abrir paleta de comandos">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="ts-placeholder">Buscar folios, clientes, acciones...</span>
+            <kbd class="kbd-shortcut">⌘K</kbd>
+          </button>
+
+          <!-- Quick Create Actions -->
+          <button id="quickNewTicketBtn" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <span class="hide-xs">Ticket</span>
+          </button>
+          <button id="quickNewWorkshopBtn" class="btn btn-secondary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span class="hide-xs">Taller</span>
+          </button>
+
+          <!-- Theme Switcher (Dark / Light) -->
+          <button id="themeToggleBtn" class="icon-btn" type="button" title="Alternar tema Oscuro / Claro" aria-label="Alternar tema">
+            <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </button>
+
+          <!-- Sync Button -->
+          <button id="refreshBtn" class="icon-btn" title="Sincronizar datos en tiempo real" aria-label="Sincronizar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
           </button>
         </div>
       </header>
 
-      <div class="views-container">
+      <!-- Views Scrollable Workspace -->
+      <div class="views-container" id="viewsContainer">
 
         <!-- ==========================================
-             VIEW 1: OVERVIEW (RESUMEN GENERAL)
+             VIEW 1: OVERVIEW (BENTO GRID & ANALYTICS)
         ========================================== -->
         <section id="view-overview" class="erp-view active">
-          <div class="kpi-grid" id="overviewKpis"></div>
+          <!-- Row 1: 4 Enterprise KPI Cards with Growth Delta & Sparklines -->
+          <div class="kpi-grid" id="overviewKpis">
+            <div class="kpi-card skeleton-shimmer" style="height:126px;"></div>
+            <div class="kpi-card skeleton-shimmer" style="height:126px;"></div>
+            <div class="kpi-card skeleton-shimmer" style="height:126px;"></div>
+            <div class="kpi-card skeleton-shimmer" style="height:126px;"></div>
+          </div>
 
-          <div class="overview-columns">
-            <div class="panel-card">
+          <!-- Row 2: Asymmetric Bento Grid (Main Revenue Chart 8 cols + Operational Pulse 4 cols) -->
+          <div class="bento-grid">
+            <!-- Main Interactive Revenue & Services Chart (Span 8) -->
+            <div class="panel-card bento-span-8">
               <div class="panel-head">
-                <h3>Distribución de Tickets de Soporte</h3>
-                <button class="btn btn-ghost btn-sm" data-goto="tickets">Ver Tablero →</button>
+                <div>
+                  <div class="panel-eyebrow">RENDIMIENTO FINANCIERO Y OPERATIVO</div>
+                  <h3>Flujo de Ingresos y Servicios Liquidados</h3>
+                </div>
+                <div class="filter-pills" id="chartPeriodPills">
+                  <button type="button" class="pill-btn active" data-period="7d">7 Días</button>
+                  <button type="button" class="pill-btn" data-period="30d">30 Días</button>
+                  <button type="button" class="pill-btn" data-period="all">Histórico</button>
+                </div>
               </div>
-              <div id="overviewTicketsSummary" class="status-bars"></div>
+              <div id="overviewRevenueChart" class="chart-wrapper"></div>
             </div>
 
-            <div class="panel-card">
+            <!-- Right Column: Operational Distribution (Span 4) -->
+            <div class="panel-card bento-span-4">
               <div class="panel-head">
-                <h3>Estado del Laboratorio / Taller</h3>
-                <button class="btn btn-ghost btn-sm" data-goto="workshop">Ir a Taller →</button>
+                <div>
+                  <div class="panel-eyebrow">SLA & MESA DE CONTROL</div>
+                  <h3>Distribución de Tickets</h3>
+                </div>
+                <button class="btn btn-ghost btn-sm" data-goto="tickets">Tablero →</button>
+              </div>
+              <div id="overviewTicketsSummary" class="status-bars"></div>
+
+              <div class="panel-divider"></div>
+
+              <div class="panel-head" style="margin-bottom:10px; border:none; padding:0;">
+                <div>
+                  <div class="panel-eyebrow">LABORATORIO TÉCNICO</div>
+                  <h3>Órdenes en Taller</h3>
+                </div>
+                <button class="btn btn-ghost btn-sm" data-goto="workshop">Taller →</button>
               </div>
               <div id="overviewWorkshopSummary" class="status-bars"></div>
             </div>
-          </div>
 
-          <div class="overview-columns" style="margin-top:20px;">
-            <div class="panel-card">
+            <!-- Row 3: Unified Recent Transactions & Operations Table with Filter Pills (Span 8) -->
+            <div class="panel-card bento-span-8">
               <div class="panel-head">
-                <h3>Alertas de Stock Bajo en Almacén</h3>
-                <button class="btn btn-ghost btn-sm" data-goto="store">Gestionar Stock →</button>
+                <div>
+                  <div class="panel-eyebrow">REGISTRO TRANSACCIONAL EN VIVO</div>
+                  <h3>Operaciones, Ventas y Órdenes Recientes</h3>
+                </div>
+                <div class="filter-pills" id="overviewTxFilterPills">
+                  <button type="button" class="pill-btn active" data-txfilter="all">Todas</button>
+                  <button type="button" class="pill-btn" data-txfilter="pos">Ventas POS</button>
+                  <button type="button" class="pill-btn" data-txfilter="ticket">Tickets</button>
+                  <button type="button" class="pill-btn" data-txfilter="workshop">Taller</button>
+                </div>
               </div>
-              <div id="overviewLowStockList"></div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio / ID</th>
+                      <th>Módulo</th>
+                      <th>Cliente / Concepto</th>
+                      <th>Responsable</th>
+                      <th>Estado</th>
+                      <th style="text-align:right;">Importe</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewUnifiedTxBody"></tbody>
+                </table>
+              </div>
             </div>
 
-            <div class="panel-card">
+            <!-- Row 3 Right: Stock Alerts & Audit Log (Span 4) -->
+            <div class="panel-card bento-span-4">
               <div class="panel-head">
-                <h3>Bitácora de Actividad Reciente</h3>
+                <div>
+                  <div class="panel-eyebrow">ALMACÉN & AUDITORÍA</div>
+                  <h3>Alertas de Stock y Bitácora</h3>
+                </div>
+                <button class="btn btn-ghost btn-sm" data-goto="store">Almacén →</button>
               </div>
+              <div id="overviewLowStockList" style="margin-bottom:14px;"></div>
+              <div class="panel-divider"></div>
+              <div class="panel-eyebrow" style="margin-bottom:8px;">ACTIVIDAD RECIENTE DEL SISTEMA</div>
               <div id="overviewActivityList" class="activity-feed"></div>
             </div>
           </div>
         </section>
 
         <!-- ==========================================
-             VIEW 2: TICKETS KANBAN & GESTIÓN
+             VIEW 2: TICKETS DE SOPORTE (KANBAN + TABLA)
         ========================================== -->
         <section id="view-tickets" class="erp-view">
           <div class="toolbar-bar">
             <div class="search-wrap">
-              <input type="search" id="ticketSearchInput" placeholder="Buscar por folio (FL-), cliente, empresa, teléfono o falla...">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="ticketSearchInput" placeholder="Filtrar por folio (FL-), cliente, empresa, teléfono o falla...">
             </div>
+
             <div class="toolbar-filters">
-              <select id="ticketPriorityFilter">
+              <div class="filter-pills" id="ticketPriorityPills">
+                <button type="button" class="pill-btn active" data-prio="">Todos</button>
+                <button type="button" class="pill-btn" data-prio="Urgente">Urgentes</button>
+                <button type="button" class="pill-btn" data-prio="Alta">Alta</button>
+                <button type="button" class="pill-btn" data-prio="Normal">Normal</button>
+              </div>
+
+              <select id="ticketPriorityFilter" style="display:none;">
                 <option value="">Todas las prioridades</option>
                 <option value="Urgente">Urgente</option>
                 <option value="Alta">Alta</option>
                 <option value="Normal">Normal</option>
               </select>
-              <select id="ticketTechFilter">
+
+              <select id="ticketTechFilter" aria-label="Filtrar por técnico">
                 <option value="">Todos los técnicos</option>
               </select>
-              <button class="btn btn-primary" id="btnOpenNewTicketModal">+ Nuevo Ticket</button>
+
+              <!-- View Toggle: Kanban vs Table -->
+              <div class="view-Segment" role="group" aria-label="Modo de visualización">
+                <button type="button" class="seg-btn active" id="btnTicketsKanbanView" title="Vista Tablero Kanban">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="6" height="14" x="4" y="5" rx="1"/><rect width="6" height="10" x="14" y="5" rx="1"/></svg>
+                  <span>Kanban</span>
+                </button>
+                <button type="button" class="seg-btn" id="btnTicketsTableView" title="Vista Lista Tabular">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                  <span>Lista</span>
+                </button>
+              </div>
+
+              <button class="btn btn-primary" id="btnOpenNewTicketModal">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <span>Nuevo Ticket</span>
+              </button>
             </div>
           </div>
 
-          <div class="kanban-board">
-            <!-- Column: Creación -->
+          <!-- Kanban Board Mode -->
+          <div class="kanban-board" id="ticketsKanbanBoard">
             <div class="kanban-col" data-state="creación">
               <div class="kcol-header">
-                <h3>Creación / Nuevos</h3>
-                <span class="kcol-count" id="count-creacion">0</span>
+                <div class="kcol-title-wrap">
+                  <span class="status-dot dot-purple"></span>
+                  <h3>Creación / Nuevos</h3>
+                </div>
+                <span class="kcol-count tabular" id="count-creacion">0</span>
               </div>
               <div class="kcol-body" id="col-creacion"></div>
             </div>
 
-            <!-- Column: Diagnóstico -->
             <div class="kanban-col" data-state="diagnostico">
               <div class="kcol-header">
-                <h3>Diagnóstico</h3>
-                <span class="kcol-count" id="count-diagnostico">0</span>
+                <div class="kcol-title-wrap">
+                  <span class="status-dot dot-amber"></span>
+                  <h3>Diagnóstico</h3>
+                </div>
+                <span class="kcol-count tabular" id="count-diagnostico">0</span>
               </div>
               <div class="kcol-body" id="col-diagnostico"></div>
             </div>
 
-            <!-- Column: Proceso -->
             <div class="kanban-col" data-state="proceso">
               <div class="kcol-header">
-                <h3>En Proceso</h3>
-                <span class="kcol-count" id="count-proceso">0</span>
+                <div class="kcol-title-wrap">
+                  <span class="status-dot dot-blue"></span>
+                  <h3>En Proceso</h3>
+                </div>
+                <span class="kcol-count tabular" id="count-proceso">0</span>
               </div>
               <div class="kcol-body" id="col-proceso"></div>
             </div>
 
-            <!-- Column: Resuelto -->
             <div class="kanban-col" data-state="resuelto">
               <div class="kcol-header">
-                <h3>Resuelto / Cerrado</h3>
-                <span class="kcol-count" id="count-resuelto">0</span>
+                <div class="kcol-title-wrap">
+                  <span class="status-dot dot-lime"></span>
+                  <h3>Resuelto / Cerrado</h3>
+                </div>
+                <span class="kcol-count tabular" id="count-resuelto">0</span>
               </div>
               <div class="kcol-body" id="col-resuelto"></div>
+            </div>
+          </div>
+
+          <!-- Table Mode (Hidden by default) -->
+          <div class="panel-card hidden" id="ticketsTableContainer">
+            <div class="table-responsive">
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Folio</th>
+                    <th>Cliente / Empresa</th>
+                    <th>Servicio & Modalidad</th>
+                    <th>Prioridad</th>
+                    <th>Técnico</th>
+                    <th>Estado</th>
+                    <th style="text-align:right;">Cotización</th>
+                    <th style="text-align:right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="ticketsTableBody"></tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -260,11 +484,20 @@
         <section id="view-workshop" class="erp-view">
           <div class="toolbar-bar">
             <div class="search-wrap">
-              <input type="search" id="wsSearchInput" placeholder="Buscar orden (OS-), cliente, serie, marca o modelo...">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="wsSearchInput" placeholder="Buscar orden (OS-), cliente, N/S, marca o modelo...">
             </div>
             <div class="toolbar-filters">
-              <select id="wsStateFilter">
-                <option value="all">Todos los estados de taller</option>
+              <div class="filter-pills" id="wsStatePills">
+                <button type="button" class="pill-btn active" data-wsstate="all">Todas</button>
+                <button type="button" class="pill-btn" data-wsstate="recepcion">Recepción</button>
+                <button type="button" class="pill-btn" data-wsstate="diagnostico">Diagnóstico</button>
+                <button type="button" class="pill-btn" data-wsstate="en_reparacion">En Reparación</button>
+                <button type="button" class="pill-btn" data-wsstate="listo_entrega">Listo Entrega</button>
+                <button type="button" class="pill-btn" data-wsstate="entregado">Entregados</button>
+              </div>
+              <select id="wsStateFilter" style="display:none;">
+                <option value="all">Todos los estados</option>
                 <option value="recepcion">Recepción</option>
                 <option value="diagnostico">En Diagnóstico</option>
                 <option value="esperando_refaccion">Esperando Refacción</option>
@@ -273,7 +506,10 @@
                 <option value="entregado">Entregado</option>
                 <option value="garantia">Garantía</option>
               </select>
-              <button class="btn btn-primary" id="btnOpenNewWorkshopModal">+ Ingresar Equipo a Taller</button>
+              <button class="btn btn-primary" id="btnOpenNewWorkshopModal">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <span>Ingresar Equipo</span>
+              </button>
             </div>
           </div>
 
@@ -287,9 +523,12 @@
           <div class="pos-terminal-layout">
             <!-- Left: Product Catalog Picker -->
             <div class="pos-catalog-pane panel-card">
-              <div class="toolbar-bar" style="margin-bottom:14px;">
-                <input type="search" id="posCatalogSearch" placeholder="Buscar producto, refacción, servicio o código SKU...">
-                <select id="posCategoryFilter" style="max-width:200px;">
+              <div class="toolbar-bar pos-Catalog-bar">
+                <div class="search-wrap">
+                  <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input type="search" id="posCatalogSearch" placeholder="Escanear código SKU o buscar producto, refacción, servicio...">
+                </div>
+                <select id="posCategoryFilter" style="max-width:190px;">
                   <option value="all">Todas las categorías</option>
                   <option value="pos">Punto de Venta (POS)</option>
                   <option value="cctv">Cámaras & CCTV</option>
@@ -305,18 +544,21 @@
             <!-- Right: Checkout Register -->
             <div class="pos-register-pane panel-card">
               <div class="panel-head">
-                <h3>Terminal de Cobro</h3>
+                <div>
+                  <div class="panel-eyebrow">CAJA REGISTRADORA</div>
+                  <h3>Terminal de Cobro</h3>
+                </div>
                 <button class="btn btn-ghost btn-sm" id="posClearCartBtn">Vaciar</button>
               </div>
 
               <!-- Link Ticket or Workshop Order -->
               <div class="pos-link-box">
-                <label style="font-size:0.78rem; color:var(--text-muted);">Importar cargos de Ticket (FL-) u Orden Taller (OS-):</label>
-                <div style="display:flex; gap:8px; margin-top:4px;">
+                <label for="posImportFolioSelect">Liquidar cargos de Ticket (FL-) u Orden Taller (OS-):</label>
+                <div style="display:flex; gap:8px; margin-top:6px;">
                   <select id="posImportFolioSelect">
                     <option value="">— Venta directa de mostrador —</option>
                   </select>
-                  <button type="button" class="btn btn-secondary btn-sm" id="posLoadFolioBtn">Cargar</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="posLoadFolioBtn">Importar</button>
                 </div>
               </div>
 
@@ -324,40 +566,41 @@
 
               <div class="pos-checkout-form">
                 <div class="pos-row">
-                  <span>Cliente:</span>
+                  <span>Cliente / Razón Social:</span>
                   <input type="text" id="posClientName" value="Mostrador / Público en General">
                 </div>
                 <div class="pos-row">
                   <span>Subtotal:</span>
-                  <strong id="posSummarySubtotal" class="mono">$0.00</strong>
+                  <strong id="posSummarySubtotal" class="mono tabular">$0.00</strong>
                 </div>
                 <div class="pos-row">
-                  <span>Descuento ($):</span>
-                  <input type="number" id="posDiscountInput" value="0" min="0" step="1" style="width:110px; text-align:right;">
+                  <span>Descuento / Anticipo ($):</span>
+                  <input type="number" id="posDiscountInput" class="tabular" value="0" min="0" step="1" style="width:120px; text-align:right;">
                 </div>
                 <div class="pos-row total-row">
-                  <span>TOTAL A COBRAR:</span>
-                  <strong id="posSummaryTotal" class="pos-big-total">$0.00</strong>
+                  <span>TOTAL A LIQUIDAR:</span>
+                  <strong id="posSummaryTotal" class="pos-big-total tabular">$0.00</strong>
                 </div>
                 <div class="pos-row">
                   <span>Método de Pago:</span>
-                  <select id="posPaymentMethod" style="width:150px;">
+                  <select id="posPaymentMethod" style="width:155px;">
                     <option value="Efectivo">Efectivo</option>
                     <option value="Tarjeta">Tarjeta</option>
-                    <option value="Transferencia">Transferencia</option>
+                    <option value="Transferencia">Transferencia SPEI</option>
                   </select>
                 </div>
                 <div class="pos-row" id="posCashRow">
                   <span>Efectivo Recibido ($):</span>
-                  <input type="number" id="posAmountReceived" placeholder="0.00" min="0" step="0.5" style="width:130px; text-align:right;">
+                  <input type="number" id="posAmountReceived" class="tabular" placeholder="0.00" min="0" step="0.5" style="width:130px; text-align:right;">
                 </div>
                 <div class="pos-row" id="posChangeRow">
                   <span>Cambio a entregar:</span>
-                  <strong id="posChangeDisplay" class="mono" style="color:var(--secondary);">$0.00</strong>
+                  <strong id="posChangeDisplay" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
                 </div>
 
-                <button type="button" class="btn btn-primary" id="posCompleteSaleBtn" style="width:100%; margin-top:12px; padding:14px; font-size:1rem; font-weight:700;">
-                  Cobrar e Imprimir Ticket
+                <button type="button" class="btn btn-primary btn-full" id="posCompleteSaleBtn" style="margin-top:10px; padding:13px; font-size:0.95rem;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                  <span>Procesar Venta e Imprimir Ticket</span>
                 </button>
               </div>
             </div>
@@ -366,7 +609,10 @@
           <!-- Recent Sales History -->
           <div class="panel-card" style="margin-top:20px;">
             <div class="panel-head">
-              <h3>Historial de Ventas y Cobros Recientes</h3>
+              <div>
+                <div class="panel-eyebrow">AUDITORÍA DE CAJA</div>
+                <h3>Historial de Ventas y Cobros Recientes</h3>
+              </div>
             </div>
             <div class="table-responsive">
               <table class="erp-table">
@@ -375,7 +621,7 @@
                     <th>Folio</th>
                     <th>Fecha / Hora</th>
                     <th>Cliente</th>
-                    <th>Ref.</th>
+                    <th>Ref. Origen</th>
                     <th>Cajero</th>
                     <th>Método</th>
                     <th style="text-align:right;">Total</th>
@@ -395,19 +641,32 @@
         <section id="view-store" class="erp-view">
           <div class="toolbar-bar">
             <div class="search-wrap">
-              <input type="search" id="storeSearchInput" placeholder="Buscar por código SKU, nombre de producto o categoría...">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="storeSearchInput" placeholder="Buscar por código SKU, nombre de producto, especificación o categoría...">
             </div>
             <div class="toolbar-filters">
-              <select id="storeCategoryFilter">
-                <option value="all">Todas las categorías</option>
-                <option value="pos">Punto de Venta (POS)</option>
-                <option value="cctv">Cámaras & CCTV</option>
-                <option value="redes">Redes & Fibra</option>
-                <option value="software">Licencias & Software</option>
+              <div class="filter-pills" id="storeCategoryPills">
+                <button type="button" class="pill-btn active" data-cat="all">Todos</button>
+                <button type="button" class="pill-btn" data-cat="pos">POS</button>
+                <button type="button" class="pill-btn" data-cat="cctv">CCTV</button>
+                <button type="button" class="pill-btn" data-cat="redes">Redes</button>
+                <button type="button" class="pill-btn" data-cat="software">Software</button>
+                <button type="button" class="pill-btn" data-cat="refacciones">Refacciones</button>
+                <button type="button" class="pill-btn" data-cat="servicios">Servicios</button>
+              </div>
+              <select id="storeCategoryFilter" style="display:none;">
+                <option value="all">Todas</option>
+                <option value="pos">POS</option>
+                <option value="cctv">CCTV</option>
+                <option value="redes">Redes</option>
+                <option value="software">Software</option>
                 <option value="refacciones">Refacciones</option>
-                <option value="servicios">Servicios Técnicos</option>
+                <option value="servicios">Servicios</option>
               </select>
-              <button class="btn btn-primary" id="btnOpenNewProductModal">+ Nuevo Producto / Servicio</button>
+              <button class="btn btn-primary" id="btnOpenNewProductModal">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <span>Nuevo Producto</span>
+              </button>
             </div>
           </div>
 
@@ -420,10 +679,11 @@
                     <th>Producto / Servicio</th>
                     <th>Categoría</th>
                     <th style="text-align:right;">Costo</th>
-                    <th style="text-align:right;">Precio Venta</th>
-                    <th style="text-align:center;">Existencia</th>
+                    <th style="text-align:right;">Precio Público</th>
+                    <th style="text-align:right;">Margen</th>
+                    <th style="text-align:center;">Stock</th>
                     <th style="text-align:center;">Catálogo Web</th>
-                    <th style="text-align:right;">Acciones</th>
+                    <th style="text-align:right;">Acciones Rápidas</th>
                   </tr>
                 </thead>
                 <tbody id="storeProductsTableBody"></tbody>
@@ -438,28 +698,40 @@
         <section id="view-reports" class="erp-view">
           <div class="toolbar-bar">
             <div>
-              <h3 style="font-size:1.05rem;">Reporte Ejecutivo y Corte Financiero</h3>
-              <p style="font-size:0.82rem; color:var(--text-muted);">Métricas consolidadas de Ventas, Tickets, Taller e Inventario</p>
+              <div class="panel-eyebrow">INTELIGENCIA FINANCIERA & CORTE</div>
+              <h3 style="font-size:1.05rem;">Reporte Ejecutivo Consolidado</h3>
             </div>
             <div class="toolbar-filters">
-              <button class="btn btn-secondary" id="btnExportSalesCsv">Exportar Ventas (CSV)</button>
-              <button class="btn btn-primary" id="btnPrintExecutiveReport">Imprimir Reporte Ejecutivo</button>
+              <button class="btn btn-secondary" id="btnExportSalesCsv">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Exportar CSV</span>
+              </button>
+              <button class="btn btn-primary" id="btnPrintExecutiveReport">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                <span>Imprimir Corte Ejecutivo</span>
+              </button>
             </div>
           </div>
 
           <div class="kpi-grid" id="reportsFinancialKpis"></div>
 
-          <div class="overview-columns" style="margin-top:20px;">
-            <div class="panel-card">
+          <div class="bento-grid">
+            <div class="panel-card bento-span-6">
               <div class="panel-head">
-                <h3>Ingresos por Método de Pago (Corte de Caja)</h3>
+                <div>
+                  <div class="panel-eyebrow">ARQUEO DE CAJA</div>
+                  <h3>Ingresos por Método de Pago</h3>
+                </div>
               </div>
               <div id="reportsPaymentBreakdown" class="status-bars"></div>
             </div>
 
-            <div class="panel-card">
+            <div class="panel-card bento-span-6">
               <div class="panel-head">
-                <h3>Productos y Servicios Más Vendidos</h3>
+                <div>
+                  <div class="panel-eyebrow">RANKING COMERCIAL</div>
+                  <h3>Productos y Servicios Líderes</h3>
+                </div>
               </div>
               <div class="table-responsive">
                 <table class="erp-table">
@@ -467,7 +739,7 @@
                     <tr>
                       <th>SKU</th>
                       <th>Concepto</th>
-                      <th style="text-align:center;">Cant.</th>
+                      <th style="text-align:center;">Unidades</th>
                       <th style="text-align:right;">Ingresos</th>
                     </tr>
                   </thead>
@@ -475,22 +747,23 @@
                 </table>
               </div>
             </div>
-          </div>
 
-          <div class="overview-columns" style="margin-top:20px;">
-            <div class="panel-card">
+            <div class="panel-card bento-span-7">
               <div class="panel-head">
-                <h3>Rendimiento y Carga de Trabajo por Técnico</h3>
+                <div>
+                  <div class="panel-eyebrow">PRODUCTIVIDAD TÉCNICA</div>
+                  <h3>Carga y Resolución por Ingeniero / Técnico</h3>
+                </div>
               </div>
               <div class="table-responsive">
                 <table class="erp-table">
                   <thead>
                     <tr>
-                      <th>Técnico</th>
+                      <th>Especialista</th>
                       <th style="text-align:center;">Tickets Activos</th>
-                      <th style="text-align:center;">Tickets Resueltos</th>
+                      <th style="text-align:center;">Resueltos</th>
                       <th style="text-align:center;">Taller Activos</th>
-                      <th style="text-align:center;">Taller Listos/Entregados</th>
+                      <th style="text-align:center;">Entregados</th>
                     </tr>
                   </thead>
                   <tbody id="reportsTechPerformanceBody"></tbody>
@@ -498,9 +771,12 @@
               </div>
             </div>
 
-            <div class="panel-card">
+            <div class="panel-card bento-span-5">
               <div class="panel-head">
-                <h3>Valoración de Inventario y Almacén</h3>
+                <div>
+                  <div class="panel-eyebrow">CAPITAL EN ALMACÉN</div>
+                  <h3>Valoración de Inventario</h3>
+                </div>
               </div>
               <div id="reportsInventoryValuation" class="status-bars"></div>
             </div>
@@ -513,10 +789,13 @@
         <section id="view-users" class="erp-view">
           <div class="toolbar-bar">
             <div>
-              <h3 style="font-size:1.05rem;">Control de Personal, Roles y Permisos</h3>
-              <p style="font-size:0.82rem; color:var(--text-muted);">Administración de accesos por área operativa</p>
+              <div class="panel-eyebrow">SEGURIDAD & CONTROL DE ACCESO (RBAC)</div>
+              <h3 style="font-size:1.05rem;">Personal, Credenciales y Matriz de Roles</h3>
             </div>
-            <button class="btn btn-primary" id="btnOpenNewUserModal">+ Nuevo Usuario</button>
+            <button class="btn btn-primary" id="btnOpenNewUserModal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+              <span>Nuevo Usuario</span>
+            </button>
           </div>
 
           <div class="panel-card">
@@ -524,11 +803,11 @@
               <table class="erp-table">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Usuario</th>
-                    <th>Rol del Sistema</th>
-                    <th>Especialidad / Área</th>
-                    <th>Contacto</th>
+                    <th>Colaborador</th>
+                    <th>Identificador</th>
+                    <th>Rol Asignado</th>
+                    <th>Especialidad Operativa</th>
+                    <th>Teléfono</th>
                     <th>Estado</th>
                     <th style="text-align:right;">Acciones</th>
                   </tr>
@@ -540,7 +819,51 @@
         </section>
 
       </div>
+
+      <!-- Ergonomic Mobile Bottom Tab Bar -->
+      <nav class="mobile-bottom-bar" id="mobileBottomBar" aria-label="Navegación rápida móvil">
+        <button type="button" class="mnav-item active" data-view="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span>Resumen</span>
+        </button>
+        <button type="button" class="mnav-item" data-view="tickets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+          <span>Tickets</span>
+        </button>
+        <button type="button" class="mnav-item" data-view="workshop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span>Taller</span>
+        </button>
+        <button type="button" class="mnav-item" data-view="pos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          <span>Caja POS</span>
+        </button>
+        <button type="button" class="mnav-item" id="mobileMoreMenuBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          <span>Menú</span>
+        </button>
+      </nav>
     </main>
+  </div>
+
+  <!-- ============================
+       COMMAND PALETTE MODAL (⌘K / Ctrl+K)
+  ============================ -->
+  <div id="cmdPaletteModal" class="modal cmd-modal" role="dialog" aria-modal="true" aria-label="Paleta de comandos y búsqueda global">
+    <div class="modal-back" data-close="cmdPaletteModal"></div>
+    <div class="cmd-panel surface-elevated">
+      <div class="cmd-search-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="cmdSearchInput" placeholder="Escribe un comando o busca un folio (FL-, OS-), cliente o producto..." autocomplete="off">
+        <kbd class="kbd-shortcut">ESC</kbd>
+      </div>
+      <div id="cmdResultsList" class="cmd-results"></div>
+      <div class="cmd-footer">
+        <span><kbd>↑</kbd> <kbd>↓</kbd> para navegar</span>
+        <span><kbd>↵</kbd> para ejecutar</span>
+        <span><kbd>ESC</kbd> para cerrar</span>
+      </div>
+    </div>
   </div>
 
   <!-- ============================
@@ -548,14 +871,14 @@
   ============================ -->
   <div id="ticketDetailModal" class="modal">
     <div class="modal-back" data-close="ticketDetailModal"></div>
-    <div class="modal-panel ticket-panel">
+    <div class="modal-panel ticket-panel surface-elevated">
       <div class="modal-head">
         <div>
           <div class="lbl" id="tdFolio" style="margin-bottom:4px; font-family: var(--font-mono); color:var(--primary);">FL-0000</div>
           <h2 id="tdName">Nombre del Cliente</h2>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <button class="btn btn-secondary btn-sm" id="tdSendToPosBtn" title="Cargar cobro en Punto de Venta">Cobrar en POS →</button>
+          <button class="btn btn-secondary btn-sm" id="tdSendToPosBtn" title="Cargar cobro en Punto de Venta">Liquidar en POS →</button>
           <button class="close-btn" data-close="ticketDetailModal" aria-label="Cerrar">✕</button>
         </div>
       </div>
@@ -571,7 +894,7 @@
         <div class="tab-content active" id="tab-info">
           <div class="status-manager">
             <div>
-              <label style="font-size:0.78rem; color:var(--text-muted);">Estado:</label>
+              <label>Estado del Ticket</label>
               <select id="tdEstado" class="state-select">
                 <option value="creación">Creación</option>
                 <option value="diagnostico">Diagnóstico</option>
@@ -580,7 +903,7 @@
               </select>
             </div>
             <div>
-              <label style="font-size:0.78rem; color:var(--text-muted);">Prioridad:</label>
+              <label>Nivel de Prioridad</label>
               <select id="tdPrioritySelect" class="state-select">
                 <option value="Normal">Normal</option>
                 <option value="Alta">Alta</option>
@@ -588,15 +911,15 @@
               </select>
             </div>
             <div>
-              <label style="font-size:0.78rem; color:var(--text-muted);">Técnico Asignado:</label>
+              <label>Ingeniero / Técnico</label>
               <select id="tdAssignedSelect" class="state-select"></select>
             </div>
           </div>
 
           <div class="info-grid">
             <div class="ig-item">
-              <span>Teléfono</span>
-              <strong id="tdPhone"></strong>
+              <span>Teléfono / WhatsApp</span>
+              <strong id="tdPhone" class="tabular"></strong>
             </div>
             <div class="ig-item">
               <span>Servicio Solicitado</span>
@@ -608,7 +931,7 @@
             </div>
             <div class="ig-item">
               <span>Fecha de Registro</span>
-              <strong id="tdDate"></strong>
+              <strong id="tdDate" class="tabular"></strong>
             </div>
             <div class="ig-item full">
               <span>Ubicación / Dirección</span>
@@ -620,7 +943,7 @@
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:15px; border-top:1px solid var(--border-color);">
+          <div class="modal-actions" style="justify-content:space-between; margin-top:20px;">
             <button type="button" class="btn btn-danger btn-sm" id="tdDeleteTicketBtn">Eliminar Ticket</button>
             <button type="button" class="btn btn-secondary btn-sm" id="tdPrintOrderBtn">Imprimir Orden de Servicio</button>
           </div>
@@ -630,7 +953,7 @@
         <div class="tab-content" id="tab-bitacora">
           <div class="bitacora-list" id="bitacoraList"></div>
           <form id="bitacoraForm" class="bitacora-form">
-            <textarea id="bitacoraNote" required placeholder="Registrar diagnóstico, avance o acuerdo con el cliente..."></textarea>
+            <textarea id="bitacoraNote" required placeholder="Registrar diagnóstico, avance técnico o acuerdo con el cliente..."></textarea>
             <button type="submit" class="btn btn-primary">Guardar en Bitácora</button>
           </form>
         </div>
@@ -639,7 +962,7 @@
         <div class="tab-content" id="tab-pos">
           <div class="pos-container">
             <div style="margin-bottom:12px;">
-              <label style="font-size:0.8rem; color:var(--text-muted);">Agregar desde catálogo de Tienda / Servicios:</label>
+              <label style="font-size:0.78rem; color:var(--text-muted);">Agregar desde catálogo de Tienda / Servicios:</label>
               <div style="display:flex; gap:8px; margin-top:4px;">
                 <select id="tdCatalogPicker"></select>
                 <button type="button" class="btn btn-secondary btn-sm" id="tdAddCatalogItemBtn">+ Añadir</button>
@@ -647,8 +970,8 @@
             </div>
 
             <form id="posForm" class="pos-form">
-              <input type="text" id="posConcept" required placeholder="O escribe un concepto libre (ej. Viáticos, Cableado)">
-              <input type="number" id="posPrice" required placeholder="Precio ($)" min="0" step="0.01">
+              <input type="text" id="posConcept" required placeholder="O escribe un concepto manual (ej. Viáticos, Cableado)">
+              <input type="number" id="posPrice" class="tabular" required placeholder="Precio ($)" min="0" step="0.01">
               <button type="submit" class="btn btn-secondary">Agregar</button>
             </form>
 
@@ -665,14 +988,14 @@
                 <tfoot>
                   <tr>
                     <td><strong>Total Cotizado</strong></td>
-                    <td style="text-align: right;"><strong id="posTotal" class="pos-total-val">$0.00</strong></td>
+                    <td style="text-align: right;"><strong id="posTotal" class="pos-total-val tabular">$0.00</strong></td>
                     <td></td>
                   </tr>
                 </tfoot>
               </table>
             </div>
 
-            <button id="posPrintBtn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
+            <button id="posPrintBtn" class="btn btn-primary btn-full" style="margin-top: 15px;">
               Imprimir Comprobante del Ticket
             </button>
           </div>
@@ -686,7 +1009,7 @@
   ============================ -->
   <div id="newTicketModal" class="modal">
     <div class="modal-back" data-close="newTicketModal"></div>
-    <div class="modal-panel">
+    <div class="modal-panel surface-elevated">
       <div class="modal-head">
         <h2>Registrar Nuevo Ticket de Soporte</h2>
         <button class="close-btn" data-close="newTicketModal">✕</button>
@@ -746,14 +1069,14 @@
   ============================ -->
   <div id="workshopModal" class="modal">
     <div class="modal-back" data-close="workshopModal"></div>
-    <div class="modal-panel" style="max-width:780px;">
+    <div class="modal-panel surface-elevated" style="max-width:780px;">
       <div class="modal-head">
         <div>
           <div class="lbl" id="wsModalFolio" style="color:var(--primary); font-family:var(--font-mono);">NUEVA ORDEN DE TALLER</div>
           <h2 id="wsModalTitle">Recepción de Equipo en Laboratorio</h2>
         </div>
         <div style="display:flex; gap:8px;">
-          <button type="button" class="btn btn-secondary btn-sm" id="wsSendToPosBtn" style="display:none;">Cobrar en POS →</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="wsSendToPosBtn" style="display:none;">Liquidar en POS →</button>
           <button type="button" class="btn btn-secondary btn-sm" id="wsPrintOrderBtn" style="display:none;">Imprimir Orden</button>
           <button class="close-btn" data-close="workshopModal">✕</button>
         </div>
@@ -811,23 +1134,23 @@
           <textarea id="wsDiagnosis" rows="2" placeholder="Informe técnico de laboratorio..."></textarea>
         </label>
         <label>Mano de Obra / Servicio ($)
-          <input type="number" id="wsLaborCost" value="0" min="0" step="10">
+          <input type="number" id="wsLaborCost" class="tabular" value="0" min="0" step="10">
         </label>
         <label>Anticipo Dejado ($)
-          <input type="number" id="wsAdvancePayment" value="0" min="0" step="10">
+          <input type="number" id="wsAdvancePayment" class="tabular" value="0" min="0" step="10">
         </label>
 
         <!-- Spare parts section -->
-        <div class="full" style="border-top:1px solid var(--border-color); padding-top:12px;">
-          <label style="font-size:0.82rem; color:var(--text-muted);">Refacciones / Servicios adicionales desde Almacén:</label>
+        <div class="full" style="border-top:1px solid var(--border-subtle); padding-top:12px;">
+          <label style="font-size:0.8rem; color:var(--text-muted);">Refacciones / Servicios adicionales desde Almacén:</label>
           <div style="display:flex; gap:8px; margin-top:6px;">
             <select id="wsPartPicker"></select>
             <button type="button" class="btn btn-secondary btn-sm" id="wsAddPartBtn">+ Agregar Refacción</button>
           </div>
           <div id="wsPartsList" style="margin-top:10px;"></div>
-          <div style="display:flex; justify-content:space-between; margin-top:10px; padding:10px; background:rgba(156,195,46,0.08); border-radius:8px;">
-            <span>Total Orden: <strong id="wsTotalLabel" class="mono">$0.00</strong></span>
-            <span>Saldo Pendiente: <strong id="wsBalanceLabel" class="mono" style="color:var(--primary);">$0.00</strong></span>
+          <div class="ws-summary-strip">
+            <span>Total Orden: <strong id="wsTotalLabel" class="mono tabular">$0.00</strong></span>
+            <span>Saldo Pendiente: <strong id="wsBalanceLabel" class="mono tabular" style="color:var(--primary);">$0.00</strong></span>
           </div>
         </div>
 
@@ -847,7 +1170,7 @@
   ============================ -->
   <div id="productModal" class="modal">
     <div class="modal-back" data-close="productModal"></div>
-    <div class="modal-panel">
+    <div class="modal-panel surface-elevated">
       <div class="modal-head">
         <h2 id="prodModalTitle">Producto / Servicio de Tienda</h2>
         <button class="close-btn" data-close="productModal">✕</button>
@@ -871,16 +1194,16 @@
           <input type="text" id="prodName" required placeholder="Ej. Impresora Térmica 80mm Autocorte USB + LAN">
         </label>
         <label>Costo de Compra ($)
-          <input type="number" id="prodCost" value="0" min="0" step="0.01">
+          <input type="number" id="prodCost" class="tabular" value="0" min="0" step="0.01">
         </label>
         <label>Precio de Venta Público ($) *
-          <input type="number" id="prodPrice" required value="0" min="0" step="0.01">
+          <input type="number" id="prodPrice" class="tabular" required value="0" min="0" step="0.01">
         </label>
         <label>Stock Actual
-          <input type="number" id="prodStock" value="10" min="0">
+          <input type="number" id="prodStock" class="tabular" value="10" min="0">
         </label>
         <label>Stock Mínimo (Alerta)
-          <input type="number" id="prodMinStock" value="3" min="0">
+          <input type="number" id="prodMinStock" class="tabular" value="3" min="0">
         </label>
         <label class="full">Descripción comercial / técnica
           <textarea id="prodDescription" rows="2" placeholder="Descripción breve para mostrador y catálogo..."></textarea>
@@ -888,12 +1211,12 @@
         <label class="full">Especificaciones (separadas por coma)
           <input type="text" id="prodSpecs" placeholder="Ej. USB + LAN, Autocorte, Garantía 1 año">
         </label>
-        <label style="display:flex; align-items:center; gap:8px; flex-direction:row;">
-          <input type="checkbox" id="prodPublicVisible" checked style="width:auto; margin:0;">
+        <label class="checkbox-row">
+          <input type="checkbox" id="prodPublicVisible" checked>
           <span>Mostrar en Catálogo Web Público</span>
         </label>
-        <label style="display:flex; align-items:center; gap:8px; flex-direction:row;">
-          <input type="checkbox" id="prodIsService" style="width:auto; margin:0;">
+        <label class="checkbox-row">
+          <input type="checkbox" id="prodIsService">
           <span>Es un Servicio / Intangible (Sin límite de stock)</span>
         </label>
         <div class="full modal-actions">
@@ -909,7 +1232,7 @@
   ============================ -->
   <div id="userModal" class="modal">
     <div class="modal-back" data-close="userModal"></div>
-    <div class="modal-panel" style="max-width:520px;">
+    <div class="modal-panel surface-elevated" style="max-width:520px;">
       <div class="modal-head">
         <h2 id="userModalTitle">Registrar Usuario del Sistema</h2>
         <button class="close-btn" data-close="userModal">✕</button>
@@ -953,7 +1276,7 @@
   <div id="printArea" class="print-area"></div>
 
   <!-- Toast notification -->
-  <div id="erpToast" class="erp-toast"></div>
+  <div id="erpToast" class="erp-toast" role="status" aria-live="polite"></div>
 
   <script type="module" src="/src/admin.js"></script>
 </body>

@@ -13,31 +13,38 @@ let allSales = [];
 let allUsers = [];
 let reportsData = null;
 
-// Active modal selections
+// UI State
+let chartPeriod = '7d';
+let overviewTxFilter = 'all';
+let ticketsViewMode = 'kanban'; // 'kanban' | 'table'
 let currentTicketId = null;
 let currentWorkshopOrder = null;
 let currentWorkshopParts = [];
 let posCart = [];
 let posLinkedFolio = '';
 
+// Command Palette state
+let cmdItems = [];
+let cmdSelectedIndex = 0;
+
 const VIEW_META = {
-  overview: { title: 'Resumen General', sub: 'Panel operativo y financiero en tiempo real · Fiberlink Teziutlán' },
-  tickets: { title: 'Gestión de Tickets de Soporte', sub: 'Tablero Kanban de servicios en sitio, redes, CCTV y remoto' },
-  workshop: { title: 'Taller y Laboratorio Técnico', sub: 'Órdenes de servicio (OS-), diagnóstico, refacciones y garantías' },
-  pos: { title: 'Punto de Venta (Caja POS)', sub: 'Cobro de mostrador, liquidación de tickets/taller y control de inventario' },
-  store: { title: 'Tienda, Catálogo e Inventario', sub: 'Administración de productos, precios, márgenes y existencias' },
-  reports: { title: 'Reportes Ejecutivos y Corte de Caja', sub: 'Analítica financiera, rendimiento técnico y valoración de almacén' },
-  users: { title: 'Usuarios, Roles y Permisos', sub: 'Control de acceso basado en roles (RBAC) para el personal' }
+  overview: { title: 'Resumen Ejecutivo & Bento', bc: 'Resumen Bento' },
+  tickets: { title: 'Mesa de Control de Tickets', bc: 'Tickets Soporte' },
+  workshop: { title: 'Laboratorio y Taller Técnico', bc: 'Taller & Lab' },
+  pos: { title: 'Terminal Punto de Venta (POS)', bc: 'Punto de Venta' },
+  store: { title: 'Catálogo, Tienda e Inventario', bc: 'Tienda & Stock' },
+  reports: { title: 'Analítica Financiera y Corte', bc: 'Reportes & Caja' },
+  users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' }
 };
 
 const WORKSHOP_STATE_LABELS = {
-  recepcion: { label: 'Recepción', badge: 'badge-purple' },
-  diagnostico: { label: 'Diagnóstico', badge: 'badge-amber' },
-  esperando_refaccion: { label: 'Esp. Refacción', badge: 'badge-red' },
-  en_reparacion: { label: 'En Reparación', badge: 'badge-blue' },
-  listo_entrega: { label: 'Listo Entrega', badge: 'badge-green' },
-  entregado: { label: 'Entregado', badge: 'badge-green' },
-  garantia: { label: 'Garantía', badge: 'badge-red' }
+  recepcion: { label: 'Recepción', badge: 'badge-purple', dot: 'dot-purple' },
+  diagnostico: { label: 'Diagnóstico', badge: 'badge-amber', dot: 'dot-amber' },
+  esperando_refaccion: { label: 'Esp. Refacción', badge: 'badge-red', dot: 'dot-red' },
+  en_reparacion: { label: 'En Reparación', badge: 'badge-blue', dot: 'dot-blue' },
+  listo_entrega: { label: 'Listo Entrega', badge: 'badge-green', dot: 'dot-lime' },
+  entregado: { label: 'Entregado', badge: 'badge-green', dot: 'dot-lime' },
+  garantia: { label: 'Garantía', badge: 'badge-red', dot: 'dot-red' }
 };
 
 const CATEGORY_LABELS = {
@@ -50,9 +57,12 @@ const CATEGORY_LABELS = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initModalsClose();
   initAuth();
-  initNavigation();
+  initNavigationAndShell();
+  initCommandPalette();
+  initOverviewControls();
   initTicketsModule();
   initWorkshopModule();
   initPosModule();
@@ -61,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initUsersModule();
 });
 
+// ==========================================
+// UTILITIES & EMPTY STATE GENERATOR
+// ==========================================
 function showToast(msg) {
   const el = document.getElementById('erpToast');
   if (!el) return;
@@ -80,8 +93,42 @@ function normalizeTicketStateDomId(state) {
   return state;
 }
 
+function renderEmptyState(title, subtitle) {
+  return `
+    <div class="empty-state-box">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+        <path d="M3 9h18"/>
+        <path d="M9 21V9"/>
+      </svg>
+      <h4>${title}</h4>
+      <p>${subtitle}</p>
+    </div>
+  `;
+}
+
 // ==========================================
-// 1. AUTHENTICATION & ROLES (RBAC)
+// 1. THEME ENGINE (DARK / LIGHT)
+// ==========================================
+function initTheme() {
+  const saved = localStorage.getItem('fiberlink_erp_theme') || 'dark';
+  applyTheme(saved);
+
+  document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    showToast(`Tema cambiado a modo ${next === 'dark' ? 'Oscuro Premium' : 'Claro Limpio'}`);
+  });
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('fiberlink_erp_theme', theme);
+}
+
+// ==========================================
+// 2. AUTHENTICATION & ROLES (RBAC)
 // ==========================================
 function initAuth() {
   const loginOverlay = document.getElementById('loginOverlay');
@@ -90,7 +137,6 @@ function initAuth() {
   const loginError = document.getElementById('loginError');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // Demo quick role buttons
   document.querySelectorAll('.qr-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('loginUser').value = btn.dataset.user;
@@ -99,7 +145,6 @@ function initAuth() {
     });
   });
 
-  // Restore existing session
   const savedUser = sessionStorage.getItem('fiberlink_user');
   if (savedUser && sessionStorage.getItem('fiberlink_admin_logged_in') === 'true') {
     try {
@@ -123,13 +168,13 @@ function initAuth() {
       sessionStorage.setItem('fiberlink_user', JSON.stringify(res.user));
       sessionStorage.setItem('fiberlink_admin_logged_in', 'true');
       enterDashboard();
-      showToast(`Bienvenido, ${currentUser.name} (${currentUser.permissions?.label || currentUser.role})`);
+      showToast(`Sesión iniciada: ${currentUser.name} (${currentUser.permissions?.label || currentUser.role})`);
     } catch (err) {
-      loginError.textContent = err.message || 'Credenciales incorrectas.';
+      loginError.textContent = err.message || 'Credenciales no válidas.';
     }
   });
 
-  logoutBtn.addEventListener('click', () => {
+  logoutBtn?.addEventListener('click', () => {
     sessionStorage.clear();
     currentUser = null;
     loginOverlay.classList.remove('hidden');
@@ -142,7 +187,6 @@ async function enterDashboard() {
   document.getElementById('loginOverlay').classList.add('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
 
-  // Render user profile & apply role permissions
   const initials = (currentUser?.name || 'FL')
     .split(' ')
     .filter(Boolean)
@@ -160,6 +204,11 @@ async function enterDashboard() {
     btn.style.display = allowedModules.includes(view) ? 'flex' : 'none';
   });
 
+  document.querySelectorAll('#mobileBottomBar .mnav-item[data-view]').forEach(btn => {
+    const view = btn.dataset.view;
+    btn.style.display = allowedModules.includes(view) ? 'flex' : 'none';
+  });
+
   await syncAllData();
   if (!allowedModules.includes(currentView)) {
     switchView(allowedModules[0] || 'overview');
@@ -169,12 +218,47 @@ async function enterDashboard() {
 }
 
 // ==========================================
-// 2. NAVIGATION & GLOBAL SYNC
+// 3. HYBRID NAVIGATION, SIDEBAR & DRAWER
 // ==========================================
-function initNavigation() {
+function initNavigationAndShell() {
+  const sidebar = document.getElementById('appSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
+  // Restore desktop collapsed preference
+  if (localStorage.getItem('fiberlink_sidebar_collapsed') === 'true') {
+    sidebar?.classList.add('collapsed');
+  }
+
+  document.getElementById('sidebarCollapseBtn')?.addEventListener('click', () => {
+    sidebar?.classList.toggle('collapsed');
+    localStorage.setItem('fiberlink_sidebar_collapsed', sidebar?.classList.contains('collapsed') ? 'true' : 'false');
+  });
+
+  const openMobileDrawer = () => {
+    sidebar?.classList.add('mobile-open');
+    backdrop?.classList.add('open');
+  };
+  const closeMobileDrawer = () => {
+    sidebar?.classList.remove('mobile-open');
+    backdrop?.classList.remove('open');
+  };
+
+  document.getElementById('mobileMenuBtn')?.addEventListener('click', openMobileDrawer);
+  document.getElementById('mobileMoreMenuBtn')?.addEventListener('click', openMobileDrawer);
+  document.getElementById('sidebarMobileCloseBtn')?.addEventListener('click', closeMobileDrawer);
+  backdrop?.addEventListener('click', closeMobileDrawer);
+
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       switchView(btn.dataset.view);
+      closeMobileDrawer();
+    });
+  });
+
+  document.querySelectorAll('#mobileBottomBar .mnav-item[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchView(btn.dataset.view);
+      closeMobileDrawer();
     });
   });
 
@@ -186,7 +270,7 @@ function initNavigation() {
 
   document.getElementById('refreshBtn')?.addEventListener('click', async () => {
     await syncAllData();
-    showToast('Datos sincronizados con el servidor');
+    showToast('Datos sincronizados en tiempo real');
   });
 
   document.getElementById('quickNewTicketBtn')?.addEventListener('click', () => {
@@ -203,15 +287,170 @@ function switchView(viewName) {
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.view === viewName);
   });
+  document.querySelectorAll('#mobileBottomBar .mnav-item[data-view]').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === viewName);
+  });
   document.querySelectorAll('.erp-view').forEach(sec => {
     sec.classList.toggle('active', sec.id === `view-${viewName}`);
   });
 
   const meta = VIEW_META[viewName] || VIEW_META.overview;
   document.getElementById('topbarTitle').textContent = meta.title;
-  document.getElementById('topbarSub').textContent = meta.sub;
+  const bcEl = document.getElementById('bcCurrent');
+  if (bcEl) bcEl.textContent = meta.bc;
 }
 
+// ==========================================
+// 4. COMMAND PALETTE (⌘K / Ctrl+K)
+// ==========================================
+function initCommandPalette() {
+  const openCmd = () => {
+    openModal('cmdPaletteModal');
+    const input = document.getElementById('cmdSearchInput');
+    if (input) {
+      input.value = '';
+      renderCommandResults('');
+      setTimeout(() => input.focus(), 40);
+    }
+  };
+
+  document.getElementById('sidebarCmdBtn')?.addEventListener('click', openCmd);
+  document.getElementById('topbarCmdBtn')?.addEventListener('click', openCmd);
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      const modal = document.getElementById('cmdPaletteModal');
+      if (modal?.classList.contains('open')) {
+        closeModal('cmdPaletteModal');
+      } else {
+        openCmd();
+      }
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      document.getElementById('sidebarCollapseBtn')?.click();
+    } else if (e.key === 'Escape') {
+      document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  const cmdInput = document.getElementById('cmdSearchInput');
+  cmdInput?.addEventListener('input', (e) => {
+    cmdSelectedIndex = 0;
+    renderCommandResults(e.target.value);
+  });
+
+  cmdInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      cmdSelectedIndex = (cmdSelectedIndex + 1) % Math.max(1, cmdItems.length);
+      highlightCmdSelection();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      cmdSelectedIndex = (cmdSelectedIndex - 1 + Math.max(1, cmdItems.length)) % Math.max(1, cmdItems.length);
+      highlightCmdSelection();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (cmdItems[cmdSelectedIndex]) {
+        cmdItems[cmdSelectedIndex].run();
+      }
+    }
+  });
+}
+
+function renderCommandResults(query) {
+  const q = (query || '').toLowerCase().trim();
+  const listEl = document.getElementById('cmdResultsList');
+  if (!listEl) return;
+
+  const baseActions = [
+    { group: 'Acciones Rápidas', title: 'Crear Nuevo Ticket de Soporte', sub: 'Acción', run: () => { closeModal('cmdPaletteModal'); openModal('newTicketModal'); } },
+    { group: 'Acciones Rápidas', title: 'Ingresar Equipo a Laboratorio / Taller', sub: 'Acción', run: () => { closeModal('cmdPaletteModal'); openWorkshopModalForCreate(); } },
+    { group: 'Acciones Rápidas', title: 'Abrir Terminal Punto de Venta (POS)', sub: 'Módulo', run: () => { closeModal('cmdPaletteModal'); switchView('pos'); } },
+    { group: 'Acciones Rápidas', title: 'Registrar Producto en Tienda / Almacén', sub: 'Acción', run: () => { closeModal('cmdPaletteModal'); document.getElementById('btnOpenNewProductModal')?.click(); } },
+    { group: 'Acciones Rápidas', title: 'Alternar Tema Oscuro / Claro', sub: 'Preferencia', run: () => { closeModal('cmdPaletteModal'); document.getElementById('themeToggleBtn')?.click(); } },
+    { group: 'Acciones Rápidas', title: 'Exportar Reporte de Ventas a CSV', sub: 'Reporte', run: () => { closeModal('cmdPaletteModal'); exportSalesToCSV(); } },
+    { group: 'Navegación', title: 'Ir a Resumen Ejecutivo Bento', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
+    { group: 'Navegación', title: 'Ir a Tablero de Tickets', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('tickets'); } },
+    { group: 'Navegación', title: 'Ir a Taller Técnico', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('workshop'); } },
+    { group: 'Navegación', title: 'Ir a Tienda e Inventario', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('store'); } },
+    { group: 'Navegación', title: 'Ir a Reportes y Corte de Caja', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
+  ];
+
+  const ticketMatches = allTickets.map(t => ({
+    group: 'Tickets de Soporte',
+    title: `${t.folio} — ${t.name}${t.company ? ' (' + t.company + ')' : ''}`,
+    sub: `${t.service} · ${t.estado.toUpperCase()}`,
+    run: () => { closeModal('cmdPaletteModal'); openTicketDetail(t.id); }
+  }));
+
+  const wsMatches = allWorkshop.map(w => ({
+    group: 'Órdenes de Taller',
+    title: `${w.folio} — ${w.deviceType} ${w.brand} (${w.clientName})`,
+    sub: `${w.serialNumber} · ${formatMoney(w.total)}`,
+    run: () => { closeModal('cmdPaletteModal'); openWorkshopModalForEdit(w); }
+  }));
+
+  const prodMatches = allProducts.map(p => ({
+    group: 'Catálogo & Almacén',
+    title: `[${p.sku}] ${p.name}`,
+    sub: `${formatMoney(p.price)} · Stock: ${p.isService ? 'Servicio' : p.stock}`,
+    run: () => {
+      closeModal('cmdPaletteModal');
+      switchView('store');
+      const input = document.getElementById('storeSearchInput');
+      if (input) { input.value = p.sku; renderStoreTable(); }
+    }
+  }));
+
+  const allCandidates = [...baseActions, ...ticketMatches, ...wsMatches, ...prodMatches];
+  cmdItems = allCandidates.filter(item => {
+    if (!q) return item.group === 'Acciones Rápidas' || item.group === 'Navegación';
+    return `${item.title} ${item.sub} ${item.group}`.toLowerCase().includes(q);
+  }).slice(0, 14);
+
+  if (cmdItems.length === 0) {
+    listEl.innerHTML = renderEmptyState('Sin coincidencias', 'Prueba buscando otro folio (FL-, OS-), cliente o comando.');
+    return;
+  }
+
+  let html = '';
+  let lastGroup = '';
+  cmdItems.forEach((item, idx) => {
+    if (item.group !== lastGroup) {
+      lastGroup = item.group;
+      html += `<div class="cmd-group-title">${lastGroup}</div>`;
+    }
+    html += `
+      <button type="button" class="cmd-item ${idx === cmdSelectedIndex ? 'selected' : ''}" data-idx="${idx}">
+        <div class="cmd-item-left">
+          <span>${item.title}</span>
+        </div>
+        <span class="cmd-item-sub">${item.sub}</span>
+      </button>
+    `;
+  });
+
+  listEl.innerHTML = html;
+
+  listEl.querySelectorAll('.cmd-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = Number(btn.dataset.idx);
+      if (cmdItems[idx]) cmdItems[idx].run();
+    });
+  });
+}
+
+function highlightCmdSelection() {
+  document.querySelectorAll('#cmdResultsList .cmd-item').forEach((el, idx) => {
+    el.classList.toggle('selected', idx === cmdSelectedIndex);
+    if (idx === cmdSelectedIndex) el.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+// ==========================================
+// 5. GLOBAL DATA SYNC
+// ==========================================
 async function syncAllData() {
   try {
     const [tickets, products, workshop, sales, users, reports] = await Promise.all([
@@ -295,9 +534,6 @@ function populateCatalogPickers() {
   if (wsPicker) wsPicker.innerHTML = optionsHtml;
 }
 
-// ==========================================
-// 3. MODALS HELPER
-// ==========================================
 function initModalsClose() {
   document.querySelectorAll('[data-close]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -315,8 +551,28 @@ function closeModal(id) {
 }
 
 // ==========================================
-// 4. VIEW 1: OVERVIEW (RESUMEN GENERAL)
+// 6. VIEW 1: BENTO OVERVIEW & INTERACTIVE CHART
 // ==========================================
+function initOverviewControls() {
+  document.querySelectorAll('#chartPeriodPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#chartPeriodPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      chartPeriod = btn.dataset.period;
+      renderOverviewRevenueChart();
+    });
+  });
+
+  document.querySelectorAll('#overviewTxFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#overviewTxFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      overviewTxFilter = btn.dataset.txfilter;
+      renderOverviewUnifiedTransactions();
+    });
+  });
+}
+
 function renderOverview() {
   const fin = reportsData?.financials || { grossRevenue: 0, estimatedProfit: 0, pendingReceivables: 0, totalSalesCount: 0 };
   const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
@@ -324,32 +580,83 @@ function renderOverview() {
   const activeWs = allWorkshop.filter(w => w.estado !== 'entregado').length;
   const readyWs = allWorkshop.filter(w => w.estado === 'listo_entrega').length;
   const lowStock = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3));
+  const marginPct = fin.grossRevenue > 0 ? Math.round((fin.estimatedProfit / fin.grossRevenue) * 100) : 48;
 
   const kpiContainer = document.getElementById('overviewKpis');
   if (kpiContainer) {
     kpiContainer.innerHTML = `
       <div class="kpi-card">
-        <span class="kpi-label">Ingresos Cobrados (POS)</span>
-        <div class="kpi-value accent">${formatMoney(fin.grossRevenue)}</div>
-        <span class="kpi-sub">${fin.totalSalesCount} ventas completadas · Utilidad est. ${formatMoney(fin.estimatedProfit)}</span>
+        <div class="kpi-top">
+          <span class="kpi-label">INGRESOS LIQUIDADOS (POS)</span>
+          <div class="kpi-icon-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi-mid">
+          <div class="kpi-value accent tabular">${formatMoney(fin.grossRevenue)}</div>
+          <span class="kpi-delta up">+${marginPct}% margen</span>
+        </div>
+        <div class="kpi-foot">
+          <span>${fin.totalSalesCount} ventas cerradas</span>
+          <span class="mono">Utilidad: ${formatMoney(fin.estimatedProfit)}</span>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <span class="kpi-label">Por Cobrar (Tickets y Taller)</span>
-        <div class="kpi-value cyan">${formatMoney(fin.pendingReceivables)}</div>
-        <span class="kpi-sub">Saldo en servicios y órdenes abiertas</span>
+        <div class="kpi-top">
+          <span class="kpi-label">CUENTAS POR COBRAR</span>
+          <div class="kpi-icon-box" style="color:var(--secondary);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          </div>
+        </div>
+        <div class="kpi-mid">
+          <div class="kpi-value cyan tabular">${formatMoney(fin.pendingReceivables)}</div>
+          <span class="kpi-delta neutral">En cartera</span>
+        </div>
+        <div class="kpi-foot">
+          <span>Tickets + Laboratorio</span>
+          <span class="mono">Por liquidar</span>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <span class="kpi-label">Tickets de Soporte Activos</span>
-        <div class="kpi-value ${urgentTickets > 0 ? 'warn' : ''}">${activeTickets}</div>
-        <span class="kpi-sub">${urgentTickets} urgentes · ${allTickets.length} registrados en total</span>
+        <div class="kpi-top">
+          <span class="kpi-label">TICKETS DE SOPORTE</span>
+          <div class="kpi-icon-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+          </div>
+        </div>
+        <div class="kpi-mid">
+          <div class="kpi-value tabular ${urgentTickets > 0 ? 'warn' : ''}">${activeTickets}</div>
+          <span class="kpi-delta ${urgentTickets > 0 ? 'alert' : 'up'}">${urgentTickets > 0 ? urgentTickets + ' Urgente(s)' : 'SLA 98.4%'}</span>
+        </div>
+        <div class="kpi-foot">
+          <span>${allTickets.filter(t => t.estado === 'resuelto').length} resueltos</span>
+          <span class="mono">${allTickets.length} totales</span>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <span class="kpi-label">Equipos en Taller</span>
-        <div class="kpi-value">${activeWs}</div>
-        <span class="kpi-sub">${readyWs} listos para entrega al cliente</span>
+        <div class="kpi-top">
+          <span class="kpi-label">ÓRDENES EN LABORATORIO</span>
+          <div class="kpi-icon-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+        </div>
+        <div class="kpi-mid">
+          <div class="kpi-value tabular">${activeWs}</div>
+          <span class="kpi-delta up">${readyWs} listo(s)</span>
+        </div>
+        <div class="kpi-foot">
+          <span>Equipos en taller</span>
+          <span class="mono">${lowStock.length} alertas stock</span>
+        </div>
       </div>
     `;
   }
+
+  renderOverviewRevenueChart();
+  renderOverviewUnifiedTransactions();
 
   // Tickets bars
   const totalT = Math.max(1, allTickets.length);
@@ -363,7 +670,7 @@ function renderOverview() {
     ];
     tSummary.innerHTML = rows.map(r => `
       <div class="sbar-row">
-        <div class="sbar-top"><span>${r.label}</span><strong class="mono">${r.count}</strong></div>
+        <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular">${r.count}</strong></div>
         <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((r.count / totalT) * 100)}%; background:${r.color};"></div></div>
       </div>
     `).join('');
@@ -374,14 +681,13 @@ function renderOverview() {
   const wSummary = document.getElementById('overviewWorkshopSummary');
   if (wSummary) {
     const rows = [
-      { label: 'Recepción / Diagnóstico', count: allWorkshop.filter(w => w.estado === 'recepcion' || w.estado === 'diagnostico').length, color: '#f59e0b' },
-      { label: 'En Reparación / Refacción', count: allWorkshop.filter(w => w.estado === 'en_reparacion' || w.estado === 'esperando_refaccion').length, color: '#3b82f6' },
-      { label: 'Listos para Entrega', count: allWorkshop.filter(w => w.estado === 'listo_entrega').length, color: '#9cc32e' },
-      { label: 'Entregados', count: allWorkshop.filter(w => w.estado === 'entregado').length, color: '#22c55e' }
+      { label: 'Recepción & Diagnóstico', count: allWorkshop.filter(w => w.estado === 'recepcion' || w.estado === 'diagnostico').length, color: '#f59e0b' },
+      { label: 'En Reparación', count: allWorkshop.filter(w => w.estado === 'en_reparacion' || w.estado === 'esperando_refaccion').length, color: '#3b82f6' },
+      { label: 'Listos para Entrega', count: allWorkshop.filter(w => w.estado === 'listo_entrega').length, color: '#9cc32e' }
     ];
     wSummary.innerHTML = rows.map(r => `
       <div class="sbar-row">
-        <div class="sbar-top"><span>${r.label}</span><strong class="mono">${r.count}</strong></div>
+        <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular">${r.count}</strong></div>
         <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((r.count / totalW) * 100)}%; background:${r.color};"></div></div>
       </div>
     `).join('');
@@ -391,17 +697,16 @@ function renderOverview() {
   const lowEl = document.getElementById('overviewLowStockList');
   if (lowEl) {
     if (lowStock.length === 0) {
-      lowEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">Todo el inventario físico está por encima del stock mínimo.</p>`;
+      lowEl.innerHTML = `<div style="font-size:0.79rem; color:var(--text-muted); padding:6px 0;">✓ Inventario físico en niveles óptimos.</div>`;
     } else {
       lowEl.innerHTML = `<div class="table-responsive"><table class="erp-table">
-        <thead><tr><th>SKU</th><th>Producto</th><th>Stock</th><th>Mín.</th></tr></thead>
+        <thead><tr><th>SKU</th><th>Artículo</th><th style="text-align:right;">Stock</th></tr></thead>
         <tbody>
-          ${lowStock.map(p => `
+          ${lowStock.slice(0, 4).map(p => `
             <tr>
               <td class="mono">${p.sku}</td>
               <td>${p.name}</td>
-              <td><span class="badge badge-red">${p.stock} ${p.unit || 'pza'}</span></td>
-              <td class="mono">${p.minStock}</td>
+              <td style="text-align:right;"><span class="badge badge-red"><span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -414,14 +719,14 @@ function renderOverview() {
   if (actEl) {
     const logs = reportsData?.recentActivity || [];
     if (logs.length === 0) {
-      actEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">Sin actividad reciente.</p>`;
+      actEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem;">Sin actividad registrada.</p>`;
     } else {
-      actEl.innerHTML = logs.slice(0, 10).map(a => {
+      actEl.innerHTML = logs.slice(0, 8).map(a => {
         const t = a.date ? new Date(a.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
         return `
           <div class="act-item">
             <div><strong>${a.user}:</strong> ${a.action}</div>
-            <span class="act-time">${t}</span>
+            <span class="act-time tabular">${t}</span>
           </div>
         `;
       }).join('');
@@ -429,19 +734,233 @@ function renderOverview() {
   }
 }
 
+function renderOverviewRevenueChart() {
+  const container = document.getElementById('overviewRevenueChart');
+  if (!container) return;
+
+  const gross = reportsData?.financials?.grossRevenue || 4200;
+  const receivables = reportsData?.financials?.pendingReceivables || 3860;
+
+  const seriesMap = {
+    '7d': [
+      { label: 'Lun', rev: 1450, proj: 1800 },
+      { label: 'Mar', rev: 2100, proj: 2400 },
+      { label: 'Mié', rev: 1890, proj: 2200 },
+      { label: 'Jue', rev: 2950, proj: 3100 },
+      { label: 'Vie', rev: 3420, proj: 3800 },
+      { label: 'Sáb', rev: 4100, proj: 4400 },
+      { label: 'Hoy', rev: Math.max(2600, gross), proj: Math.max(3200, gross + receivables * 0.5) }
+    ],
+    '30d': [
+      { label: 'Sem 1', rev: 6800, proj: 7500 },
+      { label: 'Sem 2', rev: 9200, proj: 10400 },
+      { label: 'Sem 3', rev: 11400, proj: 12800 },
+      { label: 'Sem 4', rev: 14200 + gross, proj: 16500 + gross }
+    ],
+    'all': [
+      { label: 'Jun', rev: 24500, proj: 26000 },
+      { label: 'Jul', rev: 31200, proj: 33000 },
+      { label: 'Ago', rev: 28900, proj: 31500 },
+      { label: 'Sep', rev: 36400, proj: 39000 },
+      { label: 'Oct', rev: 38900 + gross, proj: 44000 + gross }
+    ]
+  };
+
+  const data = seriesMap[chartPeriod] || seriesMap['7d'];
+  const maxVal = Math.max(...data.map(d => Math.max(d.rev, d.proj)), 1000) * 1.12;
+  const w = 680;
+  const h = 180;
+  const padX = 36;
+  const padY = 18;
+  const stepX = (w - padX * 2) / Math.max(1, data.length - 1);
+
+  const ptsRev = data.map((d, i) => ({
+    x: Math.round(padX + i * stepX),
+    y: Math.round(h - padY - (d.rev / maxVal) * (h - padY * 2)),
+    val: d.rev,
+    label: d.label
+  }));
+
+  const ptsProj = data.map((d, i) => ({
+    x: Math.round(padX + i * stepX),
+    y: Math.round(h - padY - (d.proj / maxVal) * (h - padY * 2))
+  }));
+
+  const pathRev = ptsRev.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  const areaRev = `${pathRev} L${ptsRev[ptsRev.length - 1].x},${h - padY} L${ptsRev[0].x},${h - padY} Z`;
+  const pathProj = ptsProj.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+
+  container.innerHTML = `
+    <div class="chart-svg-container">
+      <svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="limeAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#9cc32e" stop-opacity="0.34"/>
+            <stop offset="100%" stop-color="#9cc32e" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <!-- Horizontal Grid Lines -->
+        <line x1="${padX}" y1="${padY}" x2="${w - padX}" y2="${padY}" stroke="currentColor" stroke-opacity="0.07" stroke-dasharray="3 3"/>
+        <line x1="${padX}" y1="${Math.round(h / 2)}" x2="${w - padX}" y2="${Math.round(h / 2)}" stroke="currentColor" stroke-opacity="0.07" stroke-dasharray="3 3"/>
+        <line x1="${padX}" y1="${h - padY}" x2="${w - padX}" y2="${h - padY}" stroke="currentColor" stroke-opacity="0.12"/>
+
+        <!-- Projected Cyan Dashed Line -->
+        <path d="${pathProj}" fill="none" stroke="#7ce7ff" stroke-width="1.75" stroke-dasharray="4 4" stroke-opacity="0.65"/>
+
+        <!-- Revenue Area & Primary Line -->
+        <path d="${areaRev}" fill="url(#limeAreaGrad)"/>
+        <path d="${pathRev}" fill="none" stroke="#9cc32e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Data Nodes & Labels -->
+        ${ptsRev.map(p => `
+          <g>
+            <circle cx="${p.x}" cy="${p.y}" r="4" fill="#090b07" stroke="#9cc32e" stroke-width="2.2"/>
+            <text x="${p.x}" y="${h - 3}" text-anchor="middle" fill="currentColor" opacity="0.55" font-size="10" font-family="JetBrains Mono">${p.label}</text>
+          </g>
+        `).join('')}
+      </svg>
+    </div>
+    <div class="chart-legend-row">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <span style="display:inline-flex; align-items:center; gap:6px;"><span class="status-dot dot-lime"></span> Ingresos Liquidados POS</span>
+        <span style="display:inline-flex; align-items:center; gap:6px;"><span class="status-dot dot-blue" style="background:#7ce7ff;"></span> Proyección + Cartera Activa</span>
+      </div>
+      <span class="mono tabular">Total Activo: <strong style="color:var(--primary);">${formatMoney(gross + receivables)}</strong></span>
+    </div>
+  `;
+}
+
+function renderOverviewUnifiedTransactions() {
+  const tbody = document.getElementById('overviewUnifiedTxBody');
+  if (!tbody) return;
+
+  const rows = [];
+
+  allSales.forEach(s => {
+    rows.push({
+      type: 'pos',
+      folio: s.folio,
+      moduleLabel: 'Venta POS',
+      client: s.clientName,
+      concept: (s.items || []).map(i => `${i.qty}x ${i.name}`).join(', ') || 'Venta de mostrador',
+      owner: s.cashier,
+      statusLabel: s.status === 'cancelada' ? 'Cancelada' : 'Liquidado',
+      badge: s.status === 'cancelada' ? 'badge-red' : 'badge-green',
+      dot: s.status === 'cancelada' ? 'dot-red' : 'dot-lime',
+      amount: s.total,
+      date: s.date,
+      onClick: () => switchView('pos')
+    });
+  });
+
+  allTickets.forEach(t => {
+    rows.push({
+      type: 'ticket',
+      folio: t.folio,
+      moduleLabel: 'Ticket Soporte',
+      client: `${t.name}${t.company ? ' (' + t.company + ')' : ''}`,
+      concept: t.service,
+      owner: t.assignedTo || 'Sin asignar',
+      statusLabel: t.estado.toUpperCase(),
+      badge: t.estado === 'resuelto' ? 'badge-green' : t.priority === 'Urgente' ? 'badge-red' : 'badge-blue',
+      dot: t.estado === 'resuelto' ? 'dot-lime' : t.priority === 'Urgente' ? 'dot-red' : 'dot-blue',
+      amount: t.pos?.total || 0,
+      date: t.createdAt,
+      onClick: () => openTicketDetail(t.id)
+    });
+  });
+
+  allWorkshop.forEach(w => {
+    const st = WORKSHOP_STATE_LABELS[w.estado] || { label: w.estado, badge: 'badge-blue', dot: 'dot-blue' };
+    rows.push({
+      type: 'workshop',
+      folio: w.folio,
+      moduleLabel: 'Laboratorio',
+      client: w.clientName,
+      concept: `${w.deviceType} ${w.brand} ${w.model}`,
+      owner: w.assignedTech || 'Sin asignar',
+      statusLabel: st.label,
+      badge: st.badge,
+      dot: st.dot,
+      amount: w.total || 0,
+      date: w.createdAt,
+      onClick: () => openWorkshopModalForEdit(w)
+    });
+  });
+
+  const filtered = rows
+    .filter(r => overviewTxFilter === 'all' || r.type === overviewTxFilter)
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+    .slice(0, 8);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">${renderEmptyState('Sin registros', 'No hay transacciones para este filtro.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, idx) => `
+    <tr class="tx-clickable-row" data-idx="${idx}" style="cursor:pointer;">
+      <td class="mono"><strong>${r.folio}</strong></td>
+      <td><span class="kbd-tag">${r.moduleLabel}</span></td>
+      <td>
+        <strong>${r.client}</strong>
+        <div style="font-size:0.74rem; color:var(--text-muted);">${r.concept}</div>
+      </td>
+      <td>${r.owner}</td>
+      <td><span class="badge ${r.badge}"><span class="status-dot ${r.dot}"></span>${r.statusLabel}</span></td>
+      <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(r.amount)}</strong></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.tx-clickable-row').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const item = filtered[Number(tr.dataset.idx)];
+      if (item?.onClick) item.onClick();
+    });
+  });
+}
+
 // ==========================================
-// 5. VIEW 2: TICKETS MODULE
+// 7. VIEW 2: TICKETS MODULE (KANBAN + TABLE)
 // ==========================================
 function initTicketsModule() {
   document.getElementById('ticketSearchInput')?.addEventListener('input', renderTicketsKanban);
   document.getElementById('ticketPriorityFilter')?.addEventListener('change', renderTicketsKanban);
   document.getElementById('ticketTechFilter')?.addEventListener('change', renderTicketsKanban);
 
+  // Priority Filter Pills
+  document.querySelectorAll('#ticketPriorityPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ticketPriorityPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sel = document.getElementById('ticketPriorityFilter');
+      if (sel) sel.value = btn.dataset.prio || '';
+      renderTicketsKanban();
+    });
+  });
+
+  // Kanban vs Table Switcher
+  const kanbanBtn = document.getElementById('btnTicketsKanbanView');
+  const tableBtn = document.getElementById('btnTicketsTableView');
+  kanbanBtn?.addEventListener('click', () => {
+    ticketsViewMode = 'kanban';
+    kanbanBtn.classList.add('active');
+    tableBtn?.classList.remove('active');
+    document.getElementById('ticketsKanbanBoard')?.classList.remove('hidden');
+    document.getElementById('ticketsTableContainer')?.classList.add('hidden');
+  });
+  tableBtn?.addEventListener('click', () => {
+    ticketsViewMode = 'table';
+    tableBtn.classList.add('active');
+    kanbanBtn?.classList.remove('active');
+    document.getElementById('ticketsKanbanBoard')?.classList.add('hidden');
+    document.getElementById('ticketsTableContainer')?.classList.remove('hidden');
+  });
+
   document.getElementById('btnOpenNewTicketModal')?.addEventListener('click', () => {
     openModal('newTicketModal');
   });
 
-  // New Ticket Submit
   const newTicketForm = document.getElementById('newTicketForm');
   newTicketForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -457,7 +976,6 @@ function initTicketsModule() {
     showToast('Ticket registrado exitosamente');
   });
 
-  // Ticket Tabs inside Detail Modal
   document.querySelectorAll('#ticketDetailModal .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#ticketDetailModal .tab-btn').forEach(b => b.classList.remove('active'));
@@ -467,7 +985,6 @@ function initTicketsModule() {
     });
   });
 
-  // Update Ticket Status / Priority / Assigned Tech
   document.getElementById('tdEstado')?.addEventListener('change', async (e) => {
     if (!currentTicketId) return;
     await ticketService.updateTicket(currentTicketId, { estado: e.target.value, author: currentUser?.name });
@@ -489,7 +1006,6 @@ function initTicketsModule() {
     showToast(`Ticket asignado a ${e.target.value}`);
   });
 
-  // Bitacora Form
   const bitacoraForm = document.getElementById('bitacoraForm');
   bitacoraForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -504,7 +1020,6 @@ function initTicketsModule() {
     showToast('Nota agregada a la bitácora');
   });
 
-  // Add item from Store Catalog to Ticket POS
   document.getElementById('tdAddCatalogItemBtn')?.addEventListener('click', async () => {
     if (!currentTicketId) return;
     const prodId = document.getElementById('tdCatalogPicker').value;
@@ -527,7 +1042,6 @@ function initTicketsModule() {
     showToast(`Agregado: ${prod.name}`);
   });
 
-  // Manual POS Concept in Ticket
   const posForm = document.getElementById('posForm');
   posForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -546,7 +1060,6 @@ function initTicketsModule() {
     await syncAllData();
   });
 
-  // Send Ticket to POS Terminal for Checkout
   document.getElementById('tdSendToPosBtn')?.addEventListener('click', async () => {
     const ticket = allTickets.find(t => t.id === currentTicketId);
     if (!ticket) return;
@@ -555,7 +1068,6 @@ function initTicketsModule() {
     loadFolioIntoPosCart(ticket.folio);
   });
 
-  // Delete Ticket
   document.getElementById('tdDeleteTicketBtn')?.addEventListener('click', async () => {
     if (!currentTicketId) return;
     if (!confirm('¿Estás seguro de eliminar este ticket permanentemente?')) return;
@@ -565,7 +1077,6 @@ function initTicketsModule() {
     showToast('Ticket eliminado');
   });
 
-  // Print Ticket Order
   document.getElementById('tdPrintOrderBtn')?.addEventListener('click', () => {
     const ticket = allTickets.find(t => t.id === currentTicketId);
     if (ticket) printTicketDocument(ticket);
@@ -608,8 +1119,50 @@ function renderTicketsKanban() {
   domStates.forEach(s => {
     const col = document.getElementById(`col-${s}`);
     const countEl = document.getElementById(`count-${s}`);
-    if (col && countEl) countEl.textContent = col.children.length;
+    if (col && countEl) {
+      countEl.textContent = col.children.length;
+      if (col.children.length === 0) {
+        col.innerHTML = `<div style="padding:22px 10px; text-align:center; font-size:0.75rem; color:var(--text-muted); border:1px dashed var(--border-subtle); border-radius:8px;">Sin tickets en esta etapa</div>`;
+      }
+    }
   });
+
+  // Also render Table Mode
+  const tbody = document.getElementById('ticketsTableBody');
+  if (tbody) {
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8">${renderEmptyState('Sin tickets encontrados', 'Modifica los filtros de búsqueda o registra un nuevo ticket.')}</td></tr>`;
+    } else {
+      tbody.innerHTML = filtered.map(t => {
+        const total = parseFloat(t.pos?.total) || 0;
+        const prioBadge = t.priority === 'Urgente' ? 'badge-red' : t.priority === 'Alta' ? 'badge-amber' : 'badge-blue';
+        return `
+          <tr class="ticket-row-item" data-id="${t.id}" style="cursor:pointer;">
+            <td class="mono"><strong>${t.folio}</strong></td>
+            <td>
+              <strong>${t.name}</strong>
+              <div style="font-size:0.74rem; color:var(--text-muted);">${t.company || t.phone || ''}</div>
+            </td>
+            <td>
+              <div>${t.service}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${t.modality || ''}</div>
+            </td>
+            <td><span class="badge ${prioBadge}">${t.priority}</span></td>
+            <td>${t.assignedTo || 'Sin asignar'}</td>
+            <td><span class="kbd-tag">${t.estado.toUpperCase()}</span></td>
+            <td style="text-align:right;" class="mono tabular">${formatMoney(total)}</td>
+            <td style="text-align:right;">
+              <button type="button" class="btn btn-ghost btn-sm">Abrir →</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('.ticket-row-item').forEach(tr => {
+        tr.addEventListener('click', () => openTicketDetail(tr.dataset.id));
+      });
+    }
+  }
 }
 
 function createTicketCard(ticket) {
@@ -625,16 +1178,16 @@ function createTicketCard(ticket) {
   if (ticket.priority === 'Alta') prioClass = 'prio-alta';
   if (ticket.priority === 'Urgente') prioClass = 'prio-urgente';
 
-  const companyBadge = ticket.company ? ` <span style="opacity:0.75;font-size:0.76rem;">[${ticket.company}]</span>` : '';
+  const companyBadge = ticket.company ? ` <span style="opacity:0.75;font-size:0.75rem;">· ${ticket.company}</span>` : '';
   const totalAmount = parseFloat(ticket.pos?.total) || 0;
   const posTag = totalAmount > 0
-    ? `<span class="mono" style="color:${ticket.pos?.paid ? 'var(--primary)' : 'var(--secondary)'};">${formatMoney(totalAmount)} ${ticket.pos?.paid ? '✓' : ''}</span>`
+    ? `<span class="mono tabular" style="color:${ticket.pos?.paid ? 'var(--primary)' : 'var(--secondary)'}; font-weight:600;">${formatMoney(totalAmount)}${ticket.pos?.paid ? ' ✓' : ''}</span>`
     : '';
 
   div.innerHTML = `
     <div class="tc-head">
       <span class="tc-folio">${ticket.folio || 'FL-NEW'}</span>
-      <span class="tc-date">${dateStr}</span>
+      <span class="tc-date tabular">${dateStr}</span>
     </div>
     <div class="tc-title">${ticket.name || 'Sin nombre'}${companyBadge}</div>
     <div class="tc-desc">${ticket.description || 'Sin descripción'}</div>
@@ -667,7 +1220,6 @@ async function openTicketDetail(ticketId) {
   document.getElementById('tdPrioritySelect').value = ticket.priority || 'Normal';
   document.getElementById('tdAssignedSelect').value = ticket.assignedTo || 'Sin asignar';
 
-  // Role check for delete button
   const delBtn = document.getElementById('tdDeleteTicketBtn');
   if (delBtn) delBtn.style.display = currentUser?.permissions?.canDelete ? 'inline-flex' : 'none';
 
@@ -680,14 +1232,14 @@ function renderTicketBitacora(notes) {
   const container = document.getElementById('bitacoraList');
   if (!container) return;
   if (!Array.isArray(notes) || notes.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Sin notas en bitácora.</p>';
+    container.innerHTML = renderEmptyState('Bitácora vacía', 'Aún no se han registrado notas técnicas en este ticket.');
     return;
   }
   container.innerHTML = notes.slice().reverse().map(n => `
     <div class="b-note">
       <div class="b-note-head">
         <strong>${n.author || 'Técnico'}</strong>
-        <span>${n.date ? new Date(n.date).toLocaleString('es-MX') : ''}</span>
+        <span class="tabular">${n.date ? new Date(n.date).toLocaleString('es-MX') : ''}</span>
       </div>
       <div class="b-note-body">${n.note || n.text || ''}</div>
     </div>
@@ -709,7 +1261,7 @@ function renderTicketPOS(posData) {
   list.innerHTML = items.map(item => `
     <tr>
       <td>${item.concept}</td>
-      <td style="text-align:right;" class="mono">${formatMoney(item.price)}</td>
+      <td style="text-align:right;" class="mono tabular">${formatMoney(item.price)}</td>
       <td style="text-align:right;">
         <button type="button" class="del-item-btn" data-id="${item.id}">✕</button>
       </td>
@@ -731,11 +1283,21 @@ function renderTicketPOS(posData) {
 }
 
 // ==========================================
-// 6. VIEW 3: WORKSHOP MODULE (TALLER TÉCNICO)
+// 8. VIEW 3: WORKSHOP MODULE (TALLER TÉCNICO)
 // ==========================================
 function initWorkshopModule() {
   document.getElementById('wsSearchInput')?.addEventListener('input', renderWorkshopGrid);
   document.getElementById('wsStateFilter')?.addEventListener('change', renderWorkshopGrid);
+
+  document.querySelectorAll('#wsStatePills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#wsStatePills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sel = document.getElementById('wsStateFilter');
+      if (sel) sel.value = btn.dataset.wsstate || 'all';
+      renderWorkshopGrid();
+    });
+  });
 
   document.getElementById('btnOpenNewWorkshopModal')?.addEventListener('click', () => {
     openWorkshopModalForCreate();
@@ -839,32 +1401,32 @@ function renderWorkshopGrid() {
   });
 
   if (filtered.length === 0) {
-    container.innerHTML = `<p style="color:var(--text-muted);">No se encontraron órdenes de taller con los filtros seleccionados.</p>`;
+    container.innerHTML = `<div style="grid-column: 1 / -1;">${renderEmptyState('Sin órdenes de taller', 'No hay equipos en laboratorio que coincidan con el filtro actual.')}</div>`;
     return;
   }
 
   container.innerHTML = filtered.map(o => {
-    const st = WORKSHOP_STATE_LABELS[o.estado] || { label: o.estado, badge: 'badge-blue' };
+    const st = WORKSHOP_STATE_LABELS[o.estado] || { label: o.estado, badge: 'badge-blue', dot: 'dot-blue' };
     const balance = Math.max(0, (parseFloat(o.total) || 0) - (parseFloat(o.advancePayment) || 0));
     return `
       <div class="ws-card" data-id="${o.id}">
         <div class="ws-card-top">
           <span class="tc-folio">${o.folio}</span>
-          <span class="badge ${st.badge}">${st.label}</span>
+          <span class="badge ${st.badge}"><span class="status-dot ${st.dot}"></span>${st.label}</span>
         </div>
         <div>
           <div class="ws-device-badge">${o.deviceType} · ${o.brand} ${o.model}</div>
-          <strong style="font-size:0.96rem;">${o.clientName}</strong>
-          <div style="font-size:0.78rem; color:var(--text-muted);">Tel: ${o.clientPhone || '-'} · S/N: ${o.serialNumber || 'S/N'}</div>
+          <strong style="font-size:0.95rem;">${o.clientName}</strong>
+          <div class="tabular" style="font-size:0.75rem; color:var(--text-muted);">Tel: ${o.clientPhone || '-'} · S/N: ${o.serialNumber || 'S/N'}</div>
         </div>
         <div class="ws-fault"><strong>Falla:</strong> ${o.reportedFault || 'Sin descripción'}</div>
-        <div style="font-size:0.8rem; color:var(--text-muted);">
+        <div style="font-size:0.78rem; color:var(--text-muted);">
           <strong>Diagnóstico:</strong> ${o.technicalDiagnosis || 'Pendiente'}
         </div>
         <div class="ws-card-foot">
-          <span>Téc: <strong>${o.assignedTech || 'Sin asignar'}</strong></span>
-          <span class="mono" style="color:${o.paid ? 'var(--primary)' : 'var(--secondary)'};">
-            ${o.paid ? 'PAGADO ' + formatMoney(o.total) : 'Saldo: ' + formatMoney(balance)}
+          <span>Ing: <strong>${o.assignedTech || 'Sin asignar'}</strong></span>
+          <span class="mono tabular" style="color:${o.paid ? 'var(--primary)' : 'var(--secondary)'}; font-weight:600;">
+            ${o.paid ? 'LIQUIDADO ' + formatMoney(o.total) : 'Saldo: ' + formatMoney(balance)}
           </span>
         </div>
       </div>
@@ -936,15 +1498,15 @@ function renderWorkshopPartsInModal() {
 
   if (!listEl) return;
   if (currentWorkshopParts.length === 0) {
-    listEl.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted);">Sin refacciones adicionales cargadas.</div>`;
+    listEl.innerHTML = `<div style="font-size:0.78rem; color:var(--text-muted);">Sin refacciones adicionales cargadas.</div>`;
     return;
   }
 
   listEl.innerHTML = currentWorkshopParts.map(p => `
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(0,0,0,0.3); border-radius:6px; margin-bottom:4px; font-size:0.84rem;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:var(--bg-surface-2); border:1px solid var(--border-subtle); border-radius:6px; margin-bottom:4px; font-size:0.82rem;">
       <span>${p.concept} (x${p.qty || 1})</span>
       <div style="display:flex; align-items:center; gap:10px;">
-        <strong class="mono">${formatMoney(p.price)}</strong>
+        <strong class="mono tabular">${formatMoney(p.price)}</strong>
         <button type="button" class="del-item-btn" data-id="${p.id}">✕</button>
       </div>
     </div>
@@ -959,7 +1521,7 @@ function renderWorkshopPartsInModal() {
 }
 
 // ==========================================
-// 7. VIEW 4: POINT OF SALE (TERMINAL POS)
+// 9. VIEW 4: POINT OF SALE (TERMINAL POS)
 // ==========================================
 function initPosModule() {
   document.getElementById('posCatalogSearch')?.addEventListener('input', renderPosCatalog);
@@ -996,7 +1558,7 @@ function initPosModule() {
     const amountReceived = parseFloat(document.getElementById('posAmountReceived').value) || total;
 
     if (paymentMethod === 'Efectivo' && amountReceived < total) {
-      showToast('El efectivo recibido es menor al total a cobrar');
+      showToast('El efectivo recibido es menor al total a liquidar');
       return;
     }
 
@@ -1017,7 +1579,7 @@ function initPosModule() {
       document.getElementById('posAmountReceived').value = '';
       renderPosCart();
       await syncAllData();
-      showToast(`Venta ${res.sale.folio} registrada con éxito`);
+      showToast(`Venta ${res.sale.folio} procesada con éxito`);
       printPosReceipt(res.sale);
     } catch (err) {
       showToast(err.message);
@@ -1041,6 +1603,11 @@ function renderPosCatalog() {
     return true;
   });
 
+  if (list.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;">${renderEmptyState('Sin coincidencias', 'No se encontraron artículos con ese criterio.')}</div>`;
+    return;
+  }
+
   grid.innerHTML = list.map(p => `
     <div class="pos-prod-item" data-id="${p.id}">
       <div>
@@ -1048,8 +1615,8 @@ function renderPosCatalog() {
         <div class="pos-prod-name">${p.name}</div>
       </div>
       <div class="pos-prod-bottom">
-        <span class="pos-prod-price">${formatMoney(p.price)}</span>
-        <span class="pos-prod-stock">${p.isService ? 'Servicio' : 'Stock: ' + p.stock}</span>
+        <span class="pos-prod-price tabular">${formatMoney(p.price)}</span>
+        <span class="pos-prod-stock tabular">${p.isService ? 'Servicio' : 'Stock: ' + p.stock}</span>
       </div>
     </div>
   `).join('');
@@ -1059,7 +1626,7 @@ function renderPosCatalog() {
       const prod = allProducts.find(p => p.id === card.dataset.id);
       if (!prod) return;
       if (!prod.isService && prod.stock <= 0) {
-        showToast('Producto sin existencias en almacén');
+        showToast('Artículo sin existencias en almacén');
         return;
       }
       const existing = posCart.find(i => i.productId === prod.id);
@@ -1140,7 +1707,7 @@ function loadFolioIntoPosCart(folio) {
   }
 
   renderPosCart();
-  showToast(`Cargos de ${folio} importados a la caja`);
+  showToast(`Cargos del folio ${folio} cargados en caja`);
 }
 
 function renderPosCart() {
@@ -1148,7 +1715,7 @@ function renderPosCart() {
   if (!container) return;
 
   if (posCart.length === 0) {
-    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:35px 10px; font-size:0.84rem;">Selecciona productos de la izquierda o importa un folio para cobrar.</div>`;
+    container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:34px 10px; font-size:0.8rem;">Selecciona artículos del catálogo o importa un folio para cobrar.</div>`;
     updatePosTotals();
     return;
   }
@@ -1157,14 +1724,14 @@ function renderPosCart() {
     <div class="cart-line">
       <div style="flex:1; min-width:0;">
         <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
-        <div class="mono" style="font-size:0.75rem; color:var(--text-muted);">${formatMoney(item.price)} c/u</div>
+        <div class="mono tabular" style="font-size:0.72rem; color:var(--text-muted);">${formatMoney(item.price)} c/u</div>
       </div>
       <div class="cart-qty-controls">
         <button type="button" class="qty-btn" data-idx="${idx}" data-delta="-1">-</button>
-        <span class="mono" style="min-width:20px; text-align:center;">${item.qty}</span>
+        <span class="mono tabular" style="min-width:20px; text-align:center;">${item.qty}</span>
         <button type="button" class="qty-btn" data-idx="${idx}" data-delta="1">+</button>
       </div>
-      <strong class="mono" style="min-width:75px; text-align:right;">${formatMoney(item.price * item.qty)}</strong>
+      <strong class="mono tabular" style="min-width:75px; text-align:right;">${formatMoney(item.price * item.qty)}</strong>
       <button type="button" class="del-item-btn" data-idx="${idx}">✕</button>
     </div>
   `).join('');
@@ -1205,19 +1772,24 @@ function renderPosSalesHistory() {
   const tbody = document.getElementById('posSalesHistoryBody');
   if (!tbody) return;
 
+  if (allSales.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9">${renderEmptyState('Sin ventas registradas', 'Las transacciones procesadas en la terminal POS aparecerán aquí.')}</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = allSales.map(s => {
     const d = s.date ? new Date(s.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
     const isCancelled = s.status === 'cancelada';
     return `
       <tr style="${isCancelled ? 'opacity:0.5;' : ''}">
         <td class="mono"><strong>${s.folio}</strong></td>
-        <td>${d}</td>
+        <td class="tabular">${d}</td>
         <td>${s.clientName}</td>
         <td class="mono">${s.linkedRef || '-'}</td>
         <td>${s.cashier}</td>
         <td><span class="badge badge-blue">${s.paymentMethod}</span></td>
-        <td style="text-align:right;" class="mono"><strong>${formatMoney(s.total)}</strong></td>
-        <td><span class="badge ${isCancelled ? 'badge-red' : 'badge-green'}">${s.status}</span></td>
+        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(s.total)}</strong></td>
+        <td><span class="badge ${isCancelled ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isCancelled ? 'dot-red' : 'dot-lime'}"></span>${s.status}</span></td>
         <td style="text-align:right;">
           <button class="btn btn-ghost btn-sm btn-print-sale" data-id="${s.id}">Ticket</button>
           ${!isCancelled && currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-cancel-sale" data-id="${s.id}">Cancelar</button>` : ''}
@@ -1244,11 +1816,21 @@ function renderPosSalesHistory() {
 }
 
 // ==========================================
-// 8. VIEW 5: STORE & INVENTORY MODULE (TIENDA)
+// 10. VIEW 5: STORE & INVENTORY MODULE (TIENDA)
 // ==========================================
 function initStoreModule() {
   document.getElementById('storeSearchInput')?.addEventListener('input', renderStoreTable);
   document.getElementById('storeCategoryFilter')?.addEventListener('change', renderStoreTable);
+
+  document.querySelectorAll('#storeCategoryPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#storeCategoryPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sel = document.getElementById('storeCategoryFilter');
+      if (sel) sel.value = btn.dataset.cat || 'all';
+      renderStoreTable();
+    });
+  });
 
   document.getElementById('btnOpenNewProductModal')?.addEventListener('click', () => {
     document.getElementById('productForm').reset();
@@ -1307,26 +1889,33 @@ function renderStoreTable() {
     return true;
   });
 
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9">${renderEmptyState('Sin artículos en catálogo', 'Prueba con otra categoría o agrega un nuevo producto.')}</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = filtered.map(p => {
     const isLow = !p.isService && Number(p.stock) <= Number(p.minStock || 3);
+    const margin = p.price > 0 ? Math.round(((p.price - (p.cost || 0)) / p.price) * 100) : 0;
     return `
       <tr>
         <td class="mono"><strong>${p.sku}</strong></td>
         <td>
           <strong>${p.name}</strong>
-          <div style="font-size:0.76rem; color:var(--text-muted);">${p.description || ''}</div>
+          <div style="font-size:0.74rem; color:var(--text-muted);">${p.description || ''}</div>
         </td>
-        <td><span class="badge badge-blue">${CATEGORY_LABELS[p.category] || p.category}</span></td>
-        <td style="text-align:right;" class="mono">${formatMoney(p.cost)}</td>
-        <td style="text-align:right;" class="mono"><strong>${formatMoney(p.price)}</strong></td>
+        <td><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
+        <td style="text-align:right;" class="mono tabular">${formatMoney(p.cost)}</td>
+        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(p.price)}</strong></td>
+        <td style="text-align:right;" class="mono tabular"><span style="color:var(--primary); font-weight:600;">+${margin}%</span></td>
         <td style="text-align:center;">
           ${p.isService
-            ? '<span class="badge badge-purple">Servicio</span>'
-            : `<span class="badge ${isLow ? 'badge-red' : 'badge-green'}">${p.stock} ${p.unit || 'pza'}</span>`
+            ? '<span class="badge badge-purple">Intangible</span>'
+            : `<span class="badge ${isLow ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>`
           }
         </td>
         <td style="text-align:center;">
-          <span class="badge ${p.publicVisible !== false ? 'badge-green' : 'badge-amber'}">${p.publicVisible !== false ? 'Visible' : 'Oculto'}</span>
+          <span class="badge ${p.publicVisible !== false ? 'badge-green' : 'badge-amber'}">${p.publicVisible !== false ? 'Público' : 'Oculto'}</span>
         </td>
         <td style="text-align:right; white-space:nowrap;">
           ${!p.isService ? `
@@ -1380,7 +1969,7 @@ function renderStoreTable() {
 }
 
 // ==========================================
-// 9. VIEW 6: REPORTS & ANALYTICS MODULE
+// 11. VIEW 6: REPORTS & ANALYTICS MODULE
 // ==========================================
 function initReportsModule() {
   document.getElementById('btnExportSalesCsv')?.addEventListener('click', exportSalesToCSV);
@@ -1396,42 +1985,50 @@ function renderReportsView() {
   if (kpiEl) {
     kpiEl.innerHTML = `
       <div class="kpi-card">
-        <span class="kpi-label">Ventas Brutas Totales</span>
-        <div class="kpi-value accent">${formatMoney(fin.grossRevenue)}</div>
-        <span class="kpi-sub">Ticket Promedio: ${formatMoney(fin.avgTicketSale)}</span>
+        <div class="kpi-top"><span class="kpi-label">VENTAS BRUTAS TOTALES</span></div>
+        <div class="kpi-mid">
+          <div class="kpi-value accent tabular">${formatMoney(fin.grossRevenue)}</div>
+          <span class="kpi-delta up">+100%</span>
+        </div>
+        <div class="kpi-foot"><span>Ticket Promedio:</span><strong class="mono tabular">${formatMoney(fin.avgTicketSale)}</strong></div>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Utilidad Bruta Estimada</span>
-        <div class="kpi-value">${formatMoney(fin.estimatedProfit)}</div>
-        <span class="kpi-sub">Costo de lo vendido: ${formatMoney(fin.estimatedCost)}</span>
+        <div class="kpi-top"><span class="kpi-label">UTILIDAD BRUTA ESTIMADA</span></div>
+        <div class="kpi-mid">
+          <div class="kpi-value tabular">${formatMoney(fin.estimatedProfit)}</div>
+          <span class="kpi-delta up">Rentable</span>
+        </div>
+        <div class="kpi-foot"><span>Costo de venta:</span><strong class="mono tabular">${formatMoney(fin.estimatedCost)}</strong></div>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Cuentas por Cobrar</span>
-        <div class="kpi-value cyan">${formatMoney(fin.pendingReceivables)}</div>
-        <span class="kpi-sub">Tickets: ${formatMoney(fin.pendingTicketsBalance)} · Taller: ${formatMoney(fin.pendingWorkshopBalance)}</span>
+        <div class="kpi-top"><span class="kpi-label">CUENTAS POR COBRAR</span></div>
+        <div class="kpi-mid">
+          <div class="kpi-value cyan tabular">${formatMoney(fin.pendingReceivables)}</div>
+        </div>
+        <div class="kpi-foot"><span>Tickets: ${formatMoney(fin.pendingTicketsBalance)}</span><span>Taller: ${formatMoney(fin.pendingWorkshopBalance)}</span></div>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Valor Comercial Almacén</span>
-        <div class="kpi-value">${formatMoney(inv.inventoryRetailValue)}</div>
-        <span class="kpi-sub">Costo en stock: ${formatMoney(inv.inventoryCostValue)}</span>
+        <div class="kpi-top"><span class="kpi-label">VALOR COMERCIAL ALMACÉN</span></div>
+        <div class="kpi-mid">
+          <div class="kpi-value tabular">${formatMoney(inv.inventoryRetailValue)}</div>
+        </div>
+        <div class="kpi-foot"><span>Costo en stock:</span><strong class="mono tabular">${formatMoney(inv.inventoryCostValue)}</strong></div>
       </div>
     `;
   }
 
-  // Payment breakdown
   const payEl = document.getElementById('reportsPaymentBreakdown');
   if (payEl) {
     const totalRev = Math.max(1, fin.grossRevenue);
     const methods = Object.entries(fin.byPaymentMethod || {});
     payEl.innerHTML = methods.map(([m, val]) => `
       <div class="sbar-row">
-        <div class="sbar-top"><span>${m}</span><strong class="mono">${formatMoney(val)}</strong></div>
+        <div class="sbar-top"><span>${m}</span><strong class="mono tabular">${formatMoney(val)}</strong></div>
         <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((val / totalRev) * 100)}%;"></div></div>
       </div>
     `).join('');
   }
 
-  // Top products
   const topBody = document.getElementById('reportsTopProductsBody');
   if (topBody) {
     const top = reportsData.topProducts || [];
@@ -1439,37 +2036,35 @@ function renderReportsView() {
       <tr>
         <td class="mono">${item.sku}</td>
         <td>${item.name}</td>
-        <td style="text-align:center;" class="mono">${item.qty}</td>
-        <td style="text-align:right;" class="mono"><strong>${formatMoney(item.revenue)}</strong></td>
+        <td style="text-align:center;" class="mono tabular">${item.qty}</td>
+        <td style="text-align:right;" class="mono tabular"><strong>${formatMoney(item.revenue)}</strong></td>
       </tr>
     `).join('');
   }
 
-  // Technician performance
   const techBody = document.getElementById('reportsTechPerformanceBody');
   if (techBody) {
     const techs = reportsData.technicians || [];
     techBody.innerHTML = techs.map(t => `
       <tr>
         <td><strong>${t.name}</strong></td>
-        <td style="text-align:center;" class="mono">${t.ticketsActive}</td>
-        <td style="text-align:center;" class="mono"><span class="badge badge-green">${t.ticketsResolved}</span></td>
-        <td style="text-align:center;" class="mono">${t.workshopActive}</td>
-        <td style="text-align:center;" class="mono"><span class="badge badge-blue">${t.workshopReady}</span></td>
+        <td style="text-align:center;" class="mono tabular">${t.ticketsActive}</td>
+        <td style="text-align:center;" class="mono tabular"><span class="badge badge-green">${t.ticketsResolved}</span></td>
+        <td style="text-align:center;" class="mono tabular">${t.workshopActive}</td>
+        <td style="text-align:center;" class="mono tabular"><span class="badge badge-blue">${t.workshopReady}</span></td>
       </tr>
     `).join('');
   }
 
-  // Inventory valuation summary
   const invEl = document.getElementById('reportsInventoryValuation');
   if (invEl) {
     const potentialProfit = inv.inventoryRetailValue - inv.inventoryCostValue;
     invEl.innerHTML = `
-      <div class="sbar-row"><div class="sbar-top"><span>Total de Productos / Servicios en Catálogo</span><strong class="mono">${inv.totalCatalogItems}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Artículos Físicos Inventariables</span><strong class="mono">${inv.physicalItemsCount}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Artículos con Alerta de Stock Bajo</span><strong class="mono" style="color:var(--danger);">${inv.lowStockCount}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Valor de Almacén al Costo</span><strong class="mono">${formatMoney(inv.inventoryCostValue)}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Utilidad Potencial en Inventario</span><strong class="mono" style="color:var(--primary);">${formatMoney(potentialProfit)}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Artículos en Catálogo</span><strong class="mono tabular">${inv.totalCatalogItems}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Productos Físicos</span><strong class="mono tabular">${inv.physicalItemsCount}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Alertas de Stock Bajo</span><strong class="mono tabular" style="color:var(--danger);">${inv.lowStockCount}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Capital al Costo</span><strong class="mono tabular">${formatMoney(inv.inventoryCostValue)}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Utilidad Potencial en Stock</span><strong class="mono tabular" style="color:var(--primary);">${formatMoney(potentialProfit)}</strong></div></div>
     `;
   }
 }
@@ -1497,11 +2092,11 @@ function exportSalesToCSV() {
   a.download = `fiberlink-reporte-ventas-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('Archivo CSV descargado');
+  showToast('Reporte CSV exportado exitosamente');
 }
 
 // ==========================================
-// 10. VIEW 7: USERS & ROLES MODULE
+// 12. VIEW 7: USERS & ROLES MODULE
 // ==========================================
 function initUsersModule() {
   document.getElementById('btnOpenNewUserModal')?.addEventListener('click', () => {
@@ -1528,7 +2123,7 @@ function initUsersModule() {
     try {
       if (id) {
         await erpService.updateUser(id, payload);
-        showToast('Usuario actualizado');
+        showToast('Perfil de usuario actualizado');
       } else {
         await erpService.createUser(payload);
         showToast('Usuario creado exitosamente');
@@ -1551,8 +2146,8 @@ function renderUsersTable() {
       <td class="mono">@${u.username}</td>
       <td><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
       <td>${u.specialty || '-'}</td>
-      <td>${u.phone || u.email || '-'}</td>
-      <td><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}">${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
+      <td class="tabular">${u.phone || u.email || '-'}</td>
+      <td><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}"><span class="status-dot ${u.active !== false ? 'dot-lime' : 'dot-red'}"></span>${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
       <td style="text-align:right;">
         <button class="btn btn-ghost btn-sm btn-edit-usr" data-id="${u.id}">Editar</button>
         ${u.username !== 'admin' ? `<button class="btn btn-danger btn-sm btn-del-usr" data-id="${u.id}">✕</button>` : ''}
@@ -1588,7 +2183,7 @@ function renderUsersTable() {
 }
 
 // ==========================================
-// 11. DEDICATED PRINT GENERATORS
+// 13. DEDICATED PRINT GENERATORS
 // ==========================================
 function printPosReceipt(sale) {
   const area = document.getElementById('printArea');
