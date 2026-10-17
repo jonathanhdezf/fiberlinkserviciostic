@@ -198,20 +198,18 @@ async function enterDashboard() {
   document.getElementById('ucName').textContent = currentUser?.name || 'Usuario';
   document.getElementById('ucRole').textContent = currentUser?.permissions?.label || currentUser?.role || 'Personal';
 
-  const allowedModules = currentUser?.permissions?.modules || ['overview', 'tickets', 'workshop', 'pos', 'store'];
+  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'];
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
-    const view = btn.dataset.view;
-    btn.style.display = allowedModules.includes(view) ? 'flex' : 'none';
+    btn.style.display = 'flex';
   });
 
   document.querySelectorAll('#mobileBottomBar .mnav-item[data-view]').forEach(btn => {
-    const view = btn.dataset.view;
-    btn.style.display = allowedModules.includes(view) ? 'flex' : 'none';
+    btn.style.display = 'flex';
   });
 
   await syncAllData();
   if (!allowedModules.includes(currentView)) {
-    switchView(allowedModules[0] || 'overview');
+    switchView('overview');
   } else {
     switchView(currentView);
   }
@@ -302,14 +300,6 @@ function switchView(viewName) {
 
   if (prevView === 'pos' && viewName !== 'pos') {
     stopPosCameraScanner();
-  }
-  if (viewName === 'pos') {
-    // Default to barcode search / camera scanner on mobile devices
-    if (window.innerWidth <= 959 && posActiveSubTab === 'catalog' && !posCameraActive) {
-      startPosCameraScanner();
-    } else if (posActiveSubTab === 'catalog') {
-      setTimeout(() => document.getElementById('posCatalogSearch')?.focus(), 60);
-    }
   }
 }
 

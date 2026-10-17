@@ -20,15 +20,15 @@ export const ROLE_PERMISSIONS = {
   },
   [ROLES.TECNICO]: {
     label: 'Técnico de Taller y Campo',
-    modules: ['overview', 'tickets', 'workshop', 'store'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: false,
-    canProcessSales: false
+    canProcessSales: true
   },
   [ROLES.VENTAS]: {
     label: 'Cajero / Punto de Venta',
-    modules: ['overview', 'pos', 'store', 'tickets', 'workshop', 'reports'],
+    modules: ['overview', 'pos', 'store', 'tickets', 'workshop', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: true,
@@ -36,11 +36,11 @@ export const ROLE_PERMISSIONS = {
   },
   [ROLES.RECEPCION]: {
     label: 'Recepción y Mesa de Ayuda',
-    modules: ['overview', 'tickets', 'workshop', 'store'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: false,
-    canProcessSales: false
+    canProcessSales: true
   }
 };
 
