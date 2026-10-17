@@ -9,10 +9,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { ROLES } from '../config/constants.js';
 
+import os from 'os';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const DATA_DIR = path.join(__dirname, '..', 'data');
+// In Vercel serverless environment, local filesystem outside /tmp is read-only
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+export const BUNDLED_DATA_DIR = path.join(__dirname, '..', 'data');
+export const DATA_DIR = isVercel ? path.join(os.tmpdir(), 'fiberlink-data') : BUNDLED_DATA_DIR;
 
 export const FILES = {
   users: path.join(DATA_DIR, 'users.json'),
@@ -25,7 +30,11 @@ export const FILES = {
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch (e) {
+    console.warn('[jsonStore] Could not create DATA_DIR:', e.message);
+  }
 }
 
 // ==========================================
@@ -627,19 +636,33 @@ const SEED_ACTIVITY = [
   }
 ];
 
-function ensureSeed(filePath, seedData) {
+function ensureSeed(collectionName, seedData) {
+  const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(seedData, null, 2), 'utf-8');
+    const bundledPath = path.join(BUNDLED_DATA_DIR, `${collectionName}.json`);
+    if (fs.existsSync(bundledPath)) {
+      try {
+        fs.copyFileSync(bundledPath, filePath);
+        return;
+      } catch (e) {
+        // Fallback to seedData
+      }
+    }
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(seedData, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn(`[jsonStore] Could not write ${filePath}:`, e.message);
+    }
   }
 }
 
 // Initialize all collections on startup
-ensureSeed(FILES.users, SEED_USERS);
-ensureSeed(FILES.tickets, SEED_TICKETS);
-ensureSeed(FILES.products, SEED_PRODUCTS);
-ensureSeed(FILES.workshop, SEED_WORKSHOP);
-ensureSeed(FILES.sales, SEED_SALES);
-ensureSeed(FILES.activity, SEED_ACTIVITY);
+ensureSeed('users', SEED_USERS);
+ensureSeed('tickets', SEED_TICKETS);
+ensureSeed('products', SEED_PRODUCTS);
+ensureSeed('workshop', SEED_WORKSHOP);
+ensureSeed('sales', SEED_SALES);
+ensureSeed('activity', SEED_ACTIVITY);
 
 // ==========================================
 // GENERIC CRUD HELPERS
