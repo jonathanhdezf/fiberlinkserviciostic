@@ -4582,25 +4582,46 @@ function printCreditMovementReceipt(client, movement) {
 // ==========================================
 // 15. VIEW 9: MÓDULO DE CORTES Y TURNOS (TURNO, DÍA, MANEJO, HISTORIAL Y WHATSAPP)
 // ==========================================
+const SHIFTS_TABS_META = [
+  { key: 'turn_cut', title: '1. Corte del Turno (Arqueo de Caja)', paneId: 'shiftsSubTabTurnCut' },
+  { key: 'day_cut', title: '2. Corte del Día (Consolidado General)', paneId: 'shiftsSubTabDayCut' },
+  { key: 'manage_shifts', title: '3. Manejo de Turnos y Movimientos de Caja', paneId: 'shiftsSubTabManage' },
+  { key: 'cuts_history', title: '4. Historial de Cortes (Bitácora X / Z)', paneId: 'shiftsSubTabHistory' },
+  { key: 'whatsapp_cut', title: '5. Corte por WhatsApp (Reporte a Dirección)', paneId: 'shiftsSubTabWhatsapp' }
+];
+
+let currentShiftsTabKey = 'turn_cut';
+
 function switchShiftsSubTab(tabName) {
-  const paneMap = {
-    turn_cut: 'shiftsSubTabTurnCut',
-    day_cut: 'shiftsSubTabDayCut',
-    manage_shifts: 'shiftsSubTabManage',
-    cuts_history: 'shiftsSubTabHistory',
-    whatsapp_cut: 'shiftsSubTabWhatsapp'
-  };
+  const foundIdx = SHIFTS_TABS_META.findIndex(t => t.key === tabName);
+  const idx = foundIdx !== -1 ? foundIdx : 0;
+  const activeMeta = SHIFTS_TABS_META[idx];
+  currentShiftsTabKey = activeMeta.key;
 
-  document.querySelectorAll('#shiftsModuleTabs .pill-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.shifttab === tabName);
+  document.querySelectorAll('#shiftsModuleTabs .settings-tab-btn').forEach(btn => {
+    const isAct = btn.dataset.shifttab === currentShiftsTabKey;
+    btn.classList.toggle('active', isAct);
+    btn.setAttribute('aria-selected', String(isAct));
   });
 
-  Object.entries(paneMap).forEach(([key, domId]) => {
-    const el = document.getElementById(domId);
-    if (el) el.classList.toggle('active', key === tabName);
+  SHIFTS_TABS_META.forEach(meta => {
+    const el = document.getElementById(meta.paneId);
+    if (el) el.classList.toggle('active', meta.key === currentShiftsTabKey);
   });
 
-  if (tabName === 'whatsapp_cut') {
+  const badgeEl = document.getElementById('shiftsActiveTabBadge');
+  const titleEl = document.getElementById('shiftsActiveTabTitle');
+  const progEl = document.getElementById('shiftsProgressBar');
+  const footInfoEl = document.getElementById('shiftsFooterTabInfo');
+
+  if (badgeEl) badgeEl.textContent = `Pestaña ${idx + 1} de ${SHIFTS_TABS_META.length}`;
+  if (titleEl) titleEl.textContent = activeMeta.title;
+  if (progEl) progEl.style.width = `${(((idx + 1) / SHIFTS_TABS_META.length) * 100).toFixed(2)}%`;
+  if (footInfoEl) {
+    footInfoEl.innerHTML = `Viendo <strong style="color:var(--primary);">Pestaña ${idx + 1} de ${SHIFTS_TABS_META.length}</strong> · ${activeMeta.title}`;
+  }
+
+  if (currentShiftsTabKey === 'whatsapp_cut') {
     updateWhatsappCutPreview();
   }
 }
@@ -4614,10 +4635,42 @@ function initShiftsModule() {
   }
 
   // 5-Tab Switcher
-  document.querySelectorAll('#shiftsModuleTabs .pill-btn').forEach(btn => {
+  document.querySelectorAll('#shiftsModuleTabs .settings-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       switchShiftsSubTab(btn.dataset.shifttab || 'turn_cut');
     });
+  });
+
+  const goPrevShiftsTab = () => {
+    const curIdx = SHIFTS_TABS_META.findIndex(t => t.key === currentShiftsTabKey);
+    const prevIdx = (curIdx - 1 + SHIFTS_TABS_META.length) % SHIFTS_TABS_META.length;
+    switchShiftsSubTab(SHIFTS_TABS_META[prevIdx].key);
+  };
+
+  const goNextShiftsTab = () => {
+    const curIdx = SHIFTS_TABS_META.findIndex(t => t.key === currentShiftsTabKey);
+    const nextIdx = (curIdx + 1) % SHIFTS_TABS_META.length;
+    switchShiftsSubTab(SHIFTS_TABS_META[nextIdx].key);
+  };
+
+  document.getElementById('btnShiftsPrevTab')?.addEventListener('click', goPrevShiftsTab);
+  document.getElementById('btnShiftsNextTab')?.addEventListener('click', goNextShiftsTab);
+  document.getElementById('btnShiftsFooterPrev')?.addEventListener('click', goPrevShiftsTab);
+  document.getElementById('btnShiftsFooterNext')?.addEventListener('click', goNextShiftsTab);
+
+  // Keyboard navigation (ArrowLeft / ArrowRight when viewing Cortes y Turnos and not typing in an input)
+  window.addEventListener('keydown', (e) => {
+    const shiftsView = document.getElementById('view-shifts');
+    if (!shiftsView || !shiftsView.classList.contains('active')) return;
+    const tag = (document.activeElement?.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrevShiftsTab();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goNextShiftsTab();
+    }
   });
 
   // Top Header Quick Action Buttons

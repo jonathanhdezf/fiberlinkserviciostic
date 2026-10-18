@@ -1625,24 +1625,43 @@
             </div>
           </div>
 
-          <!-- Navegación de 5 Sub-Pestañas de Cortes y Turnos -->
-          <div class="filter-pills" id="shiftsModuleTabs" style="margin-bottom:16px; width:100%; overflow-x:auto;">
-            <button type="button" class="pill-btn active" data-shifttab="turn_cut">
-              <span>✂️ Corte del Turno</span>
-            </button>
-            <button type="button" class="pill-btn" data-shifttab="day_cut">
-              <span>📅 Corte del Día</span>
-            </button>
-            <button type="button" class="pill-btn" data-shifttab="manage_shifts">
-              <span>🕐 Manejo de Turnos</span>
-            </button>
-            <button type="button" class="pill-btn" data-shifttab="cuts_history">
-              <span>🗂️ Historial de Cortes</span>
-              <span class="kbd-tag tabular" id="shiftsTabHistoryCount" style="margin-left:4px;">0</span>
-            </button>
-            <button type="button" class="pill-btn" data-shifttab="whatsapp_cut">
-              <span>📲 Corte por WhatsApp</span>
-            </button>
+          <!-- Navegación de 5 Pestañas de Cortes y Turnos (Sticky Desktop Tab Shell) -->
+          <div class="settings-nav-shell">
+            <div class="settings-nav-top">
+              <div class="settings-step-indicator">
+                <span class="settings-step-badge" id="shiftsActiveTabBadge">Pestaña 1 de 5</span>
+                <strong id="shiftsActiveTabTitle" style="color:var(--text-main);">1. Corte del Turno (Arqueo de Caja)</strong>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="btn btn-ghost btn-sm" id="btnShiftsPrevTab" title="Pestaña anterior (Flecha Izquierda)">← Anterior</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnShiftsNextTab" title="Siguiente pestaña (Flecha Derecha)">Siguiente →</button>
+              </div>
+            </div>
+            <div class="settings-progress-track">
+              <div class="settings-progress-bar" id="shiftsProgressBar" style="width:20%;"></div>
+            </div>
+            <div class="settings-tabs-grid shifts-tabs-grid" id="shiftsModuleTabs" role="tablist">
+              <button type="button" class="settings-tab-btn active" data-shifttab="turn_cut" role="tab" aria-selected="true">
+                <span class="settings-tab-num">01</span>
+                <span>✂️ Corte del Turno</span>
+              </button>
+              <button type="button" class="settings-tab-btn" data-shifttab="day_cut" role="tab" aria-selected="false">
+                <span class="settings-tab-num">02</span>
+                <span>📅 Corte del Día</span>
+              </button>
+              <button type="button" class="settings-tab-btn" data-shifttab="manage_shifts" role="tab" aria-selected="false">
+                <span class="settings-tab-num">03</span>
+                <span>🕐 Manejo de Turnos</span>
+              </button>
+              <button type="button" class="settings-tab-btn" data-shifttab="cuts_history" role="tab" aria-selected="false">
+                <span class="settings-tab-num">04</span>
+                <span>🗂️ Historial (<span id="shiftsTabHistoryCount" class="tabular">0</span>)</span>
+              </button>
+              <button type="button" class="settings-tab-btn" data-shifttab="whatsapp_cut" role="tab" aria-selected="false">
+                <span class="settings-tab-num">05</span>
+                <span>📲 Corte por WhatsApp</span>
+              </button>
+            </div>
           </div>
 
           <!-- ==========================================
@@ -1664,7 +1683,7 @@
                 </div>
 
                 <!-- Ficha de Datos del Turno -->
-                <div class="credit-live-summary" style="margin-bottom:16px;">
+                <div class="credit-live-summary" style="margin-bottom:14px;">
                   <div class="cls-item">
                     <span>Cajero Responsable</span>
                     <strong id="turnCutCashier">-</strong>
@@ -1684,7 +1703,7 @@
                 </div>
 
                 <!-- Desglose Matemático del Efectivo en Cajón -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:14px;">
                   <div class="surface-card" style="padding:14px; border-radius:10px; border:1px solid var(--border-subtle);">
                     <div class="panel-eyebrow" style="margin-bottom:8px;">FLUJO DE EFECTIVO EN CAJÓN</div>
                     <div class="pos-row" style="padding:5px 0;">
@@ -1748,7 +1767,7 @@
                     <span class="panel-eyebrow">MOVIMIENTOS DE EFECTIVO EN CAJA DURANTE EL TURNO</span>
                     <button type="button" class="btn btn-ghost btn-sm" id="btnTurnQuickAddCashMov">+ Registrar Entrada / Salida</button>
                   </div>
-                  <div class="table-responsive">
+                  <div class="table-responsive" style="max-height:210px; overflow-y:auto;">
                     <table class="erp-table">
                       <thead>
                         <tr>
@@ -1837,7 +1856,7 @@
           </div>
 
           <!-- ==========================================
-               SUB-TAB 2: CORTE DEL DÍA (CONSOLIDADO DIARIO)
+               SUB-TAB 2: CORTE DEL DÍA (CONSOLIDADO DIARIO EN 2 COLUMNAS DESKTOP)
           ========================================== -->
           <div id="shiftsSubTabDayCut" class="cli-subtab-pane">
             <div class="toolbar-bar" style="margin-bottom:14px;">
@@ -1859,7 +1878,7 @@
             </div>
 
             <!-- Resumen Ejecutivo del Día -->
-            <div class="credit-live-summary" id="dayCutSummaryCards" style="margin-bottom:16px;">
+            <div class="credit-live-summary" id="dayCutSummaryCards" style="margin-bottom:14px;">
               <div class="cls-item">
                 <span>Ventas Brutas del Día</span>
                 <strong id="dayCutTotalSales" class="mono tabular" style="color:var(--primary);">$0.00</strong>
@@ -1883,102 +1902,124 @@
             </div>
 
             <div class="bento-grid">
-              <div class="panel-card bento-span-6">
+              <!-- Columna Izquierda (5 cols): Desglose Financiero + Turnos Operados -->
+              <div class="panel-card bento-span-5">
                 <div class="panel-head">
                   <div>
                     <div class="panel-eyebrow">CONCENTRADO DE MEDIOS DE PAGO</div>
-                    <h3>Desglose Financiero del Día</h3>
+                    <h3>Desglose Financiero y Turnos</h3>
                   </div>
                 </div>
-                <div id="dayCutMethodsBreakdown" class="status-bars"></div>
+                <div id="dayCutMethodsBreakdown" class="status-bars" style="margin-bottom:16px;"></div>
+
+                <div style="border-top:1px solid var(--border-subtle); padding-top:12px;">
+                  <div class="panel-eyebrow" style="margin-bottom:8px;">TURNOS OPERADOS EN LA JORNADA</div>
+                  <div class="table-responsive" style="max-height:200px; overflow-y:auto;">
+                    <table class="erp-table">
+                      <thead>
+                        <tr>
+                          <th>Folio Turno</th>
+                          <th>Horario / Caja</th>
+                          <th>Cajero</th>
+                          <th style="text-align:right;">Fondo Inicial</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dayCutShiftsTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
-              <div class="panel-card bento-span-6">
+              <!-- Columna Derecha (7 cols): Ventas y Cobros Incluidos en el Corte del Día -->
+              <div class="panel-card bento-span-7">
                 <div class="panel-head">
                   <div>
-                    <div class="panel-eyebrow">TURNOS OPERADOS</div>
-                    <h3>Resumen por Turno y Cajero</h3>
+                    <div class="panel-eyebrow">DETALLE DE OPERACIONES DEL CORTE DEL DÍA</div>
+                    <h3>Ventas y Cobros Incluidos en el Corte del Día</h3>
                   </div>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height:420px; overflow-y:auto;">
                   <table class="erp-table">
                     <thead>
                       <tr>
-                        <th>Folio Turno</th>
-                        <th>Horario / Caja</th>
+                        <th>Folio Venta</th>
+                        <th>Fecha / Hora</th>
+                        <th>Cliente</th>
                         <th>Cajero</th>
-                        <th style="text-align:right;">Fondo Inicial</th>
+                        <th>Método Pago</th>
+                        <th style="text-align:right;">Subtotal</th>
+                        <th style="text-align:right;">Descuento</th>
+                        <th style="text-align:right;">Total</th>
                         <th>Estado</th>
                       </tr>
                     </thead>
-                    <tbody id="dayCutShiftsTableBody"></tbody>
+                    <tbody id="dayCutSalesTableBody"></tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-
-            <div class="panel-card" style="margin-top:16px;">
-              <div class="panel-head">
-                <div>
-                  <div class="panel-eyebrow">DETALLE DE OPERACIONES DEL CORTE DEL DÍA</div>
-                  <h3>Ventas y Cobros Incluidos en el Corte del Día</h3>
-                </div>
-              </div>
-              <div class="table-responsive">
-                <table class="erp-table">
-                  <thead>
-                    <tr>
-                      <th>Folio Venta</th>
-                      <th>Fecha / Hora</th>
-                      <th>Cliente</th>
-                      <th>Cajero</th>
-                      <th>Método Pago</th>
-                      <th style="text-align:right;">Subtotal</th>
-                      <th style="text-align:right;">Descuento</th>
-                      <th style="text-align:right;">Total</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dayCutSalesTableBody"></tbody>
-                </table>
               </div>
             </div>
           </div>
 
           <!-- ==========================================
-               SUB-TAB 3: MANEJO DE TURNOS (APERTURA, CIERRE Y MOVIMIENTOS DE CAJA)
+               SUB-TAB 3: MANEJO DE TURNOS (2 COLUMNAS EN ESCRITORIO)
           ========================================== -->
           <div id="shiftsSubTabManage" class="cli-subtab-pane">
-            <div class="toolbar-bar" style="margin-bottom:14px;">
-              <div>
-                <div class="panel-eyebrow">ADMINISTRACIÓN DE JORNADAS Y CAJAS REGISTRADORAS</div>
-                <h3 style="font-size:0.98rem; margin:0;">Control de Turnos Abiertos, Cerrados y Dotaciones / Retiros</h3>
+            <div class="bento-grid">
+              <!-- Columna Izquierda (4 cols): Acciones de Apertura y Dotación de Efectivo -->
+              <div class="panel-card bento-span-4">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">OPERACIÓN DE CAJA Y JORNADAS</div>
+                    <h3>Acciones de Turno</h3>
+                  </div>
+                </div>
+                <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:14px;">
+                  Inicia nuevas jornadas con asignación de fondo fijo o registra entradas/salidas de efectivo en el cajón activo.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+                  <button type="button" class="btn btn-primary btn-full" id="btnManageOpenNewShift">
+                    <span>🔓 Abrir Nuevo Turno de Caja</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-full" id="btnManageAddCashMov">
+                    <span>💸 Registrar Entrada / Salida de Efectivo</span>
+                  </button>
+                </div>
+                <div class="surface-card" style="padding:12px; border-radius:10px; border:1px solid var(--border-subtle); font-size:0.78rem; color:var(--text-secondary);">
+                  <div class="panel-eyebrow" style="margin-bottom:6px;">GUÍA RÁPIDA DE CONTROL</div>
+                  <div style="margin-bottom:6px;">• <strong>Auditar / Arqueo:</strong> Abre la pestaña <em>01 Corte del Turno</em> con los datos del turno elegido.</div>
+                  <div style="margin-bottom:6px;">• <strong>Cerrar Turno:</strong> Ejecuta el Corte Z oficial y bloquea nuevos movimientos en ese turno.</div>
+                  <div>• <strong>Reabrir:</strong> Permite habilitar nuevamente un turno cerrado en caso de corrección.</div>
+                </div>
               </div>
-              <div class="toolbar-filters">
-                <button type="button" class="btn btn-secondary" id="btnManageAddCashMov">💸 Registrar Entrada / Salida de Efectivo</button>
-                <button type="button" class="btn btn-primary" id="btnManageOpenNewShift">🔓 Abrir Nuevo Turno</button>
-              </div>
-            </div>
 
-            <div class="panel-card">
-              <div class="table-responsive">
-                <table class="erp-table">
-                  <thead>
-                    <tr>
-                      <th>Folio Turno</th>
-                      <th>Nombre del Turno / Caja</th>
-                      <th>Cajero Asignado</th>
-                      <th>Apertura</th>
-                      <th>Cierre</th>
-                      <th style="text-align:right;">Fondo Inicial</th>
-                      <th style="text-align:right;">Mov. Caja (Neto)</th>
-                      <th style="text-align:right;">Efectivo Contado</th>
-                      <th>Estado / Corte</th>
-                      <th style="text-align:right;">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="manageShiftsTableBody"></tbody>
-                </table>
+              <!-- Columna Derecha (8 cols): Bitácora de Turnos Abiertos y Cerrados -->
+              <div class="panel-card bento-span-8">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">ADMINISTRACIÓN DE JORNADAS Y CAJAS REGISTRADORAS</div>
+                    <h3>Control de Turnos Abiertos, Cerrados y Movimientos</h3>
+                  </div>
+                </div>
+                <div class="table-responsive" style="max-height:440px; overflow-y:auto;">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Folio Turno</th>
+                        <th>Nombre del Turno / Caja</th>
+                        <th>Cajero Asignado</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th style="text-align:right;">Fondo Inicial</th>
+                        <th style="text-align:right;">Mov. Caja (Neto)</th>
+                        <th style="text-align:right;">Efectivo Contado</th>
+                        <th>Estado / Corte</th>
+                        <th style="text-align:right;">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="manageShiftsTableBody"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -2007,7 +2048,7 @@
             </div>
 
             <div class="panel-card">
-              <div class="table-responsive">
+              <div class="table-responsive" style="max-height:450px; overflow-y:auto;">
                 <table class="erp-table">
                   <thead>
                     <tr>
@@ -2112,6 +2153,15 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Barra Inferior de Navegación Rápida entre Pestañas de Cortes y Turnos -->
+          <div class="settings-pane-footer-bar">
+            <button type="button" class="btn btn-secondary" id="btnShiftsFooterPrev">← Pestaña Anterior</button>
+            <div style="text-align:center; font-size:0.82rem; color:var(--text-secondary);">
+              <span id="shiftsFooterTabInfo">Viendo <strong style="color:var(--primary);">Pestaña 1 de 5</strong> · 1. Corte del Turno (Arqueo de Caja)</span>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnShiftsFooterNext">Siguiente Pestaña →</button>
           </div>
         </section>
 

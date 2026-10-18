@@ -2994,9 +2994,15 @@ input:focus, textarea:focus, select:focus {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
 }
+.settings-tabs-grid.shifts-tabs-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
 @media (max-width: 1180px) and (min-width: 721px) {
   .settings-tabs-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .settings-tabs-grid.shifts-tabs-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 @media (max-width: 720px) {
