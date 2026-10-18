@@ -121,7 +121,7 @@ function buildDom() {
     <span class="fa-launcher-badge" aria-hidden="true">IA</span>
     <span class="fa-launcher-tip">
       <span class="fa-launcher-tip-badge">ATENCIÓN EN VIVO &amp; PEDIDOS</span>
-      ¿Soporte o cotización de equipos? <strong>Te atiendo con voz latina</strong>
+      ¿Soporte o cotización de equipos? <strong>Te atiendo con Voz de Gemini</strong>
     </span>
   `;
 
@@ -139,12 +139,12 @@ function buildDom() {
         <div class="fa-head-title-row">
           <h3 id="faTitle">Fibi</h3>
           <span class="fa-chip-ai">Asistente IA</span>
-          <button type="button" class="fa-chip-voice" id="faVoiceChip" title="Clic para probar o cambiar la voz latina"><span class="fa-voice-dot"></span><span id="faVoiceChipName">Voz Latina</span></button>
+          <button type="button" class="fa-chip-voice" id="faVoiceChip" title="Voz oficial de Google Gemini. Clic para escuchar prueba."><span class="fa-voice-dot"></span><span id="faVoiceChipName">✨ Voz Gemini</span></button>
         </div>
-        <p><span class="fa-dot"></span><span id="faStatus">En línea · Asistencia técnica &amp; Pedidos</span></p>
+        <p><span class="fa-dot"></span><span id="faStatus">En línea · Asistencia técnica &amp; Pedidos con Voz Gemini</span></p>
       </div>
       <div class="fa-head-actions">
-        <button type="button" class="fa-icon-btn" id="faVoiceTest" title="Escuchar saludo de prueba de Fibi" aria-label="Escuchar prueba de voz">${ICONS.soundwave}</button>
+        <button type="button" class="fa-icon-btn" id="faVoiceTest" title="Escuchar saludo con Voz oficial de Gemini" aria-label="Escuchar prueba de voz">${ICONS.soundwave}</button>
         <button type="button" class="fa-icon-btn" id="faVoiceToggle" title="${state.voiceEnabled ? 'Desactivar voz' : 'Activar voz'}" aria-label="Alternar voz del asistente">${state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff}</button>
         <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño / Expandir" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
         <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
@@ -157,7 +157,7 @@ function buildDom() {
       <div class="fa-voice-visualizer" aria-hidden="true">
         <span></span><span></span><span></span><span></span><span></span>
       </div>
-      <span class="fa-voice-status" id="faVoiceStatus">Fibi hablando (Voz Latina)…</span>
+      <span class="fa-voice-status" id="faVoiceStatus">Fibi hablando (Voz de Gemini)…</span>
       <button type="button" class="fa-voice-stop-btn" id="faVoiceStopBtn" title="Silenciar reproducción">${ICONS.stop}<span>Detener</span></button>
     </div>
 
@@ -179,14 +179,14 @@ function buildDom() {
         </div>
       </div>
       <form class="fa-input" id="faForm" autocomplete="off">
-        <button type="button" class="fa-mic-btn" id="faMicBtn" aria-label="Hablar con micrófono" title="Hablarle a Fibi (Voz Latina)">${ICONS.mic}</button>
+        <button type="button" class="fa-mic-btn" id="faMicBtn" aria-label="Hablar con micrófono" title="Hablarle a Fibi (Micrófono)">${ICONS.mic}</button>
         <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe o pulsa el micrófono para hablar…" aria-label="Mensaje para el asistente"></textarea>
         <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar (Enter)">${ICONS.send}</button>
       </form>
       <div class="fa-legal-row">
         <span class="fa-legal-shield">${ICONS.shield} Atención oficial Fiberlink Teziutlán</span>
         <span class="fa-legal-sep">·</span>
-        <span class="fa-legal-meta">Voz Latina &amp; Diagnóstico IA en tiempo real</span>
+        <span class="fa-legal-meta">✨ Voz de Gemini &amp; Diagnóstico IA en tiempo real</span>
       </div>
     </footer>
   `;
@@ -305,11 +305,11 @@ function getBestSpanishVoice() {
 
 function updateVoiceBadge() {
   if (!els.voiceChipName) return;
-  els.voiceChipName.textContent = 'Voz Mexicana';
-  if (els.voiceChip) els.voiceChip.title = 'Voz nativa de México activa. Clic para escuchar prueba.';
+  els.voiceChipName.textContent = '✨ Voz Gemini';
+  if (els.voiceChip) els.voiceChip.title = 'Voz oficial de Google Gemini activa. Clic para escuchar prueba.';
 }
 
-function testVoice(sampleText = '¡Hola! Soy Fibi, asistente de Fiberlink en Teziutlán. ¿En qué te podemos apoyar hoy?') {
+function testVoice(sampleText = '¡Hola! Soy Fibi, asistente virtual de Fiberlink en Teziutlán con la voz oficial de Gemini. ¿En qué te puedo apoyar hoy?') {
   speakAssistantMessage(sampleText, true);
 }
 
@@ -322,7 +322,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-function updateVoiceBar(active, label = 'Fibi hablando (Voz Mexicana)…') {
+function updateVoiceBar(active, label = 'Fibi hablando (Voz de Gemini)…') {
   if (!els.voiceBar) return;
   state.isSpeaking = Boolean(active && !state.isListening);
   const show = active || state.isListening || state.isSpeaking;
@@ -349,7 +349,7 @@ function fallbackBrowserSpeech(cleanText) {
     const esVoice = getBestSpanishVoice();
     if (esVoice) utterance.voice = esVoice;
 
-    utterance.onstart = () => updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
+    utterance.onstart = () => updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
     utterance.onend = () => updateVoiceBar(false);
     utterance.onerror = () => updateVoiceBar(false);
     window.speechSynthesis.speak(utterance);
@@ -383,14 +383,14 @@ async function speakAssistantMessage(text, force = false) {
   if (!cleanText) return;
 
   try {
-    updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
-    const audioUrl = `/api/assistant/tts?text=${encodeURIComponent(cleanText.slice(0, 200))}`;
+    updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
+    const audioUrl = `/api/assistant/tts?text=${encodeURIComponent(cleanText.slice(0, 180))}`;
     const audio = new Audio(audioUrl);
     currentAudio = audio;
     audio.playbackRate = 1.04;
 
     audio.onplay = () => {
-      updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
+      updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
     };
 
     audio.onended = () => {
@@ -957,8 +957,29 @@ function resetConversation() {
   greet();
 }
 
+function scrollToBottom() {
+  if (els.body) {
+    requestAnimationFrame(() => {
+      els.body.scrollTop = els.body.scrollHeight;
+    });
+  }
+}
+
+function syncMobileViewport() {
+  if (!state.open || !els.panel) return;
+  if (window.innerWidth <= 680 && window.visualViewport) {
+    const vpHeight = window.visualViewport.height;
+    const vpTop = window.visualViewport.offsetTop;
+    els.panel.style.height = `${vpHeight}px`;
+    els.panel.style.top = `${vpTop}px`;
+  } else if (els.panel) {
+    els.panel.style.height = '';
+    els.panel.style.top = '';
+  }
+}
+
 function greet() {
-  const welcomeText = '¡Hola! Soy Fibi, tu asistente técnico y de ventas en Fiberlink. ¿En qué te apoyo hoy? ¿Tienes una falla técnica o deseas cotizar equipamiento y punto de venta?';
+  const welcomeText = '¡Hola! Soy Fibi, asistente virtual de Fiberlink con la voz oficial de Gemini. ¿En qué te apoyo hoy? ¿Tienes una falla técnica o deseas cotizar equipamiento y punto de venta?';
   state.messages.push({
     role: 'model',
     text: '¡Hola! Soy **Fibi**, tu asistente virtual con IA de Fiberlink. 👋\n¿En qué te podemos apoyar hoy? ¿Requieres **soporte técnico** para tu equipo o **cotizar y comprar** productos de nuestro catálogo?'
@@ -976,6 +997,7 @@ function openPanel() {
   els.panel.setAttribute('aria-hidden', 'false');
   els.launcher.classList.add('hidden');
   document.documentElement.classList.add('fa-open');
+  syncMobileViewport();
   updateVoiceBadge();
   if (!state.messages.length) greet(); else render();
   setTimeout(() => { if (!state.ticket) els.input.focus({ preventScroll: true }); }, 280);
@@ -985,6 +1007,8 @@ function closePanel() {
   state.open = false;
   els.panel.classList.remove('open');
   els.panel.setAttribute('aria-hidden', 'true');
+  els.panel.style.height = '';
+  els.panel.style.top = '';
   els.launcher.classList.remove('hidden');
   document.documentElement.classList.remove('fa-open');
   if (currentAudio) {
@@ -1184,6 +1208,15 @@ function bindEvents() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && state.open) closePanel();
   });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      syncMobileViewport();
+      scrollToBottom();
+    });
+    window.visualViewport.addEventListener('scroll', syncMobileViewport);
+  }
+  window.addEventListener('resize', syncMobileViewport);
 
   // Cualquier elemento con [data-open-assistant] abre el asistente
   document.addEventListener('click', e => {

@@ -350,9 +350,37 @@ async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
 }
 
 // ------------------------------------------
-// Sintetizador de Voz Mexicana Auténtica (Audio Stream)
+// Conversor de PCM 24kHz a WAV estándar
+// ------------------------------------------
+function pcmToWav(pcmBuffer, sampleRate = 24000, numChannels = 1, bitDepth = 16) {
+  const byteRate = sampleRate * numChannels * (bitDepth / 8);
+  const blockAlign = numChannels * (bitDepth / 8);
+  const dataSize = pcmBuffer.length;
+  const buffer = Buffer.alloc(44 + dataSize);
+
+  buffer.write('RIFF', 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write('WAVE', 8);
+  buffer.write('fmt ', 12);
+  buffer.writeUInt32LE(16, 16); // Subchunk1Size
+  buffer.writeUInt16LE(1, 20);  // AudioFormat (PCM = 1)
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(byteRate, 28);
+  buffer.writeUInt16LE(blockAlign, 32);
+  buffer.writeUInt16LE(bitDepth, 34);
+  buffer.write('data', 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  pcmBuffer.copy(buffer, 44);
+  return buffer;
+}
+
+// ------------------------------------------
+// Generador Oficial de Voz de Gemini
 // ------------------------------------------
 export async function handleAssistantTts(text = '') {
+  ensureEnv();
   let clean = String(text || '')
     .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -361,30 +389,81 @@ export async function handleAssistantTts(text = '') {
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Para respuestas habladas ultra fluidas, sintetizar las 2 primeras oraciones o hasta 180 chars
-  if (clean.length > 180) {
+  // Para respuestas habladas ágiles, sintetizar las primeras dos oraciones o hasta 160 caracteres
+  if (clean.length > 160) {
     const sentences = clean.split(/[.?!]/).filter(s => s.trim().length > 3);
     clean = sentences.slice(0, 2).join('. ') + '.';
   }
   if (!clean || clean.length < 2) clean = 'Hola, soy Fibi de Fiberlink.';
 
-  const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=es-MX&client=tw-ob&q=${encodeURIComponent(clean)}`;
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+
+  // 1. Intentar primero con el modelo oficial Gemini TTS
+  if (apiKey) {
+    try {
+      const geminiTtsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      try {
+        const res = await fetch(geminiTtsUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: clean }] }],
+            generationConfig: {
+              responseModalities: ['AUDIO'],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: 'Aoede' // Voz oficial de Gemini (femenina, cálida, natural)
+                  }
+                }
+              }
+            }
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const p = data?.candidates?.[0]?.content?.parts?.[0];
+          if (p?.inlineData?.data) {
+            const rawPcm = Buffer.from(p.inlineData.data, 'base64');
+            const wavBuffer = pcmToWav(rawPcm, 24000);
+            return {
+              status: 200,
+              buffer: wavBuffer,
+              contentType: 'audio/wav',
+              voiceEngine: 'gemini-native'
+            };
+          }
+        }
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch (err) {
+      console.warn('[Gemini TTS] Fallback a audio secundario:', err.message);
+    }
+  }
+
+  // 2. Fallback ultra rápido en español mexicano nativo
+  const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=es-MX&client=tw-ob&q=${encodeURIComponent(clean)}`;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 7000);
+  const timer = setTimeout(() => controller.abort(), 6000);
   try {
-    const response = await fetch(ttsUrl, {
+    const response = await fetch(fallbackUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Referer': 'https://translate.google.com/'
       },
       signal: controller.signal
     });
-    if (!response.ok) throw new Error(`TTS upstream error HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Fallback TTS HTTP ${response.status}`);
     const arrayBuffer = await response.arrayBuffer();
     return {
       status: 200,
       buffer: Buffer.from(arrayBuffer),
-      contentType: 'audio/mpeg'
+      contentType: 'audio/mpeg',
+      voiceEngine: 'google-latam'
     };
   } finally {
     clearTimeout(timer);
