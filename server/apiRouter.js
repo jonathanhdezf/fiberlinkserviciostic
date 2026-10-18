@@ -175,7 +175,8 @@ export async function handleApiRequest(req, res, next) {
         service: 'Fiberlink ERP & Control Backend',
         version: '2.0.0',
         timestamp: new Date().toISOString(),
-        collections: Object.keys(FILES)
+        collections: Object.keys(FILES),
+        geminiConfigured: Boolean(process.env.GEMINI_API_KEY)
       });
     }
 
