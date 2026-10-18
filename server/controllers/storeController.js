@@ -1,16 +1,16 @@
 // ==========================================
-// STORE & INVENTORY CONTROLLER (Tienda / Catálogo)
+// STORE & INVENTORY CONTROLLER (Tienda, Almacén, Movimientos y Kardex)
 // ==========================================
 
-import { readCollection, writeCollection, logActivity } from '../db/jsonStore.js';
+import { readCollection, writeCollection, logActivity, recordInventoryMovement } from '../db/jsonStore.js';
 
 export function handleListProducts(searchParams) {
   let products = readCollection('products');
 
-  const category = searchParams.get('category');
-  const publicOnly = searchParams.get('public');
-  const lowStock = searchParams.get('lowStock');
-  const q = searchParams.get('q');
+  const category = searchParams?.get('category');
+  const publicOnly = searchParams?.get('public');
+  const lowStock = searchParams?.get('lowStock');
+  const q = searchParams?.get('q');
 
   if (publicOnly === 'true') {
     products = products.filter(p => p.publicVisible !== false);
@@ -45,6 +45,9 @@ export function handleCreateProduct(body, currentUser) {
   const sku = (body.sku || `FL-${Date.now().toString().slice(-4)}`).trim().toUpperCase();
   const barcode = (body.barcode || `7501045${Date.now().toString().slice(-6)}`).trim();
   const isService = Boolean(body.isService || body.category === 'servicios');
+  const initialStock = isService ? 999 : (parseInt(body.stock, 10) || 0);
+  const cost = parseFloat(body.cost) || 0;
+  const author = currentUser?.name || 'Admin';
 
   const newProduct = {
     id: `prod-${Date.now()}`,
@@ -52,9 +55,9 @@ export function handleCreateProduct(body, currentUser) {
     barcode,
     name: body.name.trim(),
     category: body.category || 'pos',
-    cost: parseFloat(body.cost) || 0,
+    cost,
     price: parseFloat(body.price) || 0,
-    stock: isService ? 999 : (parseInt(body.stock, 10) || 0),
+    stock: initialStock,
     minStock: isService ? 0 : (parseInt(body.minStock, 10) || 3),
     unit: body.unit || (isService ? 'servicio' : 'pza'),
     isService,
@@ -73,8 +76,25 @@ export function handleCreateProduct(body, currentUser) {
   products.unshift(newProduct);
   writeCollection('products', products);
 
+  if (!isService && initialStock > 0) {
+    recordInventoryMovement({
+      productId: newProduct.id,
+      sku: newProduct.sku,
+      productName: newProduct.name,
+      category: newProduct.category,
+      type: 'entrada',
+      reason: 'Inventario inicial al dar de alta el artículo',
+      reference: 'ALTA-INICIAL',
+      stockBefore: 0,
+      delta: initialStock,
+      stockAfter: initialStock,
+      unitCost: cost,
+      user: author
+    });
+  }
+
   logActivity({
-    user: currentUser?.name || 'Admin',
+    user: author,
     role: currentUser?.role || 'admin',
     module: 'store',
     action: `Agregó producto/servicio [${newProduct.sku}] ${newProduct.name} ($${newProduct.price.toFixed(2)})`
@@ -91,6 +111,9 @@ export function handleUpdateProduct(id, body, currentUser) {
   }
 
   const p = products[idx];
+  const prevStock = Number(p.stock) || 0;
+  const author = currentUser?.name || 'Admin';
+
   if (body.sku !== undefined) p.sku = body.sku.trim().toUpperCase();
   if (body.barcode !== undefined) p.barcode = String(body.barcode).trim();
   if (body.name !== undefined) p.name = body.name.trim();
@@ -115,8 +138,27 @@ export function handleUpdateProduct(id, body, currentUser) {
 
   writeCollection('products', products);
 
+  const newStock = Number(p.stock) || 0;
+  if (!p.isService && body.stock !== undefined && newStock !== prevStock) {
+    const delta = newStock - prevStock;
+    recordInventoryMovement({
+      productId: p.id,
+      sku: p.sku,
+      productName: p.name,
+      category: p.category,
+      type: 'ajuste_conteo',
+      reason: 'Actualización directa de existencia en ficha de producto',
+      reference: 'EDICION-FICHA',
+      stockBefore: prevStock,
+      delta,
+      stockAfter: newStock,
+      unitCost: p.cost,
+      user: author
+    });
+  }
+
   logActivity({
-    user: currentUser?.name || 'Admin',
+    user: author,
     role: currentUser?.role || 'admin',
     module: 'store',
     action: `Actualizó producto [${p.sku}] ${p.name}`
@@ -132,22 +174,136 @@ export function handleAdjustStock(id, body, currentUser) {
     return { status: 404, data: { error: 'Producto no encontrado' } };
   }
 
-  const delta = parseInt(body.delta, 10) || 0;
-  const reason = (body.reason || 'Ajuste manual').trim();
-  const prev = Number(products[idx].stock) || 0;
-  products[idx].stock = Math.max(0, prev + delta);
-  products[idx].updatedAt = new Date().toISOString();
+  const prod = products[idx];
+  const prev = Number(prod.stock) || 0;
+  const author = currentUser?.name || body.user || 'Administrador';
 
+  let delta = 0;
+  let nextStock = prev;
+
+  if (body.newStock !== undefined && body.newStock !== null && body.newStock !== '') {
+    nextStock = Math.max(0, parseInt(body.newStock, 10) || 0);
+    delta = nextStock - prev;
+  } else {
+    delta = parseInt(body.delta, 10) || 0;
+    nextStock = Math.max(0, prev + delta);
+    delta = nextStock - prev;
+  }
+
+  if (body.unitCost !== undefined && parseFloat(body.unitCost) > 0) {
+    prod.cost = parseFloat(body.unitCost);
+  }
+
+  prod.stock = nextStock;
+  prod.updatedAt = new Date().toISOString();
   writeCollection('products', products);
 
-  logActivity({
-    user: currentUser?.name || 'Admin',
-    role: currentUser?.role || 'admin',
-    module: 'store',
-    action: `Ajuste de stock [${products[idx].sku}]: ${prev} ➔ ${products[idx].stock} (${delta >= 0 ? '+' + delta : delta}) - ${reason}`
+  const movType = body.type || (delta >= 0 ? 'entrada' : 'ajuste_salida');
+  const reason = (body.reason || (delta >= 0 ? 'Entrada de inventario' : 'Ajuste de inventario')).trim();
+  const reference = (body.reference || 'AJUSTE').trim().toUpperCase();
+
+  const movement = recordInventoryMovement({
+    productId: prod.id,
+    sku: prod.sku,
+    productName: prod.name,
+    category: prod.category,
+    type: movType,
+    reason,
+    reference,
+    stockBefore: prev,
+    delta,
+    stockAfter: nextStock,
+    unitCost: parseFloat(body.unitCost) || prod.cost || 0,
+    user: author
   });
 
-  return { status: 200, data: { success: true, product: products[idx] } };
+  logActivity({
+    user: author,
+    role: currentUser?.role || 'admin',
+    module: 'store',
+    action: `Movimiento de inventario [${prod.sku}]: ${prev} ➔ ${nextStock} (${delta >= 0 ? '+' + delta : delta}) - ${reason}`
+  });
+
+  return {
+    status: 200,
+    data: {
+      success: true,
+      product: prod,
+      movement
+    }
+  };
+}
+
+export function handleListInventoryMovements(searchParams) {
+  let movements = readCollection('inventoryMovements');
+  const productId = searchParams?.get('productId');
+  const sku = searchParams?.get('sku');
+  const type = searchParams?.get('type');
+  const q = searchParams?.get('q');
+
+  if (productId && productId !== 'all') {
+    movements = movements.filter(m => m.productId === productId || m.sku === productId);
+  }
+  if (sku) {
+    movements = movements.filter(m => m.sku && m.sku.toLowerCase() === sku.toLowerCase());
+  }
+  if (type && type !== 'all') {
+    if (type === 'entradas') {
+      movements = movements.filter(m => Number(m.delta) > 0);
+    } else if (type === 'salidas') {
+      movements = movements.filter(m => Number(m.delta) < 0);
+    } else {
+      movements = movements.filter(m => m.type === type);
+    }
+  }
+  if (q) {
+    const query = q.toLowerCase();
+    movements = movements.filter(m =>
+      (m.folio && m.folio.toLowerCase().includes(query)) ||
+      (m.sku && m.sku.toLowerCase().includes(query)) ||
+      (m.productName && m.productName.toLowerCase().includes(query)) ||
+      (m.reason && m.reason.toLowerCase().includes(query)) ||
+      (m.reference && m.reference.toLowerCase().includes(query)) ||
+      (m.user && m.user.toLowerCase().includes(query))
+    );
+  }
+
+  movements.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return { status: 200, data: movements };
+}
+
+export function handleGetProductKardex(productId) {
+  const products = readCollection('products');
+  const product = products.find(p => p.id === productId || p.sku === productId);
+  if (!product) {
+    return { status: 404, data: { error: 'Producto no encontrado para Kardex' } };
+  }
+
+  const allMovements = readCollection('inventoryMovements');
+  const movements = allMovements
+    .filter(m => m.productId === product.id || m.sku === product.sku)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const totalEntries = movements.filter(m => Number(m.delta) > 0).reduce((s, m) => s + Math.abs(Number(m.delta) || 0), 0);
+  const totalExits = movements.filter(m => Number(m.delta) < 0).reduce((s, m) => s + Math.abs(Number(m.delta) || 0), 0);
+
+  return {
+    status: 200,
+    data: {
+      product,
+      summary: {
+        currentStock: product.stock,
+        minStock: product.minStock || 0,
+        unitCost: product.cost || 0,
+        inventoryValueCost: (Number(product.stock) || 0) * (parseFloat(product.cost) || 0),
+        inventoryValueRetail: (Number(product.stock) || 0) * (parseFloat(product.price) || 0),
+        totalEntries,
+        totalExits,
+        movementsCount: movements.length
+      },
+      movements
+    }
+  };
 }
 
 export function handleDeleteProduct(id, currentUser) {

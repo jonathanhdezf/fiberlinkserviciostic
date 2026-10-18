@@ -28,6 +28,8 @@ import {
   handleCreateProduct,
   handleUpdateProduct,
   handleAdjustStock,
+  handleListInventoryMovements,
+  handleGetProductKardex,
   handleDeleteProduct
 } from './controllers/storeController.js';
 import {
@@ -218,8 +220,19 @@ export async function handleApiRequest(req, res, next) {
     }
 
     // ==========================================
-    // 4. STORE & INVENTORY MODULE (Tienda)
+    // 4. STORE & INVENTORY MODULE (Tienda, Almacén, Movimientos y Kardex)
     // ==========================================
+    if (pathname === '/api/inventory/movements' && method === 'GET') {
+      const result = handleListInventoryMovements(url.searchParams);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    const kardexMatch = pathname.match(/^\/api\/inventory\/kardex\/([a-zA-Z0-9_-]+)$/);
+    if (kardexMatch && method === 'GET') {
+      const result = handleGetProductKardex(kardexMatch[1]);
+      return sendJSON(res, result.status, result.data);
+    }
+
     if (pathname === '/api/products' && method === 'GET') {
       const result = handleListProducts(url.searchParams);
       return sendJSON(res, result.status, result.data);

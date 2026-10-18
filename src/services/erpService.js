@@ -80,11 +80,25 @@ export const erpService = {
       body: JSON.stringify(payload)
     });
   },
-  async adjustStock(id, delta, reason) {
+  async adjustStock(id, deltaOrPayload, reason) {
+    const body = typeof deltaOrPayload === 'object' && deltaOrPayload !== null
+      ? deltaOrPayload
+      : { delta: deltaOrPayload, reason };
     return apiRequest(`/products/${id}/stock`, {
       method: 'POST',
-      body: JSON.stringify({ delta, reason })
+      body: JSON.stringify(body)
     });
+  },
+  async getInventoryMovements(params = {}) {
+    const q = new URLSearchParams();
+    if (params.productId) q.set('productId', params.productId);
+    if (params.sku) q.set('sku', params.sku);
+    if (params.type) q.set('type', params.type);
+    if (params.q) q.set('q', params.q);
+    return apiRequest(`/inventory/movements${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  async getProductKardex(id) {
+    return apiRequest(`/inventory/kardex/${id}`);
   },
   async deleteProduct(id) {
     return apiRequest(`/products/${id}`, {

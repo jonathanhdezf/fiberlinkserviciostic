@@ -8,6 +8,7 @@ let currentUser = null;
 let currentView = 'overview';
 let allTickets = [];
 let allProducts = [];
+let allInventoryMovements = [];
 let allWorkshop = [];
 let allSales = [];
 let allUsers = [];
@@ -27,6 +28,7 @@ let cliDirectoryFilter = 'all';
 let cliCreditFilter = 'all';
 let currentStatementClientId = null;
 let currentStatementFilter = 'all';
+let invMovFilter = 'all';
 
 // Command Palette state
 let cmdItems = [];
@@ -37,7 +39,7 @@ const VIEW_META = {
   tickets: { title: 'Mesa de Control de Tickets', bc: 'Tickets Soporte' },
   workshop: { title: 'Laboratorio y Taller Técnico', bc: 'Taller & Lab' },
   pos: { title: 'Terminal Punto de Venta (POS)', bc: 'Punto de Venta' },
-  store: { title: 'Catálogo, Tienda e Inventario', bc: 'Tienda & Stock' },
+  store: { title: 'Manejo de Inventario, Reportes & Kardex', bc: 'Inventario & Kardex' },
   clients: { title: 'Control de Clientes, Facturación & Créditos', bc: 'Clientes & Créditos' },
   reports: { title: 'Analítica Financiera y Corte', bc: 'Reportes & Caja' },
   users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' }
@@ -477,9 +479,10 @@ function highlightCmdSelection() {
 // ==========================================
 async function syncAllData() {
   try {
-    const [tickets, products, workshop, sales, users, clients, reports] = await Promise.all([
+    const [tickets, products, movements, workshop, sales, users, clients, reports] = await Promise.all([
       ticketService.getTickets(),
       erpService.getProducts().catch(() => []),
+      erpService.getInventoryMovements().catch(() => []),
       erpService.getWorkshopOrders().catch(() => []),
       erpService.getSales().catch(() => []),
       erpService.getUsers().catch(() => []),
@@ -489,6 +492,7 @@ async function syncAllData() {
 
     allTickets = Array.isArray(tickets) ? tickets : [];
     allProducts = Array.isArray(products) ? products : [];
+    allInventoryMovements = Array.isArray(movements) ? movements : [];
     allWorkshop = Array.isArray(workshop) ? workshop : [];
     allSales = Array.isArray(sales) ? sales : [];
     allUsers = Array.isArray(users) ? users : [];
@@ -505,7 +509,7 @@ async function syncAllData() {
     renderPosCatalog();
     renderPosFolioOptions();
     renderPosSalesHistory();
-    renderStoreTable();
+    renderInventoryModule();
     renderClientsModule();
     renderReportsView();
     renderUsersTable();
@@ -2305,9 +2309,36 @@ function renderPosSalesHistory() {
 }
 
 // ==========================================
-// 10. VIEW 5: STORE & INVENTORY MODULE (TIENDA)
+// 10. VIEW 5: MÓDULO DE INVENTARIO, MOVIMIENTOS Y KARDEX
 // ==========================================
+function switchInventorySubTab(tabName) {
+  const paneMap = {
+    manage: 'invSubTabManage',
+    lowstock: 'invSubTabLowStock',
+    report: 'invSubTabReport',
+    movements: 'invSubTabMovements',
+    kardex: 'invSubTabKardex'
+  };
+
+  document.querySelectorAll('#invModuleTabs .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.invtab === tabName);
+  });
+
+  Object.entries(paneMap).forEach(([key, domId]) => {
+    const el = document.getElementById(domId);
+    if (el) el.classList.toggle('active', key === tabName);
+  });
+}
+
 function initStoreModule() {
+  // 5-Tab Switcher
+  document.querySelectorAll('#invModuleTabs .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchInventorySubTab(btn.dataset.invtab || 'manage');
+    });
+  });
+
+  // Tab 1: Manejo de Inventario Search & Category Pills
   document.getElementById('storeSearchInput')?.addEventListener('input', renderStoreTable);
   document.getElementById('storeCategoryFilter')?.addEventListener('change', renderStoreTable);
 
@@ -2321,12 +2352,21 @@ function initStoreModule() {
     });
   });
 
+  // Top Buttons: Agregar Inventario, Ajustes de Inventario, Nuevo Producto
+  document.getElementById('btnOpenAddInventoryModal')?.addEventListener('click', () => {
+    openAddInventoryModal();
+  });
+  document.getElementById('btnOpenAdjustInventoryModal')?.addEventListener('click', () => {
+    openAdjustInventoryModal();
+  });
+
   document.getElementById('btnOpenNewProductModal')?.addEventListener('click', () => {
     document.getElementById('productForm').reset();
     document.getElementById('prodId').value = '';
     const bcEl = document.getElementById('prodBarcode');
     if (bcEl) bcEl.value = '';
-    document.getElementById('prodModalTitle').textContent = 'Registrar Nuevo Producto / Servicio';
+    const titleEl = document.getElementById('productModalTitle') || document.getElementById('prodModalTitle');
+    if (titleEl) titleEl.textContent = 'Registrar Nuevo Producto / Servicio';
     openModal('productModal');
   });
 
@@ -2355,7 +2395,7 @@ function initStoreModule() {
         showToast('Producto actualizado');
       } else {
         await erpService.createProduct(payload);
-        showToast('Producto agregado al catálogo');
+        showToast('Producto agregado al catálogo e inventario');
       }
       closeModal('productModal');
       await syncAllData();
@@ -2363,6 +2403,264 @@ function initStoreModule() {
       showToast(err.message);
     }
   });
+
+  // Modal: Agregar Inventario (Entrada de Almacén)
+  const addProdSel = document.getElementById('addInvProductSelect');
+  const addQtyIn = document.getElementById('addInvQty');
+  const addCostIn = document.getElementById('addInvUnitCost');
+
+  const updateAddInventoryPreview = () => {
+    const prod = allProducts.find(p => p.id === addProdSel?.value);
+    const curStock = Number(prod?.stock) || 0;
+    const minStock = Number(prod?.minStock) || 0;
+    const addQty = Math.max(0, parseInt(addQtyIn?.value, 10) || 0);
+    const unitCost = Math.max(0, parseFloat(addCostIn?.value) || 0);
+
+    const curEl = document.getElementById('addInvCurrentStock');
+    const minEl = document.getElementById('addInvMinStock');
+    const projEl = document.getElementById('addInvProjectedStock');
+    const totEl = document.getElementById('addInvTotalCost');
+
+    if (curEl) curEl.textContent = `${curStock} ${prod?.unit || 'pza'}`;
+    if (minEl) minEl.textContent = `${minStock} ${prod?.unit || 'pza'}`;
+    if (projEl) projEl.textContent = `${curStock + addQty} ${prod?.unit || 'pza'}`;
+    if (totEl) totEl.value = formatMoney(addQty * unitCost);
+  };
+
+  addProdSel?.addEventListener('change', () => {
+    const prod = allProducts.find(p => p.id === addProdSel.value);
+    if (prod && addCostIn) {
+      addCostIn.value = (parseFloat(prod.cost) || 0).toFixed(2);
+    }
+    updateAddInventoryPreview();
+  });
+  addQtyIn?.addEventListener('input', updateAddInventoryPreview);
+  addCostIn?.addEventListener('input', updateAddInventoryPreview);
+
+  document.getElementById('addInventoryForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const prodId = addProdSel?.value;
+    const qty = Math.max(1, parseInt(addQtyIn?.value, 10) || 1);
+    const unitCost = Math.max(0, parseFloat(addCostIn?.value) || 0);
+    const reference = document.getElementById('addInvReference')?.value.trim() || 'ENTRADA-ALMACEN';
+    const reason = document.getElementById('addInvReason')?.value.trim() || 'Compra / Entrada de inventario';
+
+    if (!prodId) return;
+    try {
+      await erpService.adjustStock(prodId, {
+        delta: qty,
+        type: 'entrada',
+        unitCost,
+        reference,
+        reason
+      });
+      closeModal('addInventoryModal');
+      await syncAllData();
+      showToast(`Entrada de +${qty} unidades registrada en el Kardex`);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Modal: Ajustes de Inventario (Conteo físico, Merma, Uso en taller)
+  const adjProdSel = document.getElementById('adjInvProductSelect');
+  const adjModeSel = document.getElementById('adjInvMode');
+  const adjValIn = document.getElementById('adjInvValue');
+
+  const updateAdjustInventoryPreview = () => {
+    const prod = allProducts.find(p => p.id === adjProdSel?.value);
+    const sysStock = Number(prod?.stock) || 0;
+    const mode = adjModeSel?.value || 'set';
+    const val = Math.max(0, parseInt(adjValIn?.value, 10) || 0);
+
+    let finalStock = sysStock;
+    if (mode === 'set') {
+      finalStock = val;
+    } else if (mode === 'sub') {
+      finalStock = Math.max(0, sysStock - val);
+    } else {
+      finalStock = sysStock + val;
+    }
+    const delta = finalStock - sysStock;
+
+    const sysEl = document.getElementById('adjInvSystemStock');
+    const delEl = document.getElementById('adjInvDeltaDisplay');
+    const finEl = document.getElementById('adjInvFinalStock');
+    if (sysEl) sysEl.textContent = `${sysStock} ${prod?.unit || 'pza'}`;
+    if (delEl) {
+      delEl.textContent = `${delta >= 0 ? '+' : ''}${delta}`;
+      delEl.style.color = delta < 0 ? 'var(--amber)' : delta > 0 ? 'var(--secondary)' : 'var(--text-muted)';
+    }
+    if (finEl) finEl.textContent = `${finalStock} ${prod?.unit || 'pza'}`;
+  };
+
+  adjProdSel?.addEventListener('change', () => {
+    const prod = allProducts.find(p => p.id === adjProdSel.value);
+    if (prod && adjModeSel?.value === 'set' && adjValIn) {
+      adjValIn.value = prod.stock || 0;
+    }
+    updateAdjustInventoryPreview();
+  });
+  adjModeSel?.addEventListener('change', () => {
+    const prod = allProducts.find(p => p.id === adjProdSel?.value);
+    if (adjValIn) {
+      adjValIn.value = adjModeSel.value === 'set' ? (prod?.stock || 0) : 1;
+    }
+    updateAdjustInventoryPreview();
+  });
+  adjValIn?.addEventListener('input', updateAdjustInventoryPreview);
+
+  document.getElementById('adjustInventoryForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const prodId = adjProdSel?.value;
+    const prod = allProducts.find(p => p.id === prodId);
+    if (!prod) return;
+
+    const sysStock = Number(prod.stock) || 0;
+    const mode = adjModeSel?.value || 'set';
+    const val = Math.max(0, parseInt(adjValIn?.value, 10) || 0);
+    const finalStock = mode === 'set' ? val : mode === 'sub' ? Math.max(0, sysStock - val) : sysStock + val;
+
+    const type = document.getElementById('adjInvTypeSelect')?.value || 'ajuste_conteo';
+    const reference = document.getElementById('adjInvReference')?.value.trim() || 'AJUSTE-FISICO';
+    const reason = document.getElementById('adjInvReason')?.value.trim() || 'Ajuste de inventario en almacén';
+
+    try {
+      await erpService.adjustStock(prodId, {
+        newStock: finalStock,
+        type,
+        reference,
+        reason
+      });
+      closeModal('adjustInventoryModal');
+      await syncAllData();
+      showToast(`Ajuste de inventario aplicado (${prod.sku}: ${sysStock} ➔ ${finalStock})`);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Tab 2, 3, 4, 5 Controls & Exports
+  document.getElementById('btnExportLowStockCsv')?.addEventListener('click', exportLowStockToCSV);
+  document.getElementById('btnPrintLowStockReport')?.addEventListener('click', printLowStockReport);
+  document.getElementById('btnExportInventoryReportCsv')?.addEventListener('click', exportInventoryReportToCSV);
+  document.getElementById('btnPrintInventoryReport')?.addEventListener('click', printInventoryReport);
+
+  document.getElementById('invMovSearchInput')?.addEventListener('input', renderInventoryMovementsTable);
+  document.querySelectorAll('#invMovTypePills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#invMovTypePills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      invMovFilter = btn.dataset.movtype || 'all';
+      renderInventoryMovementsTable();
+    });
+  });
+  document.getElementById('btnExportMovementsCsv')?.addEventListener('click', exportMovementsToCSV);
+  document.getElementById('btnPrintMovementsReport')?.addEventListener('click', printMovementsReport);
+
+  // Tab 5: Kardex Product Selector & Quick Buttons
+  document.getElementById('kardexProductSelect')?.addEventListener('change', renderKardexTab);
+  document.getElementById('btnKardexQuickAdd')?.addEventListener('click', () => {
+    const pid = document.getElementById('kardexProductSelect')?.value;
+    openAddInventoryModal(pid);
+  });
+  document.getElementById('btnKardexQuickAdjust')?.addEventListener('click', () => {
+    const pid = document.getElementById('kardexProductSelect')?.value;
+    openAdjustInventoryModal(pid);
+  });
+  document.getElementById('btnPrintProductKardex')?.addEventListener('click', printProductKardex);
+}
+
+function openAddInventoryModal(preselectedProductId = null) {
+  const physicalProducts = allProducts.filter(p => !p.isService);
+  const sel = document.getElementById('addInvProductSelect');
+  if (!sel || physicalProducts.length === 0) return;
+
+  sel.innerHTML = physicalProducts.map(p =>
+    `<option value="${p.id}">[${p.sku}] ${p.name} (Stock actual: ${p.stock} ${p.unit || 'pza'})</option>`
+  ).join('');
+
+  if (preselectedProductId && physicalProducts.some(p => p.id === preselectedProductId)) {
+    sel.value = preselectedProductId;
+  }
+  document.getElementById('addInvQty').value = '5';
+  document.getElementById('addInvReference').value = '';
+  document.getElementById('addInvReason').value = 'Compra a proveedor / Entrada de almacén';
+  sel.dispatchEvent(new Event('change'));
+  openModal('addInventoryModal');
+}
+
+function openAdjustInventoryModal(preselectedProductId = null) {
+  const physicalProducts = allProducts.filter(p => !p.isService);
+  const sel = document.getElementById('adjInvProductSelect');
+  if (!sel || physicalProducts.length === 0) return;
+
+  sel.innerHTML = physicalProducts.map(p =>
+    `<option value="${p.id}">[${p.sku}] ${p.name} (Stock sistema: ${p.stock} ${p.unit || 'pza'})</option>`
+  ).join('');
+
+  if (preselectedProductId && physicalProducts.some(p => p.id === preselectedProductId)) {
+    sel.value = preselectedProductId;
+  }
+  document.getElementById('adjInvMode').value = 'set';
+  document.getElementById('adjInvReference').value = '';
+  document.getElementById('adjInvReason').value = 'Ajuste derivado de conteo físico en almacén';
+  sel.dispatchEvent(new Event('change'));
+  openModal('adjustInventoryModal');
+}
+
+function openProductKardexView(productId) {
+  switchInventorySubTab('kardex');
+  const sel = document.getElementById('kardexProductSelect');
+  if (sel && productId) {
+    sel.value = productId;
+    renderKardexTab();
+  }
+}
+
+function renderInventoryModule() {
+  const physical = allProducts.filter(p => !p.isService);
+  const totalUnits = physical.reduce((s, p) => s + (Number(p.stock) || 0), 0);
+  const lowStockItems = physical.filter(p => Number(p.stock) <= Number(p.minStock || 3));
+  const outStockItems = physical.filter(p => Number(p.stock) <= 0);
+  const totalCostVal = physical.reduce((s, p) => s + (Number(p.stock) || 0) * (parseFloat(p.cost) || 0), 0);
+  const totalRetailVal = physical.reduce((s, p) => s + (Number(p.stock) || 0) * (parseFloat(p.price) || 0), 0);
+
+  const elUnits = document.getElementById('invKpiTotalUnits');
+  const elSkus = document.getElementById('invKpiSkuCount');
+  const elLow = document.getElementById('invKpiLowStockCount');
+  const elOut = document.getElementById('invKpiOutStockBadge');
+  const elCost = document.getElementById('invKpiCostValue');
+  const elRetail = document.getElementById('invKpiRetailValue');
+  const elMovs = document.getElementById('invKpiMovementsBadge');
+  const elTabLow = document.getElementById('invTabLowCount');
+
+  if (elUnits) elUnits.textContent = totalUnits.toLocaleString('es-MX');
+  if (elSkus) elSkus.textContent = `${physical.length} SKUs físicos`;
+  if (elLow) elLow.textContent = lowStockItems.length;
+  if (elOut) elOut.textContent = `${outStockItems.length} agotados`;
+  if (elCost) elCost.textContent = formatMoney(totalCostVal);
+  if (elRetail) elRetail.textContent = formatMoney(totalRetailVal);
+  if (elMovs) elMovs.textContent = `${allInventoryMovements.length} mov. Kardex`;
+  if (elTabLow) elTabLow.textContent = lowStockItems.length;
+
+  // Populate Kardex Product Selector preserving selection
+  const kdxSel = document.getElementById('kardexProductSelect');
+  if (kdxSel) {
+    const prev = kdxSel.value;
+    kdxSel.innerHTML = physical.map(p =>
+      `<option value="${p.id}">[${p.sku}] ${p.name} — Stock: ${p.stock} ${p.unit || 'pza'}</option>`
+    ).join('');
+    if (prev && physical.some(p => p.id === prev)) {
+      kdxSel.value = prev;
+    }
+  }
+
+  renderStoreTable();
+  renderLowStockTable();
+  renderInventoryValuationReport();
+  renderInventoryMovementsTable();
+  renderKardexTab();
 }
 
 function renderStoreTable() {
@@ -2401,20 +2699,24 @@ function renderStoreTable() {
         <td data-label="Costo" style="text-align:right;" class="mono tabular">${formatMoney(p.cost)}</td>
         <td data-label="Precio Púb." style="text-align:right;" class="mono tabular"><strong>${formatMoney(p.price)}</strong></td>
         <td data-label="Margen" style="text-align:right;" class="mono tabular"><span style="color:var(--primary); font-weight:600;">+${margin}%</span></td>
-        <td data-label="Existencia" style="text-align:center;">
+        <td data-label="Existencia / Mín." style="text-align:center;">
           ${p.isService
-            ? '<span class="badge badge-purple">Intangible</span>'
-            : `<span class="badge ${isLow ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>`
+            ? '<span class="badge badge-purple">Servicio</span>'
+            : `<div>
+                 <span class="badge ${isLow ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>
+                 <div class="mono tabular" style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">Mín: ${p.minStock || 0}</div>
+               </div>`
           }
         </td>
         <td data-label="Catálogo Web" style="text-align:center;">
           <span class="badge ${p.publicVisible !== false ? 'badge-green' : 'badge-amber'}">${p.publicVisible !== false ? 'Público' : 'Oculto'}</span>
         </td>
-        <td data-label="Acciones" style="text-align:right; white-space:nowrap;">
-          <div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+        <td data-label="Manejo de Inventario" style="text-align:right; white-space:nowrap;">
+          <div style="display:inline-flex; gap:5px; justify-content:flex-end; flex-wrap:wrap;">
             ${!p.isService ? `
-              <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="1" title="Entrada rápida +1">+1</button>
-              <button class="btn btn-secondary btn-sm btn-stock-adj" data-id="${p.id}" data-delta="-1" title="Salida rápida -1">-1</button>
+              <button class="btn btn-primary btn-sm btn-inv-add" data-id="${p.id}" title="Agregar Inventario (Entrada)">+ Stock</button>
+              <button class="btn btn-secondary btn-sm btn-inv-adj" data-id="${p.id}" title="Ajuste de Inventario / Conteo">Ajustar</button>
+              <button class="btn btn-secondary btn-sm btn-inv-kardex" data-id="${p.id}" title="Ver Tarjeta Kardex del Producto">Kardex</button>
             ` : ''}
             <button class="btn btn-ghost btn-sm btn-edit-prod" data-id="${p.id}">Editar</button>
             ${currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}">✕</button>` : ''}
@@ -2424,12 +2726,14 @@ function renderStoreTable() {
     `;
   }).join('');
 
-  tbody.querySelectorAll('.btn-stock-adj').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await erpService.adjustStock(btn.dataset.id, Number(btn.dataset.delta), 'Ajuste rápido en tabla');
-      await syncAllData();
-      showToast('Existencia actualizada');
-    });
+  tbody.querySelectorAll('.btn-inv-add').forEach(btn => {
+    btn.addEventListener('click', () => openAddInventoryModal(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btn-inv-adj').forEach(btn => {
+    btn.addEventListener('click', () => openAdjustInventoryModal(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btn-inv-kardex').forEach(btn => {
+    btn.addEventListener('click', () => openProductKardexView(btn.dataset.id));
   });
 
   tbody.querySelectorAll('.btn-edit-prod').forEach(btn => {
@@ -2450,7 +2754,8 @@ function renderStoreTable() {
       document.getElementById('prodSpecs').value = Array.isArray(p.specs) ? p.specs.join(', ') : '';
       document.getElementById('prodPublicVisible').checked = p.publicVisible !== false;
       document.getElementById('prodIsService').checked = Boolean(p.isService);
-      document.getElementById('prodModalTitle').textContent = `Editar: ${p.name}`;
+      const titleEl = document.getElementById('productModalTitle') || document.getElementById('prodModalTitle');
+      if (titleEl) titleEl.textContent = `Editar: ${p.name}`;
       openModal('productModal');
     });
   });
@@ -2463,6 +2768,492 @@ function renderStoreTable() {
       showToast('Producto eliminado');
     });
   });
+}
+
+function renderLowStockTable() {
+  const tbody = document.getElementById('invLowStockTableBody');
+  if (!tbody) return;
+
+  const lowList = allProducts
+    .filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3))
+    .sort((a, b) => Number(a.stock) - Number(b.stock));
+
+  if (lowList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">${renderEmptyState('¡Almacén al 100%!', 'No hay productos bajos en inventario. Todos los artículos superan su stock mínimo.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lowList.map(p => {
+    const stock = Number(p.stock) || 0;
+    const min = Number(p.minStock) || 3;
+    const suggested = Math.max(5, (min * 2) - stock);
+    const estCost = suggested * (parseFloat(p.cost) || 0);
+    return `
+      <tr>
+        <td data-label="SKU / Código" class="mono"><strong>${p.sku}</strong></td>
+        <td data-label="Producto"><strong>${p.name}</strong></td>
+        <td data-label="Categoría"><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
+        <td data-label="Existencia Actual" style="text-align:center;">
+          <span class="badge badge-red"><span class="status-dot dot-red"></span>${stock} ${p.unit || 'pza'}</span>
+        </td>
+        <td data-label="Stock Mínimo" style="text-align:center;" class="mono tabular">${min} ${p.unit || 'pza'}</td>
+        <td data-label="Sugerido a Pedir" style="text-align:center;" class="mono tabular">
+          <strong style="color:var(--amber);">+${suggested} ${p.unit || 'pza'}</strong>
+        </td>
+        <td data-label="Costo Reposición Est." style="text-align:right;" class="mono tabular"><strong>${formatMoney(estCost)}</strong></td>
+        <td data-label="Acción Rápida" style="text-align:right;">
+          <button type="button" class="btn btn-primary btn-sm btn-lowstock-restock" data-id="${p.id}">+ Surtir Ahora</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-lowstock-restock').forEach(btn => {
+    btn.addEventListener('click', () => openAddInventoryModal(btn.dataset.id));
+  });
+}
+
+function renderInventoryValuationReport() {
+  const catTbody = document.getElementById('invCategoryValuationTableBody');
+  const detTbody = document.getElementById('invValuationDetailTableBody');
+  const physical = allProducts.filter(p => !p.isService);
+
+  if (catTbody) {
+    const groups = {};
+    physical.forEach(p => {
+      const cat = p.category || 'pos';
+      if (!groups[cat]) {
+        groups[cat] = { skus: 0, units: 0, costVal: 0, retailVal: 0 };
+      }
+      const st = Number(p.stock) || 0;
+      groups[cat].skus += 1;
+      groups[cat].units += st;
+      groups[cat].costVal += st * (parseFloat(p.cost) || 0);
+      groups[cat].retailVal += st * (parseFloat(p.price) || 0);
+    });
+
+    catTbody.innerHTML = Object.entries(groups).map(([cat, g]) => {
+      const profit = g.retailVal - g.costVal;
+      return `
+        <tr>
+          <td data-label="Categoría de Almacén"><strong>${CATEGORY_LABELS[cat] || cat.toUpperCase()}</strong></td>
+          <td data-label="SKUs Físicos" style="text-align:center;" class="mono tabular">${g.skus}</td>
+          <td data-label="Unidades Totales" style="text-align:center;" class="mono tabular"><strong>${g.units}</strong></td>
+          <td data-label="Valor al Costo" style="text-align:right;" class="mono tabular">${formatMoney(g.costVal)}</td>
+          <td data-label="Valor Precio Público" style="text-align:right;" class="mono tabular"><strong>${formatMoney(g.retailVal)}</strong></td>
+          <td data-label="Utilidad Potencial" style="text-align:right;" class="mono tabular"><strong style="color:var(--secondary);">+${formatMoney(profit)}</strong></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  if (detTbody) {
+    detTbody.innerHTML = physical.map(p => {
+      const st = Number(p.stock) || 0;
+      const costTotal = st * (parseFloat(p.cost) || 0);
+      const retailTotal = st * (parseFloat(p.price) || 0);
+      return `
+        <tr>
+          <td data-label="SKU" class="mono"><strong>${p.sku}</strong></td>
+          <td data-label="Producto">${p.name}</td>
+          <td data-label="Categoría"><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
+          <td data-label="Existencia" style="text-align:center;" class="mono tabular"><strong>${st} ${p.unit || 'pza'}</strong></td>
+          <td data-label="Costo Unit." style="text-align:right;" class="mono tabular">${formatMoney(p.cost)}</td>
+          <td data-label="Valor Costo Total" style="text-align:right;" class="mono tabular"><strong>${formatMoney(costTotal)}</strong></td>
+          <td data-label="Precio Venta" style="text-align:right;" class="mono tabular">${formatMoney(p.price)}</td>
+          <td data-label="Valor Comercial" style="text-align:right;" class="mono tabular"><strong style="color:var(--primary);">${formatMoney(retailTotal)}</strong></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+function getMovementBadgeHtml(type, delta) {
+  if (type === 'entrada') {
+    return `<span class="badge badge-green"><span class="status-dot dot-lime"></span>Entrada / Compra</span>`;
+  }
+  if (type === 'entrada_devolucion') {
+    return `<span class="badge badge-blue"><span class="status-dot dot-blue"></span>Devolución (+)</span>`;
+  }
+  if (type === 'salida_venta') {
+    return `<span class="badge badge-purple"><span class="status-dot dot-purple"></span>Salida Venta POS</span>`;
+  }
+  if (type === 'merma') {
+    return `<span class="badge badge-red"><span class="status-dot dot-red"></span>Baja por Merma</span>`;
+  }
+  if (type === 'ajuste_conteo') {
+    return `<span class="badge badge-amber"><span class="status-dot dot-amber"></span>Ajuste Conteo (${delta >= 0 ? '+' : '-'})</span>`;
+  }
+  return `<span class="badge ${delta >= 0 ? 'badge-green' : 'badge-amber'}">${delta >= 0 ? 'Entrada (+)' : 'Ajuste Salida (-)'}</span>`;
+}
+
+function renderInventoryMovementsTable() {
+  const tbody = document.getElementById('invMovementsTableBody');
+  if (!tbody) return;
+
+  const q = (document.getElementById('invMovSearchInput')?.value || '').toLowerCase().trim();
+
+  const filtered = allInventoryMovements.filter(m => {
+    const delta = Number(m.delta) || 0;
+    if (invMovFilter === 'entradas' && delta <= 0) return false;
+    if (invMovFilter === 'salidas' && delta >= 0) return false;
+    if (invMovFilter !== 'all' && invMovFilter !== 'entradas' && invMovFilter !== 'salidas' && m.type !== invMovFilter) return false;
+    if (q) {
+      const hay = `${m.folio} ${m.sku} ${m.productName} ${m.reason} ${m.reference} ${m.user}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10">${renderEmptyState('Sin movimientos para este filtro', 'Intenta con otra búsqueda o registra una entrada/ajuste de inventario.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(m => {
+    const delta = Number(m.delta) || 0;
+    const d = m.date ? new Date(m.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
+    return `
+      <tr>
+        <td data-label="Folio" class="mono"><strong>${m.folio}</strong></td>
+        <td data-label="Fecha / Hora" class="tabular">${d}</td>
+        <td data-label="SKU / Producto">
+          <div><strong class="mono" style="color:var(--primary);">${m.sku}</strong> · <strong>${m.productName}</strong></div>
+        </td>
+        <td data-label="Tipo de Movimiento">${getMovementBadgeHtml(m.type, delta)}</td>
+        <td data-label="Motivo & Referencia">
+          <div>${m.reason || '-'}</div>
+          <div class="mono" style="font-size:0.71rem; color:var(--text-muted);">Ref: ${m.reference || '-'}</div>
+        </td>
+        <td data-label="Stock Ant." style="text-align:center;" class="mono tabular">${m.stockBefore}</td>
+        <td data-label="Mov." style="text-align:center;" class="mono tabular">
+          <strong style="color:${delta >= 0 ? 'var(--secondary)' : 'var(--amber)'};">${delta >= 0 ? '+' + delta : delta}</strong>
+        </td>
+        <td data-label="Stock Final" style="text-align:center;" class="mono tabular"><strong>${m.stockAfter}</strong></td>
+        <td data-label="Valor Mov." style="text-align:right;" class="mono tabular">${formatMoney(m.totalCost || (Math.abs(delta) * (m.unitCost || 0)))}</td>
+        <td data-label="Responsable">${m.user || 'Sistema'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderKardexTab() {
+  const sel = document.getElementById('kardexProductSelect');
+  const tbody = document.getElementById('kardexMovementsTableBody');
+  if (!sel || !tbody) return;
+
+  const prod = allProducts.find(p => p.id === sel.value) || allProducts.find(p => !p.isService);
+  if (!prod) return;
+
+  const movs = allInventoryMovements
+    .filter(m => m.productId === prod.id || m.sku === prod.sku)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const entries = movs.filter(m => Number(m.delta) > 0).reduce((s, m) => s + Math.abs(Number(m.delta) || 0), 0);
+  const exits = movs.filter(m => Number(m.delta) < 0).reduce((s, m) => s + Math.abs(Number(m.delta) || 0), 0);
+  const valCost = (Number(prod.stock) || 0) * (parseFloat(prod.cost) || 0);
+
+  document.getElementById('kdxSummarySku').textContent = `${prod.sku} · |||| ${prod.barcode || '-'}`;
+  document.getElementById('kdxSummaryStock').textContent = `${prod.stock} ${prod.unit || 'pza'} (Mín: ${prod.minStock || 0})`;
+  document.getElementById('kdxSummaryEntries').textContent = `+${entries} ${prod.unit || 'pza'}`;
+  document.getElementById('kdxSummaryExits').textContent = `-${exits} ${prod.unit || 'pza'}`;
+  document.getElementById('kdxSummaryValuation').textContent = `${formatMoney(prod.cost)} c/u · Total: ${formatMoney(valCost)}`;
+  document.getElementById('kardexProductTitle').textContent = `Kardex: [${prod.sku}] ${prod.name}`;
+
+  if (movs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10">${renderEmptyState('Sin movimientos en Kardex', 'Registra una entrada o ajuste para iniciar la trazabilidad de este artículo.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = movs.map(m => {
+    const delta = Number(m.delta) || 0;
+    const d = m.date ? new Date(m.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+    return `
+      <tr>
+        <td data-label="Folio Kardex" class="mono"><strong>${m.folio}</strong></td>
+        <td data-label="Fecha / Hora" class="tabular">${d}</td>
+        <td data-label="Tipo Operación">${getMovementBadgeHtml(m.type, delta)}</td>
+        <td data-label="Concepto / Documento Referencia">
+          <div><strong>${m.reason || '-'}</strong></div>
+          <div class="mono" style="font-size:0.71rem; color:var(--text-muted);">Doc/Ref: ${m.reference || '-'}</div>
+        </td>
+        <td data-label="Existencia Anterior" style="text-align:center;" class="mono tabular">${m.stockBefore}</td>
+        <td data-label="Entrada / Salida" style="text-align:center;" class="mono tabular">
+          <strong style="color:${delta >= 0 ? 'var(--secondary)' : 'var(--amber)'}; font-size:0.95rem;">
+            ${delta >= 0 ? '+' + delta : delta}
+          </strong>
+        </td>
+        <td data-label="Existencia Final (Saldo)" style="text-align:center;" class="mono tabular"><strong>${m.stockAfter}</strong></td>
+        <td data-label="Costo Unit." style="text-align:right;" class="mono tabular">${formatMoney(m.unitCost)}</td>
+        <td data-label="Importe Total" style="text-align:right;" class="mono tabular"><strong>${formatMoney(m.totalCost || (Math.abs(delta) * (m.unitCost || 0)))}</strong></td>
+        <td data-label="Responsable">${m.user || 'Sistema'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportLowStockToCSV() {
+  const headers = ['SKU', 'CodigoBarras', 'Producto', 'Categoria', 'ExistenciaActual', 'StockMinimo', 'SugeridoPedir', 'CostoUnitario', 'CostoReposicionEstimado'];
+  const lowList = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3));
+  const rows = lowList.map(p => {
+    const st = Number(p.stock) || 0;
+    const min = Number(p.minStock) || 3;
+    const sug = Math.max(5, (min * 2) - st);
+    return [
+      p.sku,
+      p.barcode || '',
+      `"${(p.name || '').replace(/"/g, '""')}"`,
+      p.category,
+      st,
+      min,
+      sug,
+      (parseFloat(p.cost) || 0).toFixed(2),
+      (sug * (parseFloat(p.cost) || 0)).toFixed(2)
+    ];
+  });
+  const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fiberlink-productos-bajos-inventario-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  showToast('Reporte de productos bajos en inventario exportado a CSV');
+}
+
+function exportInventoryReportToCSV() {
+  const headers = ['SKU', 'CodigoBarras', 'Producto', 'Categoria', 'Existencia', 'StockMinimo', 'CostoUnitario', 'ValorCostoTotal', 'PrecioPublico', 'ValorComercialTotal'];
+  const physical = allProducts.filter(p => !p.isService);
+  const rows = physical.map(p => {
+    const st = Number(p.stock) || 0;
+    const cost = parseFloat(p.cost) || 0;
+    const price = parseFloat(p.price) || 0;
+    return [
+      p.sku,
+      p.barcode || '',
+      `"${(p.name || '').replace(/"/g, '""')}"`,
+      p.category,
+      st,
+      p.minStock || 0,
+      cost.toFixed(2),
+      (st * cost).toFixed(2),
+      price.toFixed(2),
+      (st * price).toFixed(2)
+    ];
+  });
+  const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fiberlink-reporte-valorizado-inventario-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  showToast('Reporte general de inventario exportado a CSV');
+}
+
+function exportMovementsToCSV() {
+  const headers = ['Folio', 'Fecha', 'SKU', 'Producto', 'Tipo', 'Motivo', 'Referencia', 'StockAnterior', 'Movimiento', 'StockFinal', 'CostoUnitario', 'CostoTotal', 'Responsable'];
+  const rows = allInventoryMovements.map(m => [
+    m.folio,
+    m.date,
+    m.sku,
+    `"${(m.productName || '').replace(/"/g, '""')}"`,
+    m.type,
+    `"${(m.reason || '').replace(/"/g, '""')}"`,
+    `"${(m.reference || '').replace(/"/g, '""')}"`,
+    m.stockBefore,
+    m.delta,
+    m.stockAfter,
+    (parseFloat(m.unitCost) || 0).toFixed(2),
+    (parseFloat(m.totalCost) || 0).toFixed(2),
+    `"${(m.user || '').replace(/"/g, '""')}"`
+  ]);
+  const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fiberlink-reporte-movimientos-kardex-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  showToast('Reporte de movimientos de inventario exportado a CSV');
+}
+
+function printLowStockReport() {
+  const area = document.getElementById('printArea');
+  if (!area) return;
+  const lowList = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3));
+  area.innerHTML = `
+    <div style="max-width:750px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <h2>FIBERLINK SERVICIOS TIC — ORDEN DE REABASTECIMIENTO (PRODUCTOS BAJOS EN INVENTARIO)</h2>
+      <p style="font-size:12px;">Generado el: ${new Date().toLocaleString('es-MX')} · Responsable: ${currentUser?.name || 'Almacén'}</p>
+      <hr style="margin:10px 0;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px;" border="1" cellpadding="6">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">SKU</th>
+            <th align="left">Producto</th>
+            <th align="center">Stock Actual</th>
+            <th align="center">Mínimo</th>
+            <th align="center">Sugerido a Pedir</th>
+            <th align="right">Costo Est.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lowList.map(p => {
+            const st = Number(p.stock) || 0;
+            const min = Number(p.minStock) || 3;
+            const sug = Math.max(5, (min * 2) - st);
+            return `
+              <tr>
+                <td>${p.sku}</td>
+                <td>${p.name}</td>
+                <td align="center"><strong>${st}</strong></td>
+                <td align="center">${min}</td>
+                <td align="center">+${sug}</td>
+                <td align="right">${formatMoney(sug * (parseFloat(p.cost) || 0))}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+}
+
+function printInventoryReport() {
+  const area = document.getElementById('printArea');
+  if (!area) return;
+  const physical = allProducts.filter(p => !p.isService);
+  const totalCost = physical.reduce((s, p) => s + (Number(p.stock) || 0) * (parseFloat(p.cost) || 0), 0);
+  const totalRetail = physical.reduce((s, p) => s + (Number(p.stock) || 0) * (parseFloat(p.price) || 0), 0);
+
+  area.innerHTML = `
+    <div style="max-width:760px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <h2>FIBERLINK SERVICIOS TIC — REPORTE GENERAL VALORIZADO DE INVENTARIO</h2>
+      <p style="font-size:12px;">Fecha: ${new Date().toLocaleString('es-MX')} · Capital al Costo: <strong>${formatMoney(totalCost)}</strong> · Valor Comercial: <strong>${formatMoney(totalRetail)}</strong></p>
+      <hr style="margin:10px 0;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px;" border="1" cellpadding="5">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">SKU</th>
+            <th align="left">Producto</th>
+            <th align="center">Existencia</th>
+            <th align="right">Costo Unit.</th>
+            <th align="right">Total Costo</th>
+            <th align="right">Precio Púb.</th>
+            <th align="right">Total Comercial</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${physical.map(p => {
+            const st = Number(p.stock) || 0;
+            return `
+              <tr>
+                <td>${p.sku}</td>
+                <td>${p.name}</td>
+                <td align="center"><strong>${st}</strong></td>
+                <td align="right">${formatMoney(p.cost)}</td>
+                <td align="right">${formatMoney(st * (parseFloat(p.cost) || 0))}</td>
+                <td align="right">${formatMoney(p.price)}</td>
+                <td align="right"><strong>${formatMoney(st * (parseFloat(p.price) || 0))}</strong></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+}
+
+function printMovementsReport() {
+  const area = document.getElementById('printArea');
+  if (!area) return;
+  area.innerHTML = `
+    <div style="max-width:760px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <h2>FIBERLINK SERVICIOS TIC — REPORTE DE MOVIMIENTOS DE INVENTARIO</h2>
+      <p style="font-size:12px;">Generado el: ${new Date().toLocaleString('es-MX')}</p>
+      <hr style="margin:10px 0;">
+      <table style="width:100%; border-collapse:collapse; font-size:11px;" border="1" cellpadding="5">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">Folio</th>
+            <th align="left">Fecha</th>
+            <th align="left">SKU / Producto</th>
+            <th align="left">Motivo / Ref</th>
+            <th align="center">Ant.</th>
+            <th align="center">Mov.</th>
+            <th align="center">Final</th>
+            <th align="left">Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allInventoryMovements.map(m => `
+            <tr>
+              <td>${m.folio}</td>
+              <td>${new Date(m.date).toLocaleDateString('es-MX')}</td>
+              <td>[${m.sku}] ${m.productName}</td>
+              <td>${m.reason} (${m.reference || '-'})</td>
+              <td align="center">${m.stockBefore}</td>
+              <td align="center"><strong>${m.delta >= 0 ? '+' + m.delta : m.delta}</strong></td>
+              <td align="center"><strong>${m.stockAfter}</strong></td>
+              <td>${m.user}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+}
+
+function printProductKardex() {
+  const sel = document.getElementById('kardexProductSelect');
+  const prod = allProducts.find(p => p.id === sel?.value);
+  const area = document.getElementById('printArea');
+  if (!area || !prod) return;
+
+  const movs = allInventoryMovements.filter(m => m.productId === prod.id || m.sku === prod.sku);
+  area.innerHTML = `
+    <div style="max-width:760px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <h2>FIBERLINK SERVICIOS TIC — TARJETA KARDEX DE INVENTARIO</h2>
+      <p style="font-size:13px;">
+        <strong>Artículo:</strong> [${prod.sku}] ${prod.name} &nbsp;|&nbsp;
+        <strong>Código de Barras:</strong> ${prod.barcode || '-'} &nbsp;|&nbsp;
+        <strong>Existencia Actual:</strong> ${prod.stock} ${prod.unit || 'pza'}
+      </p>
+      <hr style="margin:10px 0;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px;" border="1" cellpadding="5">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">Folio</th>
+            <th align="left">Fecha</th>
+            <th align="left">Tipo</th>
+            <th align="left">Concepto / Referencia</th>
+            <th align="center">Stock Ant.</th>
+            <th align="center">Mov.</th>
+            <th align="center">Saldo Final</th>
+            <th align="right">Costo Unit.</th>
+            <th align="left">Responsable</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${movs.map(m => `
+            <tr>
+              <td>${m.folio}</td>
+              <td>${new Date(m.date).toLocaleString('es-MX')}</td>
+              <td>${m.type.toUpperCase()}</td>
+              <td>${m.reason} (${m.reference || '-'})</td>
+              <td align="center">${m.stockBefore}</td>
+              <td align="center"><strong>${m.delta >= 0 ? '+' + m.delta : m.delta}</strong></td>
+              <td align="center"><strong>${m.stockAfter}</strong></td>
+              <td align="right">${formatMoney(m.unitCost)}</td>
+              <td>${m.user}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
 }
 
 // ==========================================

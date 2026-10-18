@@ -2,7 +2,7 @@
 // POINT OF SALE CONTROLLER (Punto de Venta & Caja)
 // ==========================================
 
-import { readCollection, writeCollection, generateNextFolio, logActivity } from '../db/jsonStore.js';
+import { readCollection, writeCollection, generateNextFolio, logActivity, recordInventoryMovement } from '../db/jsonStore.js';
 
 export function handleListSales(searchParams) {
   let sales = readCollection('sales');
@@ -49,7 +49,12 @@ export function handleCreateSale(body, currentUser) {
   const sales = readCollection('sales');
   const newFolio = generateNextFolio('sales', 'VTA', 1000);
 
+  const cashier = currentUser?.name || body.cashier || 'Cajero en Turno';
+  const linkedRef = (body.linkedRef || '').trim().toUpperCase();
+  const clientId = body.clientId || null;
+
   let subtotal = 0;
+  const kardexQueue = [];
   const processedItems = items.map(it => {
     const qty = Math.max(1, Number(it.qty) || 1);
     const price = parseFloat(it.price) || 0;
@@ -65,8 +70,24 @@ export function handleCreateSale(body, currentUser) {
         cost = parseFloat(products[pIdx].cost) || 0;
         sku = products[pIdx].sku;
         if (!products[pIdx].isService) {
-          products[pIdx].stock = Math.max(0, (Number(products[pIdx].stock) || 0) - qty);
+          const prevStock = Number(products[pIdx].stock) || 0;
+          const nextStock = Math.max(0, prevStock - qty);
+          products[pIdx].stock = nextStock;
           products[pIdx].updatedAt = new Date().toISOString();
+          kardexQueue.push({
+            productId: products[pIdx].id,
+            sku: products[pIdx].sku,
+            productName: products[pIdx].name,
+            category: products[pIdx].category,
+            type: 'salida_venta',
+            reason: `Salida por venta en Punto de Venta (${newFolio})`,
+            reference: newFolio,
+            stockBefore: prevStock,
+            delta: -qty,
+            stockAfter: nextStock,
+            unitCost: cost,
+            user: cashier
+          });
         }
       }
     }
@@ -85,9 +106,6 @@ export function handleCreateSale(body, currentUser) {
   const discount = Math.max(0, parseFloat(body.discount) || 0);
   const total = Math.max(0, subtotal - discount);
   const paymentMethod = body.paymentMethod || 'Efectivo';
-  const cashier = currentUser?.name || body.cashier || 'Cajero en Turno';
-  const linkedRef = (body.linkedRef || '').trim().toUpperCase();
-  const clientId = body.clientId || null;
 
   // Validate and apply client credit if paymentMethod is 'Crédito'
   let resolvedClientName = (body.clientName || 'Mostrador / Público en General').trim();
@@ -148,8 +166,9 @@ export function handleCreateSale(body, currentUser) {
     }
   }
 
-  // Persist updated product stocks
+  // Persist updated product stocks and Kardex entries
   writeCollection('products', products);
+  kardexQueue.forEach(entry => recordInventoryMovement(entry));
 
   const amountReceived = paymentMethod === 'Crédito' ? 0 : Math.max(total, parseFloat(body.amountReceived) || total);
   const change = paymentMethod === 'Crédito' ? 0 : Math.max(0, amountReceived - total);
@@ -235,13 +254,31 @@ export function handleCancelSale(id, currentUser) {
     return { status: 400, data: { error: 'La venta ya se encuentra cancelada.' } };
   }
 
-  // Restore inventory stock
+  // Restore inventory stock & record Kardex return entry
   const products = readCollection('products');
+  const author = currentUser?.name || 'Admin';
   (sales[idx].items || []).forEach(it => {
     if (it.productId) {
       const pIdx = products.findIndex(p => p.id === it.productId);
       if (pIdx !== -1 && !products[pIdx].isService) {
-        products[pIdx].stock = (Number(products[pIdx].stock) || 0) + (Number(it.qty) || 1);
+        const prev = Number(products[pIdx].stock) || 0;
+        const qty = Number(it.qty) || 1;
+        const next = prev + qty;
+        products[pIdx].stock = next;
+        recordInventoryMovement({
+          productId: products[pIdx].id,
+          sku: products[pIdx].sku,
+          productName: products[pIdx].name,
+          category: products[pIdx].category,
+          type: 'entrada_devolucion',
+          reason: `Reingreso por cancelación de venta ${sales[idx].folio}`,
+          reference: sales[idx].folio,
+          stockBefore: prev,
+          delta: qty,
+          stockAfter: next,
+          unitCost: products[pIdx].cost || 0,
+          user: author
+        });
       }
     }
   });
@@ -249,11 +286,11 @@ export function handleCancelSale(id, currentUser) {
 
   sales[idx].status = 'cancelada';
   sales[idx].cancelledAt = new Date().toISOString();
-  sales[idx].cancelledBy = currentUser?.name || 'Admin';
+  sales[idx].cancelledBy = author;
   writeCollection('sales', sales);
 
   logActivity({
-    user: currentUser?.name || 'Admin',
+    user: author,
     role: currentUser?.role || 'admin',
     module: 'pos',
     action: `Canceló venta ${sales[idx].folio} y restauró existencias en almacén`

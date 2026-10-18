@@ -24,6 +24,7 @@ export const FILES = {
   clients: path.join(DATA_DIR, 'clients.json'),
   tickets: path.join(DATA_DIR, 'tickets.json'),
   products: path.join(DATA_DIR, 'products.json'),
+  inventoryMovements: path.join(DATA_DIR, 'inventory_movements.json'),
   sales: path.join(DATA_DIR, 'sales.json'),
   workshop: path.join(DATA_DIR, 'workshop.json'),
   activity: path.join(DATA_DIR, 'activity.json')
@@ -883,6 +884,161 @@ const SEED_CLIENTS = [
   }
 ];
 
+const SEED_INVENTORY_MOVEMENTS = [
+  {
+    id: 'kdx-1001',
+    folio: 'KDX-1001',
+    date: '2026-03-01T09:00:00.000Z',
+    productId: 'prod-101',
+    sku: 'POS-CAJ-01',
+    productName: 'Cajón de Dinero Automático Metálico RJ11',
+    category: 'pos',
+    type: 'entrada',
+    reason: 'Compra a proveedor / Abastecimiento inicial',
+    reference: 'FAC-PROV-881',
+    stockBefore: 0,
+    quantity: 15,
+    delta: 15,
+    stockAfter: 15,
+    unitCost: 680.00,
+    totalCost: 10200.00,
+    user: 'Ing. Roberto Méndez'
+  },
+  {
+    id: 'kdx-1002',
+    folio: 'KDX-1002',
+    date: '2026-03-01T09:15:00.000Z',
+    productId: 'prod-105',
+    sku: 'CCTV-HIK-2MP',
+    productName: 'Cámara Bala Hikvision Full HD 1080p ColorVu',
+    category: 'cctv',
+    type: 'entrada',
+    reason: 'Recepción de lote mayorista Hikvision',
+    reference: 'FAC-SYSCOM-4410',
+    stockBefore: 0,
+    quantity: 20,
+    delta: 20,
+    stockAfter: 20,
+    unitCost: 480.00,
+    totalCost: 9600.00,
+    user: 'Ing. Roberto Méndez'
+  },
+  {
+    id: 'kdx-1003',
+    folio: 'KDX-1003',
+    date: '2026-03-02T11:30:00.000Z',
+    productId: 'prod-108',
+    sku: 'NET-AP-U6',
+    productName: 'Access Point Ubiquiti UniFi U6+ Dual Band WiFi 6',
+    category: 'redes',
+    type: 'entrada',
+    reason: 'Compra de equipo de red empresarial',
+    reference: 'FAC-UBNT-209',
+    stockBefore: 0,
+    quantity: 5,
+    delta: 5,
+    stockAfter: 5,
+    unitCost: 1980.00,
+    totalCost: 9900.00,
+    user: 'Ing. Roberto Méndez'
+  },
+  {
+    id: 'kdx-1004',
+    folio: 'KDX-1004',
+    date: '2026-03-03T14:20:00.000Z',
+    productId: 'prod-108',
+    sku: 'NET-AP-U6',
+    productName: 'Access Point Ubiquiti UniFi U6+ Dual Band WiFi 6',
+    category: 'redes',
+    type: 'salida_venta',
+    reason: 'Salida por proyecto / Venta POS',
+    reference: 'VTA-1001',
+    stockBefore: 5,
+    quantity: 3,
+    delta: -3,
+    stockAfter: 2,
+    unitCost: 1980.00,
+    totalCost: 5940.00,
+    user: 'Lic. Sofía Navarro'
+  },
+  {
+    id: 'kdx-1005',
+    folio: 'KDX-1005',
+    date: '2026-03-04T10:05:00.000Z',
+    productId: 'prod-111',
+    sku: 'REF-SSD-480',
+    productName: 'Unidad de Estado Sólido SSD 480GB Kingston SATA III',
+    category: 'refacciones',
+    type: 'entrada',
+    reason: 'Entrada de almacén refacciones laboratorio',
+    reference: 'FAC-KING-902',
+    stockBefore: 0,
+    quantity: 6,
+    delta: 6,
+    stockAfter: 6,
+    unitCost: 520.00,
+    totalCost: 3120.00,
+    user: 'Ing. Roberto Méndez'
+  },
+  {
+    id: 'kdx-1006',
+    folio: 'KDX-1006',
+    date: '2026-03-05T16:40:00.000Z',
+    productId: 'prod-111',
+    sku: 'REF-SSD-480',
+    productName: 'Unidad de Estado Sólido SSD 480GB Kingston SATA III',
+    category: 'refacciones',
+    type: 'ajuste_salida',
+    reason: 'Instalación en órdenes de Taller OS-1001 y ventas mostrador',
+    reference: 'OS-1001 / VTA-1002',
+    stockBefore: 6,
+    quantity: 4,
+    delta: -4,
+    stockAfter: 2,
+    unitCost: 520.00,
+    totalCost: 2080.00,
+    user: 'Ing. Alejandro Luna'
+  },
+  {
+    id: 'kdx-1007',
+    folio: 'KDX-1007',
+    date: '2026-03-06T12:15:00.000Z',
+    productId: 'prod-101',
+    sku: 'POS-CAJ-01',
+    productName: 'Cajón de Dinero Automático Metálico RJ11',
+    category: 'pos',
+    type: 'salida_venta',
+    reason: 'Venta en Terminal POS',
+    reference: 'VTA-1001',
+    stockBefore: 15,
+    quantity: 1,
+    delta: -1,
+    stockAfter: 14,
+    unitCost: 680.00,
+    totalCost: 680.00,
+    user: 'Lic. Sofía Navarro'
+  },
+  {
+    id: 'kdx-1008',
+    folio: 'KDX-1008',
+    date: '2026-03-06T17:10:00.000Z',
+    productId: 'prod-105',
+    sku: 'CCTV-HIK-2MP',
+    productName: 'Cámara Bala Hikvision Full HD 1080p ColorVu',
+    category: 'cctv',
+    type: 'ajuste_conteo',
+    reason: 'Ajuste por conteo físico de auditoría (2 cámaras en demostración)',
+    reference: 'AUD-2026-03',
+    stockBefore: 20,
+    quantity: 2,
+    delta: -2,
+    stockAfter: 18,
+    unitCost: 480.00,
+    totalCost: 960.00,
+    user: 'Ing. Roberto Méndez'
+  }
+];
+
 function ensureSeed(collectionName, seedData) {
   const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
@@ -908,6 +1064,7 @@ ensureSeed('users', SEED_USERS);
 ensureSeed('clients', SEED_CLIENTS);
 ensureSeed('tickets', SEED_TICKETS);
 ensureSeed('products', SEED_PRODUCTS);
+ensureSeed('inventoryMovements', SEED_INVENTORY_MOVEMENTS);
 ensureSeed('workshop', SEED_WORKSHOP);
 ensureSeed('sales', SEED_SALES);
 ensureSeed('activity', SEED_ACTIVITY);
@@ -981,4 +1138,51 @@ export function generateNextFolio(collectionName, prefix, startAt = 1000) {
     }
   });
   return `${prefix}-${max + 1}`;
+}
+
+export function recordInventoryMovement({
+  productId,
+  sku,
+  productName,
+  category = 'pos',
+  type = 'entrada',
+  reason = 'Movimiento de almacén',
+  reference = '',
+  stockBefore = 0,
+  delta = 0,
+  stockAfter = 0,
+  unitCost = 0,
+  user = 'Administrador'
+}) {
+  try {
+    const movements = readCollection('inventoryMovements');
+    const folio = generateNextFolio('inventoryMovements', 'KDX', 1000);
+    const qty = Math.abs(Number(delta) || 0);
+    const cost = parseFloat(unitCost) || 0;
+    const entry = {
+      id: `kdx-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+      folio,
+      date: new Date().toISOString(),
+      productId,
+      sku,
+      productName,
+      category,
+      type,
+      reason,
+      reference: reference || '-',
+      stockBefore: Number(stockBefore) || 0,
+      quantity: qty,
+      delta: Number(delta) || 0,
+      stockAfter: Number(stockAfter) || 0,
+      unitCost: cost,
+      totalCost: Number((qty * cost).toFixed(2)),
+      user
+    };
+    movements.unshift(entry);
+    writeCollection('inventoryMovements', movements);
+    return entry;
+  } catch (e) {
+    console.error('[jsonStore] Error registrando movimiento Kardex:', e.message);
+    return null;
+  }
 }

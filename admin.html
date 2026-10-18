@@ -167,9 +167,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
           <span class="nav-label">Punto de Venta</span>
         </button>
-        <button class="nav-btn" data-view="store" title="Tienda y Almacén">
+        <button class="nav-btn" data-view="store" title="Manejo de Inventario, Entradas, Ajustes, Reportes y Kardex">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-          <span class="nav-label">Tienda & Stock</span>
+          <span class="nav-label">Inventario & Kardex</span>
           <span class="nav-badge warn tabular" id="navBadgeLowStock" style="display:none;">!</span>
         </button>
         <button class="nav-btn" data-view="clients" title="Control de Clientes, Facturación y Administración de Créditos">
@@ -823,58 +823,388 @@
         </section>
 
         <!-- ==========================================
-             VIEW 5: TIENDA E INVENTARIO (STORE)
+             VIEW 5: MÓDULO DE INVENTARIO, MOVIMIENTOS Y KARDEX
         ========================================== -->
         <section id="view-store" class="erp-view">
-          <div class="toolbar-bar">
-            <div class="search-wrap">
-              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="search" id="storeSearchInput" placeholder="Buscar por código SKU, nombre de producto, especificación o categoría...">
+          <!-- KPIs Ejecutivos de Inventario y Almacén -->
+          <div class="kpi-grid" style="margin-bottom:16px;">
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Existencias en Almacén</span>
+                <div class="kpi-icon kpi-cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="invKpiTotalUnits">0</div>
+                <span class="kpi-trend trend-info tabular" id="invKpiSkuCount">0 SKUs</span>
+              </div>
+              <div class="kpi-foot">Unidades físicas totales disponibles</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Productos Bajos en Inventario</span>
+                <div class="kpi-icon kpi-amber">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="invKpiLowStockCount">0</div>
+                <span class="kpi-trend trend-warn" id="invKpiOutStockBadge">0 agotados</span>
+              </div>
+              <div class="kpi-foot">Artículos en o por debajo del stock mínimo</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Valor de Inventario (Costo)</span>
+                <div class="kpi-icon kpi-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="invKpiCostValue">$0.00</div>
+                <span class="kpi-trend trend-neutral">Capital invertido</span>
+              </div>
+              <div class="kpi-foot">Valoración contable a costo de adquisición</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Valor Comercial & Kardex</span>
+                <div class="kpi-icon kpi-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="invKpiRetailValue">$0.00</div>
+                <span class="kpi-trend trend-up tabular" id="invKpiMovementsBadge">0 mov. Kardex</span>
+              </div>
+              <div class="kpi-foot">Precio público proyectado y trazabilidad</div>
+            </article>
+          </div>
+
+          <!-- Barra Superior de Operaciones de Inventario -->
+          <div class="toolbar-bar surface-card" style="padding:12px 16px; border-radius:12px; margin-bottom:14px;">
+            <div>
+              <div class="panel-eyebrow">CONTROL INTEGRAL DE ALMACÉN Y EXISTENCIAS</div>
+              <h3 style="font-size:1rem; margin:0;">Manejo de Inventario, Reabastecimiento, Reportes y Kardex</h3>
             </div>
             <div class="toolbar-filters">
-              <div class="filter-pills" id="storeCategoryPills">
-                <button type="button" class="pill-btn active" data-cat="all">Todos</button>
-                <button type="button" class="pill-btn" data-cat="pos">POS</button>
-                <button type="button" class="pill-btn" data-cat="cctv">CCTV</button>
-                <button type="button" class="pill-btn" data-cat="redes">Redes</button>
-                <button type="button" class="pill-btn" data-cat="software">Software</button>
-                <button type="button" class="pill-btn" data-cat="refacciones">Refacciones</button>
-                <button type="button" class="pill-btn" data-cat="servicios">Servicios</button>
-              </div>
-              <select id="storeCategoryFilter" style="display:none;">
-                <option value="all">Todas</option>
-                <option value="pos">POS</option>
-                <option value="cctv">CCTV</option>
-                <option value="redes">Redes</option>
-                <option value="software">Software</option>
-                <option value="refacciones">Refacciones</option>
-                <option value="servicios">Servicios</option>
-              </select>
-              <button class="btn btn-primary" id="btnOpenNewProductModal">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                <span>Nuevo Producto</span>
+              <button type="button" class="btn btn-primary" id="btnOpenAddInventoryModal" title="Registrar entrada de mercancía o compra a proveedor">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                <span>Agregar Inventario (Entrada)</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnOpenAdjustInventoryModal" title="Realizar ajuste por conteo físico, auditoría o merma">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+                <span>Ajustes de Inventario</span>
+              </button>
+              <button type="button" class="btn btn-ghost" id="btnOpenNewProductModal" title="Dar de alta un nuevo SKU en el catálogo">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+                <span>+ Nuevo Producto SKU</span>
               </button>
             </div>
           </div>
 
-          <div class="panel-card">
-            <div class="table-responsive">
-              <table class="erp-table">
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>Producto / Servicio</th>
-                    <th>Categoría</th>
-                    <th style="text-align:right;">Costo</th>
-                    <th style="text-align:right;">Precio Público</th>
-                    <th style="text-align:right;">Margen</th>
-                    <th style="text-align:center;">Stock</th>
-                    <th style="text-align:center;">Catálogo Web</th>
-                    <th style="text-align:right;">Acciones Rápidas</th>
-                  </tr>
-                </thead>
-                <tbody id="storeProductsTableBody"></tbody>
-              </table>
+          <!-- Navegación de 5 Pestañas del Módulo de Inventario -->
+          <div class="filter-pills inv-module-tabs" id="invModuleTabs" role="tablist" style="margin-bottom:16px; width:100%; overflow-x:auto;">
+            <button type="button" class="pill-btn active" data-invtab="manage">📦 1. Manejo de Inventario</button>
+            <button type="button" class="pill-btn" data-invtab="lowstock">
+              ⚠️ 2. Productos Bajos en Inventario
+              <span class="pos-cart-count-pill mono tabular" id="invTabLowCount" style="margin-left:5px;">0</span>
+            </button>
+            <button type="button" class="pill-btn" data-invtab="report">📊 3. Reporte de Inventario</button>
+            <button type="button" class="pill-btn" data-invtab="movements">🔄 4. Reporte de Movimientos</button>
+            <button type="button" class="pill-btn" data-invtab="kardex">📋 5. Kardex de Inventario</button>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 1: MANEJO DE INVENTARIO (CATÁLOGO Y CONTROL DE EXISTENCIAS)
+          ========================================== -->
+          <div id="invSubTabManage" class="pos-tab-pane active">
+            <div class="toolbar-bar">
+              <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="storeSearchInput" placeholder="Buscar por código SKU, código de barras, nombre de producto o categoría...">
+              </div>
+              <div class="toolbar-filters">
+                <div class="filter-pills" id="storeCategoryPills">
+                  <button type="button" class="pill-btn active" data-cat="all">Todos</button>
+                  <button type="button" class="pill-btn" data-cat="pos">POS</button>
+                  <button type="button" class="pill-btn" data-cat="cctv">CCTV</button>
+                  <button type="button" class="pill-btn" data-cat="redes">Redes</button>
+                  <button type="button" class="pill-btn" data-cat="software">Software</button>
+                  <button type="button" class="pill-btn" data-cat="refacciones">Refacciones</button>
+                  <button type="button" class="pill-btn" data-cat="servicios">Servicios</button>
+                </div>
+                <select id="storeCategoryFilter" style="display:none;">
+                  <option value="all">Todas</option>
+                  <option value="pos">POS</option>
+                  <option value="cctv">CCTV</option>
+                  <option value="redes">Redes</option>
+                  <option value="software">Software</option>
+                  <option value="refacciones">Refacciones</option>
+                  <option value="servicios">Servicios</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>SKU / Barras</th>
+                      <th>Producto / Servicio</th>
+                      <th>Categoría</th>
+                      <th style="text-align:right;">Costo</th>
+                      <th style="text-align:right;">Precio Púb.</th>
+                      <th style="text-align:right;">Margen</th>
+                      <th style="text-align:center;">Existencia / Mín.</th>
+                      <th style="text-align:center;">Catálogo Web</th>
+                      <th style="text-align:right;">Manejo de Inventario</th>
+                    </tr>
+                  </thead>
+                  <tbody id="storeProductsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 2: PRODUCTOS BAJOS EN INVENTARIO (ALERTAS Y REABASTECIMIENTO)
+          ========================================== -->
+          <div id="invSubTabLowStock" class="pos-tab-pane">
+            <div class="toolbar-bar">
+              <div>
+                <div class="panel-eyebrow">ALERTAS DE STOCK CRÍTICO Y PUNTO DE REORDEN</div>
+                <h3 style="font-size:1rem; margin:0;">Productos Bajos en Inventario o Agotados</h3>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnExportLowStockCsv">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Exportar Faltantes CSV</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnPrintLowStockReport">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                  <span>Imprimir Orden de Reabastecimiento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>SKU / Código</th>
+                      <th>Producto</th>
+                      <th>Categoría</th>
+                      <th style="text-align:center;">Existencia Actual</th>
+                      <th style="text-align:center;">Stock Mínimo</th>
+                      <th style="text-align:center;">Sugerido a Pedir</th>
+                      <th style="text-align:right;">Costo Reposición Est.</th>
+                      <th style="text-align:right;">Acción Rápida</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invLowStockTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 3: REPORTE DE INVENTARIO (VALORACIÓN FINANCIERA Y EXISTENCIAS)
+          ========================================== -->
+          <div id="invSubTabReport" class="pos-tab-pane">
+            <div class="toolbar-bar">
+              <div>
+                <div class="panel-eyebrow">AUDITORÍA Y VALORACIÓN FINANCIERA DE ALMACÉN</div>
+                <h3 style="font-size:1rem; margin:0;">Reporte General Valorizado de Inventario</h3>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnExportInventoryReportCsv">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Exportar Reporte de Inventario CSV</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnPrintInventoryReport">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                  <span>Imprimir Reporte de Inventario</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Resumen por Categoría -->
+            <div class="panel-card" style="margin-bottom:16px;">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">DESGLOSE POR LÍNEA DE NEGOCIO</div>
+                  <h3>Valoración de Inventario por Categoría</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Categoría de Almacén</th>
+                      <th style="text-align:center;">SKUs Físicos</th>
+                      <th style="text-align:center;">Unidades Totales</th>
+                      <th style="text-align:right;">Valor al Costo</th>
+                      <th style="text-align:right;">Valor Precio Público</th>
+                      <th style="text-align:right;">Utilidad Potencial</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invCategoryValuationTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Detalle Valorizado por Producto -->
+            <div class="panel-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">DETALLE DE EXISTENCIAS VALORIZADO</div>
+                  <h3>Inventario Físico Detallado</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>SKU</th>
+                      <th>Producto</th>
+                      <th>Categoría</th>
+                      <th style="text-align:center;">Existencia</th>
+                      <th style="text-align:right;">Costo Unit.</th>
+                      <th style="text-align:right;">Valor Costo Total</th>
+                      <th style="text-align:right;">Precio Venta</th>
+                      <th style="text-align:right;">Valor Comercial</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invValuationDetailTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 4: REPORTE DE MOVIMIENTOS DE INVENTARIO
+          ========================================== -->
+          <div id="invSubTabMovements" class="pos-tab-pane">
+            <div class="toolbar-bar">
+              <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="invMovSearchInput" placeholder="Buscar movimiento por folio (KDX-), SKU, producto, factura/referencia o usuario...">
+              </div>
+              <div class="toolbar-filters">
+                <div class="filter-pills" id="invMovTypePills">
+                  <button type="button" class="pill-btn active" data-movtype="all">Todos</button>
+                  <button type="button" class="pill-btn" data-movtype="entradas">Entradas (+)</button>
+                  <button type="button" class="pill-btn" data-movtype="salidas">Salidas (-)</button>
+                  <button type="button" class="pill-btn" data-movtype="salida_venta">Ventas POS</button>
+                  <button type="button" class="pill-btn" data-movtype="ajuste_conteo">Ajustes / Conteo</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="btnExportMovementsCsv">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Exportar Movimientos CSV</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnPrintMovementsReport">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                  <span>Imprimir Movimientos</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio</th>
+                      <th>Fecha / Hora</th>
+                      <th>SKU / Producto</th>
+                      <th>Tipo de Movimiento</th>
+                      <th>Motivo & Referencia</th>
+                      <th style="text-align:center;">Stock Ant.</th>
+                      <th style="text-align:center;">Mov.</th>
+                      <th style="text-align:center;">Stock Final</th>
+                      <th style="text-align:right;">Valor Mov.</th>
+                      <th>Responsable</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invMovementsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 5: KARDEX DE INVENTARIO (TRAZABILIDAD POR PRODUCTO)
+          ========================================== -->
+          <div id="invSubTabKardex" class="pos-tab-pane">
+            <div class="toolbar-bar">
+              <div style="display:flex; align-items:center; gap:10px; flex:1; flex-wrap:wrap;">
+                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">Seleccionar Artículo para Consultar Kardex:</label>
+                <select id="kardexProductSelect" style="min-width:300px; max-width:480px; flex:1;"></select>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnKardexQuickAdd">➕ Agregar Stock a este Artículo</button>
+                <button type="button" class="btn btn-secondary" id="btnKardexQuickAdjust">⚖️ Ajustar Existencia</button>
+                <button type="button" class="btn btn-primary" id="btnPrintProductKardex">🖨️ Imprimir Tarjeta Kardex</button>
+              </div>
+            </div>
+
+            <!-- Ficha Resumen del Kardex del Producto -->
+            <div class="credit-live-summary" id="kardexProductSummary" style="margin-bottom:16px;">
+              <div class="cls-item">
+                <span>SKU / Código de Barras</span>
+                <strong id="kdxSummarySku" class="mono">-</strong>
+              </div>
+              <div class="cls-item">
+                <span>Existencia Actual</span>
+                <strong id="kdxSummaryStock" class="mono tabular" style="color:var(--primary);">0</strong>
+              </div>
+              <div class="cls-item">
+                <span>Total Entradas (+)</span>
+                <strong id="kdxSummaryEntries" class="mono tabular" style="color:var(--secondary);">+0</strong>
+              </div>
+              <div class="cls-item">
+                <span>Total Salidas (-)</span>
+                <strong id="kdxSummaryExits" class="mono tabular" style="color:var(--amber);">-0</strong>
+              </div>
+              <div class="cls-item">
+                <span>Costo Unitario / Valor Total</span>
+                <strong id="kdxSummaryValuation" class="mono tabular">$0.00</strong>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">TARJETA DE ALMACÉN Y TRAZABILIDAD HISTÓRICA</div>
+                  <h3 id="kardexProductTitle">Kardex de Inventario del Artículo</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio Kardex</th>
+                      <th>Fecha / Hora</th>
+                      <th>Tipo Operación</th>
+                      <th>Concepto / Documento Referencia</th>
+                      <th style="text-align:center;">Existencia Anterior</th>
+                      <th style="text-align:center;">Entrada / Salida</th>
+                      <th style="text-align:center;">Existencia Final (Saldo)</th>
+                      <th style="text-align:right;">Costo Unit.</th>
+                      <th style="text-align:right;">Importe Total</th>
+                      <th>Responsable</th>
+                    </tr>
+                  </thead>
+                  <tbody id="kardexMovementsTableBody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -1926,6 +2256,139 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 9: AGREGAR INVENTARIO (ENTRADA DE ALMACÉN / COMPRA)
+  ============================ -->
+  <div id="addInventoryModal" class="modal">
+    <div class="modal-back" data-close="addInventoryModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:560px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">ENTRADA DE ALMACÉN · KARDEX</div>
+          <h2>Agregar Inventario (Recepción de Mercancía)</h2>
+        </div>
+        <button class="close-btn" data-close="addInventoryModal">✕</button>
+      </div>
+
+      <form id="addInventoryForm" class="modal-body form-grid">
+        <label class="full">Seleccionar Artículo Físico *
+          <select id="addInvProductSelect" required></select>
+        </label>
+
+        <div class="full credit-live-summary">
+          <div class="cls-item">
+            <span>Existencia Actual</span>
+            <strong id="addInvCurrentStock" class="mono tabular">0</strong>
+          </div>
+          <div class="cls-item">
+            <span>Stock Mínimo</span>
+            <strong id="addInvMinStock" class="mono tabular">0</strong>
+          </div>
+          <div class="cls-item">
+            <span>Existencia Final Proyectada</span>
+            <strong id="addInvProjectedStock" class="mono tabular" style="color:var(--secondary);">0</strong>
+          </div>
+        </div>
+
+        <label>Cantidad a Agregar (+ Unidades) *
+          <input type="number" id="addInvQty" class="tabular" required min="1" step="1" value="5">
+        </label>
+
+        <label>Costo Unitario de Adquisición ($ MXN) *
+          <input type="number" id="addInvUnitCost" class="tabular" required min="0" step="0.01" value="0">
+        </label>
+
+        <label>Folio Factura / Orden de Compra / Proveedor
+          <input type="text" id="addInvReference" class="mono" placeholder="Ej. FAC-SYSCOM-9102">
+        </label>
+
+        <label>Importe Total de la Entrada
+          <input type="text" id="addInvTotalCost" class="mono tabular" readonly value="$0.00">
+        </label>
+
+        <label class="full">Motivo / Concepto de Entrada *
+          <input type="text" id="addInvReason" required value="Compra a proveedor / Reabastecimiento de almacén">
+        </label>
+
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="addInventoryModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar Entrada en Kardex</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 10: AJUSTES DE INVENTARIO (CONTEO FÍSICO, MERMAS, AUDITORÍA)
+  ============================ -->
+  <div id="adjustInventoryModal" class="modal">
+    <div class="modal-back" data-close="adjustInventoryModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:560px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">AUDITORÍA Y CONTROL DE STOCK</div>
+          <h2>Ajustes de Inventario</h2>
+        </div>
+        <button class="close-btn" data-close="adjustInventoryModal">✕</button>
+      </div>
+
+      <form id="adjustInventoryForm" class="modal-body form-grid">
+        <label class="full">Seleccionar Artículo *
+          <select id="adjInvProductSelect" required></select>
+        </label>
+
+        <div class="full credit-live-summary">
+          <div class="cls-item">
+            <span>Stock en Sistema</span>
+            <strong id="adjInvSystemStock" class="mono tabular">0</strong>
+          </div>
+          <div class="cls-item">
+            <span>Diferencia (Ajuste)</span>
+            <strong id="adjInvDeltaDisplay" class="mono tabular" style="color:var(--amber);">0</strong>
+          </div>
+          <div class="cls-item">
+            <span>Nuevo Stock Final</span>
+            <strong id="adjInvFinalStock" class="mono tabular" style="color:var(--primary);">0</strong>
+          </div>
+        </div>
+
+        <label>Modo de Ajuste *
+          <select id="adjInvMode">
+            <option value="set">Fijar Existencia Física Real (Conteo en Anaquel)</option>
+            <option value="sub">Disminuir Existencia (- Salida / Merma / Uso Taller)</option>
+            <option value="add">Incrementar Existencia (+ Sobrante / Devolución)</option>
+          </select>
+        </label>
+
+        <label id="adjInvQtyLabel">Existencia Física Contada *
+          <input type="number" id="adjInvValue" class="tabular" required min="0" step="1" value="0">
+        </label>
+
+        <label>Categoría del Motivo *
+          <select id="adjInvTypeSelect">
+            <option value="ajuste_conteo">Auditoría / Conteo Físico de Inventario</option>
+            <option value="ajuste_salida">Uso Interno en Laboratorio / Garantía</option>
+            <option value="merma">Baja por Merma / Daño / Obsolescencia</option>
+            <option value="entrada_devolucion">Reingreso / Devolución de Cliente</option>
+          </select>
+        </label>
+
+        <label>Referencia / Acta / Orden
+          <input type="text" id="adjInvReference" class="mono" placeholder="Ej. AUD-2026 / OS-1002">
+        </label>
+
+        <label class="full">Justificación / Observaciones del Ajuste *
+          <input type="text" id="adjInvReason" required placeholder="Ej. Ajuste derivado de conteo físico mensual en anaquel">
+        </label>
+
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="adjustInventoryModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Aplicar Ajuste en Kardex</button>
+        </div>
+      </form>
     </div>
   </div>
 
