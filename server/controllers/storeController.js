@@ -49,6 +49,11 @@ export function handleCreateProduct(body, currentUser) {
   const cost = parseFloat(body.cost) || 0;
   const author = currentUser?.name || 'Admin';
 
+  const images = Array.isArray(body.images)
+    ? body.images.map(img => String(img || '').trim()).filter(Boolean)
+    : (body.imageUrl ? [String(body.imageUrl).trim()] : []);
+  const imageUrl = images[0] || (body.imageUrl ? String(body.imageUrl).trim() : '');
+
   const newProduct = {
     id: `prod-${Date.now()}`,
     sku,
@@ -69,6 +74,8 @@ export function handleCreateProduct(body, currentUser) {
           .split(',')
           .map(s => s.trim())
           .filter(Boolean),
+    images,
+    imageUrl,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -133,6 +140,16 @@ export function handleUpdateProduct(id, body, currentUser) {
           .split(',')
           .map(s => s.trim())
           .filter(Boolean);
+  }
+  if (body.images !== undefined) {
+    p.images = Array.isArray(body.images)
+      ? body.images.map(img => String(img || '').trim()).filter(Boolean)
+      : [];
+    p.imageUrl = p.images[0] || '';
+  } else if (body.imageUrl !== undefined) {
+    const cleanUrl = String(body.imageUrl || '').trim();
+    p.imageUrl = cleanUrl;
+    p.images = cleanUrl ? [cleanUrl] : [];
   }
   p.updatedAt = new Date().toISOString();
 

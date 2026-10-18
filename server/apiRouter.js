@@ -96,7 +96,7 @@ function parseBody(req) {
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();
-      if (body.length > 2e6) {
+      if (body.length > 8e6) {
         req.destroy();
         reject(new Error('Payload Too Large'));
       }
