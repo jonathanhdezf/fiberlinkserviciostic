@@ -206,7 +206,10 @@ function localEngine(messages, prevDraft) {
 // Llamada a Gemini
 // ------------------------------------------
 async function callGemini(messages, prevDraft, apiKey) {
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  let model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  if (!model || ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'].includes(model)) {
+    model = 'gemini-flash-latest';
+  }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const contents = messages.slice(-16).map(m => ({
@@ -237,7 +240,7 @@ async function callGemini(messages, prevDraft, apiKey) {
         }
       })
     });
-    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${(await res.text()).slice(0, 250)}`);
     const data = await res.json();
     const raw = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || '';
     return JSON.parse(raw);
@@ -256,7 +259,8 @@ export async function handleAssistantChat(body = {}) {
     return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local' } };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  let lastGeminiErr = null;
   if (apiKey) {
     try {
       const ai = await callGemini(messages, prevDraft, apiKey);
@@ -277,10 +281,11 @@ export async function handleAssistantChat(body = {}) {
         }
       };
     } catch (err) {
+      lastGeminiErr = err.message;
       console.warn('[assistantController] Gemini no disponible, usando motor local:', err.message);
     }
   }
 
   const out = localEngine(messages, prevDraft);
-  return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local' } };
+  return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local', geminiError: lastGeminiErr } };
 }
