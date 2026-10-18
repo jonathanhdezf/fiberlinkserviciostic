@@ -11,6 +11,7 @@ let allProducts = [];
 let allWorkshop = [];
 let allSales = [];
 let allUsers = [];
+let allClients = [];
 let reportsData = null;
 
 // UI State
@@ -22,6 +23,10 @@ let currentWorkshopOrder = null;
 let currentWorkshopParts = [];
 let posCart = [];
 let posLinkedFolio = '';
+let cliDirectoryFilter = 'all';
+let cliCreditFilter = 'all';
+let currentStatementClientId = null;
+let currentStatementFilter = 'all';
 
 // Command Palette state
 let cmdItems = [];
@@ -33,6 +38,7 @@ const VIEW_META = {
   workshop: { title: 'Laboratorio y Taller Técnico', bc: 'Taller & Lab' },
   pos: { title: 'Terminal Punto de Venta (POS)', bc: 'Punto de Venta' },
   store: { title: 'Catálogo, Tienda e Inventario', bc: 'Tienda & Stock' },
+  clients: { title: 'Control de Clientes, Facturación & Créditos', bc: 'Clientes & Créditos' },
   reports: { title: 'Analítica Financiera y Corte', bc: 'Reportes & Caja' },
   users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' }
 };
@@ -67,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWorkshopModule();
   initPosModule();
   initStoreModule();
+  initClientsModule();
   initReportsModule();
   initUsersModule();
 });
@@ -198,7 +205,7 @@ async function enterDashboard() {
   document.getElementById('ucName').textContent = currentUser?.name || 'Usuario';
   document.getElementById('ucRole').textContent = currentUser?.permissions?.label || currentUser?.role || 'Personal';
 
-  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'];
+  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'reports', 'users'];
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
     btn.style.display = 'flex';
   });
@@ -373,9 +380,13 @@ function renderCommandResults(query) {
     { group: 'Acciones Rápidas', title: 'Registrar Producto en Tienda / Almacén', sub: 'Acción', run: () => { closeModal('cmdPaletteModal'); document.getElementById('btnOpenNewProductModal')?.click(); } },
     { group: 'Acciones Rápidas', title: 'Alternar Tema Oscuro / Claro', sub: 'Preferencia', run: () => { closeModal('cmdPaletteModal'); document.getElementById('themeToggleBtn')?.click(); } },
     { group: 'Acciones Rápidas', title: 'Exportar Reporte de Ventas a CSV', sub: 'Reporte', run: () => { closeModal('cmdPaletteModal'); exportSalesToCSV(); } },
+    { group: 'Acciones Rápidas', title: 'Registrar Nuevo Cliente (Crédito / CFDI)', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); openClientModalForCreate(); } },
+    { group: 'Acciones Rápidas', title: 'Registrar Abono o Liquidación de Crédito', sub: 'Créditos', run: () => { closeModal('cmdPaletteModal'); openCreditMovementModal(); } },
+    { group: 'Acciones Rápidas', title: 'Exportar Padrón de Clientes a CSV', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); exportClientsToCSV(); } },
     { group: 'Navegación', title: 'Ir a Resumen Ejecutivo Bento', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
     { group: 'Navegación', title: 'Ir a Tablero de Tickets', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('tickets'); } },
     { group: 'Navegación', title: 'Ir a Taller Técnico', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('workshop'); } },
+    { group: 'Navegación', title: 'Ir a Clientes y Administración de Créditos', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('clients'); } },
     { group: 'Navegación', title: 'Ir a Tienda e Inventario', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('store'); } },
     { group: 'Navegación', title: 'Ir a Reportes y Corte de Caja', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
   ];
@@ -406,7 +417,17 @@ function renderCommandResults(query) {
     }
   }));
 
-  const allCandidates = [...baseActions, ...ticketMatches, ...wsMatches, ...prodMatches];
+  const clientMatches = allClients.map(c => ({
+    group: 'Clientes & Créditos',
+    title: `[${c.code}] ${c.name}`,
+    sub: `${c.hasCredit ? 'Saldo: ' + formatMoney(c.currentBalance) + ' / Lím: ' + formatMoney(c.creditLimit) : 'Contado'} · ${c.rfc || 'S/RFC'}`,
+    run: () => {
+      closeModal('cmdPaletteModal');
+      openClientStatementModal(c.id);
+    }
+  }));
+
+  const allCandidates = [...baseActions, ...clientMatches, ...ticketMatches, ...wsMatches, ...prodMatches];
   cmdItems = allCandidates.filter(item => {
     if (!q) return item.group === 'Acciones Rápidas' || item.group === 'Navegación';
     return `${item.title} ${item.sub} ${item.group}`.toLowerCase().includes(q);
@@ -456,12 +477,13 @@ function highlightCmdSelection() {
 // ==========================================
 async function syncAllData() {
   try {
-    const [tickets, products, workshop, sales, users, reports] = await Promise.all([
+    const [tickets, products, workshop, sales, users, clients, reports] = await Promise.all([
       ticketService.getTickets(),
       erpService.getProducts().catch(() => []),
       erpService.getWorkshopOrders().catch(() => []),
       erpService.getSales().catch(() => []),
       erpService.getUsers().catch(() => []),
+      erpService.getClients().catch(() => []),
       erpService.getReportsSummary().catch(() => null)
     ]);
 
@@ -470,11 +492,13 @@ async function syncAllData() {
     allWorkshop = Array.isArray(workshop) ? workshop : [];
     allSales = Array.isArray(sales) ? sales : [];
     allUsers = Array.isArray(users) ? users : [];
+    allClients = Array.isArray(clients) ? clients : [];
     reportsData = reports;
 
     updateNavBadges();
     populateTechnicianSelects();
     populateCatalogPickers();
+    populatePosClientSelector();
     renderOverview();
     renderTicketsKanban();
     renderWorkshopGrid();
@@ -482,6 +506,7 @@ async function syncAllData() {
     renderPosFolioOptions();
     renderPosSalesHistory();
     renderStoreTable();
+    renderClientsModule();
     renderReportsView();
     renderUsersTable();
   } catch (err) {
@@ -493,6 +518,7 @@ function updateNavBadges() {
   const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
   const activeWorkshop = allWorkshop.filter(w => w.estado !== 'entregado').length;
   const lowStockCount = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3)).length;
+  const clientsWithBalance = allClients.filter(c => (Number(c.currentBalance) || 0) > 0).length;
 
   document.getElementById('navBadgeTickets').textContent = activeTickets;
   document.getElementById('navBadgeWorkshop').textContent = activeWorkshop;
@@ -500,6 +526,11 @@ function updateNavBadges() {
   if (lowBadge) {
     lowBadge.style.display = lowStockCount > 0 ? 'inline-block' : 'none';
     lowBadge.textContent = lowStockCount;
+  }
+  const cliBadge = document.getElementById('navBadgeClients');
+  if (cliBadge) {
+    cliBadge.style.display = allClients.length > 0 ? 'inline-block' : 'none';
+    cliBadge.textContent = clientsWithBalance > 0 ? `${clientsWithBalance}` : `${allClients.length}`;
   }
 }
 
@@ -1854,14 +1885,46 @@ function initPosModule() {
 
   document.getElementById('posCategoryFilter')?.addEventListener('change', renderPosCatalog);
 
+  // Client Selector in POS Checkout
+  document.getElementById('posClientSelect')?.addEventListener('change', (e) => {
+    const clientId = e.target.value;
+    const nameInput = document.getElementById('posClientName');
+    const infoBox = document.getElementById('posClientCreditInfo');
+    const client = allClients.find(c => c.id === clientId);
+
+    if (!client) {
+      if (nameInput) nameInput.value = 'Mostrador / Público en General';
+      if (infoBox) {
+        infoBox.classList.add('hidden');
+        infoBox.innerHTML = '';
+      }
+      return;
+    }
+
+    if (nameInput) nameInput.value = client.name;
+    if (infoBox) {
+      infoBox.classList.remove('hidden');
+      const avail = Math.max(0, (parseFloat(client.creditLimit) || 0) - (parseFloat(client.currentBalance) || 0));
+      infoBox.innerHTML = client.hasCredit
+        ? `<span>💳 <strong>Crédito Autorizado:</strong> Límite ${formatMoney(client.creditLimit)} (${client.creditDays || 30} días)</span>
+           <span>Saldo: <strong style="color:var(--amber);">${formatMoney(client.currentBalance)}</strong> · Disponible: <strong style="color:var(--secondary);">${formatMoney(avail)}</strong></span>`
+        : `<span>⚠️ Cliente de contado (Sin línea de crédito autorizada) · ${client.hasBilling ? 'CFDI: ' + client.rfc : 'Sin datos CFDI'}</span>`;
+    }
+  });
+
+  document.getElementById('posQuickNewClientBtn')?.addEventListener('click', () => {
+    openClientModalForCreate();
+  });
+
   // Payment Method Pills
   document.querySelectorAll('#posPayMethodPills .pay-pill').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#posPayMethodPills .pay-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      const method = btn.dataset.method || 'Efectivo';
       const sel = document.getElementById('posPaymentMethod');
-      if (sel) sel.value = btn.dataset.method || 'Efectivo';
-      const isCash = (btn.dataset.method || 'Efectivo') === 'Efectivo';
+      if (sel) sel.value = method;
+      const isCash = method === 'Efectivo';
       const cashRow = document.getElementById('posCashRow');
       const changeRow = document.getElementById('posChangeRow');
       if (cashRow) cashRow.style.display = isCash ? 'flex' : 'none';
@@ -1891,6 +1954,9 @@ function initPosModule() {
     posCart = [];
     posLinkedFolio = '';
     document.getElementById('posImportFolioSelect').value = '';
+    const cliSel = document.getElementById('posClientSelect');
+    if (cliSel) cliSel.value = '';
+    document.getElementById('posClientCreditInfo')?.classList.add('hidden');
     document.getElementById('posClientName').value = 'Mostrador / Público en General';
     document.getElementById('posDiscountInput').value = '0';
     renderPosCart();
@@ -1917,14 +1983,33 @@ function initPosModule() {
     const total = Math.max(0, subtotal - discount);
     const paymentMethod = document.getElementById('posPaymentMethod').value;
     const amountReceived = parseFloat(document.getElementById('posAmountReceived').value) || total;
+    const selectedClientId = document.getElementById('posClientSelect')?.value || null;
 
     if (paymentMethod === 'Efectivo' && amountReceived < total) {
       showToast('El efectivo recibido es menor al total a liquidar');
       return;
     }
 
+    if (paymentMethod === 'Crédito') {
+      if (!selectedClientId) {
+        showToast('Selecciona un cliente registrado para procesar una venta a Crédito');
+        return;
+      }
+      const cli = allClients.find(c => c.id === selectedClientId);
+      if (!cli || !cli.hasCredit) {
+        showToast('El cliente seleccionado no tiene línea de crédito autorizada');
+        return;
+      }
+      const avail = Math.max(0, (parseFloat(cli.creditLimit) || 0) - (parseFloat(cli.currentBalance) || 0));
+      if ((parseFloat(cli.creditLimit) || 0) > 0 && total > avail) {
+        showToast(`Crédito insuficiente. Disponible: ${formatMoney(avail)}`);
+        return;
+      }
+    }
+
     try {
       const res = await erpService.createSale({
+        clientId: selectedClientId,
         clientName: document.getElementById('posClientName').value.trim(),
         paymentMethod,
         linkedRef: posLinkedFolio,
@@ -1941,12 +2026,27 @@ function initPosModule() {
       renderPosCart();
       renderPosCatalog();
       await syncAllData();
-      showToast(`Venta ${res.sale.folio} procesada con éxito`);
+      showToast(`Venta ${res.sale.folio} procesada con éxito (${paymentMethod})`);
       printPosReceipt(res.sale);
     } catch (err) {
       showToast(err.message);
     }
   });
+}
+
+function populatePosClientSelector() {
+  const select = document.getElementById('posClientSelect');
+  if (!select) return;
+  const currentVal = select.value;
+  select.innerHTML = `<option value="">-- Mostrador / Público en General --</option>` +
+    allClients.map(c => {
+      const avail = Math.max(0, (parseFloat(c.creditLimit) || 0) - (parseFloat(c.currentBalance) || 0));
+      const creditTag = c.hasCredit ? ` [Crédito Disp: ${formatMoney(avail)}]` : ' [Contado]';
+      return `<option value="${c.id}">[${c.code}] ${c.name}${creditTag}</option>`;
+    }).join('');
+  if (currentVal && allClients.some(c => c.id === currentVal)) {
+    select.value = currentVal;
+  }
 }
 
 function renderPosCatalog() {
@@ -2712,3 +2812,934 @@ function printExecutiveReport() {
   `;
   window.print();
 }
+
+// ==========================================
+// 14. VIEW 8: CLIENTES, FACTURACIÓN & ADMINISTRACIÓN DE CRÉDITOS
+// ==========================================
+function switchClientsSubTab(tabName) {
+  const dirBtn = document.getElementById('btnCliTabDirectory');
+  const credBtn = document.getElementById('btnCliTabCredits');
+  const dirPane = document.getElementById('cliSubTabDirectory');
+  const credPane = document.getElementById('cliSubTabCredits');
+
+  const isDir = tabName !== 'credits';
+  if (dirBtn) {
+    dirBtn.classList.toggle('active', isDir);
+    dirBtn.setAttribute('aria-selected', isDir ? 'true' : 'false');
+  }
+  if (credBtn) {
+    credBtn.classList.toggle('active', !isDir);
+    credBtn.setAttribute('aria-selected', !isDir ? 'true' : 'false');
+  }
+  if (dirPane) dirPane.classList.toggle('active', isDir);
+  if (credPane) credPane.classList.toggle('active', !isDir);
+}
+
+function initClientsModule() {
+  // Sub-Tab Switcher
+  document.getElementById('btnCliTabDirectory')?.addEventListener('click', () => switchClientsSubTab('directory'));
+  document.getElementById('btnCliTabCredits')?.addEventListener('click', () => switchClientsSubTab('credits'));
+
+  // Directory Search & Filter Pills
+  document.getElementById('cliSearchInput')?.addEventListener('input', renderClientsDirectoryTable);
+  document.querySelectorAll('#cliFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#cliFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cliDirectoryFilter = btn.dataset.clifilter || 'all';
+      renderClientsDirectoryTable();
+    });
+  });
+
+  // Credit Search & Filter Pills
+  document.getElementById('creditSearchInput')?.addEventListener('input', renderClientsCreditBalancesTable);
+  document.querySelectorAll('#creditFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#creditFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cliCreditFilter = btn.dataset.credfilter || 'all';
+      renderClientsCreditBalancesTable();
+    });
+  });
+
+  // Buttons: New Client, Export Clients, Export Balances, Print Balances, Credit Movement
+  document.getElementById('btnOpenNewClientModal')?.addEventListener('click', () => {
+    openClientModalForCreate();
+  });
+  document.getElementById('btnExportClientsCsv')?.addEventListener('click', exportClientsToCSV);
+  document.getElementById('btnExportCreditBalancesCsv')?.addEventListener('click', exportCreditBalancesToCSV);
+  document.getElementById('btnPrintBalancesReport')?.addEventListener('click', printCreditBalancesReport);
+  document.getElementById('btnOpenCreditMovementModal')?.addEventListener('click', () => {
+    openCreditMovementModal();
+  });
+
+  // Toggle Credit & Billing sections inside #clientModal
+  const hasCreditCheck = document.getElementById('cliHasCredit');
+  const creditWrap = document.getElementById('cliCreditFieldsWrap');
+  hasCreditCheck?.addEventListener('change', () => {
+    creditWrap?.classList.toggle('hidden', !hasCreditCheck.checked);
+  });
+
+  const hasBillingCheck = document.getElementById('cliHasBilling');
+  const billingWrap = document.getElementById('cliBillingFieldsWrap');
+  hasBillingCheck?.addEventListener('change', () => {
+    billingWrap?.classList.toggle('hidden', !hasBillingCheck.checked);
+  });
+
+  // Submit Create / Update Client
+  const clientForm = document.getElementById('clientForm');
+  clientForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('cliId').value;
+    const hasCredit = document.getElementById('cliHasCredit').checked;
+    const hasBilling = document.getElementById('cliHasBilling').checked;
+
+    const payload = {
+      name: document.getElementById('cliName').value.trim(),
+      contactName: document.getElementById('cliContactName').value.trim(),
+      phone: document.getElementById('cliPhone').value.trim(),
+      email: document.getElementById('cliEmail').value.trim(),
+      status: document.getElementById('cliStatus').value,
+      address: document.getElementById('cliAddress').value.trim(),
+      notes: document.getElementById('cliNotes').value.trim(),
+      hasCredit,
+      creditLimit: hasCredit ? parseFloat(document.getElementById('cliCreditLimit').value) || 0 : 0,
+      creditDays: hasCredit ? parseInt(document.getElementById('cliCreditDays').value, 10) || 30 : 0,
+      hasBilling,
+      rfc: hasBilling ? document.getElementById('cliRfc').value.trim().toUpperCase() : '',
+      cpFiscal: hasBilling ? document.getElementById('cliCpFiscal').value.trim() : '',
+      razonSocial: hasBilling ? document.getElementById('cliRazonSocial').value.trim().toUpperCase() : '',
+      regimenFiscal: hasBilling ? document.getElementById('cliRegimenFiscal').value : '',
+      usoCfdi: hasBilling ? document.getElementById('cliUsoCfdi').value : '',
+      billingEmail: hasBilling ? document.getElementById('cliBillingEmail').value.trim() : ''
+    };
+
+    if (!id && hasCredit) {
+      payload.currentBalance = Math.max(0, parseFloat(document.getElementById('cliInitialBalance')?.value) || 0);
+    }
+
+    try {
+      if (id) {
+        await erpService.updateClient(id, payload);
+        showToast('Expediente del cliente actualizado');
+      } else {
+        await erpService.createClient(payload);
+        showToast('Nuevo cliente registrado exitosamente');
+      }
+      closeModal('clientModal');
+      await syncAllData();
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Delete Client from Modal
+  document.getElementById('cliDeleteBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('cliId').value;
+    if (!id) return;
+    const cli = allClients.find(c => c.id === id);
+    if (!confirm(`¿Eliminar permanentemente al cliente "${cli?.name || id}"?`)) return;
+    try {
+      await erpService.deleteClient(id);
+      closeModal('clientModal');
+      await syncAllData();
+      showToast('Cliente eliminado del padrón');
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Credit Movement Modal Live Calculations (Abonos, Liquidaciones, Cargos)
+  const movClientSel = document.getElementById('credMovClientSelect');
+  const movTypeSel = document.getElementById('credMovType');
+  const movAmountIn = document.getElementById('credMovAmount');
+
+  const updateCreditMovementPreview = () => {
+    const cli = allClients.find(c => c.id === movClientSel?.value);
+    const limit = parseFloat(cli?.creditLimit) || 0;
+    const bal = parseFloat(cli?.currentBalance) || 0;
+    const avail = Math.max(0, limit - bal);
+
+    const limEl = document.getElementById('credMovLimitDisplay');
+    const balEl = document.getElementById('credMovBalanceDisplay');
+    const avEl = document.getElementById('credMovAvailableDisplay');
+    const projEl = document.getElementById('credMovProjectedBalance');
+    const conceptIn = document.getElementById('credMovConcept');
+
+    if (limEl) limEl.textContent = formatMoney(limit);
+    if (balEl) balEl.textContent = formatMoney(bal);
+    if (avEl) avEl.textContent = formatMoney(avail);
+
+    const type = movTypeSel?.value || 'abono';
+    if (type === 'liquidacion') {
+      if (movAmountIn) {
+        movAmountIn.value = bal.toFixed(2);
+        movAmountIn.readOnly = true;
+      }
+      if (conceptIn && !conceptIn.value) {
+        conceptIn.value = 'Liquidación total de saldo deudor';
+      }
+    } else {
+      if (movAmountIn) movAmountIn.readOnly = false;
+    }
+
+    const amt = Math.max(0, parseFloat(movAmountIn?.value) || 0);
+    let projected = bal;
+    if (type === 'cargo') {
+      projected = bal + amt;
+    } else if (type === 'liquidacion') {
+      projected = 0;
+    } else {
+      projected = Math.max(0, bal - amt);
+    }
+    if (projEl) projEl.value = formatMoney(projected);
+  };
+
+  movClientSel?.addEventListener('change', () => {
+    const cli = allClients.find(c => c.id === movClientSel.value);
+    const bal = parseFloat(cli?.currentBalance) || 0;
+    if (movTypeSel?.value === 'liquidacion' && movAmountIn) {
+      movAmountIn.value = bal.toFixed(2);
+    }
+    updateCreditMovementPreview();
+  });
+  movTypeSel?.addEventListener('change', () => {
+    const cli = allClients.find(c => c.id === movClientSel?.value);
+    const bal = parseFloat(cli?.currentBalance) || 0;
+    if (movTypeSel.value === 'liquidacion' && movAmountIn) {
+      movAmountIn.value = bal.toFixed(2);
+    } else if (movTypeSel.value === 'abono' && movAmountIn && (!movAmountIn.value || parseFloat(movAmountIn.value) === bal)) {
+      movAmountIn.value = Math.min(bal, Math.round(bal / 2)).toFixed(2);
+    }
+    updateCreditMovementPreview();
+  });
+  movAmountIn?.addEventListener('input', updateCreditMovementPreview);
+
+  const creditMovementForm = document.getElementById('creditMovementForm');
+  creditMovementForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clientId = movClientSel?.value;
+    if (!clientId) {
+      showToast('Selecciona un cliente');
+      return;
+    }
+    const payload = {
+      type: movTypeSel?.value || 'abono',
+      amount: parseFloat(movAmountIn?.value) || 0,
+      paymentMethod: document.getElementById('credMovPaymentMethod')?.value || 'Transferencia',
+      reference: document.getElementById('credMovReference')?.value.trim() || '',
+      concept: document.getElementById('credMovConcept')?.value.trim() || ''
+    };
+
+    try {
+      const res = await erpService.registerClientCreditMovement(clientId, payload);
+      closeModal('creditMovementModal');
+      await syncAllData();
+      if (currentStatementClientId === clientId && document.getElementById('clientStatementModal')?.classList.contains('open')) {
+        openClientStatementModal(clientId, currentStatementFilter);
+      }
+      showToast(`Movimiento ${res.movement.folio} registrado. Nuevo saldo: ${formatMoney(res.client.currentBalance)}`);
+      printCreditMovementReceipt(res.client, res.movement);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Statement Modal Filters (Historial Completo vs Crédito Vigente vs Consultar Crédito Anterior)
+  document.querySelectorAll('#stmtFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#stmtFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentStatementFilter = btn.dataset.stmtfilter || 'all';
+      renderClientStatementLedger();
+    });
+  });
+
+  document.getElementById('stmtNewAbonoBtn')?.addEventListener('click', () => {
+    if (!currentStatementClientId) return;
+    openCreditMovementModal(currentStatementClientId, 'abono');
+  });
+
+  document.getElementById('stmtPrintBtn')?.addEventListener('click', () => {
+    const cli = allClients.find(c => c.id === currentStatementClientId);
+    if (cli) printClientStatement(cli, currentStatementFilter);
+  });
+}
+
+function renderClientsModule() {
+  const totalClients = allClients.length;
+  const billingClients = allClients.filter(c => c.hasBilling).length;
+  const creditClients = allClients.filter(c => c.hasCredit);
+  const debtors = allClients.filter(c => (parseFloat(c.currentBalance) || 0) > 0);
+
+  const totalLimit = creditClients.reduce((s, c) => s + (parseFloat(c.creditLimit) || 0), 0);
+  const totalBalance = allClients.reduce((s, c) => s + (parseFloat(c.currentBalance) || 0), 0);
+  const totalAvailable = Math.max(0, totalLimit - totalBalance);
+
+  const elTotal = document.getElementById('cliKpiTotal');
+  const elBilling = document.getElementById('cliKpiBillingBadge');
+  const elCreditCount = document.getElementById('cliKpiCreditCount');
+  const elTotalLimit = document.getElementById('cliKpiTotalLimit');
+  const elTotalBalance = document.getElementById('cliKpiTotalBalance');
+  const elDebtorsCount = document.getElementById('cliKpiDebtorsCount');
+  const elAvail = document.getElementById('cliKpiAvailableCredit');
+  const elTabCount = document.getElementById('cliTabActiveCreditsCount');
+
+  if (elTotal) elTotal.textContent = totalClients;
+  if (elBilling) elBilling.textContent = `${billingClients} con CFDI 4.0`;
+  if (elCreditCount) elCreditCount.textContent = creditClients.length;
+  if (elTotalLimit) elTotalLimit.textContent = `Línea: ${formatMoney(totalLimit)}`;
+  if (elTotalBalance) elTotalBalance.textContent = formatMoney(totalBalance);
+  if (elDebtorsCount) elDebtorsCount.textContent = `${debtors.length} con saldo`;
+  if (elAvail) elAvail.textContent = formatMoney(totalAvailable);
+  if (elTabCount) elTabCount.textContent = debtors.length;
+
+  renderClientsDirectoryTable();
+  renderClientsCreditBalancesTable();
+}
+
+function renderClientsDirectoryTable() {
+  const tbody = document.getElementById('clientsDirectoryTableBody');
+  if (!tbody) return;
+
+  const q = (document.getElementById('cliSearchInput')?.value || '').toLowerCase().trim();
+
+  const filtered = allClients.filter(c => {
+    if (cliDirectoryFilter === 'credit' && !c.hasCredit) return false;
+    if (cliDirectoryFilter === 'billing' && !c.hasBilling) return false;
+    if (cliDirectoryFilter === 'balance' && (parseFloat(c.currentBalance) || 0) <= 0) return false;
+    if (q) {
+      const hay = `${c.code} ${c.name} ${c.contactName || ''} ${c.phone || ''} ${c.email || ''} ${c.rfc || ''} ${c.razonSocial || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">${renderEmptyState('Sin clientes para este filtro', 'Intenta con otra búsqueda o registra un nuevo cliente.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const limit = parseFloat(c.creditLimit) || 0;
+    const bal = parseFloat(c.currentBalance) || 0;
+    const avail = Math.max(0, limit - bal);
+
+    return `
+      <tr>
+        <td data-label="Código" class="mono">
+          <strong>${c.code}</strong>
+          <div style="font-size:0.68rem; color:var(--text-muted);">${c.status === 'suspendido' ? '🔴 Suspendido' : '🟢 Activo'}</div>
+        </td>
+        <td data-label="Cliente / Contacto">
+          <div>
+            <strong>${c.name}</strong>
+            <div style="font-size:0.74rem; color:var(--text-muted);">${c.contactName || 'Contacto directo'} · ${c.address || 'Sin dirección'}</div>
+          </div>
+        </td>
+        <td data-label="Teléfono & Correo">
+          <div class="tabular">${c.phone || '-'}</div>
+          <div style="font-size:0.73rem; color:var(--text-muted);">${c.email || '-'}</div>
+        </td>
+        <td data-label="Facturación Electrónica">
+          ${c.hasBilling
+            ? `<div>
+                 <span class="badge badge-blue"><span class="status-dot dot-blue"></span>CFDI 4.0 · ${c.rfc || 'RFC'}</span>
+                 <div style="font-size:0.71rem; color:var(--text-muted); margin-top:3px;">${c.usoCfdi || 'G03'} · C.P. ${c.cpFiscal || '-'}</div>
+               </div>`
+            : `<span class="badge badge-amber">Sin Facturación</span>`
+          }
+        </td>
+        <td data-label="Crédito Autorizado">
+          ${c.hasCredit
+            ? `<div>
+                 <span class="badge badge-green"><span class="status-dot dot-lime"></span>Autorizado (${c.creditDays || 30}d)</span>
+                 <div class="mono tabular" style="font-size:0.73rem; color:var(--text-secondary); margin-top:3px;">Límite: ${formatMoney(limit)}</div>
+               </div>`
+            : `<span class="kbd-tag">CONTADO</span>`
+          }
+        </td>
+        <td data-label="Saldo / Disponible" style="text-align:right;" class="mono tabular">
+          ${c.hasCredit
+            ? `<div>
+                 <strong style="color:${bal > 0 ? 'var(--amber)' : 'var(--text-main)'};">Saldo: ${formatMoney(bal)}</strong>
+                 <div style="font-size:0.72rem; color:var(--secondary);">Disp: ${formatMoney(avail)}</div>
+               </div>`
+            : `<span style="color:var(--text-muted);">$0.00</span>`
+          }
+        </td>
+        <td data-label="Acciones" style="text-align:right; white-space:nowrap;">
+          <div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary btn-sm btn-cli-stmt" data-id="${c.id}" title="Ver Estado de Cuenta y Créditos Anteriores">Estado de Cuenta</button>
+            ${c.hasCredit ? `<button type="button" class="btn btn-primary btn-sm btn-cli-abono" data-id="${c.id}" title="Registrar Abono o Liquidación">Abonar</button>` : ''}
+            <button type="button" class="btn btn-ghost btn-sm btn-cli-edit" data-id="${c.id}" title="Modificar Cliente">Modificar</button>
+            <button type="button" class="btn btn-danger btn-sm btn-cli-del" data-id="${c.id}" title="Eliminar Cliente">✕</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-cli-stmt').forEach(btn => {
+    btn.addEventListener('click', () => openClientStatementModal(btn.dataset.id, 'all'));
+  });
+  tbody.querySelectorAll('.btn-cli-abono').forEach(btn => {
+    btn.addEventListener('click', () => openCreditMovementModal(btn.dataset.id, 'abono'));
+  });
+  tbody.querySelectorAll('.btn-cli-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cli = allClients.find(x => x.id === btn.dataset.id);
+      if (cli) openClientModalForEdit(cli);
+    });
+  });
+  tbody.querySelectorAll('.btn-cli-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const cli = allClients.find(x => x.id === btn.dataset.id);
+      if (!cli) return;
+      if (!confirm(`¿Eliminar al cliente "${cli.name}" (${cli.code})?`)) return;
+      try {
+        await erpService.deleteClient(cli.id);
+        await syncAllData();
+        showToast('Cliente eliminado');
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+  });
+}
+
+function renderClientsCreditBalancesTable() {
+  const tbody = document.getElementById('clientsCreditBalancesTableBody');
+  if (!tbody) return;
+
+  const q = (document.getElementById('creditSearchInput')?.value || '').toLowerCase().trim();
+
+  // Show clients with credit authorized or any ledger history
+  const creditPool = allClients.filter(c => c.hasCredit || (Array.isArray(c.ledger) && c.ledger.length > 0));
+
+  const filtered = creditPool.filter(c => {
+    const bal = parseFloat(c.currentBalance) || 0;
+    const hasPrevLiquidated = Array.isArray(c.ledger) && c.ledger.some(m => m.status === 'liquidado');
+    if (cliCreditFilter === 'debtors' && bal <= 0) return false;
+    if (cliCreditFilter === 'settled' && bal > 0) return false;
+    if (cliCreditFilter === 'previous' && !hasPrevLiquidated) return false;
+    if (q) {
+      const hay = `${c.code} ${c.name} ${c.contactName || ''} ${c.rfc || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">${renderEmptyState('Sin cuentas de crédito en este filtro', 'Cambia el filtro de cartera o autoriza crédito a un cliente.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const limit = parseFloat(c.creditLimit) || 0;
+    const bal = parseFloat(c.currentBalance) || 0;
+    const avail = Math.max(0, limit - bal);
+    const pct = limit > 0 ? Math.min(100, Math.round((bal / limit) * 100)) : 0;
+    const barColor = pct >= 80 ? 'var(--danger)' : pct >= 50 ? 'var(--amber)' : 'var(--primary)';
+
+    const ledger = Array.isArray(c.ledger) ? c.ledger : [];
+    const activeCount = ledger.filter(m => m.status === 'vigente').length;
+    const prevCount = ledger.filter(m => m.status === 'liquidado').length;
+
+    return `
+      <tr>
+        <td data-label="Código / Cliente">
+          <div>
+            <strong class="mono" style="color:var(--primary);">${c.code}</strong> · <strong>${c.name}</strong>
+            <div style="font-size:0.73rem; color:var(--text-muted);">${c.contactName || ''} · Tel: ${c.phone || '-'}</div>
+          </div>
+        </td>
+        <td data-label="Límite Autorizado" style="text-align:right;" class="mono tabular">
+          <strong>${formatMoney(limit)}</strong>
+        </td>
+        <td data-label="Saldo Deudor Actual" style="text-align:right;" class="mono tabular">
+          <strong style="color:${bal > 0 ? 'var(--amber)' : 'var(--text-muted)'}; font-size:0.95rem;">${formatMoney(bal)}</strong>
+        </td>
+        <td data-label="Crédito Disponible" style="text-align:right;" class="mono tabular">
+          <strong style="color:var(--secondary);">${formatMoney(avail)}</strong>
+        </td>
+        <td data-label="Uso de Línea / Plazo">
+          <div style="display:flex; justify-content:space-between; font-size:0.73rem;" class="mono tabular">
+            <span>${pct}% utilizado</span>
+            <span>Plazo: ${c.creditDays || 30} días</span>
+          </div>
+          <div class="credit-line-meter">
+            <div class="credit-line-fill" style="width:${pct}%; background:${barColor};"></div>
+          </div>
+        </td>
+        <td data-label="Historial de Créditos">
+          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+            <span class="badge ${bal > 0 ? 'badge-amber' : 'badge-green'}">${bal > 0 ? `${activeCount} mov. vigentes` : 'Al corriente'}</span>
+            ${prevCount > 0 ? `<button type="button" class="kbd-tag btn-view-prev-credit" data-id="${c.id}" style="cursor:pointer;" title="Consultar créditos anteriores liquidados">↺ ${prevCount} anteriores</button>` : ''}
+          </div>
+        </td>
+        <td data-label="Administración de Crédito" style="text-align:right; white-space:nowrap;">
+          <div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary btn-sm btn-cred-stmt" data-id="${c.id}">Estado de Cuenta</button>
+            ${bal > 0 ? `
+              <button type="button" class="btn btn-primary btn-sm btn-cred-abono" data-id="${c.id}">Abonar</button>
+              <button type="button" class="btn btn-ghost btn-sm btn-cred-liquidar" data-id="${c.id}" title="Liquidar el 100% del saldo deudor">Liquidar</button>
+            ` : `
+              <button type="button" class="btn btn-ghost btn-sm btn-cred-cargo" data-id="${c.id}">+ Cargo</button>
+            `}
+            <button type="button" class="btn btn-ghost btn-sm btn-cred-prev" data-id="${c.id}" title="Consultar crédito anterior">Crédito Anterior</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-cred-stmt').forEach(btn => {
+    btn.addEventListener('click', () => openClientStatementModal(btn.dataset.id, 'all'));
+  });
+  tbody.querySelectorAll('.btn-cred-prev, .btn-view-prev-credit').forEach(btn => {
+    btn.addEventListener('click', () => openClientStatementModal(btn.dataset.id, 'liquidado'));
+  });
+  tbody.querySelectorAll('.btn-cred-abono').forEach(btn => {
+    btn.addEventListener('click', () => openCreditMovementModal(btn.dataset.id, 'abono'));
+  });
+  tbody.querySelectorAll('.btn-cred-liquidar').forEach(btn => {
+    btn.addEventListener('click', () => openCreditMovementModal(btn.dataset.id, 'liquidacion'));
+  });
+  tbody.querySelectorAll('.btn-cred-cargo').forEach(btn => {
+    btn.addEventListener('click', () => openCreditMovementModal(btn.dataset.id, 'cargo'));
+  });
+}
+
+function openClientModalForCreate() {
+  const form = document.getElementById('clientForm');
+  form?.reset();
+  document.getElementById('cliId').value = '';
+  document.getElementById('clientModalCode').textContent = 'NUEVO EXPEDIENTE DE CLIENTE';
+  document.getElementById('clientModalTitle').textContent = 'Nuevo Cliente';
+  document.getElementById('cliHasCredit').checked = true;
+  document.getElementById('cliCreditFieldsWrap')?.classList.remove('hidden');
+  document.getElementById('cliInitialBalanceWrap')?.classList.remove('hidden');
+  document.getElementById('cliCreditLimit').value = '15000';
+  document.getElementById('cliCreditDays').value = '30';
+  document.getElementById('cliInitialBalance').value = '0';
+
+  document.getElementById('cliHasBilling').checked = false;
+  document.getElementById('cliBillingFieldsWrap')?.classList.add('hidden');
+  document.getElementById('cliDeleteBtn')?.classList.add('hidden');
+  openModal('clientModal');
+}
+
+function openClientModalForEdit(client) {
+  if (!client) return;
+  document.getElementById('cliId').value = client.id;
+  document.getElementById('clientModalCode').textContent = `${client.code} · MODIFICAR CLIENTE`;
+  document.getElementById('clientModalTitle').textContent = client.name;
+  document.getElementById('cliName').value = client.name || '';
+  document.getElementById('cliContactName').value = client.contactName || '';
+  document.getElementById('cliPhone').value = client.phone || '';
+  document.getElementById('cliEmail').value = client.email || '';
+  document.getElementById('cliStatus').value = client.status || 'activo';
+  document.getElementById('cliAddress').value = client.address || '';
+  document.getElementById('cliNotes').value = client.notes || '';
+
+  const hasCredit = Boolean(client.hasCredit);
+  document.getElementById('cliHasCredit').checked = hasCredit;
+  document.getElementById('cliCreditFieldsWrap')?.classList.toggle('hidden', !hasCredit);
+  document.getElementById('cliInitialBalanceWrap')?.classList.add('hidden');
+  document.getElementById('cliCreditLimit').value = client.creditLimit || 0;
+  document.getElementById('cliCreditDays').value = String(client.creditDays || 30);
+
+  const hasBilling = Boolean(client.hasBilling);
+  document.getElementById('cliHasBilling').checked = hasBilling;
+  document.getElementById('cliBillingFieldsWrap')?.classList.toggle('hidden', !hasBilling);
+  document.getElementById('cliRfc').value = client.rfc || '';
+  document.getElementById('cliCpFiscal').value = client.cpFiscal || '';
+  document.getElementById('cliRazonSocial').value = client.razonSocial || '';
+  if (client.regimenFiscal) document.getElementById('cliRegimenFiscal').value = client.regimenFiscal;
+  if (client.usoCfdi) document.getElementById('cliUsoCfdi').value = client.usoCfdi;
+  document.getElementById('cliBillingEmail').value = client.billingEmail || '';
+
+  document.getElementById('cliDeleteBtn')?.classList.remove('hidden');
+  openModal('clientModal');
+}
+
+function openCreditMovementModal(preselectedClientId = null, defaultType = 'abono') {
+  const select = document.getElementById('credMovClientSelect');
+  const creditClients = allClients.filter(c => c.hasCredit);
+  if (!select) return;
+
+  if (creditClients.length === 0) {
+    showToast('Primero autoriza crédito a un cliente en Control de Clientes');
+    return;
+  }
+
+  select.innerHTML = creditClients.map(c => {
+    const bal = parseFloat(c.currentBalance) || 0;
+    return `<option value="${c.id}">[${c.code}] ${c.name} — Saldo: ${formatMoney(bal)}</option>`;
+  }).join('');
+
+  if (preselectedClientId && creditClients.some(c => c.id === preselectedClientId)) {
+    select.value = preselectedClientId;
+  }
+
+  const cli = allClients.find(c => c.id === select.value) || creditClients[0];
+  const bal = parseFloat(cli?.currentBalance) || 0;
+  const typeSel = document.getElementById('credMovType');
+  const amtIn = document.getElementById('credMovAmount');
+  const refIn = document.getElementById('credMovReference');
+  const conceptIn = document.getElementById('credMovConcept');
+
+  if (typeSel) typeSel.value = defaultType;
+  if (refIn) refIn.value = '';
+
+  if (defaultType === 'liquidacion') {
+    if (amtIn) {
+      amtIn.value = bal.toFixed(2);
+      amtIn.readOnly = true;
+    }
+    if (conceptIn) conceptIn.value = 'Liquidación total de saldo deudor';
+  } else if (defaultType === 'cargo') {
+    if (amtIn) {
+      amtIn.value = '';
+      amtIn.readOnly = false;
+    }
+    if (conceptIn) conceptIn.value = 'Cargo a cuenta de crédito por equipamiento / póliza';
+  } else {
+    if (amtIn) {
+      amtIn.value = bal > 0 ? bal.toFixed(2) : '';
+      amtIn.readOnly = false;
+    }
+    if (conceptIn) conceptIn.value = 'Abono a cuenta de crédito';
+  }
+
+  select.dispatchEvent(new Event('change'));
+  openModal('creditMovementModal');
+}
+
+function openClientStatementModal(clientId, initialFilter = 'all') {
+  const cli = allClients.find(c => c.id === clientId);
+  if (!cli) return;
+
+  currentStatementClientId = cli.id;
+  currentStatementFilter = initialFilter;
+
+  document.querySelectorAll('#stmtFilterPills .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.stmtfilter === initialFilter);
+  });
+
+  const limit = parseFloat(cli.creditLimit) || 0;
+  const bal = parseFloat(cli.currentBalance) || 0;
+  const avail = Math.max(0, limit - bal);
+
+  document.getElementById('stmtClientCode').textContent = `${cli.code} · ESTADO DE CUENTA E HISTORIAL DE CRÉDITOS`;
+  document.getElementById('stmtClientName').textContent = cli.name;
+  document.getElementById('stmtLimit').textContent = formatMoney(limit);
+  document.getElementById('stmtBalance').textContent = formatMoney(bal);
+  document.getElementById('stmtAvailable').textContent = formatMoney(avail);
+  document.getElementById('stmtMeta').textContent = `${cli.creditDays || 30} días · ${cli.hasBilling && cli.rfc ? cli.rfc : 'Sin RFC'}`;
+
+  renderClientStatementLedger();
+  openModal('clientStatementModal');
+}
+
+function renderClientStatementLedger() {
+  const tbody = document.getElementById('stmtLedgerTableBody');
+  const countEl = document.getElementById('stmtMovementsCount');
+  const cli = allClients.find(c => c.id === currentStatementClientId);
+  if (!tbody || !cli) return;
+
+  const ledger = Array.isArray(cli.ledger) ? cli.ledger : [];
+  const filtered = ledger.filter(m => {
+    if (currentStatementFilter === 'vigente') return m.status === 'vigente';
+    if (currentStatementFilter === 'liquidado') return m.status === 'liquidado';
+    return true;
+  });
+
+  if (countEl) countEl.textContent = `${filtered.length} movimiento(s)`;
+
+  if (filtered.length === 0) {
+    const emptyMsg = currentStatementFilter === 'liquidado'
+      ? 'Este cliente aún no registra ciclos de crédito anteriores liquidados.'
+      : currentStatementFilter === 'vigente'
+      ? 'El cliente se encuentra al corriente ($0.00) sin cargos vigentes.'
+      : 'No existen movimientos registrados en el estado de cuenta de este cliente.';
+    tbody.innerHTML = `<tr><td colspan="8">${renderEmptyState('Sin movimientos en este filtro', emptyMsg)}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(m => {
+    const isCargo = m.type === 'cargo';
+    const isLiq = m.type === 'liquidacion';
+    const d = m.date ? new Date(m.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+    const typeBadge = isCargo
+      ? `<span class="badge badge-amber"><span class="status-dot dot-amber"></span>Cargo (+)</span>`
+      : isLiq
+      ? `<span class="badge badge-green"><span class="status-dot dot-lime"></span>Liquidación (-)</span>`
+      : `<span class="badge badge-blue"><span class="status-dot dot-blue"></span>Abono (-)</span>`;
+
+    const cycleBadge = m.status === 'liquidado'
+      ? `<span class="kbd-tag" title="Ciclo de crédito anterior ya liquidado">CRÉDITO ANTERIOR (LIQUIDADO)</span>`
+      : `<span class="badge badge-purple">CRÉDITO VIGENTE</span>`;
+
+    return `
+      <tr>
+        <td data-label="Folio" class="mono"><strong>${m.folio || '-'}</strong></td>
+        <td data-label="Fecha" class="tabular">${d}</td>
+        <td data-label="Tipo">${typeBadge}</td>
+        <td data-label="Concepto & Referencia">
+          <div>
+            <strong>${m.concept || '-'}</strong>
+            <div style="font-size:0.72rem; color:var(--text-muted);">Ref: ${m.reference || '-'} · Por: ${m.author || 'Sistema'}</div>
+          </div>
+        </td>
+        <td data-label="Saldo Anterior" style="text-align:right;" class="mono tabular">${formatMoney(m.balanceBefore)}</td>
+        <td data-label="Importe" style="text-align:right;" class="mono tabular">
+          <strong style="color:${isCargo ? 'var(--amber)' : 'var(--secondary)'};">
+            ${isCargo ? '+' : '-'}${formatMoney(m.amount)}
+          </strong>
+        </td>
+        <td data-label="Nuevo Saldo" style="text-align:right;" class="mono tabular"><strong>${formatMoney(m.balanceAfter)}</strong></td>
+        <td data-label="Ciclo de Crédito">${cycleBadge}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportClientsToCSV() {
+  const headers = [
+    'Codigo',
+    'NombreComercial',
+    'Contacto',
+    'Telefono',
+    'Correo',
+    'Estatus',
+    'TieneCreditoAutorizado',
+    'LimiteCredito',
+    'PlazoDias',
+    'SaldoDeudorActual',
+    'CreditoDisponible',
+    'TieneFacturacionCFDI',
+    'RFC',
+    'RazonSocialFiscal',
+    'RegimenFiscal',
+    'UsoCFDI',
+    'CPFiscal',
+    'CorreoFacturacion'
+  ];
+
+  const rows = allClients.map(c => {
+    const limit = parseFloat(c.creditLimit) || 0;
+    const bal = parseFloat(c.currentBalance) || 0;
+    const avail = Math.max(0, limit - bal);
+    return [
+      c.code,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.contactName || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      `"${(c.email || '').replace(/"/g, '""')}"`,
+      c.status || 'activo',
+      c.hasCredit ? 'SI' : 'NO',
+      limit.toFixed(2),
+      c.creditDays || 0,
+      bal.toFixed(2),
+      avail.toFixed(2),
+      c.hasBilling ? 'SI' : 'NO',
+      c.rfc || '',
+      `"${(c.razonSocial || '').replace(/"/g, '""')}"`,
+      `"${(c.regimenFiscal || '').replace(/"/g, '""')}"`,
+      `"${(c.usoCfdi || '').replace(/"/g, '""')}"`,
+      c.cpFiscal || '',
+      c.billingEmail || ''
+    ];
+  });
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fiberlink-padron-clientes-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Padrón de clientes exportado a CSV exitosamente');
+}
+
+function exportCreditBalancesToCSV() {
+  const headers = ['Codigo', 'Cliente', 'Contacto', 'Telefono', 'RFC', 'LimiteAutorizado', 'PlazoDias', 'SaldoDeudor', 'CreditoDisponible', 'PorcentajeUso'];
+  const creditClients = allClients.filter(c => c.hasCredit || (parseFloat(c.currentBalance) || 0) > 0);
+  const rows = creditClients.map(c => {
+    const limit = parseFloat(c.creditLimit) || 0;
+    const bal = parseFloat(c.currentBalance) || 0;
+    const avail = Math.max(0, limit - bal);
+    const pct = limit > 0 ? Math.round((bal / limit) * 100) : 0;
+    return [
+      c.code,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.contactName || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      c.rfc || 'S/RFC',
+      limit.toFixed(2),
+      c.creditDays || 30,
+      bal.toFixed(2),
+      avail.toFixed(2),
+      `${pct}%`
+    ];
+  });
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fiberlink-reporte-saldos-credito-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Reporte de Saldos exportado a CSV');
+}
+
+function printCreditBalancesReport() {
+  const area = document.getElementById('printArea');
+  if (!area) return;
+  const creditClients = allClients.filter(c => c.hasCredit || (parseFloat(c.currentBalance) || 0) > 0);
+  const totalLimit = creditClients.reduce((s, c) => s + (parseFloat(c.creditLimit) || 0), 0);
+  const totalBal = creditClients.reduce((s, c) => s + (parseFloat(c.currentBalance) || 0), 0);
+  const totalAvail = Math.max(0, totalLimit - totalBal);
+
+  area.innerHTML = `
+    <div style="max-width:760px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <h2>FIBERLINK SERVICIOS TIC — REPORTE DE SALDOS DE CLIENTES (CARTERA DE CRÉDITO)</h2>
+      <p style="font-size:12px;">Fecha de Corte: ${new Date().toLocaleString('es-MX')} · Emitido por: ${currentUser?.name || 'Administración'}</p>
+      <hr style="margin:10px 0;">
+      <p style="font-size:13px;">
+        <strong>Línea Total Otorgada:</strong> ${formatMoney(totalLimit)} &nbsp;|&nbsp;
+        <strong>Saldo Total por Cobrar:</strong> ${formatMoney(totalBal)} &nbsp;|&nbsp;
+        <strong>Crédito Disponible:</strong> ${formatMoney(totalAvail)}
+      </p>
+      <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:12px;" border="1" cellpadding="6">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">Código</th>
+            <th align="left">Cliente / Razón Social</th>
+            <th align="left">Teléfono</th>
+            <th align="right">Límite Crédito</th>
+            <th align="right">Saldo Deudor</th>
+            <th align="right">Disponible</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${creditClients.map(c => {
+            const lim = parseFloat(c.creditLimit) || 0;
+            const bal = parseFloat(c.currentBalance) || 0;
+            return `
+              <tr>
+                <td>${c.code}</td>
+                <td>${c.name}</td>
+                <td>${c.phone || '-'}</td>
+                <td align="right">${formatMoney(lim)}</td>
+                <td align="right"><strong>${formatMoney(bal)}</strong></td>
+                <td align="right">${formatMoney(Math.max(0, lim - bal))}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+}
+
+function printClientStatement(client, filterMode = 'all') {
+  const area = document.getElementById('printArea');
+  if (!area || !client) return;
+  const ledger = (client.ledger || []).filter(m => {
+    if (filterMode === 'vigente') return m.status === 'vigente';
+    if (filterMode === 'liquidado') return m.status === 'liquidado';
+    return true;
+  });
+
+  const lim = parseFloat(client.creditLimit) || 0;
+  const bal = parseFloat(client.currentBalance) || 0;
+
+  area.innerHTML = `
+    <div style="max-width:760px; margin:0 auto; font-family:Arial,sans-serif; color:#000;">
+      <div style="display:flex; justify-content:space-between; border-bottom:2px solid #000; padding-bottom:8px;">
+        <div>
+          <h2 style="margin:0;">FIBERLINK SERVICIOS TIC — ESTADO DE CUENTA DE CLIENTE</h2>
+          <p style="font-size:12px; margin:4px 0;">Teziutlán, Puebla · Administración de Crédito y Cobranza</p>
+        </div>
+        <div style="text-align:right; font-size:12px;">
+          <strong>Código: ${client.code}</strong><br>
+          Fecha: ${new Date().toLocaleString('es-MX')}
+        </div>
+      </div>
+      <div style="margin:12px 0; font-size:13px;">
+        <p><strong>Cliente:</strong> ${client.name} &nbsp;|&nbsp; <strong>RFC:</strong> ${client.rfc || 'S/RFC'} &nbsp;|&nbsp; <strong>Tel:</strong> ${client.phone || '-'}</p>
+        <p>
+          <strong>Límite Autorizado:</strong> ${formatMoney(lim)} (${client.creditDays || 30} días) &nbsp;|&nbsp;
+          <strong>Saldo Deudor Actual:</strong> ${formatMoney(bal)} &nbsp;|&nbsp;
+          <strong>Crédito Disponible:</strong> ${formatMoney(Math.max(0, lim - bal))}
+        </p>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;" border="1" cellpadding="5">
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th align="left">Folio</th>
+            <th align="left">Fecha</th>
+            <th align="left">Tipo</th>
+            <th align="left">Concepto / Referencia</th>
+            <th align="right">Saldo Ant.</th>
+            <th align="right">Importe</th>
+            <th align="right">Nuevo Saldo</th>
+            <th align="left">Ciclo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ledger.map(m => `
+            <tr>
+              <td>${m.folio}</td>
+              <td>${new Date(m.date).toLocaleDateString('es-MX')}</td>
+              <td>${m.type.toUpperCase()}</td>
+              <td>${m.concept} (${m.reference || '-'})</td>
+              <td align="right">${formatMoney(m.balanceBefore)}</td>
+              <td align="right">${m.type === 'cargo' ? '+' : '-'}${formatMoney(m.amount)}</td>
+              <td align="right"><strong>${formatMoney(m.balanceAfter)}</strong></td>
+              <td>${m.status === 'liquidado' ? 'Crédito Anterior' : 'Vigente'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  window.print();
+}
+
+function printCreditMovementReceipt(client, movement) {
+  const area = document.getElementById('printArea');
+  if (!area || !client || !movement) return;
+  area.innerHTML = `
+    <div style="max-width:340px; margin:0 auto; font-family:monospace; color:#000;">
+      <h2 style="text-align:center; margin-bottom:4px;">FIBERLINK SERVICIOS TIC</h2>
+      <p style="text-align:center; font-size:12px; margin-bottom:8px;">COMPROBANTE DE ${movement.type.toUpperCase()} DE CRÉDITO</p>
+      <hr>
+      <p style="font-size:12px; margin:6px 0;">
+        <strong>Folio Operación:</strong> ${movement.folio}<br>
+        <strong>Fecha:</strong> ${new Date(movement.date).toLocaleString('es-MX')}<br>
+        <strong>Cliente:</strong> [${client.code}] ${client.name}<br>
+        <strong>Concepto:</strong> ${movement.concept}<br>
+        <strong>Método / Ref:</strong> ${movement.paymentMethod || '-'} (${movement.reference || '-'})<br>
+        <strong>Atendió:</strong> ${movement.author}
+      </p>
+      <hr>
+      <p style="text-align:right; font-size:13px; margin:6px 0;">
+        Saldo Anterior: ${formatMoney(movement.balanceBefore)}<br>
+        <strong>IMPORTE ${movement.type.toUpperCase()}: ${formatMoney(movement.amount)}</strong><br>
+        <strong>NUEVO SALDO DEUDOR: ${formatMoney(movement.balanceAfter)}</strong>
+      </p>
+      <hr>
+      <p style="text-align:center; font-size:11px; margin-top:14px;">Conserve este comprobante para cualquier aclaración en su Estado de Cuenta.</p>
+    </div>
+  `;
+  window.print();
+}
+

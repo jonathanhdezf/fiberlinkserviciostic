@@ -45,6 +45,14 @@ import {
   handleUpdateWorkshopParts,
   handleDeleteWorkshopOrder
 } from './controllers/workshopController.js';
+import {
+  handleListClients,
+  handleGetClient,
+  handleCreateClient,
+  handleUpdateClient,
+  handleDeleteClient,
+  handleRegisterCreditMovement
+} from './controllers/clientsController.js';
 import { handleGetReportsSummary } from './controllers/reportsController.js';
 
 export { DATA_DIR };
@@ -311,7 +319,43 @@ export async function handleApiRequest(req, res, next) {
     }
 
     // ==========================================
-    // 7. REPORTS & ACTIVITY LOGS
+    // 7. CLIENTS & CREDIT MODULE (Clientes y Créditos)
+    // ==========================================
+    if (pathname === '/api/clients' && method === 'GET') {
+      const result = handleListClients(url.searchParams);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/clients' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleCreateClient(body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    const clientCreditMatch = pathname.match(/^\/api\/clients\/([a-zA-Z0-9_-]+)\/credit$/);
+    if (clientCreditMatch && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleRegisterCreditMovement(clientCreditMatch[1], body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    const clientIdMatch = pathname.match(/^\/api\/clients\/([a-zA-Z0-9_-]+)$/);
+    if (clientIdMatch && method === 'GET') {
+      const result = handleGetClient(clientIdMatch[1]);
+      return sendJSON(res, result.status, result.data);
+    }
+    if (clientIdMatch && method === 'PATCH') {
+      const body = await parseBody(req);
+      const result = handleUpdateClient(clientIdMatch[1], body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+    if (clientIdMatch && method === 'DELETE') {
+      const result = handleDeleteClient(clientIdMatch[1], currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    // ==========================================
+    // 8. REPORTS & ACTIVITY LOGS
     // ==========================================
     if (pathname === '/api/reports/summary' && method === 'GET') {
       const result = handleGetReportsSummary(url.searchParams);

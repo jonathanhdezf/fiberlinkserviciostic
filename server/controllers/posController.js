@@ -82,23 +82,85 @@ export function handleCreateSale(body, currentUser) {
     };
   });
 
-  // Persist updated product stocks
-  writeCollection('products', products);
-
   const discount = Math.max(0, parseFloat(body.discount) || 0);
   const total = Math.max(0, subtotal - discount);
   const paymentMethod = body.paymentMethod || 'Efectivo';
-  const amountReceived = Math.max(total, parseFloat(body.amountReceived) || total);
-  const change = Math.max(0, amountReceived - total);
   const cashier = currentUser?.name || body.cashier || 'Cajero en Turno';
   const linkedRef = (body.linkedRef || '').trim().toUpperCase();
+  const clientId = body.clientId || null;
+
+  // Validate and apply client credit if paymentMethod is 'Crédito'
+  let resolvedClientName = (body.clientName || 'Mostrador / Público en General').trim();
+  if (paymentMethod === 'Crédito' || clientId) {
+    const clients = readCollection('clients');
+    const cIdx = clients.findIndex(c => c.id === clientId || c.code === clientId || c.name.toLowerCase() === resolvedClientName.toLowerCase());
+    if (paymentMethod === 'Crédito') {
+      if (cIdx === -1) {
+        return {
+          status: 400,
+          data: { error: 'Para ventas a Crédito debe seleccionar un cliente registrado con línea autorizada.' }
+        };
+      }
+      const client = clients[cIdx];
+      if (!client.hasCredit) {
+        return {
+          status: 400,
+          data: { error: `El cliente "${client.name}" no cuenta con crédito autorizado.` }
+        };
+      }
+      const currentBalance = Math.max(0, parseFloat(client.currentBalance) || 0);
+      const creditLimit = Math.max(0, parseFloat(client.creditLimit) || 0);
+      if (creditLimit > 0 && currentBalance + total > creditLimit) {
+        const available = Math.max(0, creditLimit - currentBalance);
+        return {
+          status: 400,
+          data: {
+            error: `El total de la venta ($${total.toFixed(2)}) excede el crédito disponible de ${client.name} ($${available.toFixed(2)}).`
+          }
+        };
+      }
+
+      // Record credit charge in client ledger
+      const balanceAfter = currentBalance + total;
+      client.ledger = Array.isArray(client.ledger) ? client.ledger : [];
+      const movFolio = `CR-${String(client.ledger.length + 101)}`;
+      client.ledger.unshift({
+        id: `mov-${Date.now()}`,
+        folio: movFolio,
+        date: new Date().toISOString(),
+        type: 'cargo',
+        concept: `Venta en POS ${newFolio} (${processedItems.length} art.)`,
+        reference: newFolio,
+        paymentMethod: 'Crédito',
+        amount: total,
+        balanceBefore: currentBalance,
+        balanceAfter,
+        status: 'vigente',
+        author: cashier
+      });
+      client.currentBalance = balanceAfter;
+      client.updatedAt = new Date().toISOString();
+      resolvedClientName = client.name;
+      clients[cIdx] = client;
+      writeCollection('clients', clients);
+    } else if (cIdx !== -1) {
+      resolvedClientName = clients[cIdx].name;
+    }
+  }
+
+  // Persist updated product stocks
+  writeCollection('products', products);
+
+  const amountReceived = paymentMethod === 'Crédito' ? 0 : Math.max(total, parseFloat(body.amountReceived) || total);
+  const change = paymentMethod === 'Crédito' ? 0 : Math.max(0, amountReceived - total);
 
   const newSale = {
     id: `sale-${Date.now()}`,
     folio: newFolio,
     date: new Date().toISOString(),
     cashier,
-    clientName: (body.clientName || 'Mostrador / Público en General').trim(),
+    clientId,
+    clientName: resolvedClientName,
     paymentMethod,
     linkedRef,
     status: 'completada',
@@ -126,7 +188,7 @@ export function handleCreateSale(body, currentUser) {
         id: `b-${Date.now()}`,
         date: new Date().toISOString(),
         author: cashier,
-        note: `Cobro liquidado en Punto de Venta (${newFolio}) por $${total.toFixed(2)} (${paymentMethod}).`
+        note: `Cobro procesado en Punto de Venta (${newFolio}) por $${total.toFixed(2)} (${paymentMethod}).`
       });
       writeCollection('tickets', tickets);
     }
@@ -141,7 +203,7 @@ export function handleCreateSale(body, currentUser) {
         id: `wb-${Date.now()}`,
         date: new Date().toISOString(),
         author: cashier,
-        note: `Orden liquidada en Punto de Venta (${newFolio}) por $${total.toFixed(2)} (${paymentMethod}).`
+        note: `Orden procesada en Punto de Venta (${newFolio}) por $${total.toFixed(2)} (${paymentMethod}).`
       });
       writeCollection('workshop', workshop);
     }

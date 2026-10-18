@@ -172,6 +172,11 @@
           <span class="nav-label">Tienda & Stock</span>
           <span class="nav-badge warn tabular" id="navBadgeLowStock" style="display:none;">!</span>
         </button>
+        <button class="nav-btn" data-view="clients" title="Control de Clientes, Facturación y Administración de Créditos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><rect width="8" height="6" x="14" y="13" rx="1"/><path d="M14 16h8"/></svg>
+          <span class="nav-label">Clientes & Créditos</span>
+          <span class="nav-badge tabular" id="navBadgeClients" style="display:none;">0</span>
+        </button>
 
         <div class="nav-group-label">INTELIGENCIA & SISTEMA</div>
         <button class="nav-btn" data-view="reports" title="Reportes Financieros y Corte">
@@ -717,9 +722,16 @@
                 </div>
 
                 <div class="pos-checkout-form" style="border-top:none; padding-top:0;">
-                  <div class="pos-row" style="flex-direction:column; align-items:stretch; gap:5px;">
-                    <span>Cliente / Razón Social:</span>
-                    <input type="text" id="posClientName" value="Mostrador / Público en General">
+                  <div class="pos-row" style="flex-direction:column; align-items:stretch; gap:6px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span>Cliente / Cuenta Registrada:</span>
+                      <button type="button" class="btn btn-ghost btn-sm" id="posQuickNewClientBtn" style="padding:2px 8px; font-size:0.74rem;">+ Nuevo Cliente</button>
+                    </div>
+                    <select id="posClientSelect">
+                      <option value="">-- Mostrador / Público en General --</option>
+                    </select>
+                    <input type="text" id="posClientName" value="Mostrador / Público en General" placeholder="Nombre o razón social del cliente...">
+                    <div id="posClientCreditInfo" class="pos-client-credit-banner hidden"></div>
                   </div>
 
                   <div class="pos-row">
@@ -739,15 +751,17 @@
 
                   <div class="pos-row" style="flex-direction:column; align-items:stretch; gap:6px;">
                     <span>Método de Pago:</span>
-                    <div class="pos-pay-methods-pills" id="posPayMethodPills">
+                    <div class="pos-pay-methods-pills" id="posPayMethodPills" style="grid-template-columns: repeat(2, 1fr);">
                       <button type="button" class="pay-pill active" data-method="Efectivo">💵 Efectivo</button>
                       <button type="button" class="pay-pill" data-method="Tarjeta">💳 Tarjeta</button>
                       <button type="button" class="pay-pill" data-method="Transferencia">🏦 SPEI</button>
+                      <button type="button" class="pay-pill" data-method="Crédito">📋 Crédito Cliente</button>
                     </div>
                     <select id="posPaymentMethod" style="display:none;">
                       <option value="Efectivo">Efectivo</option>
                       <option value="Tarjeta">Tarjeta</option>
                       <option value="Transferencia">Transferencia SPEI</option>
+                      <option value="Crédito">Crédito Cliente</option>
                     </select>
                   </div>
 
@@ -991,6 +1005,202 @@
           </div>
         </section>
 
+        <!-- ==========================================
+             VIEW 8: CLIENTES, FACTURACIÓN & ADMINISTRACIÓN DE CRÉDITOS
+        ========================================== -->
+        <section id="view-clients" class="erp-view">
+          <!-- KPIs Ejecutivos de Clientes y Cartera de Crédito -->
+          <div class="kpi-grid" style="margin-bottom:16px;">
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Padrón de Clientes</span>
+                <div class="kpi-icon kpi-cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cliKpiTotal">0</div>
+                <span class="kpi-trend trend-info" id="cliKpiBillingBadge">0 con CFDI 4.0</span>
+              </div>
+              <div class="kpi-foot">Control de clientes activos y datos fiscales</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Créditos Autorizados</span>
+                <div class="kpi-icon kpi-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cliKpiCreditCount">0</div>
+                <span class="kpi-trend trend-neutral tabular" id="cliKpiTotalLimit">Línea: $0.00</span>
+              </div>
+              <div class="kpi-foot">Clientes con línea de crédito autorizada</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Saldo por Cobrar (Cartera)</span>
+                <div class="kpi-icon kpi-amber">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cliKpiTotalBalance">$0.00</div>
+                <span class="kpi-trend trend-warn tabular" id="cliKpiDebtorsCount">0 con saldo</span>
+              </div>
+              <div class="kpi-foot">Total adeudado en cuentas por cobrar</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Crédito Disponible</span>
+                <div class="kpi-icon kpi-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cliKpiAvailableCredit">$0.00</div>
+                <span class="kpi-trend trend-up">Liquidez en línea</span>
+              </div>
+              <div class="kpi-foot">Capacidad remanente para nuevas compras a crédito</div>
+            </article>
+          </div>
+
+          <!-- Two-Tab Sub-Navigation: 1. Administración de Clientes | 2. Administración de Créditos -->
+          <div class="pos-tabs-header surface-card" style="margin-bottom:16px;">
+            <div class="pos-tabs-nav" role="tablist" aria-label="Submódulos de Clientes y Créditos">
+              <button type="button" class="pos-main-tab active" id="btnCliTabDirectory" data-clitab="directory" role="tab" aria-selected="true">
+                <div class="pos-tab-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                </div>
+                <div class="pos-tab-text">
+                  <span class="pos-tab-title">1. Control y Administración de Clientes</span>
+                  <span class="pos-tab-sub">Nuevo · Modificar · Eliminar · Crédito autorizado · Facturación CFDI · Exportar</span>
+                </div>
+              </button>
+
+              <button type="button" class="pos-main-tab" id="btnCliTabCredits" data-clitab="credits" role="tab" aria-selected="false">
+                <div class="pos-tab-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
+                <div class="pos-tab-text">
+                  <span class="pos-tab-title">
+                    2. Administración de Créditos & Cartera
+                    <span class="pos-cart-count-pill mono tabular" id="cliTabActiveCreditsCount">0</span>
+                  </span>
+                  <span class="pos-tab-sub">Estado de cuenta · Reporte de saldos · Abonos y liquidaciones · Crédito anterior</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 1: CONTROL Y ADMINISTRACIÓN DE CLIENTES
+          ========================================== -->
+          <div id="cliSubTabDirectory" class="pos-tab-pane active">
+            <div class="toolbar-bar">
+              <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="cliSearchInput" placeholder="Buscar cliente por código (CLI-), nombre comercial, contacto, RFC o teléfono...">
+              </div>
+              <div class="toolbar-filters">
+                <div class="filter-pills" id="cliFilterPills">
+                  <button type="button" class="pill-btn active" data-clifilter="all">Todos</button>
+                  <button type="button" class="pill-btn" data-clifilter="credit">Con Crédito Autorizado</button>
+                  <button type="button" class="pill-btn" data-clifilter="billing">Con Facturación CFDI</button>
+                  <button type="button" class="pill-btn" data-clifilter="balance">Con Saldo Deudor</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="btnExportClientsCsv" title="Exportar padrón de clientes a CSV / Excel">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Exportar Clientes</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnOpenNewClientModal">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                  <span>Nuevo Cliente</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Cliente / Contacto</th>
+                      <th>Teléfono & Correo</th>
+                      <th>Facturación Electrónica</th>
+                      <th>Crédito Autorizado</th>
+                      <th style="text-align:right;">Saldo / Disponible</th>
+                      <th style="text-align:right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientsDirectoryTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 2: ADMINISTRACIÓN DE CRÉDITOS & REPORTE DE SALDOS
+          ========================================== -->
+          <div id="cliSubTabCredits" class="pos-tab-pane">
+            <div class="toolbar-bar">
+              <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="creditSearchInput" placeholder="Buscar cuenta por cliente, código (CLI-), RFC o estado de cartera...">
+              </div>
+              <div class="toolbar-filters">
+                <div class="filter-pills" id="creditFilterPills">
+                  <button type="button" class="pill-btn active" data-credfilter="all">Reporte de Saldos (Todos)</button>
+                  <button type="button" class="pill-btn" data-credfilter="debtors">Con Saldo Pendiente</button>
+                  <button type="button" class="pill-btn" data-credfilter="settled">Al Corriente ($0.00)</button>
+                  <button type="button" class="pill-btn" data-credfilter="previous">Con Créditos Anteriores</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="btnExportCreditBalancesCsv" title="Exportar Reporte de Saldos de Clientes">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                  <span>Reporte de Saldos CSV</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnPrintBalancesReport" title="Imprimir Reporte de Saldos de Cartera">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                  <span>Imprimir Saldos</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btnOpenCreditMovementModal">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>Abonos y Liquidaciones</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">ADMINISTRACIÓN DE CRÉDITOS & CARTERA</div>
+                  <h3>Reporte de Saldos, Estados de Cuenta y Créditos Anteriores</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Código / Cliente</th>
+                      <th style="text-align:right;">Límite Autorizado</th>
+                      <th style="text-align:right;">Saldo Deudor Actual</th>
+                      <th style="text-align:right;">Crédito Disponible</th>
+                      <th>Uso de Línea / Plazo</th>
+                      <th>Historial de Créditos</th>
+                      <th style="text-align:right;">Administración de Crédito</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientsCreditBalancesTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
 
       <!-- Ergonomic Mobile Bottom Tab Bar -->
@@ -1003,9 +1213,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
           <span>Tickets</span>
         </button>
-        <button type="button" class="mnav-item" data-view="workshop">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          <span>Taller</span>
+        <button type="button" class="mnav-item" data-view="clients">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><rect width="8" height="6" x="14" y="13" rx="1"/></svg>
+          <span>Clientes</span>
         </button>
         <button type="button" class="mnav-item" data-view="pos">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
@@ -1443,6 +1653,279 @@
           <button type="submit" class="btn btn-primary">Guardar Usuario</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 6: CLIENT CREATE / MODIFY (NUEVO / MODIFICAR CLIENTE)
+  ============================ -->
+  <div id="clientModal" class="modal">
+    <div class="modal-back" data-close="clientModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:680px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" id="clientModalCode" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">CONTROL DE CLIENTES</div>
+          <h2 id="clientModalTitle">Nuevo Cliente</h2>
+        </div>
+        <button class="close-btn" data-close="clientModal">✕</button>
+      </div>
+
+      <form id="clientForm" class="modal-body">
+        <input type="hidden" id="cliId">
+        <div class="form-grid">
+          <label class="full">Nombre Comercial / Cliente *
+            <input type="text" id="cliName" required placeholder="Ej. Supermercado La Sierra S.A. de C.V.">
+          </label>
+          <label>Persona de Contacto
+            <input type="text" id="cliContactName" placeholder="Ej. Lic. Roberto Gómez">
+          </label>
+          <label>Teléfono / WhatsApp *
+            <input type="tel" id="cliPhone" required placeholder="231 000 0000">
+          </label>
+          <label>Correo Electrónico
+            <input type="email" id="cliEmail" placeholder="contacto@empresa.com">
+          </label>
+          <label>Estatus del Cliente
+            <select id="cliStatus">
+              <option value="activo">Activo</option>
+              <option value="suspendido">Suspendido / Bloqueado</option>
+            </select>
+          </label>
+          <label class="full">Dirección / Sucursal
+            <input type="text" id="cliAddress" placeholder="Calle, Número, Colonia, Ciudad, Estado">
+          </label>
+
+          <!-- SECCIÓN 1: TIENE CRÉDITO AUTORIZADO -->
+          <div class="full client-feature-box">
+            <label class="checkbox-row client-feature-toggle">
+              <input type="checkbox" id="cliHasCredit">
+              <div>
+                <strong>💳 Tiene Crédito Autorizado</strong>
+                <span style="display:block; font-size:0.76rem; color:var(--text-secondary);">Habilita ventas a crédito en Punto de Venta, límite de línea y estado de cuenta.</span>
+              </div>
+            </label>
+
+            <div id="cliCreditFieldsWrap" class="form-grid hidden" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-subtle);">
+              <label>Límite de Crédito Autorizado ($ MXN) *
+                <input type="number" id="cliCreditLimit" class="tabular" value="10000" min="0" step="100">
+              </label>
+              <label>Plazo de Crédito Autorizado (Días)
+                <select id="cliCreditDays">
+                  <option value="15">15 días</option>
+                  <option value="30" selected>30 días</option>
+                  <option value="45">45 días</option>
+                  <option value="60">60 días</option>
+                  <option value="90">90 días</option>
+                </select>
+              </label>
+              <label class="full" id="cliInitialBalanceWrap">Saldo Deudor Inicial ($ MXN) <span style="color:var(--text-muted); font-weight:400;">(Opcional al dar de alta)</span>
+                <input type="number" id="cliInitialBalance" class="tabular" value="0" min="0" step="0.01">
+              </label>
+            </div>
+          </div>
+
+          <!-- SECCIÓN 2: TIENE DATOS DE FACTURACIÓN ELECTRÓNICA (CFDI 4.0) -->
+          <div class="full client-feature-box">
+            <label class="checkbox-row client-feature-toggle">
+              <input type="checkbox" id="cliHasBilling">
+              <div>
+                <strong>🧾 Tiene Datos de Facturación Electrónica (CFDI 4.0)</strong>
+                <span style="display:block; font-size:0.76rem; color:var(--text-secondary);">Almacena RFC, Razón Social, Régimen Fiscal SAT, Código Postal y Uso de CFDI.</span>
+              </div>
+            </label>
+
+            <div id="cliBillingFieldsWrap" class="form-grid hidden" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-subtle);">
+              <label>RFC (Registro Federal de Contribuyentes) *
+                <input type="text" id="cliRfc" class="mono" placeholder="Ej. SLS1804129A1" maxlength="13" style="text-transform:uppercase;">
+              </label>
+              <label>Código Postal Fiscal (C.P.) *
+                <input type="text" id="cliCpFiscal" class="mono tabular" placeholder="Ej. 73800" maxlength="5">
+              </label>
+              <label class="full">Razón Social Fiscal (Sin régimen societario en CFDI 4.0) *
+                <input type="text" id="cliRazonSocial" placeholder="Ej. SUPERMERCADO LA SIERRA" style="text-transform:uppercase;">
+              </label>
+              <label>Régimen Fiscal SAT *
+                <select id="cliRegimenFiscal">
+                  <option value="601 - General de Ley Personas Morales">601 - General de Ley Personas Morales</option>
+                  <option value="612 - Personas Físicas con Actividades Empresariales y Profesionales">612 - Personas Físicas con Actividades Empresariales</option>
+                  <option value="626 - Régimen Simplificado de Confianza (RESICO)">626 - Régimen Simplificado de Confianza (RESICO)</option>
+                  <option value="603 - Personas Morales con Fines no Lucrativos">603 - Personas Morales con Fines no Lucrativos</option>
+                  <option value="605 - Sueldos y Salarios e Ingresos Asimilados">605 - Sueldos y Salarios</option>
+                  <option value="616 - Sin obligaciones fiscales">616 - Sin obligaciones fiscales</option>
+                </select>
+              </label>
+              <label>Uso de CFDI Predeterminado *
+                <select id="cliUsoCfdi">
+                  <option value="G03 - Gastos en general">G03 - Gastos en general</option>
+                  <option value="G01 - Adquisición de mercancías">G01 - Adquisición de mercancías</option>
+                  <option value="I04 - Equipo de cómputo y accesorios">I04 - Equipo de cómputo y accesorios</option>
+                  <option value="I08 - Otra maquinaria y equipo">I08 - Otra maquinaria y equipo</option>
+                  <option value="S01 - Sin efectos fiscales">S01 - Sin efectos fiscales</option>
+                </select>
+              </label>
+              <label class="full">Correo Electrónico para Envío de Facturas (XML y PDF)
+                <input type="email" id="cliBillingEmail" placeholder="facturacion@empresa.com">
+              </label>
+            </div>
+          </div>
+
+          <label class="full">Notas / Condiciones Comerciales del Cliente
+            <textarea id="cliNotes" rows="2" placeholder="Observaciones sobre entregas, días de revisión o contacto de cuentas por pagar..."></textarea>
+          </label>
+        </div>
+
+        <div class="modal-actions" style="margin-top:16px;">
+          <button type="button" class="btn btn-danger hidden" id="cliDeleteBtn" style="margin-right:auto;">Eliminar Cliente</button>
+          <button type="button" class="btn btn-ghost" data-close="clientModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 7: CREDIT MOVEMENT (ABONOS, LIQUIDACIONES Y CARGOS)
+  ============================ -->
+  <div id="creditMovementModal" class="modal">
+    <div class="modal-back" data-close="creditMovementModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:560px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">ADMINISTRACIÓN DE CRÉDITOS</div>
+          <h2 id="creditMovementModalTitle">Registrar Abono o Liquidación</h2>
+        </div>
+        <button class="close-btn" data-close="creditMovementModal">✕</button>
+      </div>
+
+      <form id="creditMovementForm" class="modal-body form-grid">
+        <label class="full">Seleccionar Cliente *
+          <select id="credMovClientSelect" required></select>
+        </label>
+
+        <!-- Resumen de Saldo del Cliente -->
+        <div class="full credit-live-summary" id="credMovSummaryBox">
+          <div class="cls-item">
+            <span>Límite Autorizado</span>
+            <strong id="credMovLimitDisplay" class="mono tabular">$0.00</strong>
+          </div>
+          <div class="cls-item">
+            <span>Saldo Deudor Actual</span>
+            <strong id="credMovBalanceDisplay" class="mono tabular" style="color:var(--amber);">$0.00</strong>
+          </div>
+          <div class="cls-item">
+            <span>Crédito Disponible</span>
+            <strong id="credMovAvailableDisplay" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+          </div>
+        </div>
+
+        <label class="full">Tipo de Operación *
+          <select id="credMovType">
+            <option value="abono">💵 Abono Parcial a Cuenta</option>
+            <option value="liquidacion">✅ Liquidación Total de Saldo (Dejar cuenta en $0.00)</option>
+            <option value="cargo">➕ Nuevo Cargo a Crédito (Venta / Servicio a Crédito)</option>
+          </select>
+        </label>
+
+        <label>Importe ($ MXN) *
+          <input type="number" id="credMovAmount" class="tabular" required min="0.01" step="0.01" placeholder="0.00">
+        </label>
+
+        <label>Método de Pago / Forma
+          <select id="credMovPaymentMethod">
+            <option value="Transferencia">Transferencia SPEI</option>
+            <option value="Efectivo">Efectivo en Caja</option>
+            <option value="Tarjeta">Tarjeta Débito / Crédito</option>
+            <option value="Cheque">Cheque Nominativo</option>
+          </select>
+        </label>
+
+        <label>Referencia / Folio Comprobante
+          <input type="text" id="credMovReference" class="mono" placeholder="Ej. SPEI-99412 / VTA-1009">
+        </label>
+
+        <label>Nuevo Saldo Proyectado
+          <input type="text" id="credMovProjectedBalance" class="mono tabular" readonly value="$0.00">
+        </label>
+
+        <label class="full">Concepto / Observaciones del Movimiento *
+          <input type="text" id="credMovConcept" required placeholder="Ej. Abono a factura / Liquidación de saldo pendiente">
+        </label>
+
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="creditMovementModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Aplicar Movimiento e Imprimir Recibo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 8: CLIENT STATEMENT & PREVIOUS CREDITS (ESTADO DE CUENTA Y CRÉDITO ANTERIOR)
+  ============================ -->
+  <div id="clientStatementModal" class="modal">
+    <div class="modal-back" data-close="clientStatementModal"></div>
+    <div class="modal-panel ticket-panel surface-elevated" style="max-width:880px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" id="stmtClientCode" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">CLI-0000 · ESTADO DE CUENTA</div>
+          <h2 id="stmtClientName">Nombre del Cliente</h2>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="stmtPrintBtn">🖨️ Imprimir Estado de Cuenta</button>
+          <button type="button" class="btn btn-primary btn-sm" id="stmtNewAbonoBtn">💵 Registrar Abono / Liquidar</button>
+          <button class="close-btn" data-close="clientStatementModal">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tarjetas de Resumen del Estado de Cuenta -->
+        <div class="credit-live-summary" style="margin-bottom:14px;">
+          <div class="cls-item">
+            <span>Límite de Crédito</span>
+            <strong id="stmtLimit" class="mono tabular">$0.00</strong>
+          </div>
+          <div class="cls-item">
+            <span>Saldo Deudor Vigente</span>
+            <strong id="stmtBalance" class="mono tabular" style="color:var(--amber);">$0.00</strong>
+          </div>
+          <div class="cls-item">
+            <span>Crédito Disponible</span>
+            <strong id="stmtAvailable" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+          </div>
+          <div class="cls-item">
+            <span>Plazo / RFC Fiscal</span>
+            <strong id="stmtMeta" class="mono" style="font-size:0.84rem;">30 días · S/RFC</strong>
+          </div>
+        </div>
+
+        <!-- Filtros para Consultar Crédito Vigente vs Consultar Crédito Anterior (Liquidados) -->
+        <div class="toolbar-bar" style="margin-bottom:12px;">
+          <div class="filter-pills" id="stmtFilterPills">
+            <button type="button" class="pill-btn active" data-stmtfilter="all">Historial Completo</button>
+            <button type="button" class="pill-btn" data-stmtfilter="vigente">Crédito Actual (Vigente)</button>
+            <button type="button" class="pill-btn" data-stmtfilter="liquidado">Consultar Crédito Anterior (Liquidados)</button>
+          </div>
+          <span class="mono tabular" id="stmtMovementsCount" style="font-size:0.78rem; color:var(--text-secondary);">0 movimientos</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Concepto & Referencia</th>
+                <th style="text-align:right;">Saldo Anterior</th>
+                <th style="text-align:right;">Importe</th>
+                <th style="text-align:right;">Nuevo Saldo</th>
+                <th>Ciclo de Crédito</th>
+              </tr>
+            </thead>
+            <tbody id="stmtLedgerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

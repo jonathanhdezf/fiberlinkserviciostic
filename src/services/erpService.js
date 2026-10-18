@@ -153,6 +153,42 @@ export const erpService = {
     });
   },
 
+  // ---- CLIENTS & CREDIT MANAGEMENT ----
+  async getClients(params = {}) {
+    const q = new URLSearchParams();
+    if (params.q) q.set('q', params.q);
+    if (params.hasCredit !== undefined) q.set('hasCredit', String(params.hasCredit));
+    if (params.hasBilling !== undefined) q.set('hasBilling', String(params.hasBilling));
+    if (params.withBalance !== undefined) q.set('withBalance', String(params.withBalance));
+    return apiRequest(`/clients${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  async getClient(id) {
+    return apiRequest(`/clients/${id}`);
+  },
+  async createClient(payload) {
+    return apiRequest('/clients', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  async updateClient(id, payload) {
+    return apiRequest(`/clients/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+  async deleteClient(id) {
+    return apiRequest(`/clients/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  async registerClientCreditMovement(id, payload) {
+    return apiRequest(`/clients/${id}/credit`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
   // ---- REPORTS & ACTIVITY ----
   async getReportsSummary() {
     return apiRequest('/reports/summary');

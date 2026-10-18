@@ -21,6 +21,7 @@ export const DATA_DIR = isVercel ? path.join(os.tmpdir(), 'fiberlink-data') : BU
 
 export const FILES = {
   users: path.join(DATA_DIR, 'users.json'),
+  clients: path.join(DATA_DIR, 'clients.json'),
   tickets: path.join(DATA_DIR, 'tickets.json'),
   products: path.join(DATA_DIR, 'products.json'),
   sales: path.join(DATA_DIR, 'sales.json'),
@@ -636,6 +637,252 @@ const SEED_ACTIVITY = [
   }
 ];
 
+const SEED_CLIENTS = [
+  {
+    id: 'cli-101',
+    code: 'CLI-1001',
+    name: 'Abarrotes y Mayorista La Sierra S.A. de C.V.',
+    commercialName: 'Súper La Sierra Teziutlán',
+    phone: '2311048899',
+    email: 'compras@superlasierra.mx',
+    address: 'Av. Hidalgo 412, Centro, Teziutlán, Pue.',
+    active: true,
+    hasCredit: true,
+    creditLimit: 25000.00,
+    creditDays: 30,
+    currentBalance: 4380.00,
+    hasBilling: true,
+    rfc: 'AMS1904128B4',
+    legalName: 'ABARROTES Y MAYORISTA LA SIERRA',
+    taxRegime: '601 - General de Ley Personas Morales',
+    cfdiUse: 'I04 - Equipo de cómputo y accesorios',
+    postalCode: '73800',
+    billingEmail: 'facturacion@superlasierra.mx',
+    notes: 'Cliente corporativo VIP con 3 sucursales. Autorizado crédito en equipamiento POS y póliza.',
+    createdAt: '2026-01-12T10:00:00.000Z',
+    updatedAt: new Date(Date.now() - 3600000 * 6).toISOString(),
+    ledger: [
+      {
+        id: 'mov-101',
+        folio: 'CRD-1001',
+        creditCycleId: 'CYC-901',
+        date: new Date(Date.now() - 86400000 * 24).toISOString(),
+        type: 'cargo',
+        concept: 'Kit Punto de Venta Completo (Impresora 80mm + Cajón + Lector 2D)',
+        paymentMethod: 'Crédito',
+        amount: 3980.00,
+        previousBalance: 0.00,
+        newBalance: 3980.00,
+        status: 'liquidado',
+        cashier: 'Lic. Sofía Navarro'
+      },
+      {
+        id: 'mov-102',
+        folio: 'ABN-1001',
+        creditCycleId: 'CYC-901',
+        date: new Date(Date.now() - 86400000 * 15).toISOString(),
+        type: 'abono',
+        concept: 'Abono parcial a cuenta vía Transferencia SPEI',
+        paymentMethod: 'Transferencia',
+        amount: 2000.00,
+        previousBalance: 3980.00,
+        newBalance: 1980.00,
+        status: 'liquidado',
+        cashier: 'Lic. Sofía Navarro'
+      },
+      {
+        id: 'mov-103',
+        folio: 'LIQ-1001',
+        creditCycleId: 'CYC-901',
+        date: new Date(Date.now() - 86400000 * 10).toISOString(),
+        type: 'liquidacion',
+        concept: 'Liquidación total de crédito anterior CYC-901',
+        paymentMethod: 'Transferencia',
+        amount: 1980.00,
+        previousBalance: 1980.00,
+        newBalance: 0.00,
+        status: 'liquidado',
+        cashier: 'Ing. Roberto Méndez'
+      },
+      {
+        id: 'mov-104',
+        folio: 'CRD-1004',
+        creditCycleId: 'CYC-905',
+        date: new Date(Date.now() - 86400000 * 4).toISOString(),
+        type: 'cargo',
+        concept: '4x Cámaras Hikvision ColorVu + DVR 8 Canales + Instalación',
+        paymentMethod: 'Crédito',
+        amount: 6380.00,
+        previousBalance: 0.00,
+        newBalance: 6380.00,
+        status: 'vigente',
+        cashier: 'Lic. Sofía Navarro'
+      },
+      {
+        id: 'mov-105',
+        folio: 'ABN-1005',
+        creditCycleId: 'CYC-905',
+        date: new Date(Date.now() - 86400000 * 1).toISOString(),
+        type: 'abono',
+        concept: 'Primer abono en efectivo en mostrador',
+        paymentMethod: 'Efectivo',
+        amount: 2000.00,
+        previousBalance: 6380.00,
+        newBalance: 4380.00,
+        status: 'vigente',
+        cashier: 'Lic. Sofía Navarro'
+      }
+    ]
+  },
+  {
+    id: 'cli-102',
+    code: 'CLI-1002',
+    name: 'Clínica Médica San José de Teziutlán S.C.',
+    commercialName: 'Clínica San José',
+    phone: '2311229900',
+    email: 'administracion@clinicasanjose.mx',
+    address: 'Calle Juárez 118, Barrio de Chignaulingo, Teziutlán',
+    active: true,
+    hasCredit: true,
+    creditLimit: 18000.00,
+    creditDays: 15,
+    currentBalance: 2650.00,
+    hasBilling: true,
+    rfc: 'CMS1608239K1',
+    legalName: 'CLINICA MEDICA SAN JOSE DE TEZIUTLAN',
+    taxRegime: '601 - General de Ley Personas Morales',
+    cfdiUse: 'G03 - Gastos en general',
+    postalCode: '73800',
+    billingEmail: 'contabilidad@clinicasanjose.mx',
+    notes: 'Póliza mensual de mantenimiento de red hospitalaria y servidores.',
+    createdAt: '2026-02-01T11:30:00.000Z',
+    updatedAt: new Date(Date.now() - 3600000 * 14).toISOString(),
+    ledger: [
+      {
+        id: 'mov-201',
+        folio: 'CRD-1002',
+        creditCycleId: 'CYC-902',
+        date: new Date(Date.now() - 86400000 * 18).toISOString(),
+        type: 'cargo',
+        concept: 'Router MikroTik hEX S + Configuración Balanceo Dual WAN',
+        paymentMethod: 'Crédito',
+        amount: 2800.00,
+        previousBalance: 0.00,
+        newBalance: 2800.00,
+        status: 'liquidado',
+        cashier: 'Ing. Roberto Méndez'
+      },
+      {
+        id: 'mov-202',
+        folio: 'LIQ-1002',
+        creditCycleId: 'CYC-902',
+        date: new Date(Date.now() - 86400000 * 9).toISOString(),
+        type: 'liquidacion',
+        concept: 'Liquidación total factura F-409 vía SPEI',
+        paymentMethod: 'Transferencia',
+        amount: 2800.00,
+        previousBalance: 2800.00,
+        newBalance: 0.00,
+        status: 'liquidado',
+        cashier: 'Lic. Sofía Navarro'
+      },
+      {
+        id: 'mov-203',
+        folio: 'CRD-1006',
+        creditCycleId: 'CYC-906',
+        date: new Date(Date.now() - 86400000 * 2).toISOString(),
+        type: 'cargo',
+        concept: '2x SSD Kingston NV2 1TB + Mantenimiento 3 Laptops Consultorios',
+        paymentMethod: 'Crédito',
+        amount: 2650.00,
+        previousBalance: 0.00,
+        newBalance: 2650.00,
+        status: 'vigente',
+        cashier: 'Lic. Sofía Navarro'
+      }
+    ]
+  },
+  {
+    id: 'cli-103',
+    code: 'CLI-1003',
+    name: 'Farmacia Guadalupana del Centro',
+    commercialName: 'Farmacia Guadalupana',
+    phone: '2311184455',
+    email: 'gerencia@farmaciaguadalupana.com',
+    address: 'Av. Cuauhtémoc 55, Centro, Teziutlán, Pue.',
+    active: true,
+    hasCredit: true,
+    creditLimit: 10000.00,
+    creditDays: 15,
+    currentBalance: 0.00,
+    hasBilling: true,
+    rfc: 'ROGA8405197H2',
+    legalName: 'ARTURO RODRIGUEZ GARCIA',
+    taxRegime: '626 - Régimen Simplificado de Confianza (RESICO)',
+    cfdiUse: 'G01 - Adquisición de mercancías',
+    postalCode: '73800',
+    billingEmail: 'facturas@farmaciaguadalupana.com',
+    notes: 'Excelente historial crediticio, liquida puntualmente en quincena.',
+    createdAt: '2026-02-18T09:00:00.000Z',
+    updatedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    ledger: [
+      {
+        id: 'mov-301',
+        folio: 'CRD-1003',
+        creditCycleId: 'CYC-903',
+        date: new Date(Date.now() - 86400000 * 12).toISOString(),
+        type: 'cargo',
+        concept: 'Licencia Sistema Punto de Venta Vitalicia + Lector 2D QR',
+        paymentMethod: 'Crédito',
+        amount: 2550.00,
+        previousBalance: 0.00,
+        newBalance: 2550.00,
+        status: 'liquidado',
+        cashier: 'Lic. Sofía Navarro'
+      },
+      {
+        id: 'mov-302',
+        folio: 'LIQ-1003',
+        creditCycleId: 'CYC-903',
+        date: new Date(Date.now() - 86400000 * 5).toISOString(),
+        type: 'liquidacion',
+        concept: 'Liquidación total en ventanilla (Efectivo)',
+        paymentMethod: 'Efectivo',
+        amount: 2550.00,
+        previousBalance: 2550.00,
+        newBalance: 0.00,
+        status: 'liquidado',
+        cashier: 'Lic. Sofía Navarro'
+      }
+    ]
+  },
+  {
+    id: 'cli-104',
+    code: 'CLI-1004',
+    name: 'Arq. Fernando Morales Vázquez',
+    commercialName: 'Despacho Morales Arquitectos',
+    phone: '2311092233',
+    email: 'fernando@moralesarq.mx',
+    address: 'Fracc. Jardines de Teziutlán Calle 3 #14',
+    active: true,
+    hasCredit: false,
+    creditLimit: 0.00,
+    creditDays: 0,
+    currentBalance: 0.00,
+    hasBilling: true,
+    rfc: 'MOVF881104LA9',
+    legalName: 'FERNANDO MORALES VAZQUEZ',
+    taxRegime: '612 - Personas Físicas con Actividades Empresariales y Profesionales',
+    cfdiUse: 'I04 - Equipo de cómputo y accesorios',
+    postalCode: '73820',
+    billingEmail: 'facturacion@moralesarq.mx',
+    notes: 'Pago de contado, requiere factura electrónica CFDI 4.0 en cada compra.',
+    createdAt: '2026-03-04T12:00:00.000Z',
+    updatedAt: '2026-03-04T12:00:00.000Z',
+    ledger: []
+  }
+];
+
 function ensureSeed(collectionName, seedData) {
   const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
@@ -658,6 +905,7 @@ function ensureSeed(collectionName, seedData) {
 
 // Initialize all collections on startup
 ensureSeed('users', SEED_USERS);
+ensureSeed('clients', SEED_CLIENTS);
 ensureSeed('tickets', SEED_TICKETS);
 ensureSeed('products', SEED_PRODUCTS);
 ensureSeed('workshop', SEED_WORKSHOP);

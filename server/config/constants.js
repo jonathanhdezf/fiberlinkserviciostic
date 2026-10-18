@@ -12,7 +12,7 @@ export const ROLES = {
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: {
     label: 'Administrador General',
-    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'reports', 'users'],
     canDelete: true,
     canManageUsers: true,
     canEditInventory: true,
@@ -20,7 +20,7 @@ export const ROLE_PERMISSIONS = {
   },
   [ROLES.TECNICO]: {
     label: 'Técnico de Taller y Campo',
-    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: false,
@@ -28,7 +28,7 @@ export const ROLE_PERMISSIONS = {
   },
   [ROLES.VENTAS]: {
     label: 'Cajero / Punto de Venta',
-    modules: ['overview', 'pos', 'store', 'tickets', 'workshop', 'reports', 'users'],
+    modules: ['overview', 'pos', 'store', 'clients', 'tickets', 'workshop', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: true,
@@ -36,7 +36,7 @@ export const ROLE_PERMISSIONS = {
   },
   [ROLES.RECEPCION]: {
     label: 'Recepción y Mesa de Ayuda',
-    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'reports', 'users'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'reports', 'users'],
     canDelete: false,
     canManageUsers: false,
     canEditInventory: false,
@@ -65,4 +65,4 @@ export const PRODUCT_CATEGORIES = [
   { id: 'servicios', label: 'Servicios Técnicos' }
 ];
 
-export const PAYMENT_METHODS = ['Efectivo', 'Tarjeta', 'Transferencia'];
+export const PAYMENT_METHODS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Crédito'];
