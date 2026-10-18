@@ -32,6 +32,8 @@ const ICONS = {
   wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163A11.867 11.867 0 0 1 .157 11.89C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  voiceOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
+  voiceOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
   expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>',
   minimize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>',
@@ -46,6 +48,7 @@ const state = {
   open: false,
   busy: false,
   expanded: localStorage.getItem('fiberlink_assistant_expanded') === 'true',
+  voiceEnabled: localStorage.getItem('fiberlink_assistant_voice') !== 'false',
   messages: [],      // { role: 'user' | 'model', text }
   draft: {},
   diagnosis: '',
@@ -131,6 +134,7 @@ function buildDom() {
         <p><span class="fa-dot"></span><span id="faStatus">En línea · Diagnóstico asistido por Gemini</span></p>
       </div>
       <div class="fa-head-actions">
+        <button type="button" class="fa-icon-btn" id="faVoiceToggle" title="${state.voiceEnabled ? 'Desactivar voz' : 'Activar voz'}" aria-label="Alternar voz del asistente">${state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff}</button>
         <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño / Expandir" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
         <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
         <button type="button" class="fa-icon-btn" id="faMinimize" title="Minimizar" aria-label="Minimizar asistente">${ICONS.minimize}</button>
@@ -177,10 +181,54 @@ function buildDom() {
     form: panel.querySelector('#faForm'),
     input: panel.querySelector('#faInput'),
     send: panel.querySelector('#faSend'),
-    status: panel.querySelector('#faStatus'),
     ticketBtn: panel.querySelector('#faTicketBtn'),
-    expandBtn: panel.querySelector('#faExpand')
+    expandBtn: panel.querySelector('#faExpand'),
+    voiceToggleBtn: panel.querySelector('#faVoiceToggle')
   };
+}
+
+// ------------------------------------------
+// Motor de Voz (SpeechSynthesis TTS)
+// ------------------------------------------
+function getBestSpanishVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  return voices.find(v => v.lang === 'es-MX' || v.lang === 'es_MX')
+    || voices.find(v => v.lang === 'es-419' || v.lang === 'es-US')
+    || voices.find(v => (v.lang && v.lang.toLowerCase().startsWith('es')) || (v.name && v.name.toLowerCase().includes('spanish')));
+}
+
+// Asegurar carga inicial de voces en Chromium / Safari
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => { getBestSpanishVoice(); };
+}
+
+function speakAssistantMessage(text) {
+  if (!state.voiceEnabled || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    // Limpiar emojis, asteriscos, corchetes y formato markdown para dicción natural
+    const cleanText = String(text || '')
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/[*_#`~[\]]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'es-MX';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.05;
+
+    const esVoice = getBestSpanishVoice();
+    if (esVoice) utterance.voice = esVoice;
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn('[Fibi TTS]:', err);
+  }
 }
 
 // ------------------------------------------
@@ -336,10 +384,13 @@ async function askAssistant() {
     state.engine = data.engine || '';
     state.messages.push({ role: 'model', text: data.reply || 'Cuéntame un poco más, por favor.' });
     els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente técnico';
+    speakAssistantMessage(data.reply);
   } catch (err) {
     console.warn('[Asistente IA] Sin conexión con el servidor:', err.message);
+    const failMsg = 'Tuve un problema de conexión. Puedes usar el botón Levantar ticket o escribirnos por WhatsApp y un técnico te atiende de inmediato.';
     state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket** o escribirnos por WhatsApp y un técnico te atiende de inmediato.' });
     state.quickReplies = [];
+    speakAssistantMessage(failMsg);
   } finally {
     state.busy = false;
     saveSession();
@@ -399,8 +450,10 @@ async function submitTicket() {
   const d = state.draft;
   const missing = getMissing(d);
   if (missing.length) {
+    const missText = `Me falta un dato: ${FIELD_LABELS[missing[0]] || 'Dirección'}. ¿Me lo compartes?`;
     state.messages.push({ role: 'model', text: `Me falta un dato: **${FIELD_LABELS[missing[0]] || 'Dirección'}**. ¿Me lo compartes?` });
     render();
+    speakAssistantMessage(missText);
     return;
   }
 
@@ -437,7 +490,9 @@ async function submitTicket() {
       description: d.description,
       diagnosis: state.diagnosis
     };
+    const ticketSpeech = `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket ${state.ticket.folio} quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp.`;
     state.messages.push({ role: 'model', text: `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket **${state.ticket.folio}** quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp y agilizar tu atención. 💚` });
+    speakAssistantMessage(ticketSpeech);
 
     // Notificación push al navegador del cliente (confirmación)
     showPush(`Ticket ${state.ticket.folio} registrado ✔`, {
@@ -455,6 +510,7 @@ async function submitTicket() {
   } catch (err) {
     console.error('[Asistente IA] Error al crear ticket:', err);
     state.messages.push({ role: 'model', text: 'No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp y la capturamos por ti.' });
+    speakAssistantMessage('No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp.');
   } finally {
     state.busy = false;
     state.showQuickForm = false;
@@ -485,16 +541,21 @@ function buildWhatsAppUrl() {
 // Eventos
 // ------------------------------------------
 function resetConversation() {
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (_) {}
+  }
   Object.assign(state, { messages: [], draft: {}, diagnosis: '', action: 'collect', quickReplies: [], ticket: null, showQuickForm: false });
   sessionStorage.removeItem(STORAGE_KEY);
   greet();
 }
 
 function greet() {
+  const welcomeText = '¡Hola! Soy Fibi, tu asistente técnico virtual de Fiberlink. Cuéntame qué está fallando y en un par de minutos levanto tu ticket para que un técnico te atienda.';
   state.messages.push({ role: 'model', text: '¡Hola! Soy **Fibi**, tu asistente técnico virtual de Fiberlink. 👋\nCuéntame qué está fallando y en un par de minutos levanto tu ticket para que un técnico te atienda.' });
   state.quickReplies = ['Mi computadora está lenta', 'No puedo cobrar en caja', 'Se cae el internet'];
   saveSession();
   render();
+  speakAssistantMessage(welcomeText);
 }
 
 function openPanel() {
@@ -514,6 +575,9 @@ function closePanel() {
   els.panel.setAttribute('aria-hidden', 'true');
   els.launcher.classList.remove('hidden');
   document.documentElement.classList.remove('fa-open');
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (_) {}
+  }
 }
 
 function bindFormEvents() {
@@ -544,6 +608,21 @@ function bindEvents() {
   els.launcher.addEventListener('click', openPanel);
   els.panel.querySelector('#faClose').addEventListener('click', closePanel);
   els.panel.querySelector('#faReset').addEventListener('click', resetConversation);
+
+  els.panel.querySelector('#faVoiceToggle')?.addEventListener('click', () => {
+    state.voiceEnabled = !state.voiceEnabled;
+    localStorage.setItem('fiberlink_assistant_voice', state.voiceEnabled ? 'true' : 'false');
+    const vBtn = els.panel.querySelector('#faVoiceToggle');
+    if (vBtn) {
+      vBtn.innerHTML = state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff;
+      vBtn.title = state.voiceEnabled ? 'Desactivar voz' : 'Activar voz';
+    }
+    if (!state.voiceEnabled && ('speechSynthesis' in window)) {
+      window.speechSynthesis.cancel();
+    } else if (state.voiceEnabled) {
+      speakAssistantMessage('Voz activada. Ahora te responderé con voz.');
+    }
+  });
 
   els.form.addEventListener('submit', e => {
     e.preventDefault();
