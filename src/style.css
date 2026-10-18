@@ -4953,4 +4953,177 @@ body.cursor-hover .cursor-ring{
   color: var(--verde);
 }
 
+/* ==========================================
+   FRANJA DE SERVICIO A DOMICILIO (ANIMADA & REFINADA)
+   ========================================== */
+.domicilio-strip {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(16, 21, 12, 0.94) 0%, rgba(9, 12, 7, 0.97) 100%);
+  border-top: 1px solid rgba(156, 195, 46, 0.28);
+  border-bottom: 1px solid rgba(156, 195, 46, 0.28);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 13px 0;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 10;
+}
+
+.domicilio-laser-beam {
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 40%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(156, 195, 46, 0.8), #ffffff, rgba(156, 195, 46, 0.8), transparent);
+  box-shadow: 0 0 10px var(--verde), 0 0 20px var(--verde);
+  animation: laserSweep 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes laserSweep {
+  0% { left: -40%; }
+  50%, 100% { left: 120%; }
+}
+
+.domicilio-track-wrapper {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+}
+
+.domicilio-track {
+  display: flex;
+  width: max-content;
+  animation: domMarquee 38s linear infinite;
+  will-change: transform;
+}
+
+.domicilio-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes domMarquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.domicilio-group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+
+.dom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(156, 195, 46, 0.14);
+  border: 1px solid rgba(156, 195, 46, 0.42);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--verde);
+  white-space: nowrap;
+  box-shadow: 0 0 16px rgba(156, 195, 46, 0.18);
+}
+
+.dom-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #25d366;
+  box-shadow: 0 0 8px #25d366;
+  animation: pulse-ring 2s infinite;
+}
+
+.dom-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  color: #cbd5e1;
+}
+
+.dom-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(156, 195, 46, 0.1);
+  border: 1px solid rgba(156, 195, 46, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--verde);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dom-item:hover .dom-icon-box {
+  transform: scale(1.08);
+  border-color: var(--verde);
+  background: rgba(156, 195, 46, 0.2);
+}
+
+.dom-text {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+.dom-text strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.dom-sparkle {
+  color: #eab308;
+  font-size: 0.82rem;
+  text-shadow: 0 0 8px rgba(234, 179, 8, 0.55);
+  opacity: 0.85;
+  user-select: none;
+}
+
+.dom-cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #25d366;
+  color: #0b141a;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 2px 14px rgba(37, 211, 102, 0.35);
+  transition: all 0.22s ease;
+  white-space: nowrap;
+}
+
+.dom-cta-pill:hover {
+  background: #20bd5a;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 22px rgba(37, 211, 102, 0.6);
+  color: #050d08;
+}
+
+@media (max-width: 768px) {
+  .domicilio-strip {
+    padding: 10px 0;
+  }
+  .domicilio-group {
+    gap: 20px;
+  }
+  .dom-item {
+    font-size: 0.81rem;
+  }
+}
+
+
 
