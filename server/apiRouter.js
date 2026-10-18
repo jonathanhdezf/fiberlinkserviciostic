@@ -75,6 +75,7 @@ import {
   handleUpdateChatLead,
   handleDeleteChatLead
 } from './controllers/chatController.js';
+import { handleAssistantChat } from './controllers/assistantController.js';
 
 export { DATA_DIR };
 export const DATA_FILE = FILES.tickets;
@@ -479,6 +480,15 @@ export async function handleApiRequest(req, res, next) {
 
     if (chatLeadIdMatch && method === 'DELETE') {
       const result = handleDeleteChatLead(chatLeadIdMatch[1], currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    // ==========================================
+    // 12. ASISTENTE TÉCNICO VIRTUAL IA (GEMINI)
+    // ==========================================
+    if (pathname === '/api/assistant/chat' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = await handleAssistantChat(body);
       return sendJSON(res, result.status, result.data);
     }
 

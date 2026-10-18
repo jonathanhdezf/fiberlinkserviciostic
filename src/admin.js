@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReportsModule();
   initUsersModule();
   initSettingsModule();
+  initRealtimeSync();
 });
 
 // ==========================================
@@ -653,6 +654,25 @@ async function syncAllData() {
     renderSettingsModule();
   } catch (err) {
     console.error('[ERP Sync Error]:', err);
+  }
+}
+
+function initRealtimeSync() {
+  try {
+    if ('BroadcastChannel' in window) {
+      const bc = new BroadcastChannel('fiberlink-tickets');
+      bc.onmessage = async (ev) => {
+        if (ev?.data?.type === 'new-ticket') {
+          const t = ev.data.ticket;
+          playErpNotificationBeep();
+          showToast(`🚨 Nuevo ticket recibido: ${t?.folio || 'FL-NUEVO'} (${t?.service || 'Soporte'})`);
+          await syncAllData();
+          renderControlPanelNotifications();
+        }
+      };
+    }
+  } catch (err) {
+    console.warn('[Admin Realtime Sync]:', err);
   }
 }
 

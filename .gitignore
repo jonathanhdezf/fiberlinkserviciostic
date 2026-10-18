@@ -1,3 +1,8 @@
 ﻿node_modules/
 dist/
 index_backup.html
+
+# Secretos (API keys)
+.env
+.env.local
+.env.*.local

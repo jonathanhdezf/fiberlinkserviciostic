@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { handleApiRequest } from './server/apiRouter.js';
 
 function fiberlinkApiPlugin() {
@@ -23,7 +23,14 @@ function fiberlinkApiPlugin() {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Variables privadas del servidor (GEMINI_API_KEY) — no usan prefijo VITE_, por lo que no llegan al navegador
+  const env = loadEnv(mode, process.cwd(), '');
+  ['GEMINI_API_KEY', 'GEMINI_MODEL'].forEach((key) => {
+    if (env[key] && !process.env[key]) process.env[key] = env[key];
+  });
+
+  return {
   base: '/',
   plugins: [fiberlinkApiPlugin()],
   server: {
@@ -40,4 +47,5 @@ export default defineConfig({
       }
     }
   }
+  };
 });

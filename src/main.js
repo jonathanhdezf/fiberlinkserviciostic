@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
 import { ticketService } from './services/ticketService.js';
+import { initAssistant } from './assistant.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Cyber Background canvas (floating matrix particles)
@@ -17,23 +18,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. UI Interactions (Drawer, Modals)
   initUI();
 
-  // 5. Matrix Glitch Scramble & Button Animations
+  // 5. Asistente Técnico Virtual con IA (Fibi)
+  initAssistant();
+
+  // 6. Matrix Glitch Scramble & Button Animations
   setupMatrixScramble();
   initHeroTicketAnimation();
 
-  // 6. Premium cursor (desktop only)
+  // 7. Premium cursor (desktop only)
   initCursor();
 
-  // 7. Progressive Web App (PWA) Registration
+  // 8. Progressive Web App (PWA) Registration
   initPWA();
 
-  // 8. Cyber-Carousels (Soluciones, Catálogo & Testimonios)
+  // 9. Cyber-Carousels (Soluciones, Catálogo & Testimonios)
   initCyberCarousels();
 
-  // 9. Social Share & Copy Link button
+  // 10. Social Share & Copy Link button
   initSocialShare();
 
-  // 10. Process Pipeline Timeline Highlighting
+  // 11. Process Pipeline Timeline Highlighting
   initProcessPipeline();
 });
 
