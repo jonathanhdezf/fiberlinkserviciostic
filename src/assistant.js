@@ -34,6 +34,9 @@ const ICONS = {
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
   voiceOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
   voiceOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>',
+  soundwave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect width="12" height="12" x="6" y="6" rx="2" ry="2"/></svg>',
   expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>',
   minimize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>',
@@ -49,6 +52,8 @@ const state = {
   busy: false,
   expanded: localStorage.getItem('fiberlink_assistant_expanded') === 'true',
   voiceEnabled: localStorage.getItem('fiberlink_assistant_voice') !== 'false',
+  isSpeaking: false,
+  isListening: false,
   messages: [],      // { role: 'user' | 'model', text }
   draft: {},
   diagnosis: '',
@@ -129,7 +134,7 @@ function buildDom() {
         <div class="fa-head-title-row">
           <h3 id="faTitle">Fibi</h3>
           <span class="fa-chip-ai">Asistente IA</span>
-          <span class="fa-badge-sla">SLA &lt; 15 min</span>
+          <span class="fa-chip-voice" id="faVoiceChip" title="Atención por voz latina activa"><span class="fa-voice-dot"></span>Voz Latina</span>
         </div>
         <p><span class="fa-dot"></span><span id="faStatus">En línea · Diagnóstico asistido por Gemini</span></p>
       </div>
@@ -141,6 +146,14 @@ function buildDom() {
         <button type="button" class="fa-icon-btn fa-mobile-close" id="faClose" title="Cerrar" aria-label="Cerrar asistente">${ICONS.close}</button>
       </div>
     </header>
+
+    <div class="fa-voice-bar" id="faVoiceBar" style="display:none;" aria-live="polite">
+      <div class="fa-voice-visualizer" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <span class="fa-voice-status" id="faVoiceStatus">Fibi hablando (Voz Latina)…</span>
+      <button type="button" class="fa-voice-stop-btn" id="faVoiceStopBtn" title="Silenciar reproducción">${ICONS.stop}<span>Detener</span></button>
+    </div>
 
     <div class="fa-progress" id="faProgress" aria-label="Datos capturados para tu ticket"></div>
 
@@ -160,13 +173,14 @@ function buildDom() {
         </div>
       </div>
       <form class="fa-input" id="faForm" autocomplete="off">
-        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe tu mensaje o falla técnica…" aria-label="Mensaje para el asistente"></textarea>
+        <button type="button" class="fa-mic-btn" id="faMicBtn" aria-label="Hablar con micrófono" title="Hablarle a Fibi (Voz Latina)">${ICONS.mic}</button>
+        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe o pulsa el micrófono para hablar…" aria-label="Mensaje para el asistente"></textarea>
         <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar (Enter)">${ICONS.send}</button>
       </form>
       <div class="fa-legal-row">
         <span class="fa-legal-shield">${ICONS.shield} Atención oficial Fiberlink Teziutlán</span>
         <span class="fa-legal-sep">·</span>
-        <span class="fa-legal-meta">Delegación técnica en tiempo real</span>
+        <span class="fa-legal-meta">Voz Latina &amp; Diagnóstico IA en tiempo real</span>
       </div>
     </footer>
   `;
@@ -175,6 +189,7 @@ function buildDom() {
 
   els = {
     launcher, panel,
+    avatar: panel.querySelector('.fa-avatar'),
     body: panel.querySelector('#faBody'),
     quick: panel.querySelector('#faQuick'),
     progress: panel.querySelector('#faProgress'),
@@ -183,31 +198,75 @@ function buildDom() {
     send: panel.querySelector('#faSend'),
     ticketBtn: panel.querySelector('#faTicketBtn'),
     expandBtn: panel.querySelector('#faExpand'),
-    voiceToggleBtn: panel.querySelector('#faVoiceToggle')
+    voiceToggleBtn: panel.querySelector('#faVoiceToggle'),
+    voiceBar: panel.querySelector('#faVoiceBar'),
+    voiceStatus: panel.querySelector('#faVoiceStatus'),
+    voiceStopBtn: panel.querySelector('#faVoiceStopBtn'),
+    micBtn: panel.querySelector('#faMicBtn'),
+    status: panel.querySelector('#faStatus')
   };
 }
 
 // ------------------------------------------
-// Motor de Voz (SpeechSynthesis TTS)
+// Motor de Voz Latina (SpeechSynthesis TTS + STT)
 // ------------------------------------------
 function getBestSpanishVoice() {
   if (!('speechSynthesis' in window)) return null;
   const voices = window.speechSynthesis.getVoices() || [];
-  return voices.find(v => v.lang === 'es-MX' || v.lang === 'es_MX')
-    || voices.find(v => v.lang === 'es-419' || v.lang === 'es-US')
-    || voices.find(v => (v.lang && v.lang.toLowerCase().startsWith('es')) || (v.name && v.name.toLowerCase().includes('spanish')));
+  if (!voices.length) return null;
+
+  // Filtrar voces de España peninsular (para evitar ceceo europeo)
+  const isSpain = v => {
+    const l = (v.lang || '').toLowerCase();
+    const n = (v.name || '').toLowerCase();
+    return l === 'es-es' || l === 'es_es' || n.includes('spain') || n.includes('españa') || n.includes('castilian');
+  };
+
+  // Prioridad estricta para acento latinoamericano / mexicano
+  const latinPriority = [
+    // 1. Voces mexicanas neuronales / naturales (Dalia, Sabina, Jorge, Paulina, Google español de México)
+    v => (v.lang === 'es-MX' || v.lang === 'es_MX') && /natural|neural|online|google|paulina|dalia|sabina|jorge|mia|sofia/i.test(v.name),
+    // 2. Cualquier voz mexicana
+    v => v.lang === 'es-MX' || v.lang === 'es_MX',
+    // 3. Voces de Latinoamérica estándar (es-419)
+    v => v.lang === 'es-419' || /latin|419/i.test(v.lang || v.name),
+    // 4. Voces hispanas de EE.UU. (acentos latinos neutros de Microsoft/Google)
+    v => (v.lang === 'es-US' || v.lang === 'es_US') && !isSpain(v),
+    // 5. Otras variantes de Hispanoamérica (Colombia, Argentina, Chile, Perú)
+    v => /es-(co|ar|cl|pe|cr|ve|gt|ec)/i.test(v.lang),
+    // 6. Cualquier voz en español que NO sea peninsular
+    v => (v.lang || '').toLowerCase().startsWith('es') && !isSpain(v),
+    // 7. Fallback general
+    v => (v.lang || '').toLowerCase().startsWith('es')
+  ];
+
+  for (const match of latinPriority) {
+    const found = voices.find(match);
+    if (found) return found;
+  }
+  return voices[0] || null;
 }
 
-// Asegurar carga inicial de voces en Chromium / Safari
+// Asegurar carga inicial de voces en Chromium / Safari / Edge
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = () => { getBestSpanishVoice(); };
+}
+
+function updateVoiceBar(active, label = 'Fibi hablando (Voz Latina)…') {
+  if (!els.voiceBar) return;
+  state.isSpeaking = Boolean(active && !state.isListening);
+  const show = active || state.isListening || state.isSpeaking;
+  els.voiceBar.style.display = show ? 'flex' : 'none';
+  els.voiceBar.classList.toggle('active', show);
+  if (els.voiceStatus) els.voiceStatus.textContent = label;
+  if (els.avatar) els.avatar.classList.toggle('speaking', state.isSpeaking);
+  if (els.avatar) els.avatar.classList.toggle('listening', state.isListening);
 }
 
 function speakAssistantMessage(text) {
   if (!state.voiceEnabled || !('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
-    // Limpiar emojis, asteriscos, corchetes y formato markdown para dicción natural
     const cleanText = String(text || '')
       .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -220,14 +279,114 @@ function speakAssistantMessage(text) {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'es-MX';
     utterance.rate = 1.0;
-    utterance.pitch = 1.05;
+    utterance.pitch = 1.02;
 
     const esVoice = getBestSpanishVoice();
-    if (esVoice) utterance.voice = esVoice;
+    if (esVoice) {
+      utterance.voice = esVoice;
+      utterance.lang = esVoice.lang || 'es-MX';
+    }
+
+    utterance.onstart = () => {
+      const vLabel = esVoice ? esVoice.name.replace(/\s*\(.*?\)/g, '').trim() : 'Voz Latina';
+      updateVoiceBar(true, `Fibi hablando (${vLabel})…`);
+    };
+
+    utterance.onend = () => {
+      updateVoiceBar(false);
+    };
+
+    utterance.onerror = () => {
+      updateVoiceBar(false);
+    };
 
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.warn('[Fibi TTS]:', err);
+    updateVoiceBar(false);
+  }
+}
+
+// Reconocimiento de Voz (Dictado por micrófono)
+let speechRecognitionInstance = null;
+
+function getSpeechRecognition() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) return null;
+  if (speechRecognitionInstance) return speechRecognitionInstance;
+
+  try {
+    const rec = new SpeechRec();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.lang = 'es-MX'; // Español latino/mexicano
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => {
+      state.isListening = true;
+      if (els.micBtn) els.micBtn.classList.add('listening');
+      updateVoiceBar(true, '🎙️ Te escucho con atención… habla ahora');
+    };
+
+    rec.onresult = (e) => {
+      const transcript = Array.from(e.results)
+        .map(r => r[0]?.transcript || '')
+        .join('');
+      if (els.input) {
+        els.input.value = transcript;
+        els.input.style.height = 'auto';
+        els.input.style.height = Math.min(els.input.scrollHeight, 110) + 'px';
+      }
+    };
+
+    rec.onerror = (e) => {
+      console.warn('[Speech Recognition]:', e.error);
+      state.isListening = false;
+      if (els.micBtn) els.micBtn.classList.remove('listening');
+      updateVoiceBar(false);
+    };
+
+    rec.onend = () => {
+      state.isListening = false;
+      if (els.micBtn) els.micBtn.classList.remove('listening');
+      updateVoiceBar(false);
+      const val = (els.input?.value || '').trim();
+      if (val && !state.busy) {
+        sendUserMessage(val);
+        els.input.value = '';
+        els.input.style.height = '';
+      }
+    };
+
+    speechRecognitionInstance = rec;
+    return rec;
+  } catch (err) {
+    console.warn('[Speech Recognition Init Error]:', err);
+    return null;
+  }
+}
+
+function toggleListening() {
+  if (state.isSpeaking && 'speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    updateVoiceBar(false);
+  }
+
+  const rec = getSpeechRecognition();
+  if (!rec) {
+    alert('Tu navegador no admite dictado por voz directo. Puedes escribir en el teclado.');
+    return;
+  }
+
+  if (state.isListening) {
+    try { rec.stop(); } catch (_) {}
+  } else {
+    try {
+      rec.lang = 'es-MX';
+      rec.start();
+    } catch (e) {
+      console.warn('[SpeechRec start]:', e);
+    }
   }
 }
 
@@ -619,9 +778,22 @@ function bindEvents() {
     }
     if (!state.voiceEnabled && ('speechSynthesis' in window)) {
       window.speechSynthesis.cancel();
+      updateVoiceBar(false);
     } else if (state.voiceEnabled) {
-      speakAssistantMessage('Voz activada. Ahora te responderé con voz.');
+      speakAssistantMessage('Voz activada. Con gusto te atiendo por voz.');
     }
+  });
+
+  els.micBtn?.addEventListener('click', toggleListening);
+
+  els.voiceStopBtn?.addEventListener('click', () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    if (state.isListening && speechRecognitionInstance) {
+      try { speechRecognitionInstance.stop(); } catch (_) {}
+    }
+    updateVoiceBar(false);
   });
 
   els.form.addEventListener('submit', e => {

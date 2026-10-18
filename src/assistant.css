@@ -606,5 +606,151 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fa-launcher-core, .fa-launcher-core svg, .fa-launcher-ring, .fa-panel::before, .fa-btn-wa::after, .fa-dot { animation: none !important; }
+  .fa-launcher-core, .fa-launcher-core svg, .fa-launcher-ring, .fa-panel::before, .fa-btn-wa::after, .fa-dot, .fa-voice-visualizer span { animation: none !important; }
 }
+
+/* ==========================================
+   MODERNA INTERFAZ DE VOZ LATINA (MINIMALISTA)
+   ========================================== */
+.fa-chip-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 0.62rem/1.2 var(--mono, monospace);
+  color: var(--fa-cyan);
+  background: rgba(124, 231, 255, 0.08);
+  border: 1px solid rgba(124, 231, 255, 0.28);
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 10px rgba(124, 231, 255, 0.12);
+  transition: all 0.25s ease;
+}
+.fa-chip-voice .fa-voice-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fa-lime);
+  box-shadow: 0 0 8px var(--fa-lime);
+  animation: faVoiceDot 1.8s ease-in-out infinite;
+}
+@keyframes faVoiceDot {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Barra de Visualización de Voz Activa */
+.fa-voice-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  background: linear-gradient(90deg, rgba(156, 195, 46, 0.12), rgba(124, 231, 255, 0.12));
+  border-bottom: 1px solid rgba(156, 195, 46, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: faSlideDown 0.25s var(--fa-ease);
+}
+@keyframes faSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fa-voice-visualizer {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+}
+.fa-voice-visualizer span {
+  width: 3px;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--fa-lime), var(--fa-cyan));
+  box-shadow: 0 0 8px rgba(124, 231, 255, 0.5);
+  animation: faWave 1.2s ease-in-out infinite;
+}
+.fa-voice-visualizer span:nth-child(1) { animation-delay: 0.0s; height: 35%; }
+.fa-voice-visualizer span:nth-child(2) { animation-delay: 0.2s; height: 75%; }
+.fa-voice-visualizer span:nth-child(3) { animation-delay: 0.4s; height: 100%; }
+.fa-voice-visualizer span:nth-child(4) { animation-delay: 0.15s; height: 60%; }
+.fa-voice-visualizer span:nth-child(5) { animation-delay: 0.35s; height: 40%; }
+
+@keyframes faWave {
+  0%, 100% { transform: scaleY(0.3); opacity: 0.6; }
+  50% { transform: scaleY(1.1); opacity: 1; filter: drop-shadow(0 0 4px var(--fa-cyan)); }
+}
+
+.fa-voice-status {
+  flex: 1;
+  font: 500 0.76rem/1.3 'Sora', sans-serif;
+  color: #f1f7ec;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fa-voice-stop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--fa-txt);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.fa-voice-stop-btn svg { width: 10px; height: 10px; color: #ff5252; }
+.fa-voice-stop-btn:hover {
+  background: rgba(255, 82, 82, 0.2);
+  border-color: rgba(255, 82, 82, 0.5);
+  color: #ff8585;
+}
+
+/* Micrófono Minimalista en el Formulario */
+.fa-mic-btn {
+  flex: 0 0 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(124, 231, 255, 0.22);
+  background: rgba(124, 231, 255, 0.05);
+  color: var(--fa-cyan);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.25s var(--fa-ease);
+}
+.fa-mic-btn svg { width: 17px; height: 17px; }
+.fa-mic-btn:hover {
+  background: rgba(124, 231, 255, 0.16);
+  border-color: var(--fa-cyan);
+  box-shadow: 0 0 14px rgba(124, 231, 255, 0.35);
+  transform: scale(1.05);
+}
+.fa-mic-btn.listening {
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  border-color: #ef4444;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
+  animation: faMicPulse 1.4s ease-in-out infinite;
+}
+@keyframes faMicPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+  50% { transform: scale(1.08); box-shadow: 0 0 22px rgba(239, 68, 68, 0.95); }
+}
+
+/* Animación sutil de avatar mientras habla Fibi */
+.fa-avatar.speaking {
+  box-shadow: 0 0 0 3px rgba(156, 195, 46, 0.4), 0 0 20px rgba(124, 231, 255, 0.65);
+  animation: faAvatarPulse 1.6s ease-in-out infinite;
+}
+@keyframes faAvatarPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
