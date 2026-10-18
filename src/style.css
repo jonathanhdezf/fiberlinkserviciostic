@@ -3594,8 +3594,8 @@ body.cursor-hover .cursor-ring{
   pointer-events: none;
   z-index: 2;
   /* Cyberpunk Lime & Cyan Gradient Overlay with Scanline Texture */
-  background: linear-gradient(135deg, rgba(156, 195, 46, 0.22) 0%, rgba(124, 231, 255, 0.08) 50%, rgba(9, 13, 7, 0.6) 100%);
-  background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.24) 3px, rgba(0, 0, 0, 0.24) 4px);
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.18) 3px, rgba(0, 0, 0, 0.18) 4px),
+              linear-gradient(135deg, rgba(156, 195, 46, 0.18) 0%, rgba(124, 231, 255, 0.08) 50%, rgba(9, 13, 7, 0.5) 100%);
   mix-blend-mode: overlay;
   box-shadow: inset 0 0 45px rgba(0, 0, 0, 0.7);
 }
@@ -3661,13 +3661,47 @@ body.cursor-hover .cursor-ring{
   box-shadow: 0 0 8px var(--verde);
 }
 
+/* Solutions Carousel Card Thumbnail (Index) */
+.sol-card-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  height: 125px;
+  margin: 10px 0 16px 0;
+  width: 100%;
+  background: #090d07;
+  border: 1px solid rgba(156, 195, 46, 0.24);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.75);
+}
+
+.sol-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 1;
+  filter: contrast(1.12) saturate(0.88) brightness(0.9);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+
+.sol-card:hover .sol-card-thumb img {
+  transform: scale(1.06);
+  filter: contrast(1.08) saturate(1.05) brightness(0.98);
+}
+
+.sol-card:hover .sol-card-thumb {
+  border-color: rgba(156, 195, 46, 0.55);
+  box-shadow: 0 0 20px rgba(156, 195, 46, 0.22);
+}
+
 /* Home Card 6 Thumbnail */
 .sol-card-mini-thumb {
   position: relative;
   overflow: hidden;
   border-radius: 10px;
-  height: 115px;
-  margin: 12px 0 14px 0;
+  height: 125px;
+  margin: 10px 0 16px 0;
   width: 100%;
   background: #090d07;
   border: 1px solid rgba(156, 195, 46, 0.28);
@@ -3678,6 +3712,8 @@ body.cursor-hover .cursor-ring{
   height: 100%;
   object-fit: cover;
   display: block;
+  position: relative;
+  z-index: 1;
   filter: contrast(1.15) saturate(0.85) brightness(0.88);
   transition: transform 0.35s ease, filter 0.35s ease;
 }
@@ -3685,6 +3721,108 @@ body.cursor-hover .cursor-ring{
 .sol-card-featured:hover .sol-card-mini-thumb img {
   transform: scale(1.05);
   filter: contrast(1.08) saturate(1.05) brightness(0.98);
+}
+
+/* ==========================================
+   CYBERPUNK BREADCRUMBS (MIGAS DE PAN)
+   ========================================== */
+.cyber-breadcrumbs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 9px 18px;
+  background: rgba(12, 18, 9, 0.78);
+  border: 1px solid rgba(156, 195, 46, 0.28);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.breadcrumbs-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--verde);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  background: rgba(156, 195, 46, 0.15);
+  color: #fff;
+  transform: translateX(-2px);
+  box-shadow: 0 0 12px rgba(156, 195, 46, 0.25);
+}
+
+.breadcrumb-sep {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(156, 195, 46, 0.45);
+}
+
+.breadcrumb-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #c9d2c2;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.breadcrumb-current::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--verde);
+  box-shadow: 0 0 8px var(--verde);
+}
+
+.breadcrumb-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--verde);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(156, 195, 46, 0.08);
+  border: 1px solid rgba(156, 195, 46, 0.32);
+  transition: all 0.25s ease;
+}
+
+.breadcrumb-back-btn:hover {
+  background: var(--verde);
+  color: var(--negro-2);
+  box-shadow: 0 0 14px rgba(156, 195, 46, 0.45);
+  transform: translateX(-3px);
 }
 
 .article-body {
