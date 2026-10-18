@@ -16,7 +16,7 @@ export const SERVICES = [
 export const MODALITIES = ['En Sitio / Domicilio', 'Remoto', 'En Taller'];
 export const PRIORITIES = ['Normal', 'Alta', 'Urgente'];
 
-const DEFAULT_MODEL = 'gemini-flash-latest';
+const DEFAULT_MODEL = 'gemini-flash-lite-latest';
 let envLoaded = false;
 
 function ensureEnv() {
@@ -207,8 +207,8 @@ function localEngine(messages, prevDraft) {
 // ------------------------------------------
 async function callGemini(messages, prevDraft, apiKey) {
   let model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
-  if (!model || ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'].includes(model)) {
-    model = 'gemini-flash-latest';
+  if (!model || ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'].includes(model)) {
+    model = 'gemini-flash-lite-latest';
   }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
@@ -223,7 +223,7 @@ async function callGemini(messages, prevDraft, apiKey) {
   });
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
+  const timer = setTimeout(() => controller.abort(), 25000);
   try {
     const res = await fetch(url, {
       method: 'POST',
