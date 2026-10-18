@@ -52,14 +52,19 @@ const state = {
   busy: false,
   expanded: localStorage.getItem('fiberlink_assistant_expanded') === 'true',
   voiceEnabled: localStorage.getItem('fiberlink_assistant_voice') !== 'false',
+  selectedVoiceURI: localStorage.getItem('fiberlink_assistant_voice_uri') || '',
   isSpeaking: false,
   isListening: false,
-  messages: [],      // { role: 'user' | 'model', text }
-  draft: {},
+  mode: 'ticket',     // 'ticket' | 'order'
+  messages: [],       // { role: 'user' | 'model', text }
+  draft: {},          // Borrador de ticket
+  orderDraft: { items: [], total: 0, clientName: '', clientPhone: '', deliveryType: 'domicilio', deliveryAddress: '' },
+  suggestedProducts: [],
   diagnosis: '',
   action: 'collect',
   quickReplies: [],
-  ticket: null,      // ticket creado
+  ticket: null,       // ticket creado
+  orderFolio: '',     // Folio de pedido formal
   engine: ''
 };
 
@@ -109,14 +114,14 @@ function buildDom() {
   launcher.type = 'button';
   launcher.className = 'fa-launcher';
   launcher.id = 'faLauncher';
-  launcher.setAttribute('aria-label', 'Abrir asistente técnico virtual con IA');
+  launcher.setAttribute('aria-label', 'Abrir asistente técnico y comercial virtual con IA');
   launcher.innerHTML = `
     <span class="fa-launcher-ring" aria-hidden="true"></span>
     <span class="fa-launcher-core">${ICONS.spark}</span>
     <span class="fa-launcher-badge" aria-hidden="true">IA</span>
     <span class="fa-launcher-tip">
-      <span class="fa-launcher-tip-badge">SOPORTE EN VIVO</span>
-      ¿Problemas con tu equipo o red? <strong>Te ayudo a levantar tu ticket</strong>
+      <span class="fa-launcher-tip-badge">ATENCIÓN EN VIVO &amp; PEDIDOS</span>
+      ¿Soporte o cotización de equipos? <strong>Te atiendo con voz latina</strong>
     </span>
   `;
 
@@ -134,11 +139,12 @@ function buildDom() {
         <div class="fa-head-title-row">
           <h3 id="faTitle">Fibi</h3>
           <span class="fa-chip-ai">Asistente IA</span>
-          <span class="fa-chip-voice" id="faVoiceChip" title="Atención por voz latina activa"><span class="fa-voice-dot"></span>Voz Latina</span>
+          <button type="button" class="fa-chip-voice" id="faVoiceChip" title="Clic para probar o cambiar la voz latina"><span class="fa-voice-dot"></span><span id="faVoiceChipName">Voz Latina</span></button>
         </div>
-        <p><span class="fa-dot"></span><span id="faStatus">En línea · Diagnóstico asistido por Gemini</span></p>
+        <p><span class="fa-dot"></span><span id="faStatus">En línea · Asistencia técnica &amp; Pedidos</span></p>
       </div>
       <div class="fa-head-actions">
+        <button type="button" class="fa-icon-btn" id="faVoiceTest" title="Escuchar saludo de prueba de Fibi" aria-label="Escuchar prueba de voz">${ICONS.soundwave}</button>
         <button type="button" class="fa-icon-btn" id="faVoiceToggle" title="${state.voiceEnabled ? 'Desactivar voz' : 'Activar voz'}" aria-label="Alternar voz del asistente">${state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff}</button>
         <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño / Expandir" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
         <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
@@ -155,7 +161,7 @@ function buildDom() {
       <button type="button" class="fa-voice-stop-btn" id="faVoiceStopBtn" title="Silenciar reproducción">${ICONS.stop}<span>Detener</span></button>
     </div>
 
-    <div class="fa-progress" id="faProgress" aria-label="Datos capturados para tu ticket"></div>
+    <div class="fa-progress" id="faProgress" aria-label="Datos capturados para tu ticket o pedido"></div>
 
     <div class="fa-body" id="faBody" aria-live="polite"></div>
 
@@ -199,6 +205,9 @@ function buildDom() {
     ticketBtn: panel.querySelector('#faTicketBtn'),
     expandBtn: panel.querySelector('#faExpand'),
     voiceToggleBtn: panel.querySelector('#faVoiceToggle'),
+    voiceTestBtn: panel.querySelector('#faVoiceTest'),
+    voiceChip: panel.querySelector('#faVoiceChip'),
+    voiceChipName: panel.querySelector('#faVoiceChipName'),
     voiceBar: panel.querySelector('#faVoiceBar'),
     voiceStatus: panel.querySelector('#faVoiceStatus'),
     voiceStopBtn: panel.querySelector('#faVoiceStopBtn'),
@@ -208,48 +217,137 @@ function buildDom() {
 }
 
 // ------------------------------------------
-// Motor de Voz Latina (SpeechSynthesis TTS + STT)
+// Motor de Voz Latina (TTS Natural Asíncrono + STT)
 // ------------------------------------------
-function getBestSpanishVoice() {
-  if (!('speechSynthesis' in window)) return null;
-  const voices = window.speechSynthesis.getVoices() || [];
-  if (!voices.length) return null;
+let voicesLoadedPromise = null;
 
-  // Filtrar voces de España peninsular (para evitar ceceo europeo)
+function loadVoicesAsync() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return Promise.resolve([]);
+  const existing = window.speechSynthesis.getVoices();
+  if (existing && existing.length > 0) return Promise.resolve(existing);
+
+  if (!voicesLoadedPromise) {
+    voicesLoadedPromise = new Promise((resolve) => {
+      let resolved = false;
+      const done = () => {
+        if (!resolved) {
+          resolved = true;
+          resolve(window.speechSynthesis.getVoices() || []);
+        }
+      };
+      window.speechSynthesis.onvoiceschanged = done;
+      setTimeout(done, 700);
+    });
+  }
+  return voicesLoadedPromise;
+}
+
+function getAvailableLatinVoices() {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
+  const all = window.speechSynthesis.getVoices() || [];
+
+  // 1. Excluir radicalmente sintetizadores robóticos locales / SAPI5 / Desktop de Windows
+  const isRobotic = v => {
+    const n = (v.name || '').toLowerCase();
+    return /desktop|sapi|offline|synth\s*local|espeak/i.test(n);
+  };
+
+  // 2. Excluir voces de España peninsular (para evitar ceceo europeo)
   const isSpain = v => {
     const l = (v.lang || '').toLowerCase();
     const n = (v.name || '').toLowerCase();
-    return l === 'es-es' || l === 'es_es' || n.includes('spain') || n.includes('españa') || n.includes('castilian');
+    return l === 'es-es' || l === 'es_es' || /spain|españa|castilian/i.test(n);
   };
 
-  // Prioridad estricta para acento latinoamericano / mexicano
-  const latinPriority = [
-    // 1. Voces mexicanas neuronales / naturales (Dalia, Sabina, Jorge, Paulina, Google español de México)
-    v => (v.lang === 'es-MX' || v.lang === 'es_MX') && /natural|neural|online|google|paulina|dalia|sabina|jorge|mia|sofia/i.test(v.name),
-    // 2. Cualquier voz mexicana
-    v => v.lang === 'es-MX' || v.lang === 'es_MX',
-    // 3. Voces de Latinoamérica estándar (es-419)
-    v => v.lang === 'es-419' || /latin|419/i.test(v.lang || v.name),
-    // 4. Voces hispanas de EE.UU. (acentos latinos neutros de Microsoft/Google)
-    v => (v.lang === 'es-US' || v.lang === 'es_US') && !isSpain(v),
-    // 5. Otras variantes de Hispanoamérica (Colombia, Argentina, Chile, Perú)
-    v => /es-(co|ar|cl|pe|cr|ve|gt|ec)/i.test(v.lang),
-    // 6. Cualquier voz en español que NO sea peninsular
-    v => (v.lang || '').toLowerCase().startsWith('es') && !isSpain(v),
-    // 7. Fallback general
-    v => (v.lang || '').toLowerCase().startsWith('es')
-  ];
+  // Filtrar voces latinas que NO sean robóticas
+  let candidates = all.filter(v => {
+    const l = (v.lang || '').toLowerCase();
+    return l.startsWith('es') && !isSpain(v) && !isRobotic(v);
+  });
 
-  for (const match of latinPriority) {
-    const found = voices.find(match);
-    if (found) return found;
+  // Ranking de máxima calidad natural y dicción latina
+  candidates.sort((a, b) => {
+    const score = v => {
+      const n = (v.name || '').toLowerCase();
+      const l = (v.lang || '').toLowerCase();
+      let s = 0;
+      // Voces neuronales online modernas (Microsoft / Google / Cloud)
+      if (/natural|neural|online/i.test(n)) s += 60;
+      if (/google/i.test(n)) s += 45;
+      // Nombres humanos conocidos de excelente calidad latina
+      if (/dalia|paulina|jorge|mia|monica|ximena|soledad|lupe|carlos/i.test(n)) s += 30;
+      // Español de México o neutro de Latinoamérica
+      if (l === 'es-mx' || l === 'es_mx') s += 35;
+      if (l === 'es-419' || l === 'es-us') s += 25;
+      if (/es-(co|ar|cl|pe|cr)/i.test(l)) s += 15;
+      return s;
+    };
+    return score(b) - score(a);
+  });
+
+  // Si el sistema no tiene ninguna voz natural online instalada, permitir las disponibles en español
+  if (!candidates.length) {
+    const fallbackEs = all.filter(v => (v.lang || '').toLowerCase().startsWith('es') && !isSpain(v));
+    candidates = fallbackEs.length ? fallbackEs : all.filter(v => (v.lang || '').toLowerCase().startsWith('es'));
   }
-  return voices[0] || null;
+  return candidates;
 }
 
-// Asegurar carga inicial de voces en Chromium / Safari / Edge
+function getBestSpanishVoice() {
+  const list = getAvailableLatinVoices();
+  if (!list.length) return null;
+  if (state.selectedVoiceURI) {
+    const saved = list.find(v => v.voiceURI === state.selectedVoiceURI || v.name === state.selectedVoiceURI);
+    if (saved) return saved;
+  }
+  return list[0];
+}
+
+function updateVoiceBadge() {
+  const v = getBestSpanishVoice();
+  if (!els.voiceChipName) return;
+  if (v) {
+    let cleanName = v.name
+      .replace(/Microsoft\s+/i, '')
+      .replace(/Online\s*\(Natural\)/i, 'Natural')
+      .replace(/Google\s+/i, '')
+      .replace(/-?\s*Spanish\s*\(.*?\)/i, '')
+      .trim();
+    if (cleanName.length > 15) cleanName = cleanName.slice(0, 14) + '…';
+    els.voiceChipName.textContent = cleanName || 'Voz Latina';
+    if (els.voiceChip) els.voiceChip.title = `Voz activa: ${v.name}. Clic para probar o cambiar.`;
+  } else {
+    els.voiceChipName.textContent = 'Voz Latina';
+  }
+}
+
+function cycleVoice() {
+  const list = getAvailableLatinVoices();
+  if (list.length <= 1) {
+    testVoice();
+    return;
+  }
+  const current = getBestSpanishVoice();
+  const idx = list.findIndex(v => v === current || v.name === current?.name);
+  const next = list[(idx + 1) % list.length];
+  state.selectedVoiceURI = next.voiceURI || next.name;
+  localStorage.setItem('fiberlink_assistant_voice_uri', state.selectedVoiceURI);
+  updateVoiceBadge();
+  const label = next.name.replace(/Microsoft\s+/i, '').replace(/\s*\(.*?\)/g, '');
+  testVoice(`Cambiado a voz ${label}. ¡Hola! ¿En qué te ayudo hoy?`);
+}
+
+function testVoice(sampleText = '¡Hola! Soy Fibi, asistente de Fiberlink en Teziutlán. ¿En qué te puedo apoyar hoy?') {
+  if (!('speechSynthesis' in window)) return;
+  speakAssistantMessage(sampleText, true);
+}
+
+// Carga inicial y escucha de cambios en navegador
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = () => { getBestSpanishVoice(); };
+  loadVoicesAsync().then(() => updateVoiceBadge());
+  window.speechSynthesis.onvoiceschanged = () => {
+    updateVoiceBadge();
+  };
 }
 
 function updateVoiceBar(active, label = 'Fibi hablando (Voz Latina)…') {
@@ -263,10 +361,13 @@ function updateVoiceBar(active, label = 'Fibi hablando (Voz Latina)…') {
   if (els.avatar) els.avatar.classList.toggle('listening', state.isListening);
 }
 
-function speakAssistantMessage(text) {
-  if (!state.voiceEnabled || !('speechSynthesis' in window)) return;
+async function speakAssistantMessage(text, force = false) {
+  if ((!state.voiceEnabled && !force) || !('speechSynthesis' in window)) return;
   try {
+    await loadVoicesAsync();
     window.speechSynthesis.cancel();
+    updateVoiceBadge();
+
     const cleanText = String(text || '')
       .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -278,8 +379,8 @@ function speakAssistantMessage(text) {
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'es-MX';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.02;
+    utterance.rate = 1.02;
+    utterance.pitch = 1.0;
 
     const esVoice = getBestSpanishVoice();
     if (esVoice) {
@@ -288,7 +389,7 @@ function speakAssistantMessage(text) {
     }
 
     utterance.onstart = () => {
-      const vLabel = esVoice ? esVoice.name.replace(/\s*\(.*?\)/g, '').trim() : 'Voz Latina';
+      const vLabel = esVoice ? esVoice.name.replace(/Microsoft\s+/i, '').replace(/\s*\(.*?\)/g, '').trim() : 'Voz Latina';
       updateVoiceBar(true, `Fibi hablando (${vLabel})…`);
     };
 
@@ -394,6 +495,27 @@ function toggleListening() {
 // Render
 // ------------------------------------------
 function renderProgress() {
+  if (state.mode === 'order') {
+    const hasItems = state.orderDraft?.items?.length > 0;
+    const hasContact = Boolean(state.orderDraft?.clientName || state.draft?.name);
+    const hasPhone = Boolean(state.orderDraft?.clientPhone || (state.draft?.phone && state.draft.phone.length === 10));
+    const isDone = Boolean(state.orderFolio && state.action === 'confirm');
+    const steps = [
+      { label: 'Productos', done: hasItems },
+      { label: 'Contacto', done: hasContact },
+      { label: 'WhatsApp', done: hasPhone }
+    ];
+    const doneCount = steps.filter(s => s.done).length;
+    els.progress.innerHTML = `
+      <div class="fa-progress-bar"><span style="width:${isDone ? 100 : Math.round((doneCount / steps.length) * 100)}%"></span></div>
+      <div class="fa-steps">
+        <span class="fa-step-mode-tag">VENTAS &amp; PEDIDOS</span>
+        ${steps.map(s => `<span class="fa-step ${s.done ? 'done' : ''}">${s.done ? ICONS.check : ''}${s.label}</span>`).join('')}
+      </div>
+    `;
+    return;
+  }
+
   const d = state.draft;
   const chips = Object.entries(FIELD_LABELS).map(([key, label]) => {
     const done = key === 'phone' ? String(d.phone || '').length === 10 : !!d[key];
@@ -424,6 +546,74 @@ function diagnosisHtml() {
       <span class="fa-diag-lbl">${ICONS.spark} Pre-diagnóstico IA</span>
       <p>${escapeHtml(state.diagnosis)}</p>
       <small>Un técnico confirmará la causa real y aplicará la solución.</small>
+    </div>`;
+}
+
+function suggestedProductsHtml() {
+  if (!state.suggestedProducts || !state.suggestedProducts.length) return '';
+  return `
+    <div class="fa-card fa-products-card">
+      <div class="fa-card-head">
+        <span class="fa-prod-badge">[CATÁLOGO OFICIAL]</span>
+        <span>Productos recomendados</span>
+      </div>
+      <div class="fa-products-grid">
+        ${state.suggestedProducts.map(p => `
+          <div class="fa-prod-item">
+            <div class="fa-prod-info">
+              <span class="fa-prod-cat">${escapeHtml((p.category || 'EQUIPO').toUpperCase())}</span>
+              <strong class="fa-prod-name">${escapeHtml(p.name)}</strong>
+              <span class="fa-prod-price">$${Number(p.price || 0).toLocaleString('es-MX')} MXN</span>
+            </div>
+            <button type="button" class="fa-prod-add-btn" data-add-prod="${escapeHtml(p.id)}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">
+              ➕ Agregar al pedido
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function orderCardHtml() {
+  const o = state.orderDraft;
+  if (!o || !o.items || !o.items.length) return '';
+  const total = o.items.reduce((acc, it) => acc + (it.price * (it.qty || 1)), 0);
+  o.total = total;
+  const folio = state.orderFolio || (state.orderFolio = `PED-${Date.now().toString().slice(-4)}`);
+
+  return `
+    <div class="fa-card fa-order-card">
+      <div class="fa-card-head">
+        <span class="fa-order-badge">FOLIO ${escapeHtml(folio)}</span>
+        <span>Resumen de tu pedido</span>
+      </div>
+      <div class="fa-order-table">
+        ${o.items.map((it, idx) => `
+          <div class="fa-order-row">
+            <div class="fa-order-row-name">
+              <span class="fa-order-row-qty">${it.qty || 1}x</span>
+              <strong>${escapeHtml(it.name)}</strong>
+            </div>
+            <div class="fa-order-row-price">
+              <span>$${((it.price || 0) * (it.qty || 1)).toLocaleString('es-MX')}</span>
+              <button type="button" class="fa-order-remove-btn" data-remove-item="${idx}" title="Quitar de la lista">✕</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="fa-order-total-bar">
+        <span>Total estimado:</span>
+        <strong>$${total.toLocaleString('es-MX')} MXN</strong>
+      </div>
+      <p class="fa-order-note">Garantía directa de 1 año en equipos Fiberlink Teziutlán.</p>
+      <div class="fa-card-actions">
+        <button type="button" class="fa-btn-wa fa-btn-wa-order" data-fa="whatsapp-order">
+          ${ICONS.wa}<span>Confirmar pedido por WhatsApp</span>
+        </button>
+        <button type="button" class="fa-btn-ghost fa-btn-sm" data-fa="clear-order">
+          Vaciar pedido
+        </button>
+      </div>
     </div>`;
 }
 
@@ -502,8 +692,11 @@ function render({ scroll = true } = {}) {
   renderProgress();
   let html = state.messages.map(messageHtml).join('');
   html += diagnosisHtml();
+  html += suggestedProductsHtml();
+  html += orderCardHtml();
+
   if (state.ticket) html += successHtml(state.ticket);
-  else if (state.action === 'confirm' && !getMissing().length) html += summaryHtml();
+  else if (state.mode !== 'order' && state.action === 'confirm' && !getMissing().length) html += summaryHtml();
   if (state.showQuickForm && !state.ticket) html += quickFormHtml();
   if (state.busy) {
     html += `<div class="fa-msg fa-bot"><span class="fa-msg-avatar" aria-hidden="true">${ICONS.spark}</span><div class="fa-bubble fa-typing"><i></i><i></i><i></i></div></div>`;
@@ -516,14 +709,14 @@ function render({ scroll = true } = {}) {
   els.input.disabled = state.busy || !!state.ticket;
   els.send.disabled = state.busy || !!state.ticket;
   els.ticketBtn.style.display = state.ticket ? 'none' : '';
-  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe tu mensaje…');
+  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe o pulsa el micrófono…');
 
   if (scroll) requestAnimationFrame(() => { els.body.scrollTop = els.body.scrollHeight; });
   bindFormEvents();
 }
 
 // ------------------------------------------
-// Conversación con Gemini
+// Conversación con Gemini & Pedidos
 // ------------------------------------------
 async function askAssistant() {
   state.busy = true;
@@ -532,7 +725,11 @@ async function askAssistant() {
     const res = await fetch('/api/assistant/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: state.messages.filter(m => m.role !== 'card'), draft: state.draft })
+      body: JSON.stringify({
+        messages: state.messages.filter(m => m.role !== 'card'),
+        draft: state.draft,
+        orderDraft: state.orderDraft
+      })
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -541,13 +738,21 @@ async function askAssistant() {
     state.action = data.action || 'collect';
     state.quickReplies = data.quickReplies || [];
     state.engine = data.engine || '';
+    state.mode = data.mode || (data.suggestedProducts?.length ? 'order' : state.mode);
+    if (Array.isArray(data.suggestedProducts) && data.suggestedProducts.length) {
+      state.suggestedProducts = data.suggestedProducts;
+    }
+    if (data.orderDraft && typeof data.orderDraft === 'object') {
+      state.orderDraft = { ...state.orderDraft, ...data.orderDraft };
+    }
+
     state.messages.push({ role: 'model', text: data.reply || 'Cuéntame un poco más, por favor.' });
-    els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente técnico';
+    els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente Fiberlink';
     speakAssistantMessage(data.reply);
   } catch (err) {
     console.warn('[Asistente IA] Sin conexión con el servidor:', err.message);
-    const failMsg = 'Tuve un problema de conexión. Puedes usar el botón Levantar ticket o escribirnos por WhatsApp y un técnico te atiende de inmediato.';
-    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket** o escribirnos por WhatsApp y un técnico te atiende de inmediato.' });
+    const failMsg = 'Tuve un problema de conexión. Puedes usar el botón Levantar ticket o escribirnos por WhatsApp y un asesor te atiende de inmediato.';
+    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket** o escribirnos por WhatsApp y un asesor te atiende de inmediato.' });
     state.quickReplies = [];
     speakAssistantMessage(failMsg);
   } finally {
@@ -556,7 +761,7 @@ async function askAssistant() {
     render();
   }
 
-  if (state.action === 'submit' && !getMissing().length && !state.ticket) {
+  if (state.mode !== 'order' && state.action === 'submit' && !getMissing().length && !state.ticket) {
     await submitTicket();
   }
 }
@@ -576,9 +781,8 @@ async function sendUserMessage(text) {
 // Envío del ticket + notificación push
 // ------------------------------------------
 function primeNotificationPermission() {
-  // Se solicita dentro de un gesto del usuario (clic / envío) como exigen los navegadores
   if ('Notification' in window && Notification.permission === 'default') {
-    try { Notification.requestPermission(); } catch (_) { /* Safari antiguo */ }
+    try { Notification.requestPermission(); } catch (_) {}
   }
 }
 
@@ -653,19 +857,17 @@ async function submitTicket() {
     state.messages.push({ role: 'model', text: `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket **${state.ticket.folio}** quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp y agilizar tu atención. 💚` });
     speakAssistantMessage(ticketSpeech);
 
-    // Notificación push al navegador del cliente (confirmación)
     showPush(`Ticket ${state.ticket.folio} registrado ✔`, {
       body: `${state.ticket.service} · ${state.ticket.modality} · Prioridad ${state.ticket.priority}. Un técnico te contactará por WhatsApp.`,
       tag: `fl-ticket-${state.ticket.folio}`,
       data: { url: '/' }
     });
 
-    // Aviso inmediato a la mesa de control abierta en este navegador (panel admin)
     try {
       const bc = new BroadcastChannel(BROADCAST);
       bc.postMessage({ type: 'new-ticket', ticket: { ...ticket, folio: state.ticket.folio } });
       bc.close();
-    } catch (_) { /* BroadcastChannel no soportado */ }
+    } catch (_) {}
   } catch (err) {
     console.error('[Asistente IA] Error al crear ticket:', err);
     state.messages.push({ role: 'model', text: 'No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp y la capturamos por ti.' });
@@ -696,6 +898,28 @@ function buildWhatsAppUrl() {
   return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
+function buildWhatsAppOrderUrl() {
+  const o = state.orderDraft || {};
+  const items = Array.isArray(o.items) ? o.items : [];
+  const folio = state.orderFolio || `PED-${Date.now().toString().slice(-4)}`;
+  const total = items.reduce((acc, it) => acc + (it.price * (it.qty || 1)), 0);
+
+  const lines = [
+    `¡Hola Fiberlink! 👋 Quiero confirmar mi pedido *${folio}* generado con el asistente Fibi:`,
+    ''
+  ];
+  items.forEach(it => {
+    lines.push(`• ${it.qty || 1}x *${it.name}* — $${((it.price || 0) * (it.qty || 1)).toLocaleString('es-MX')} MXN`);
+  });
+  lines.push('');
+  lines.push(`💰 *TOTAL: $${total.toLocaleString('es-MX')} MXN*`);
+  if (o.clientName || state.draft.name) lines.push(`👤 *Cliente:* ${o.clientName || state.draft.name}`);
+  if (o.clientPhone || state.draft.phone) lines.push(`📱 *WhatsApp:* ${o.clientPhone || state.draft.phone}`);
+  if (o.deliveryAddress || state.draft.address) lines.push(`📍 *Dirección de entrega:* ${o.deliveryAddress || state.draft.address}`);
+  lines.push('', '¿Me pueden confirmar disponibilidad y método de entrega en Teziutlán? ¡Muchas gracias!');
+  return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(lines.join('\n'))}`;
+}
+
 // ------------------------------------------
 // Eventos
 // ------------------------------------------
@@ -703,15 +927,30 @@ function resetConversation() {
   if ('speechSynthesis' in window) {
     try { window.speechSynthesis.cancel(); } catch (_) {}
   }
-  Object.assign(state, { messages: [], draft: {}, diagnosis: '', action: 'collect', quickReplies: [], ticket: null, showQuickForm: false });
+  Object.assign(state, {
+    mode: 'ticket',
+    messages: [],
+    draft: {},
+    orderDraft: { items: [], total: 0, clientName: '', clientPhone: '', deliveryType: 'domicilio', deliveryAddress: '' },
+    suggestedProducts: [],
+    diagnosis: '',
+    action: 'collect',
+    quickReplies: [],
+    ticket: null,
+    orderFolio: '',
+    showQuickForm: false
+  });
   sessionStorage.removeItem(STORAGE_KEY);
   greet();
 }
 
 function greet() {
-  const welcomeText = '¡Hola! Soy Fibi, tu asistente técnico virtual de Fiberlink. Cuéntame qué está fallando y en un par de minutos levanto tu ticket para que un técnico te atienda.';
-  state.messages.push({ role: 'model', text: '¡Hola! Soy **Fibi**, tu asistente técnico virtual de Fiberlink. 👋\nCuéntame qué está fallando y en un par de minutos levanto tu ticket para que un técnico te atienda.' });
-  state.quickReplies = ['Mi computadora está lenta', 'No puedo cobrar en caja', 'Se cae el internet'];
+  const welcomeText = '¡Hola! Soy Fibi, tu asistente técnico y de ventas en Fiberlink. ¿En qué te apoyo hoy? ¿Tienes una falla técnica o deseas cotizar equipamiento y punto de venta?';
+  state.messages.push({
+    role: 'model',
+    text: '¡Hola! Soy **Fibi**, tu asistente virtual con IA de Fiberlink. 👋\n¿En qué te podemos apoyar hoy? ¿Requieres **soporte técnico** para tu equipo o **cotizar y comprar** productos de nuestro catálogo?'
+  });
+  state.quickReplies = ['Cotizar Punto de Venta', 'Cámaras de seguridad', 'Mi computadora está lenta'];
   saveSession();
   render();
   speakAssistantMessage(welcomeText);
@@ -724,6 +963,7 @@ function openPanel() {
   els.panel.setAttribute('aria-hidden', 'false');
   els.launcher.classList.add('hidden');
   document.documentElement.classList.add('fa-open');
+  updateVoiceBadge();
   if (!state.messages.length) greet(); else render();
   setTimeout(() => { if (!state.ticket) els.input.focus({ preventScroll: true }); }, 280);
 }
@@ -767,6 +1007,10 @@ function bindEvents() {
   els.launcher.addEventListener('click', openPanel);
   els.panel.querySelector('#faClose').addEventListener('click', closePanel);
   els.panel.querySelector('#faReset').addEventListener('click', resetConversation);
+
+  // Probar y alternar voz latina
+  els.voiceChip?.addEventListener('click', () => { cycleVoice(); });
+  els.voiceTestBtn?.addEventListener('click', () => { testVoice(); });
 
   els.panel.querySelector('#faVoiceToggle')?.addEventListener('click', () => {
     state.voiceEnabled = !state.voiceEnabled;
@@ -839,7 +1083,46 @@ function bindEvents() {
     }
   });
 
+  // Delegación de eventos en el cuerpo del chat
   els.body.addEventListener('click', e => {
+    // 1. Agregar producto sugerido al pedido
+    const addProdBtn = e.target.closest('[data-add-prod]');
+    if (addProdBtn) {
+      const id = addProdBtn.dataset.addProd;
+      const name = addProdBtn.dataset.name;
+      const price = parseFloat(addProdBtn.dataset.price) || 0;
+      state.mode = 'order';
+
+      if (!state.orderDraft.items) state.orderDraft.items = [];
+      const existing = state.orderDraft.items.find(it => it.id === id);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+        existing.subtotal = existing.qty * existing.price;
+      } else {
+        state.orderDraft.items.push({ id, name, qty: 1, price, subtotal: price });
+      }
+      state.orderDraft.total = state.orderDraft.items.reduce((s, it) => s + (it.price * it.qty), 0);
+      if (!state.orderFolio) state.orderFolio = `PED-${Date.now().toString().slice(-4)}`;
+
+      saveSession();
+      render();
+      speakAssistantMessage(`Agregué ${name} a tu pedido.`);
+      return;
+    }
+
+    // 2. Quitar producto del pedido
+    const removeBtn = e.target.closest('[data-remove-item]');
+    if (removeBtn) {
+      const idx = parseInt(removeBtn.dataset.removeItem, 10);
+      if (state.orderDraft?.items && !isNaN(idx)) {
+        state.orderDraft.items.splice(idx, 1);
+        state.orderDraft.total = state.orderDraft.items.reduce((s, it) => s + (it.price * it.qty), 0);
+        saveSession();
+        render();
+      }
+      return;
+    }
+
     const btn = e.target.closest('[data-fa]');
     if (!btn) return;
     const act = btn.dataset.fa;
@@ -847,6 +1130,13 @@ function bindEvents() {
     if (act === 'edit') { state.action = 'collect'; state.showQuickForm = true; render(); }
     if (act === 'cancel-form') { state.showQuickForm = false; render(); }
     if (act === 'whatsapp') window.open(buildWhatsAppUrl(), '_blank', 'noopener,noreferrer');
+    if (act === 'whatsapp-order') window.open(buildWhatsAppOrderUrl(), '_blank', 'noopener,noreferrer');
+    if (act === 'clear-order') {
+      state.orderDraft = { items: [], total: 0, clientName: '', clientPhone: '', deliveryType: 'domicilio', deliveryAddress: '' };
+      state.orderFolio = '';
+      saveSession();
+      render();
+    }
     if (act === 'new') resetConversation();
     if (act === 'copy-folio') {
       const folio = state.ticket?.folio || '';

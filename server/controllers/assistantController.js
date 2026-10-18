@@ -31,37 +31,97 @@ function ensureEnv() {
   }
 }
 
-const SYSTEM_PROMPT = `Eres "Fibi", el asistente técnico virtual de Fiberlink Servicios TIC (Teziutlán, Puebla, México).
-Tu ÚNICO objetivo es levantar una solicitud de servicio (ticket) para que un técnico humano la atienda.
+export const OFFICIAL_CATALOG = [
+  { id: 'prod-101', sku: 'POS-CAJ-01', name: 'Cajón de Dinero Metálico Automático RJ11', category: 'pos', price: 1150, description: 'Cajón metálico uso rudo con 5 divisiones de billetes, 8 monedas y apertura automática RJ11.' },
+  { id: 'prod-102', sku: 'POS-IMP-58', name: 'Impresora Térmica de Tickets 58mm USB', category: 'pos', price: 890, description: 'Impresora térmica directa sin tinta compatible con Windows y software de cobro.' },
+  { id: 'prod-103', sku: 'POS-IMP-80', name: 'Impresora Térmica 80mm Autocorte USB + LAN', category: 'pos', price: 1980, description: 'Impresora de tickets 80mm con cortador de guillotina automático y conexión USB + Red.' },
+  { id: 'prod-104', sku: 'POS-LEC-2D', name: 'Lector de Código de Barras 1D/2D QR Inalámbrico', category: 'pos', price: 950, description: 'Escáner omnidireccional inalámbrico 2.4GHz + USB que lee pantallas y etiquetas.' },
+  { id: 'prod-105', sku: 'CCTV-HIK-2MP', name: 'Cámara Bala Hikvision 1080p ColorVu', category: 'cctv', price: 850, description: 'Cámara exterior IP67 con visión nocturna a todo color 24/7.' },
+  { id: 'prod-106', sku: 'CCTV-KIT-4CH', name: 'Kit DVR 4 Canales + 4 Cámaras HD + Disco 1TB', category: 'cctv', price: 4650, description: 'Kit completo de vigilancia con grabador DVR, 4 cámaras HD, disco de 1TB y app en celular.' },
+  { id: 'prod-107', sku: 'NET-UTP-CAT6', name: 'Cable UTP Cat6 100% Cobre (Metro)', category: 'redes', price: 15, description: 'Cable de red categoría 6 certificado 100% cobre para enlaces Gigabit y PoE.' },
+  { id: 'prod-108', sku: 'NET-AP-U6', name: 'Access Point Ubiquiti UniFi U6+ WiFi 6', category: 'redes', price: 2890, description: 'Punto de acceso empresarial de alta velocidad WiFi 6 para locales, hoteles y oficinas.' },
+  { id: 'prod-109', sku: 'SW-WIN11-PRO', name: 'Licencia Original Windows 11 Pro OEM Vitalicia', category: 'software', price: 650, description: 'Clave permanente original Microsoft con soporte BitLocker y Escritorio Remoto.' },
+  { id: 'prod-110', sku: 'SW-POS-PRO', name: 'Sistema Punto de Venta Local (Licencia Vitalicia)', category: 'software', price: 1200, description: 'Software para cobro, inventarios, corte de caja y tickets sin mensualidades.' },
+  { id: 'prod-111', sku: 'REF-SSD-480', name: 'Unidad de Estado Sólido SSD 480GB Kingston', category: 'refacciones', price: 890, description: 'Disco SSD de alta velocidad SATA III para acelerar laptops y PCs.' },
+  { id: 'prod-112', sku: 'REF-RAM-8G', name: 'Memoria RAM DDR4 8GB 3200MHz Laptop', category: 'refacciones', price: 620, description: 'Módulo de memoria RAM para mejorar la multitarea en computadoras portátiles.' },
+  { id: 'prod-113', sku: 'SRV-MANT-PC', name: 'Mantenimiento Preventivo Completo (Físico + Lógico)', category: 'servicios', price: 350, description: 'Limpieza interna, pasta térmica de alto rendimiento y optimización del sistema.' },
+  { id: 'prod-114', sku: 'SRV-DIAG-SITIO', name: 'Diagnóstico Técnico en Sitio / Domicilio', category: 'servicios', price: 250, description: 'Visita técnica presencial para revisión en negocio o domicilio en Teziutlán.' }
+];
 
-PERSONALIDAD:
-- Actitud de servicio, cálida, empática y profesional. Español de México, trato de "tú".
-- Respuestas MUY breves (máximo 2-3 oraciones). Usa como máximo 1 emoji ocasional.
-- Valida la frustración del cliente ("Entiendo lo molesto que es...") antes de pedir datos.
+const CATALOG_SUMMARY = OFFICIAL_CATALOG.map(p => `- [${p.id}] ${p.name}: $${p.price} MXN (${p.category})`).join('\n');
 
-REGLAS ESTRICTAS:
-- NO resuelvas el problema ni des instrucciones técnicas paso a paso. Solo ofrece un pre-diagnóstico de UNA línea (posible causa) y aclara que un técnico lo revisará.
-- Pide UN dato a la vez, en este orden: descripción del problema → servicio → modalidad (Remoto, En Sitio / Domicilio, En Taller) → nombre → WhatsApp a 10 dígitos → dirección (solo si es En Sitio / Domicilio).
-- Infiere todo lo que puedas del mensaje (servicio, prioridad, modalidad) sin volver a preguntarlo.
-- Prioridad: "Urgente" si el negocio está detenido (no puede cobrar, sin internet, caída total); "Alta" si afecta la operación; si no, "Normal".
-- Cuando tengas todos los datos, presenta un resumen corto y pide confirmación. Si el usuario confirma (sí, correcto, adelante, confirmo), pon action="submit".
-- Si el usuario pregunta precios o temas ajenos, responde en una línea que un asesor le dará detalles y regresa a la captura.
-- Nunca inventes folios, precios ni tiempos exactos.
+const SYSTEM_PROMPT = `Eres "Fibi", el asistente técnico y comercial virtual con IA de Fiberlink Servicios TIC en Teziutlán, Puebla, México.
+Tu trato es cálido, empático, ágil y profesional en español de México (trato de "tú").
+Respuestas breves y directas (máximo 2-3 oraciones).
 
-VALORES PERMITIDOS:
-- service: ${SERVICES.join(' | ')}
-- modality: ${MODALITIES.join(' | ')}
-- priority: ${PRIORITIES.join(' | ')}
+TIENES DOS MODOS DE ATENCIÓN:
+1) MODO PEDIDOS / COTIZACIONES (mode = "order"):
+- Se activa cuando el cliente pregunta precios, existencias, pide recomendaciones o desea comprar/cotizar equipamiento o servicios.
+- CATÁLOGO OFICIAL Y PRECIOS REALES EN PESOS MEXICANOS ($ MXN):
+${CATALOG_SUMMARY}
+- REGLAS DE PEDIDOS:
+  * Brinda precios exactos del catálogo en MXN.
+  * Incluye en "suggestedProducts" los productos relevantes (máximo 3) con { id, name, price, category }.
+  * Si el cliente indica que quiere agregar artículos (ej. "agrega un lector", "quiero 2 impresoras y 1 cajón"), actualiza "orderDraft.items" calculando cantidades, subtotales y el "total".
+  * Pide al cliente su nombre, WhatsApp a 10 dígitos y modalidad de entrega (A domicilio en Teziutlán o Recoger en sucursal).
+  * Cuando el pedido tenga artículos y los datos esenciales, presenta el total y solicita confirmación (action = "confirm").
 
-Devuelve SIEMPRE el borrador completo actualizado (conserva los datos previos).`;
+2) MODO SOPORTE TÉCNICO / TICKETS (mode = "ticket"):
+- Se activa cuando el cliente tiene un problema técnico, falla, lentitud o descompostura.
+- NO des soluciones largas paso a paso; ofrece un pre-diagnóstico de UNA línea y captura los datos para que un técnico humano lo atienda:
+  problema → servicio (${SERVICES.join(' | ')}) → modalidad (${MODALITIES.join(' | ')}) → nombre → WhatsApp 10 dígitos → dirección (si es a domicilio).
+- Prioridad: "Urgente" si el negocio está detenido; "Alta" si afecta operación; "Normal" en otros casos.
+- Al tener los datos completos, pide confirmación (action = "confirm"). Tras el sí, pon action = "submit".
+
+Devuelve SIEMPRE el JSON estructurado según el esquema.`;
 
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
   properties: {
-    reply: { type: 'STRING', description: 'Respuesta breve y empática para el cliente.' },
-    diagnosis: { type: 'STRING', description: 'Pre-diagnóstico de una línea (posible causa). Vacío si aún no hay datos.' },
+    reply: { type: 'STRING', description: 'Respuesta breve y empática para el cliente en español de México.' },
+    mode: { type: 'STRING', enum: ['ticket', 'order'], description: 'Modo de la conversación: ticket de soporte o pedido de catálogo.' },
+    diagnosis: { type: 'STRING', description: 'Pre-diagnóstico de una línea o nota técnica.' },
     action: { type: 'STRING', enum: ['collect', 'confirm', 'submit'] },
     quickReplies: { type: 'ARRAY', items: { type: 'STRING' }, description: 'Hasta 3 respuestas rápidas sugeridas.' },
+    suggestedProducts: {
+      type: 'ARRAY',
+      description: 'Productos sugeridos del catálogo para compra o cotización.',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          id: { type: 'STRING' },
+          name: { type: 'STRING' },
+          price: { type: 'NUMBER' },
+          category: { type: 'STRING' }
+        },
+        required: ['id', 'name', 'price']
+      }
+    },
+    orderDraft: {
+      type: 'OBJECT',
+      description: 'Borrador del pedido comercial.',
+      properties: {
+        items: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              id: { type: 'STRING' },
+              name: { type: 'STRING' },
+              qty: { type: 'INTEGER' },
+              price: { type: 'NUMBER' },
+              subtotal: { type: 'NUMBER' }
+            },
+            required: ['id', 'name', 'qty', 'price', 'subtotal']
+          }
+        },
+        total: { type: 'NUMBER' },
+        clientName: { type: 'STRING' },
+        clientPhone: { type: 'STRING' },
+        deliveryType: { type: 'STRING' },
+        deliveryAddress: { type: 'STRING' }
+      }
+    },
     draft: {
       type: 'OBJECT',
       properties: {
@@ -75,7 +135,7 @@ const RESPONSE_SCHEMA = {
       }
     }
   },
-  required: ['reply', 'action', 'draft']
+  required: ['reply', 'action']
 };
 
 // ------------------------------------------
@@ -156,10 +216,47 @@ function localDiagnosis(d) {
   return hit ? hit[2] : '';
 }
 
-function localEngine(messages, prevDraft) {
+function localFindProducts(text) {
+  const t = text.toLowerCase();
+  const hits = [];
+  if (/(caj[oó]n|dinero|caja registradora)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-101'));
+  if (/(impresora|ticketera|58mm|termica 58)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-102'));
+  if (/(impresora.*80|80mm|autocorte|guillotina)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-103'));
+  if (/(lector|c[oó]digo|barra|qr|escaner|esc[aá]ner)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-104'));
+  if (/(c[aá]mara|colorvu|bala|hikvision)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-105'));
+  if (/(kit.*c[aá]mara|dvr|vigilancia|seguridad)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-106'));
+  if (/(cable|utp|cat6|red)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-107'));
+  if (/(access point|unifi|wifi 6|u6|ubiquiti)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-108'));
+  if (/(windows|licencia|win 11|pro)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-109'));
+  if (/(sistema.*pos|software.*pos|software.*punto|punto de venta)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-110'));
+  if (/(ssd|disco|estado solido|kingston)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-111'));
+  if (/(ram|memoria|ddr4)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-112'));
+  if (/(mantenimiento|pasta termica|limpieza)/i.test(t)) hits.push(OFFICIAL_CATALOG.find(p => p.id === 'prod-113'));
+  return hits.filter(Boolean).slice(0, 3);
+}
+
+function localEngine(messages, prevDraft, prevOrderDraft = {}) {
   const d = { ...prevDraft };
   const userMsgs = messages.filter(m => m.role === 'user');
   const last = userMsgs[userMsgs.length - 1]?.text || '';
+  const isOrderQuery = /(precio|cuanto|cuánto|costo|cotiz|compr|pedir|pedido|venden|catalogo|catálogo|cajon|cajón|impresora|lector|cámara|camara|licencia|kit)/i.test(last);
+
+  if (isOrderQuery) {
+    const products = localFindProducts(last);
+    const suggested = products.length ? products : OFFICIAL_CATALOG.slice(0, 3);
+    const prodList = suggested.map(p => `• **${p.name}** en **$${p.price} MXN**`).join('\n');
+    return {
+      reply: `¡Con gusto! Aquí tienes opciones con precio oficial en Teziutlán:\n${prodList}\n¿Te gustaría agregar alguno a tu pedido o prefieres que te ayudemos a armar un combo completo?`,
+      mode: 'order',
+      diagnosis: 'Equipamiento en stock con garantía Fiberlink.',
+      action: 'collect',
+      quickReplies: suggested.map(p => `Agregar ${p.name.split(' ')[0]}`),
+      suggestedProducts: suggested.map(p => ({ id: p.id, name: p.name, price: p.price, category: p.category })),
+      orderDraft: prevOrderDraft,
+      draft: d
+    };
+  }
+
   const prevMissing = getMissingFields(normalizeDraft(prevDraft));
   const asked = prevMissing[0];
 
@@ -182,16 +279,17 @@ function localEngine(messages, prevDraft) {
   if (!missing.length) {
     const confirmed = /^(s[ií]|si|correcto|confirm|adelante|ok|listo|de acuerdo|claro)/i.test(last.trim()) && prevMissing.length === 0;
     if (confirmed) {
-      return { reply: `¡Perfecto${firstName ? ', ' + firstName : ''}! Estoy levantando tu ticket ahora mismo. 🚀`, diagnosis, action: 'submit', quickReplies: [], draft };
+      return { reply: `¡Perfecto${firstName ? ', ' + firstName : ''}! Estoy levantando tu ticket ahora mismo. 🚀`, mode: 'ticket', diagnosis, action: 'submit', quickReplies: [], draft };
     }
     return {
       reply: `Gracias${firstName ? ', ' + firstName : ''}. Ya tengo todo: revisa el resumen y confírmame para enviarlo al equipo técnico.`,
+      mode: 'ticket',
       diagnosis, action: 'confirm', quickReplies: ['Sí, confirmar ticket', 'Corregir un dato'], draft
     };
   }
 
   const prompts = {
-    description: { r: '¡Hola! Soy Fibi, tu asistente técnico de Fiberlink. 👋 Cuéntame brevemente, ¿qué está pasando con tu equipo o servicio?', q: ['Mi computadora está lenta', 'No puedo cobrar en caja', 'Se cae el internet'] },
+    description: { r: '¡Hola! Soy Fibi, tu asistente de Fiberlink en Teziutlán. 👋 ¿En qué te podemos apoyar hoy? ¿Requieres soporte técnico o cotizar un equipo?', q: ['Cotizar Punto de Venta', 'Mi computadora está lenta', 'Cámaras de seguridad'] },
     service: { r: 'Entiendo, vamos a ayudarte. ¿Con qué área se relaciona tu solicitud?', q: ['Soporte técnico', 'Redes / WiFi', 'Punto de Venta POS'] },
     modality: { r: `${diagnosis ? 'Entiendo lo molesto que es esto; un técnico lo revisará a detalle. ' : ''}¿Cómo prefieres la atención?`, q: ['Remoto', 'En Sitio / Domicilio', 'En Taller'] },
     name: { r: 'Perfecto. ¿A nombre de quién registro la solicitud?', q: [] },
@@ -199,13 +297,13 @@ function localEngine(messages, prevDraft) {
     address: { r: '¿Cuál es la dirección o colonia donde realizaremos la visita?', q: [] }
   };
   const p = prompts[missing[0]];
-  return { reply: p.r, diagnosis, action: 'collect', quickReplies: p.q, draft };
+  return { reply: p.r, mode: 'ticket', diagnosis, action: 'collect', quickReplies: p.q, draft };
 }
 
 // ------------------------------------------
 // Llamada a Gemini
 // ------------------------------------------
-async function callGemini(messages, prevDraft, apiKey) {
+async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
   let model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
   if (!model || ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'].includes(model)) {
     model = 'gemini-flash-lite-latest';
@@ -219,7 +317,7 @@ async function callGemini(messages, prevDraft, apiKey) {
   // Contexto de estado: borrador actual y campos pendientes
   contents.push({
     role: 'user',
-    parts: [{ text: `[ESTADO INTERNO - no lo menciones] Borrador actual: ${JSON.stringify(prevDraft)}. Campos faltantes: ${getMissingFields(normalizeDraft(prevDraft)).join(', ') || 'ninguno'}. Responde al último mensaje del cliente.` }]
+    parts: [{ text: `[ESTADO INTERNO - no lo menciones] Borrador ticket actual: ${JSON.stringify(prevDraft)}. Borrador pedido actual: ${JSON.stringify(prevOrderDraft || {})}. Responde al último mensaje del cliente con precios exactos del catálogo si pregunta por productos, o capturando el ticket si reporta un problema.` }]
   });
 
   const controller = new AbortController();
@@ -233,7 +331,7 @@ async function callGemini(messages, prevDraft, apiKey) {
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents,
         generationConfig: {
-          temperature: 0.4,
+          temperature: 0.35,
           maxOutputTokens: 2048,
           responseMimeType: 'application/json',
           responseSchema: RESPONSE_SCHEMA
@@ -253,9 +351,10 @@ export async function handleAssistantChat(body = {}) {
   ensureEnv();
   const messages = Array.isArray(body.messages) ? body.messages.filter(m => m && m.text) : [];
   const prevDraft = normalizeDraft(body.draft || {});
+  const prevOrderDraft = body.orderDraft && typeof body.orderDraft === 'object' ? body.orderDraft : {};
 
   if (!messages.length) {
-    const out = localEngine([], prevDraft);
+    const out = localEngine([], prevDraft, prevOrderDraft);
     return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local' } };
   }
 
@@ -263,18 +362,23 @@ export async function handleAssistantChat(body = {}) {
   let lastGeminiErr = null;
   if (apiKey) {
     try {
-      const ai = await callGemini(messages, prevDraft, apiKey);
+      const ai = await callGemini(messages, prevDraft, prevOrderDraft, apiKey);
+      const mode = ai.mode === 'order' ? 'order' : 'ticket';
       const draft = normalizeDraft(ai.draft, prevDraft);
       const missing = getMissingFields(draft);
       let action = ['collect', 'confirm', 'submit'].includes(ai.action) ? ai.action : 'collect';
-      if (missing.length) action = 'collect'; // nunca enviar incompleto
+      if (mode === 'ticket' && missing.length) action = 'collect';
+
       return {
         status: 200,
         data: {
-          reply: String(ai.reply || '').slice(0, 600) || 'Cuéntame un poco más, por favor.',
+          reply: String(ai.reply || '').slice(0, 750) || '¿En qué te podemos apoyar hoy?',
+          mode,
           diagnosis: String(ai.diagnosis || '').slice(0, 220),
           action,
           quickReplies: Array.isArray(ai.quickReplies) ? ai.quickReplies.slice(0, 3) : [],
+          suggestedProducts: Array.isArray(ai.suggestedProducts) ? ai.suggestedProducts.slice(0, 4) : [],
+          orderDraft: ai.orderDraft && typeof ai.orderDraft === 'object' ? ai.orderDraft : prevOrderDraft,
           draft,
           missing,
           engine: 'gemini'
@@ -286,6 +390,6 @@ export async function handleAssistantChat(body = {}) {
     }
   }
 
-  const out = localEngine(messages, prevDraft);
+  const out = localEngine(messages, prevDraft, prevOrderDraft);
   return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local', geminiError: lastGeminiErr } };
 }
