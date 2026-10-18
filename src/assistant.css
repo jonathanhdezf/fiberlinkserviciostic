@@ -111,14 +111,14 @@
   right: 24px;
   bottom: 24px;
   z-index: 650;
-  width: 385px;
-  height: 520px;
+  width: 395px;
+  height: 535px;
   max-width: calc(100vw - 32px);
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - 36px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 20px;
   color: var(--fa-txt);
   font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
   background:
@@ -142,8 +142,8 @@
 
 /* Modo Expandido en Escritorio */
 .fa-panel.expanded {
-  width: 540px;
-  height: 620px;
+  width: 560px;
+  height: 640px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
 }
@@ -257,29 +257,31 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 14px 8px;
+  padding: 14px 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: rgba(156, 195, 46, 0.35) transparent;
+  scrollbar-color: rgba(156, 195, 46, 0.28) transparent;
 }
 .fa-body::-webkit-scrollbar { width: 5px; }
-.fa-body::-webkit-scrollbar-thumb { background: rgba(156, 195, 46, 0.3); border-radius: 5px; }
-.fa-body::-webkit-scrollbar-thumb:hover { background: rgba(156, 195, 46, 0.55); }
+.fa-body::-webkit-scrollbar-track { background: transparent; }
+.fa-body::-webkit-scrollbar-thumb { background: rgba(156, 195, 46, 0.25); border-radius: 999px; }
+.fa-body::-webkit-scrollbar-thumb:hover { background: rgba(156, 195, 46, 0.5); }
+.fa-body::-webkit-scrollbar-button { display: none !important; width: 0; height: 0; }
 
-.fa-msg { display: flex; align-items: flex-end; gap: 10px; animation: faIn 0.35s var(--fa-ease) both; }
-.fa-user { justify-content: flex-end; }
-.fa-msg-avatar { flex: 0 0 28px; height: 28px; display: grid; place-items: center; border-radius: 10px; color: #071003; background: linear-gradient(135deg, var(--fa-lime), var(--fa-cyan)); box-shadow: 0 0 10px rgba(156, 195, 46, 0.3); }
+.fa-msg { display: flex; align-items: flex-start; gap: 9px; animation: faIn 0.35s var(--fa-ease) both; }
+.fa-user { justify-content: flex-end; align-items: flex-end; }
+.fa-msg-avatar { flex: 0 0 28px; height: 28px; margin-top: 2px; display: grid; place-items: center; border-radius: 9px; color: #071003; background: linear-gradient(135deg, var(--fa-lime), var(--fa-cyan)); box-shadow: 0 0 10px rgba(156, 195, 46, 0.3); }
 .fa-msg-avatar svg { width: 15px; height: 15px; }
 
 .fa-bubble {
   max-width: 82%;
-  padding: 11px 15px;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  border-radius: 18px;
+  padding: 10px 14px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  border-radius: 16px;
   word-wrap: break-word;
   user-select: text;
 }
@@ -461,21 +463,37 @@
 .fa-btn-wa:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(37, 211, 102, 0.55); }
 @keyframes faShine { 60%, 100% { transform: translateX(100%); } }
 
-/* Respuestas Rápidas (Chips) */
-.fa-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 8px; }
+/* Respuestas Rápidas (Chips con Scroll Horizontal Suave) */
+.fa-quick {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 7px;
+  padding: 4px 14px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.fa-quick::-webkit-scrollbar { display: none; }
 .fa-quick:empty { display: none; }
 .fa-qr {
-  padding: 5px 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 6px 13px;
   border-radius: 999px;
   cursor: pointer;
   font: 600 0.74rem/1.2 'Sora', sans-serif;
   color: var(--fa-lime);
   background: rgba(156, 195, 46, 0.08);
-  border: 1px solid rgba(156, 195, 46, 0.38);
+  border: 1px solid rgba(156, 195, 46, 0.35);
   transition: all 0.22s ease;
   animation: faIn 0.35s var(--fa-ease) both;
 }
-.fa-qr:hover { color: #071003; background: var(--fa-lime); box-shadow: 0 0 14px rgba(156, 195, 46, 0.5); transform: translateY(-1px); }
+.fa-qr:hover {
+  color: #071003;
+  background: var(--fa-lime);
+  box-shadow: 0 0 14px rgba(156, 195, 46, 0.5);
+  transform: translateY(-1px);
+}
 
 /* Footer e Input Minimalista para Escritorio */
 .fa-foot {
@@ -490,7 +508,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 8px 8px 16px;
+  padding: 7px 7px 7px 15px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -511,24 +529,24 @@
   resize: none;
   background: transparent;
   color: var(--fa-txt);
-  font: 500 0.88rem/1.45 'Sora', sans-serif;
+  font: 500 0.86rem/1.45 'Sora', sans-serif;
 }
 .fa-input textarea::placeholder { color: rgba(232, 238, 224, 0.42); }
 
 .fa-send {
-  flex: 0 0 38px;
-  height: 38px;
+  flex: 0 0 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 11px;
+  border-radius: 10px;
   cursor: pointer;
   color: #071003;
   background: linear-gradient(135deg, var(--fa-lime), var(--fa-cyan));
   box-shadow: 0 4px 14px rgba(156, 195, 46, 0.35);
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
-.fa-send svg { width: 17px; height: 17px; }
+.fa-send svg { width: 16px; height: 16px; }
 .fa-send:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 6px 20px rgba(156, 195, 46, 0.55); }
 .fa-send:disabled, .fa-input textarea:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -536,8 +554,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 9px;
-  padding: 0 2px;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 0 3px;
+  white-space: nowrap;
 }
 .fa-ticket-link {
   display: inline-flex;
@@ -551,26 +571,28 @@
   border: 0;
   cursor: pointer;
   padding: 0;
-  opacity: 0.85;
+  opacity: 0.88;
+  white-space: nowrap;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .fa-ticket-link svg { width: 13px; height: 13px; }
 .fa-ticket-link:hover { opacity: 1; transform: translateX(1px); color: #fff; }
 
 .fa-foot-note {
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   color: var(--fa-muted);
+  white-space: nowrap;
 }
 .fa-foot-note kbd {
   display: inline-block;
-  padding: 1px 4px;
+  padding: 1px 5px;
   font-family: var(--mono, monospace);
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--fa-txt);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* ---------- Responsive y Adaptabilidad (Móvil & Escritorio) ---------- */

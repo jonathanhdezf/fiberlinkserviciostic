@@ -134,7 +134,7 @@ function buildDom() {
             <h3 id="faTitle">Fibi</h3>
             <span class="fa-chip-ai">IA Gemini</span>
           </div>
-          <p class="fa-head-subtitle"><span class="fa-dot"></span><span id="faStatus">Asistente técnico &amp; cotizaciones</span></p>
+          <p class="fa-head-subtitle"><span class="fa-dot"></span><span id="faStatus">Soporte &amp; cotizaciones</span></p>
         </div>
       </div>
       <div class="fa-head-actions">
@@ -157,9 +157,9 @@ function buildDom() {
       </form>
       <div class="fa-foot-bar">
         <button type="button" class="fa-ticket-link" id="faTicketBtn" title="Levantar ticket con formulario">
-          ${ICONS.ticket}<span>Levantar ticket manual</span>
+          ${ICONS.ticket}<span>Ticket manual</span>
         </button>
-        <span class="fa-foot-note">Presiona <kbd>Enter</kbd> para enviar · IA Gemini</span>
+        <span class="fa-foot-note"><kbd>Enter</kbd> enviar</span>
       </div>
     </footer>
   `;
@@ -409,7 +409,15 @@ function render({ scroll = true } = {}) {
   els.ticketBtn.style.display = state.ticket ? 'none' : '';
   els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe tu consulta o falla técnica…');
 
-  if (scroll) requestAnimationFrame(() => { els.body.scrollTop = els.body.scrollHeight; });
+  if (scroll) {
+    requestAnimationFrame(() => {
+      if (state.messages.length <= 1 && !state.ticket && !state.showQuickForm && !state.suggestedProducts.length) {
+        els.body.scrollTop = 0;
+      } else {
+        els.body.scrollTop = els.body.scrollHeight;
+      }
+    });
+  }
   bindFormEvents();
 }
 
@@ -657,11 +665,11 @@ function syncMobileViewport() {
 function greet() {
   state.messages.push({
     role: 'model',
-    text: '¡Hola! Soy **Fibi**, tu asistente virtual con IA de Fiberlink. 👋\n¿En qué te podemos apoyar hoy? ¿Requieres **soporte técnico** para tu equipo o deseas **cotizar y comprar** productos de nuestro catálogo?'
+    text: '¡Hola! Soy **Fibi**, tu asistente de Fiberlink. 👋\n¿En qué podemos apoyarte hoy? Elige una opción o escribe tu consulta:'
   });
-  state.quickReplies = ['Cotizar Punto de Venta', 'Cámaras de seguridad', 'Mi computadora está lenta'];
+  state.quickReplies = ['Cotizar Punto de Venta', 'Cámaras de seguridad', 'Mantenimiento de PC'];
   saveSession();
-  render();
+  render({ scroll: true });
 }
 
 function openPanel() {
@@ -672,7 +680,10 @@ function openPanel() {
   els.launcher.classList.add('hidden');
   document.documentElement.classList.add('fa-open');
   syncMobileViewport();
-  if (!state.messages.length) greet(); else render();
+  if (!state.messages.length) greet(); else render({ scroll: state.messages.length > 1 });
+  if (state.messages.length <= 1 && els.body) {
+    els.body.scrollTop = 0;
+  }
   setTimeout(() => { if (!state.ticket) els.input.focus({ preventScroll: true }); }, 280);
 }
 
