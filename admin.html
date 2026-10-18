@@ -2202,11 +2202,16 @@
               <div class="settings-step-indicator">
                 <span class="settings-step-badge" id="cfgActiveTabBadge">Pestaña 1 de 12</span>
                 <strong id="cfgActiveTabTitle">1. Opciones habilitadas</strong>
+                <span class="hide-xs" style="font-size:0.73rem; color:var(--text-muted);">· Haz clic en cualquier pestaña o usa ← / →</span>
               </div>
               <div style="display:flex; gap:6px; align-items:center;">
-                <button type="button" class="btn btn-ghost btn-sm" id="btnCfgPrevTab">← Anterior</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btnCfgNextTab">Siguiente →</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="btnCfgPrevTab">← Pestaña Anterior</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btnCfgNextTab">Siguiente Pestaña →</button>
               </div>
+            </div>
+
+            <div class="settings-progress-track">
+              <div class="settings-progress-bar" id="cfgProgressBar" style="width:8.33%;"></div>
             </div>
 
             <div class="settings-tabs-grid" id="settingsModuleTabs" role="tablist" aria-label="Secciones del Módulo de Configuración">
@@ -2714,7 +2719,7 @@
                PESTAÑA 8: IMPUESTOS
           ========================================== -->
           <div id="cfgTabPane-taxes" class="cli-subtab-pane">
-            <div class="panel-card" style="max-width:760px;">
+            <div class="panel-card">
               <div class="panel-head">
                 <div>
                   <div class="panel-eyebrow">08 · IMPUESTOS Y MONEDA</div>
@@ -2736,19 +2741,11 @@
                   </select>
                 </label>
 
-                <label class="full">Cálculo de Precios en Catálogo y POS
+                <label>Cálculo de Precios en Catálogo y POS
                   <select id="cfgTaxIncludeMode">
                     <option value="true" selected>Los precios del catálogo YA incluyen IVA (Desglosar en Ticket)</option>
                     <option value="false">Agregar IVA adicional sobre el precio de catálogo (+IVA)</option>
                   </select>
-                </label>
-
-                <label class="checkbox-row client-feature-box full" style="margin:0;">
-                  <input type="checkbox" id="cfgTaxRetentionIsr">
-                  <div>
-                    <strong>Habilitar cálculo de Retención ISR (1.25% RESICO a Personas Morales)</strong>
-                    <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Útil para cotizaciones y facturación CFDI 4.0 a clientes corporativos.</span>
-                  </div>
                 </label>
 
                 <label>Moneda Base del Sistema
@@ -2758,6 +2755,14 @@
                 <label>Tipo de Cambio Referencial USD ($ MXN)
                   <input type="number" id="cfgExchangeRateUsd" class="mono tabular" step="0.05" value="19.85">
                 </label>
+
+                <label class="checkbox-row client-feature-box" style="margin:0;">
+                  <input type="checkbox" id="cfgTaxRetentionIsr">
+                  <div>
+                    <strong>Habilitar cálculo de Retención ISR (1.25% RESICO a Personas Morales)</strong>
+                    <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Útil para cotizaciones y facturación CFDI 4.0 a clientes corporativos.</span>
+                  </div>
+                </label>
               </div>
             </div>
           </div>
@@ -2766,7 +2771,7 @@
                PESTAÑA 9: CORTE
           ========================================== -->
           <div id="cfgTabPane-cut" class="cli-subtab-pane">
-            <div class="panel-card" style="max-width:820px;">
+            <div class="panel-card">
               <div class="panel-head">
                 <div>
                   <div class="panel-eyebrow">09 · REGLAS DE CORTE Y ARQUEO DE CAJA</div>
@@ -2776,14 +2781,6 @@
               </div>
 
               <div class="form-grid">
-                <label class="checkbox-row client-feature-box full" style="margin:0;">
-                  <input type="checkbox" id="cfgCutBlindMode">
-                  <div>
-                    <strong>🔒 Activar "Corte Ciego" para Cajeros</strong>
-                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Oculta el "Efectivo Esperado" a cajeros no administradores hasta que ingresen su conteo físico de billetes y monedas.</span>
-                  </div>
-                </label>
-
                 <label>Fondo Inicial de Caja Predeterminado ($ MXN)
                   <input type="number" id="cfgCutDefaultFund" class="mono tabular" min="0" step="50" value="1500">
                 </label>
@@ -2800,15 +2797,25 @@
                   <input type="tel" id="cfgCutDefaultWhatsapp" class="mono tabular" value="2311024672" placeholder="2311024672">
                 </label>
 
-                <label class="checkbox-row full">
-                  <input type="checkbox" id="cfgCutRequireDenominations">
-                  <span>Solicitar desglose de billetes y monedas en cada cierre de turno</span>
+                <label class="checkbox-row client-feature-box" style="margin:0;">
+                  <input type="checkbox" id="cfgCutBlindMode">
+                  <div>
+                    <strong>🔒 Activar "Corte Ciego" para Cajeros</strong>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Oculta el "Efectivo Esperado" a cajeros no administradores hasta que ingresen su conteo físico.</span>
+                  </div>
                 </label>
 
-                <label class="checkbox-row full">
-                  <input type="checkbox" id="cfgCutAutoWhatsapp">
-                  <span>Abrir envío de Corte por WhatsApp automáticamente al cerrar turno (Corte Z)</span>
-                </label>
+                <div class="client-feature-box" style="display:flex; flex-direction:column; gap:10px; justify-content:center;">
+                  <label class="checkbox-row" style="margin:0;">
+                    <input type="checkbox" id="cfgCutRequireDenominations">
+                    <span>Solicitar desglose de billetes y monedas en cada cierre de turno</span>
+                  </label>
+
+                  <label class="checkbox-row" style="margin:0;">
+                    <input type="checkbox" id="cfgCutAutoWhatsapp">
+                    <span>Abrir envío de Corte por WhatsApp automáticamente al cerrar turno (Corte Z)</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -2875,7 +2882,7 @@
                PESTAÑA 11: NOTIFICACIONES
           ========================================== -->
           <div id="cfgTabPane-notifications" class="cli-subtab-pane">
-            <div class="panel-card" style="max-width:820px;">
+            <div class="panel-card">
               <div class="panel-head">
                 <div>
                   <div class="panel-eyebrow">11 · NOTIFICACIONES Y ALERTAS OPERATIVAS</div>
@@ -2887,38 +2894,42 @@
                 </div>
               </div>
 
-              <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-                <label class="checkbox-row client-feature-box" style="margin:0;">
-                  <input type="checkbox" id="notifLowStock" checked>
-                  <div>
-                    <strong>📦 Alerta de Productos Bajos en Inventario</strong>
-                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Muestra indicador de advertencia cuando un artículo llega a su stock mínimo.</span>
-                  </div>
-                </label>
+              <div class="bento-grid" style="margin-bottom:14px;">
+                <div class="bento-span-6" style="display:flex; flex-direction:column; gap:10px;">
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifLowStock" checked>
+                    <div>
+                      <strong>📦 Alerta de Productos Bajos en Inventario</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Muestra indicador de advertencia cuando un artículo llega a su stock mínimo.</span>
+                    </div>
+                  </label>
 
-                <label class="checkbox-row client-feature-box" style="margin:0;">
-                  <input type="checkbox" id="notifOverdueCredit" checked>
-                  <div>
-                    <strong>💳 Alerta de Cuentas por Cobrar y Créditos de Clientes</strong>
-                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Destaca saldos pendientes de liquidación en el módulo de Clientes y POS.</span>
-                  </div>
-                </label>
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifOverdueCredit" checked>
+                    <div>
+                      <strong>💳 Alerta de Cuentas por Cobrar y Créditos de Clientes</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Destaca saldos pendientes de liquidación en el módulo de Clientes y POS.</span>
+                    </div>
+                  </label>
+                </div>
 
-                <label class="checkbox-row client-feature-box" style="margin:0;">
-                  <input type="checkbox" id="notifUrgentTickets" checked>
-                  <div>
-                    <strong>🚨 Alerta de Tickets de Soporte con Prioridad Urgente</strong>
-                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Resalta incidencias críticas pendientes de atención técnica.</span>
-                  </div>
-                </label>
+                <div class="bento-span-6" style="display:flex; flex-direction:column; gap:10px;">
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifUrgentTickets" checked>
+                    <div>
+                      <strong>🚨 Alerta de Tickets de Soporte con Prioridad Urgente</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Resalta incidencias críticas pendientes de atención técnica.</span>
+                    </div>
+                  </label>
 
-                <label class="checkbox-row client-feature-box" style="margin:0;">
-                  <input type="checkbox" id="notifSoundEffects" checked>
-                  <div>
-                    <strong>🔊 Sonidos de Confirmación en Escáner POS y Cobro</strong>
-                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Reproduce tono auditivo al escanear código de barras o completar venta.</span>
-                  </div>
-                </label>
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifSoundEffects" checked>
+                    <div>
+                      <strong>🔊 Sonidos de Confirmación en Escáner POS y Cobro</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Reproduce tono auditivo al escanear código de barras o completar venta.</span>
+                    </div>
+                  </label>
+                </div>
               </div>
 
               <div class="form-grid">
@@ -2936,7 +2947,7 @@
                PESTAÑA 12: RESPALDO
           ========================================== -->
           <div id="cfgTabPane-backup" class="cli-subtab-pane">
-            <div class="panel-card" style="max-width:860px;">
+            <div class="panel-card">
               <div class="panel-head">
                 <div>
                   <div class="panel-eyebrow">12 · RESPALDO Y RESTAURACIÓN DEL SISTEMA</div>
@@ -2972,6 +2983,18 @@
                   </label>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Barra Inferior de Navegación Rápida entre Pestañas de Configuración -->
+          <div class="settings-pane-footer-bar">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCfgFooterPrev">← Pestaña Anterior</button>
+            <div style="font-size:0.8rem; color:var(--text-secondary);" id="cfgFooterTabInfo">
+              Viendo <strong style="color:var(--primary);">Pestaña 1 de 12</strong> · 1. Opciones habilitadas
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-primary btn-sm" id="btnCfgFooterSave">💾 Guardar Cambios</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnCfgFooterNext">Siguiente Pestaña →</button>
             </div>
           </div>
         </section>

@@ -5726,7 +5726,9 @@ function switchSettingsSubTab(tabKey) {
   currentSettingsTabKey = activeMeta.key;
 
   document.querySelectorAll('#settingsModuleTabs .settings-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cfgtab === currentSettingsTabKey);
+    const isAct = btn.dataset.cfgtab === currentSettingsTabKey;
+    btn.classList.toggle('active', isAct);
+    btn.setAttribute('aria-selected', String(isAct));
   });
 
   SETTINGS_TABS_META.forEach(meta => {
@@ -5736,8 +5738,15 @@ function switchSettingsSubTab(tabKey) {
 
   const badgeEl = document.getElementById('cfgActiveTabBadge');
   const titleEl = document.getElementById('cfgActiveTabTitle');
+  const progEl = document.getElementById('cfgProgressBar');
+  const footInfoEl = document.getElementById('cfgFooterTabInfo');
+
   if (badgeEl) badgeEl.textContent = `Pestaña ${idx + 1} de ${SETTINGS_TABS_META.length}`;
   if (titleEl) titleEl.textContent = activeMeta.title;
+  if (progEl) progEl.style.width = `${(((idx + 1) / SETTINGS_TABS_META.length) * 100).toFixed(2)}%`;
+  if (footInfoEl) {
+    footInfoEl.innerHTML = `Viendo <strong style="color:var(--primary);">Pestaña ${idx + 1} de ${SETTINGS_TABS_META.length}</strong> · ${activeMeta.title}`;
+  }
 
   if (currentSettingsTabKey === 'ticket' || currentSettingsTabKey === 'logo') {
     renderLiveTicketPreview();
@@ -5776,21 +5785,41 @@ function initSettingsModule() {
     });
   });
 
-  document.getElementById('btnCfgPrevTab')?.addEventListener('click', () => {
+  const goPrevSettingsTab = () => {
     const curIdx = SETTINGS_TABS_META.findIndex(t => t.key === currentSettingsTabKey);
     const prevIdx = (curIdx - 1 + SETTINGS_TABS_META.length) % SETTINGS_TABS_META.length;
     switchSettingsSubTab(SETTINGS_TABS_META[prevIdx].key);
-  });
+  };
 
-  document.getElementById('btnCfgNextTab')?.addEventListener('click', () => {
+  const goNextSettingsTab = () => {
     const curIdx = SETTINGS_TABS_META.findIndex(t => t.key === currentSettingsTabKey);
     const nextIdx = (curIdx + 1) % SETTINGS_TABS_META.length;
     switchSettingsSubTab(SETTINGS_TABS_META[nextIdx].key);
+  };
+
+  document.getElementById('btnCfgPrevTab')?.addEventListener('click', goPrevSettingsTab);
+  document.getElementById('btnCfgNextTab')?.addEventListener('click', goNextSettingsTab);
+  document.getElementById('btnCfgFooterPrev')?.addEventListener('click', goPrevSettingsTab);
+  document.getElementById('btnCfgFooterNext')?.addEventListener('click', goNextSettingsTab);
+
+  // Keyboard Arrow Navigation on Settings Tabs Bar
+  document.getElementById('settingsModuleTabs')?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goNextSettingsTab();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrevSettingsTab();
+    }
   });
 
-  // Top Header Save & Backup Buttons
+  // Top & Bottom Header Save & Backup Buttons
   document.getElementById('btnSaveAllSettingsTop')?.addEventListener('click', () => {
     saveAllSettingsSections('Configuración General Completa');
+  });
+  document.getElementById('btnCfgFooterSave')?.addEventListener('click', () => {
+    const meta = SETTINGS_TABS_META.find(t => t.key === currentSettingsTabKey);
+    saveAllSettingsSections(meta ? meta.title : 'Configuración General');
   });
   document.getElementById('btnQuickDownloadBackup')?.addEventListener('click', downloadFullSystemBackup);
   document.getElementById('btnDownloadFullBackup')?.addEventListener('click', downloadFullSystemBackup);

@@ -1135,7 +1135,7 @@ input:focus, textarea:focus, select:focus {
   grid-column: span 12;
 }
 
-@media (min-width: 1080px) {
+@media (min-width: 900px) {
   .bento-span-8 { grid-column: span 8; }
   .bento-span-7 { grid-column: span 7; }
   .bento-span-6 { grid-column: span 6; }
@@ -2918,47 +2918,91 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ============================
-   SETTINGS 12-TAB ENTERPRISE NAVIGATION & DIGITAL TICKET
+   SUB-TAB PANES & SETTINGS 12-TAB DESKTOP NAVIGATION
 ============================ */
+.cli-subtab-pane {
+  display: none !important;
+}
+.cli-subtab-pane.active {
+  display: block !important;
+  animation: subtabPaneEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes subtabPaneEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .settings-nav-shell {
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  box-shadow: var(--inner-highlight);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--inner-highlight), var(--elevation-sm);
+  position: sticky;
+  top: 8px;
+  z-index: 40;
+  backdrop-filter: blur(16px);
 }
 .settings-nav-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
 .settings-step-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
+  gap: 10px;
+  font-size: 0.82rem;
   color: var(--text-secondary);
 }
 .settings-step-badge {
   background: var(--primary-tint);
   color: var(--primary);
-  border: 1px solid var(--border-subtle);
-  padding: 2px 8px;
+  border: 1px solid var(--primary);
+  padding: 3px 10px;
   border-radius: 999px;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 0.72rem;
 }
+.settings-progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.settings-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 999px;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .settings-tabs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (max-width: 1180px) and (min-width: 721px) {
+  .settings-tabs-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 @media (max-width: 720px) {
+  .settings-nav-shell {
+    position: static;
+  }
   .settings-tabs-grid {
     display: flex;
     overflow-x: auto;
@@ -2966,7 +3010,7 @@ input:focus, textarea:focus, select:focus {
     scroll-snap-type: x mandatory;
   }
   .settings-tab-btn {
-    min-width: 155px;
+    min-width: 165px;
     scroll-snap-align: start;
   }
 }
@@ -2974,31 +3018,38 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 11px;
-  border-radius: 9px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface-2);
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
   transition: all 0.16s var(--ease-out);
+  min-width: 0;
+}
+.settings-tab-btn span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .settings-tab-btn:hover {
   border-color: var(--border-hover);
   color: var(--text-main);
+  background: var(--bg-surface-3);
   transform: translateY(-1px);
 }
 .settings-tab-btn.active {
   background: var(--primary-tint);
   border-color: var(--primary);
   color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary-tint);
+  box-shadow: 0 0 0 1px var(--primary-tint), 0 6px 16px -6px rgba(0, 240, 255, 0.28);
 }
 .settings-tab-num {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 6px;
   background: var(--bg-surface-3);
   color: var(--text-muted);
@@ -3014,6 +3065,18 @@ input:focus, textarea:focus, select:focus {
   background: var(--primary);
   color: #041016;
 }
+.settings-pane-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 18px;
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
 .digital-ticket-preview-shell {
   background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
   color: #f8fafc;
@@ -3025,4 +3088,5 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
   font-family: var(--font-sans);
 }
+
 
