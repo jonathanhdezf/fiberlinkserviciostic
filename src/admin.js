@@ -40,7 +40,7 @@ let cmdItems = [];
 let cmdSelectedIndex = 0;
 
 const VIEW_META = {
-  overview: { title: 'Resumen Ejecutivo & Bento', bc: 'Resumen Bento' },
+  overview: { title: 'Resumen General', bc: 'Resumen' },
   tickets: { title: 'Mesa de Control de Tickets', bc: 'Tickets Soporte' },
   workshop: { title: 'Laboratorio y Taller Técnico', bc: 'Taller & Lab' },
   pos: { title: 'Terminal Punto de Venta (POS)', bc: 'Punto de Venta' },
@@ -104,6 +104,80 @@ function showToast(msg) {
 function formatMoney(n) {
   const num = parseFloat(n) || 0;
   return '$' + num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function animateCountUpElement(el, durationMs = 960, delayMs = 0) {
+  if (!el) return;
+  const target = parseFloat(el.dataset.countup);
+  if (Number.isNaN(target)) return;
+  const fmt = el.dataset.format || 'int';
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+
+  if (el._countRaf) cancelAnimationFrame(el._countRaf);
+  if (el._countTimer) clearTimeout(el._countTimer);
+
+  const renderVal = (v) => {
+    if (fmt === 'money') {
+      return `${prefix}${formatMoney(v)}${suffix}`;
+    }
+    return `${prefix}${Math.round(v).toLocaleString('es-MX')}${suffix}`;
+  };
+
+  el.textContent = renderVal(0);
+
+  el._countTimer = setTimeout(() => {
+    const start = performance.now();
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(1, elapsed / durationMs);
+      // Smooth easeOutQuart curve
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const current = target * eased;
+      el.textContent = renderVal(progress >= 1 ? target : current);
+      if (progress < 1) {
+        el._countRaf = requestAnimationFrame(step);
+      }
+    };
+    el._countRaf = requestAnimationFrame(step);
+  }, delayMs);
+}
+
+function animateSectionStatsAndBars(rootSelector = '#view-overview') {
+  const root = typeof rootSelector === 'string' ? document.querySelector(rootSelector) : rootSelector;
+  if (!root) return;
+
+  // 1. Re-trigger staggered KPI card entrance animation
+  root.querySelectorAll('.kpi-card').forEach((card, idx) => {
+    card.style.setProperty('--stagger', idx);
+    card.classList.remove('kpi-anim-enter');
+    void card.offsetWidth;
+    card.classList.add('kpi-anim-enter');
+  });
+
+  // 2. Animate all [data-countup] numbers smoothly from 0 to target
+  root.querySelectorAll('[data-countup]').forEach((el, idx) => {
+    animateCountUpElement(el, 980, Math.min(idx * 45, 320));
+  });
+
+  // 3. Animate all .sbar-fill bars from 0% to their target percentage
+  root.querySelectorAll('.sbar-row').forEach((row, idx) => {
+    row.style.setProperty('--bar-idx', idx);
+    row.classList.remove('sbar-anim-enter');
+    void row.offsetWidth;
+    row.classList.add('sbar-anim-enter');
+  });
+
+  const fills = root.querySelectorAll('.sbar-fill[data-target-width]');
+  fills.forEach((fill, idx) => {
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    void fill.offsetWidth;
+    fill.style.transition = `width 0.95s cubic-bezier(0.22, 1, 0.36, 1) ${Math.min(idx * 65 + 90, 420)}ms`;
+    requestAnimationFrame(() => {
+      fill.style.width = `${fill.dataset.targetWidth}%`;
+    });
+  });
 }
 
 function normalizeTicketStateDomId(state) {
@@ -319,6 +393,13 @@ function switchView(viewName) {
   if (prevView === 'pos' && viewName !== 'pos') {
     stopPosCameraScanner();
   }
+
+  if (viewName === 'overview') {
+    renderOverviewRevenueChart();
+    animateSectionStatsAndBars('#view-overview');
+  } else if (viewName === 'reports') {
+    animateSectionStatsAndBars('#view-reports');
+  }
 }
 
 // ==========================================
@@ -398,7 +479,7 @@ function renderCommandResults(query) {
     { group: 'Acciones Rápidas', title: 'Enviar Corte de Caja por WhatsApp', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('whatsapp_cut'); } },
     { group: 'Acciones Rápidas', title: 'Abrir Nuevo Turno de Trabajo', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); openNewShiftModal(); } },
     { group: 'Acciones Rápidas', title: 'Descargar Respaldo Completo de Base de Datos (.JSON)', sub: 'Configuración', run: () => { closeModal('cmdPaletteModal'); downloadFullSystemBackup(); } },
-    { group: 'Navegación', title: 'Ir a Resumen Ejecutivo Bento', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
+    { group: 'Navegación', title: 'Ir a Resumen', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
     { group: 'Navegación', title: 'Ir a Tablero de Tickets', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('tickets'); } },
     { group: 'Navegación', title: 'Ir a Taller Técnico', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('workshop'); } },
     { group: 'Navegación', title: 'Ir a Clientes y Administración de Créditos', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('clients'); } },
@@ -645,6 +726,7 @@ function renderOverview() {
   const fin = reportsData?.financials || { grossRevenue: 0, estimatedProfit: 0, pendingReceivables: 0, totalSalesCount: 0 };
   const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
   const urgentTickets = allTickets.filter(t => t.priority === 'Urgente' && t.estado !== 'resuelto').length;
+  const resolvedTickets = allTickets.filter(t => t.estado === 'resuelto').length;
   const activeWs = allWorkshop.filter(w => w.estado !== 'entregado').length;
   const readyWs = allWorkshop.filter(w => w.estado === 'listo_entrega').length;
   const lowStock = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3));
@@ -653,7 +735,7 @@ function renderOverview() {
   const kpiContainer = document.getElementById('overviewKpis');
   if (kpiContainer) {
     kpiContainer.innerHTML = `
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:0;">
         <div class="kpi-top">
           <span class="kpi-label">INGRESOS LIQUIDADOS (POS)</span>
           <div class="kpi-icon-box">
@@ -661,16 +743,16 @@ function renderOverview() {
           </div>
         </div>
         <div class="kpi-mid">
-          <div class="kpi-value accent tabular">${formatMoney(fin.grossRevenue)}</div>
-          <span class="kpi-delta up">+${marginPct}% margen</span>
+          <div class="kpi-value accent tabular" data-countup="${fin.grossRevenue}" data-format="money">${formatMoney(fin.grossRevenue)}</div>
+          <span class="kpi-delta up" data-countup="${marginPct}" data-format="int" data-prefix="+" data-suffix="% margen">+${marginPct}% margen</span>
         </div>
         <div class="kpi-foot">
-          <span>${fin.totalSalesCount} ventas cerradas</span>
-          <span class="mono">Utilidad: ${formatMoney(fin.estimatedProfit)}</span>
+          <span data-countup="${fin.totalSalesCount}" data-format="int" data-suffix=" ventas cerradas">${fin.totalSalesCount} ventas cerradas</span>
+          <span class="mono" data-countup="${fin.estimatedProfit}" data-format="money" data-prefix="Utilidad: ">Utilidad: ${formatMoney(fin.estimatedProfit)}</span>
         </div>
       </div>
 
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:1;">
         <div class="kpi-top">
           <span class="kpi-label">CUENTAS POR COBRAR</span>
           <div class="kpi-icon-box" style="color:var(--secondary);">
@@ -678,7 +760,7 @@ function renderOverview() {
           </div>
         </div>
         <div class="kpi-mid">
-          <div class="kpi-value cyan tabular">${formatMoney(fin.pendingReceivables)}</div>
+          <div class="kpi-value cyan tabular" data-countup="${fin.pendingReceivables}" data-format="money">${formatMoney(fin.pendingReceivables)}</div>
           <span class="kpi-delta neutral">En cartera</span>
         </div>
         <div class="kpi-foot">
@@ -687,7 +769,7 @@ function renderOverview() {
         </div>
       </div>
 
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:2;">
         <div class="kpi-top">
           <span class="kpi-label">TICKETS DE SOPORTE</span>
           <div class="kpi-icon-box">
@@ -695,16 +777,16 @@ function renderOverview() {
           </div>
         </div>
         <div class="kpi-mid">
-          <div class="kpi-value tabular ${urgentTickets > 0 ? 'warn' : ''}">${activeTickets}</div>
-          <span class="kpi-delta ${urgentTickets > 0 ? 'alert' : 'up'}">${urgentTickets > 0 ? urgentTickets + ' Urgente(s)' : 'SLA 98.4%'}</span>
+          <div class="kpi-value tabular ${urgentTickets > 0 ? 'warn' : ''}" data-countup="${activeTickets}" data-format="int">${activeTickets}</div>
+          <span class="kpi-delta ${urgentTickets > 0 ? 'alert' : 'up'}" ${urgentTickets > 0 ? `data-countup="${urgentTickets}" data-format="int" data-suffix=" Urgente(s)"` : ''}>${urgentTickets > 0 ? urgentTickets + ' Urgente(s)' : 'SLA 98.4%'}</span>
         </div>
         <div class="kpi-foot">
-          <span>${allTickets.filter(t => t.estado === 'resuelto').length} resueltos</span>
-          <span class="mono">${allTickets.length} totales</span>
+          <span data-countup="${resolvedTickets}" data-format="int" data-suffix=" resueltos">${resolvedTickets} resueltos</span>
+          <span class="mono" data-countup="${allTickets.length}" data-format="int" data-suffix=" totales">${allTickets.length} totales</span>
         </div>
       </div>
 
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:3;">
         <div class="kpi-top">
           <span class="kpi-label">ÓRDENES EN LABORATORIO</span>
           <div class="kpi-icon-box">
@@ -712,12 +794,12 @@ function renderOverview() {
           </div>
         </div>
         <div class="kpi-mid">
-          <div class="kpi-value tabular">${activeWs}</div>
-          <span class="kpi-delta up">${readyWs} listo(s)</span>
+          <div class="kpi-value tabular" data-countup="${activeWs}" data-format="int">${activeWs}</div>
+          <span class="kpi-delta up" data-countup="${readyWs}" data-format="int" data-suffix=" listo(s)">${readyWs} listo(s)</span>
         </div>
         <div class="kpi-foot">
           <span>Equipos en taller</span>
-          <span class="mono">${lowStock.length} alertas stock</span>
+          <span class="mono" data-countup="${lowStock.length}" data-format="int" data-suffix=" alertas stock">${lowStock.length} alertas stock</span>
         </div>
       </div>
     `;
@@ -736,12 +818,15 @@ function renderOverview() {
       { label: 'En Proceso', count: allTickets.filter(t => t.estado === 'proceso').length, color: '#3b82f6' },
       { label: 'Resueltos', count: allTickets.filter(t => t.estado === 'resuelto').length, color: '#9cc32e' }
     ];
-    tSummary.innerHTML = rows.map(r => `
-      <div class="sbar-row">
-        <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular">${r.count}</strong></div>
-        <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((r.count / totalT) * 100)}%; background:${r.color};"></div></div>
-      </div>
-    `).join('');
+    tSummary.innerHTML = rows.map((r, idx) => {
+      const pct = Math.round((r.count / totalT) * 100);
+      return `
+        <div class="sbar-row sbar-anim-enter" style="--bar-idx:${idx};">
+          <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular" data-countup="${r.count}" data-format="int">${r.count}</strong></div>
+          <div class="sbar-track"><div class="sbar-fill" data-target-width="${pct}" style="width:0%; background:${r.color}; --bar-idx:${idx};"></div></div>
+        </div>
+      `;
+    }).join('');
   }
 
   // Workshop bars
@@ -753,12 +838,15 @@ function renderOverview() {
       { label: 'En Reparación', count: allWorkshop.filter(w => w.estado === 'en_reparacion' || w.estado === 'esperando_refaccion').length, color: '#3b82f6' },
       { label: 'Listos para Entrega', count: allWorkshop.filter(w => w.estado === 'listo_entrega').length, color: '#9cc32e' }
     ];
-    wSummary.innerHTML = rows.map(r => `
-      <div class="sbar-row">
-        <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular">${r.count}</strong></div>
-        <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((r.count / totalW) * 100)}%; background:${r.color};"></div></div>
-      </div>
-    `).join('');
+    wSummary.innerHTML = rows.map((r, idx) => {
+      const pct = Math.round((r.count / totalW) * 100);
+      return `
+        <div class="sbar-row sbar-anim-enter" style="--bar-idx:${idx + 4};">
+          <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular" data-countup="${r.count}" data-format="int">${r.count}</strong></div>
+          <div class="sbar-track"><div class="sbar-fill" data-target-width="${pct}" style="width:0%; background:${r.color}; --bar-idx:${idx + 4};"></div></div>
+        </div>
+      `;
+    }).join('');
   }
 
   // Low stock
@@ -800,6 +888,8 @@ function renderOverview() {
       }).join('');
     }
   }
+
+  animateSectionStatsAndBars('#view-overview');
 }
 
 function renderOverviewRevenueChart() {
@@ -873,16 +963,16 @@ function renderOverviewRevenueChart() {
         <line x1="${padX}" y1="${h - padY}" x2="${w - padX}" y2="${h - padY}" stroke="currentColor" stroke-opacity="0.12"/>
 
         <!-- Projected Cyan Dashed Line -->
-        <path d="${pathProj}" fill="none" stroke="#7ce7ff" stroke-width="1.75" stroke-dasharray="4 4" stroke-opacity="0.65"/>
+        <path class="chart-line-proj" d="${pathProj}" fill="none" stroke="#7ce7ff" stroke-width="1.75" stroke-dasharray="4 4" stroke-opacity="0.65"/>
 
         <!-- Revenue Area & Primary Line -->
-        <path d="${areaRev}" fill="url(#limeAreaGrad)"/>
-        <path d="${pathRev}" fill="none" stroke="#9cc32e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="chart-area-rev" d="${areaRev}" fill="url(#limeAreaGrad)"/>
+        <path class="chart-line-rev" d="${pathRev}" fill="none" stroke="#9cc32e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
 
         <!-- Data Nodes & Labels -->
-        ${ptsRev.map(p => `
+        ${ptsRev.map((p, idx) => `
           <g>
-            <circle cx="${p.x}" cy="${p.y}" r="4" fill="#090b07" stroke="#9cc32e" stroke-width="2.2"/>
+            <circle class="chart-node-dot" style="animation-delay:${180 + idx * 85}ms;" cx="${p.x}" cy="${p.y}" r="4.2" fill="#090b07" stroke="#9cc32e" stroke-width="2.2"/>
             <text x="${p.x}" y="${h - 3}" text-anchor="middle" fill="currentColor" opacity="0.55" font-size="10" font-family="JetBrains Mono">${p.label}</text>
           </g>
         `).join('')}
@@ -893,9 +983,12 @@ function renderOverviewRevenueChart() {
         <span style="display:inline-flex; align-items:center; gap:6px;"><span class="status-dot dot-lime"></span> Ingresos Liquidados POS</span>
         <span style="display:inline-flex; align-items:center; gap:6px;"><span class="status-dot dot-blue" style="background:#7ce7ff;"></span> Proyección + Cartera Activa</span>
       </div>
-      <span class="mono tabular">Total Activo: <strong style="color:var(--primary);">${formatMoney(gross + receivables)}</strong></span>
+      <span class="mono tabular">Total Activo: <strong style="color:var(--primary);" data-countup="${gross + receivables}" data-format="money">${formatMoney(gross + receivables)}</strong></span>
     </div>
   `;
+
+  const totalEl = container.querySelector('[data-countup]');
+  if (totalEl) animateCountUpElement(totalEl, 920, 60);
 }
 
 function renderOverviewUnifiedTransactions() {
@@ -975,7 +1068,7 @@ function renderOverviewUnifiedTransactions() {
       </td>
       <td data-label="Responsable">${r.owner}</td>
       <td data-label="Estado"><span class="badge ${r.badge}"><span class="status-dot ${r.dot}"></span>${r.statusLabel}</span></td>
-      <td data-label="Monto" style="text-align:right;" class="mono tabular"><strong>${formatMoney(r.amount)}</strong></td>
+      <td data-label="Monto" style="text-align:right;" class="mono tabular"><strong data-countup="${r.amount}" data-format="money">${formatMoney(r.amount)}</strong></td>
     </tr>
   `).join('');
 
@@ -984,6 +1077,10 @@ function renderOverviewUnifiedTransactions() {
       const item = filtered[Number(tr.dataset.idx)];
       if (item?.onClick) item.onClick();
     });
+  });
+
+  tbody.querySelectorAll('[data-countup]').forEach((el, idx) => {
+    animateCountUpElement(el, 850, idx * 40);
   });
 }
 
@@ -3317,35 +3414,35 @@ function renderReportsView() {
   const kpiEl = document.getElementById('reportsFinancialKpis');
   if (kpiEl) {
     kpiEl.innerHTML = `
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:0;">
         <div class="kpi-top"><span class="kpi-label">VENTAS BRUTAS TOTALES</span></div>
         <div class="kpi-mid">
-          <div class="kpi-value accent tabular">${formatMoney(fin.grossRevenue)}</div>
+          <div class="kpi-value accent tabular" data-countup="${fin.grossRevenue}" data-format="money">${formatMoney(fin.grossRevenue)}</div>
           <span class="kpi-delta up">+100%</span>
         </div>
-        <div class="kpi-foot"><span>Ticket Promedio:</span><strong class="mono tabular">${formatMoney(fin.avgTicketSale)}</strong></div>
+        <div class="kpi-foot"><span>Ticket Promedio:</span><strong class="mono tabular" data-countup="${fin.avgTicketSale}" data-format="money">${formatMoney(fin.avgTicketSale)}</strong></div>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:1;">
         <div class="kpi-top"><span class="kpi-label">UTILIDAD BRUTA ESTIMADA</span></div>
         <div class="kpi-mid">
-          <div class="kpi-value tabular">${formatMoney(fin.estimatedProfit)}</div>
+          <div class="kpi-value tabular" data-countup="${fin.estimatedProfit}" data-format="money">${formatMoney(fin.estimatedProfit)}</div>
           <span class="kpi-delta up">Rentable</span>
         </div>
-        <div class="kpi-foot"><span>Costo de venta:</span><strong class="mono tabular">${formatMoney(fin.estimatedCost)}</strong></div>
+        <div class="kpi-foot"><span>Costo de venta:</span><strong class="mono tabular" data-countup="${fin.estimatedCost}" data-format="money">${formatMoney(fin.estimatedCost)}</strong></div>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:2;">
         <div class="kpi-top"><span class="kpi-label">CUENTAS POR COBRAR</span></div>
         <div class="kpi-mid">
-          <div class="kpi-value cyan tabular">${formatMoney(fin.pendingReceivables)}</div>
+          <div class="kpi-value cyan tabular" data-countup="${fin.pendingReceivables}" data-format="money">${formatMoney(fin.pendingReceivables)}</div>
         </div>
         <div class="kpi-foot"><span>Tickets: ${formatMoney(fin.pendingTicketsBalance)}</span><span>Taller: ${formatMoney(fin.pendingWorkshopBalance)}</span></div>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card kpi-anim-enter" style="--stagger:3;">
         <div class="kpi-top"><span class="kpi-label">VALOR COMERCIAL ALMACÉN</span></div>
         <div class="kpi-mid">
-          <div class="kpi-value tabular">${formatMoney(inv.inventoryRetailValue)}</div>
+          <div class="kpi-value tabular" data-countup="${inv.inventoryRetailValue}" data-format="money">${formatMoney(inv.inventoryRetailValue)}</div>
         </div>
-        <div class="kpi-foot"><span>Costo en stock:</span><strong class="mono tabular">${formatMoney(inv.inventoryCostValue)}</strong></div>
+        <div class="kpi-foot"><span>Costo en stock:</span><strong class="mono tabular" data-countup="${inv.inventoryCostValue}" data-format="money">${formatMoney(inv.inventoryCostValue)}</strong></div>
       </div>
     `;
   }
@@ -3354,12 +3451,15 @@ function renderReportsView() {
   if (payEl) {
     const totalRev = Math.max(1, fin.grossRevenue);
     const methods = Object.entries(fin.byPaymentMethod || {});
-    payEl.innerHTML = methods.map(([m, val]) => `
-      <div class="sbar-row">
-        <div class="sbar-top"><span>${m}</span><strong class="mono tabular">${formatMoney(val)}</strong></div>
-        <div class="sbar-track"><div class="sbar-fill" style="width:${Math.round((val / totalRev) * 100)}%;"></div></div>
-      </div>
-    `).join('');
+    payEl.innerHTML = methods.map(([m, val], idx) => {
+      const pct = Math.round((val / totalRev) * 100);
+      return `
+        <div class="sbar-row sbar-anim-enter" style="--bar-idx:${idx};">
+          <div class="sbar-top"><span>${m}</span><strong class="mono tabular" data-countup="${val}" data-format="money">${formatMoney(val)}</strong></div>
+          <div class="sbar-track"><div class="sbar-fill" data-target-width="${pct}" style="width:0%; --bar-idx:${idx};"></div></div>
+        </div>
+      `;
+    }).join('');
   }
 
   const topBody = document.getElementById('reportsTopProductsBody');
@@ -3370,7 +3470,7 @@ function renderReportsView() {
         <td data-label="SKU" class="mono">${item.sku}</td>
         <td data-label="Concepto">${item.name}</td>
         <td data-label="Unidades" style="text-align:center;" class="mono tabular">${item.qty}</td>
-        <td data-label="Ingreso Generado" style="text-align:right;" class="mono tabular"><strong>${formatMoney(item.revenue)}</strong></td>
+        <td data-label="Ingreso Generado" style="text-align:right;" class="mono tabular"><strong data-countup="${item.revenue}" data-format="money">${formatMoney(item.revenue)}</strong></td>
       </tr>
     `).join('');
   }
@@ -3393,11 +3493,11 @@ function renderReportsView() {
   if (invEl) {
     const potentialProfit = inv.inventoryRetailValue - inv.inventoryCostValue;
     invEl.innerHTML = `
-      <div class="sbar-row"><div class="sbar-top"><span>Artículos en Catálogo</span><strong class="mono tabular">${inv.totalCatalogItems}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Productos Físicos</span><strong class="mono tabular">${inv.physicalItemsCount}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Alertas de Stock Bajo</span><strong class="mono tabular" style="color:var(--danger);">${inv.lowStockCount}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Capital al Costo</span><strong class="mono tabular">${formatMoney(inv.inventoryCostValue)}</strong></div></div>
-      <div class="sbar-row"><div class="sbar-top"><span>Utilidad Potencial en Stock</span><strong class="mono tabular" style="color:var(--primary);">${formatMoney(potentialProfit)}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Artículos en Catálogo</span><strong class="mono tabular" data-countup="${inv.totalCatalogItems}" data-format="int">${inv.totalCatalogItems}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Productos Físicos</span><strong class="mono tabular" data-countup="${inv.physicalItemsCount}" data-format="int">${inv.physicalItemsCount}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Alertas de Stock Bajo</span><strong class="mono tabular" style="color:var(--danger);" data-countup="${inv.lowStockCount}" data-format="int">${inv.lowStockCount}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Capital al Costo</span><strong class="mono tabular" data-countup="${inv.inventoryCostValue}" data-format="money">${formatMoney(inv.inventoryCostValue)}</strong></div></div>
+      <div class="sbar-row"><div class="sbar-top"><span>Utilidad Potencial en Stock</span><strong class="mono tabular" style="color:var(--primary);" data-countup="${potentialProfit}" data-format="money">${formatMoney(potentialProfit)}</strong></div></div>
     `;
   }
 }
