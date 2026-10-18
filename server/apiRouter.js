@@ -89,6 +89,12 @@ export function writeTickets(tickets) {
 }
 
 function sendJSON(res, statusCode, data) {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    return res.status(statusCode).json(data);
+  }
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
@@ -99,6 +105,16 @@ function sendJSON(res, statusCode, data) {
 }
 
 function parseBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return Promise.resolve(req.body);
+  }
+  if (typeof req.body === 'string' && req.body) {
+    try {
+      return Promise.resolve(JSON.parse(req.body));
+    } catch (_) {
+      return Promise.resolve({});
+    }
+  }
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', chunk => {
@@ -116,11 +132,19 @@ function parseBody(req) {
       }
     });
     req.on('error', reject);
+    if (req.readableEnded || req.complete) {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (_) {
+        resolve({});
+      }
+    }
   });
 }
 
 export async function handleApiRequest(req, res, next) {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const rawUrl = req.headers['x-matched-path'] || req.headers['x-forwarded-uri'] || req.originalUrl || req.url;
+  const url = new URL(rawUrl, `http://${req.headers.host || 'localhost'}`);
   const pathname = url.pathname;
   const method = req.method;
 
