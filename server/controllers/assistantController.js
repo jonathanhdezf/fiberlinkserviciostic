@@ -16,7 +16,7 @@ export const SERVICES = [
 export const MODALITIES = ['En Sitio / Domicilio', 'Remoto', 'En Taller'];
 export const PRIORITIES = ['Normal', 'Alta', 'Urgente'];
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'gemini-flash-latest';
 let envLoaded = false;
 
 function ensureEnv() {
@@ -231,7 +231,7 @@ async function callGemini(messages, prevDraft, apiKey) {
         contents,
         generationConfig: {
           temperature: 0.4,
-          maxOutputTokens: 600,
+          maxOutputTokens: 2048,
           responseMimeType: 'application/json',
           responseSchema: RESPONSE_SCHEMA
         }
