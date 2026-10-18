@@ -32,14 +32,8 @@ const ICONS = {
   wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163A11.867 11.867 0 0 1 .157 11.89C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
-  voiceOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
-  voiceOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
-  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>',
-  soundwave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10v4M6 6v12M10 3v18M14 8v8M18 5v14M22 10v4"/></svg>',
-  stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect width="12" height="12" x="6" y="6" rx="2" ry="2"/></svg>',
   expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>',
-  minimize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
   shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
 };
@@ -51,10 +45,6 @@ const state = {
   open: false,
   busy: false,
   expanded: localStorage.getItem('fiberlink_assistant_expanded') === 'true',
-  voiceEnabled: localStorage.getItem('fiberlink_assistant_voice') !== 'false',
-  selectedVoiceURI: localStorage.getItem('fiberlink_assistant_voice_uri') || '',
-  isSpeaking: false,
-  isListening: false,
   mode: 'ticket',     // 'ticket' | 'order'
   messages: [],       // { role: 'user' | 'model', text }
   draft: {},          // Borrador de ticket
@@ -114,14 +104,14 @@ function buildDom() {
   launcher.type = 'button';
   launcher.className = 'fa-launcher';
   launcher.id = 'faLauncher';
-  launcher.setAttribute('aria-label', 'Abrir asistente técnico y comercial virtual con IA');
+  launcher.setAttribute('aria-label', 'Abrir asistente virtual con IA');
   launcher.innerHTML = `
     <span class="fa-launcher-ring" aria-hidden="true"></span>
     <span class="fa-launcher-core">${ICONS.spark}</span>
     <span class="fa-launcher-badge" aria-hidden="true">IA</span>
     <span class="fa-launcher-tip">
-      <span class="fa-launcher-tip-badge">ATENCIÓN EN VIVO &amp; PEDIDOS</span>
-      ¿Soporte o cotización de equipos? <strong>Te atiendo con Voz de Gemini</strong>
+      <span class="fa-launcher-tip-badge">ASISTENTE VIRTUAL IA</span>
+      ¿Soporte o cotización de equipos? <strong>Chatea con Fibi</strong>
     </span>
   `;
 
@@ -134,59 +124,42 @@ function buildDom() {
   panel.setAttribute('aria-hidden', 'true');
   panel.innerHTML = `
     <header class="fa-head">
-      <div class="fa-avatar" aria-hidden="true">${ICONS.spark}<span class="fa-online" title="Sistema en línea"></span></div>
-      <div class="fa-head-txt">
-        <div class="fa-head-title-row">
-          <h3 id="faTitle">Fibi</h3>
-          <span class="fa-chip-ai">Asistente IA</span>
-          <button type="button" class="fa-chip-voice" id="faVoiceChip" title="Voz oficial de Google Gemini. Clic para escuchar prueba."><span class="fa-voice-dot"></span><span id="faVoiceChipName">✨ Voz Gemini</span></button>
+      <div class="fa-head-profile">
+        <div class="fa-avatar" aria-hidden="true">
+          ${ICONS.spark}
+          <span class="fa-online" title="Sistema en línea"></span>
         </div>
-        <p><span class="fa-dot"></span><span id="faStatus">En línea · Asistencia técnica &amp; Pedidos con Voz Gemini</span></p>
+        <div class="fa-head-txt">
+          <div class="fa-head-title-row">
+            <h3 id="faTitle">Fibi</h3>
+            <span class="fa-chip-ai">IA Gemini</span>
+          </div>
+          <p class="fa-head-subtitle"><span class="fa-dot"></span><span id="faStatus">Asistente técnico &amp; cotizaciones</span></p>
+        </div>
       </div>
       <div class="fa-head-actions">
-        <button type="button" class="fa-icon-btn" id="faVoiceTest" title="Escuchar saludo con Voz oficial de Gemini" aria-label="Escuchar prueba de voz">${ICONS.soundwave}</button>
-        <button type="button" class="fa-icon-btn" id="faVoiceToggle" title="${state.voiceEnabled ? 'Desactivar voz' : 'Activar voz'}" aria-label="Alternar voz del asistente">${state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff}</button>
-        <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño / Expandir" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
         <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
-        <button type="button" class="fa-icon-btn" id="faMinimize" title="Minimizar" aria-label="Minimizar asistente">${ICONS.minimize}</button>
-        <button type="button" class="fa-icon-btn fa-mobile-close" id="faClose" title="Cerrar" aria-label="Cerrar asistente">${ICONS.close}</button>
+        <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño de ventana" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
+        <button type="button" class="fa-icon-btn" id="faClose" title="Cerrar asistente" aria-label="Cerrar asistente">${ICONS.close}</button>
       </div>
     </header>
 
-    <div class="fa-voice-bar" id="faVoiceBar" style="display:none;" aria-live="polite">
-      <div class="fa-voice-visualizer" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-      <span class="fa-voice-status" id="faVoiceStatus">Fibi hablando (Voz de Gemini)…</span>
-      <button type="button" class="fa-voice-stop-btn" id="faVoiceStopBtn" title="Silenciar reproducción">${ICONS.stop}<span>Detener</span></button>
-    </div>
-
-    <div class="fa-progress" id="faProgress" aria-label="Datos capturados para tu ticket o pedido"></div>
+    <div class="fa-progress" id="faProgress" aria-label="Progreso"></div>
 
     <div class="fa-body" id="faBody" aria-live="polite"></div>
 
     <div class="fa-quick" id="faQuick"></div>
 
     <footer class="fa-foot">
-      <div class="fa-foot-bar">
-        <button type="button" class="fa-ticket-btn" id="faTicketBtn" title="Levantar ticket con formulario rápido">
-          ${ICONS.ticket}<span>Levantar ticket directo</span>
-        </button>
-        <div class="fa-shortcuts fa-desktop-only">
-          <span class="fa-kbd"><kbd>Enter</kbd> Enviar</span>
-          <span class="fa-kbd"><kbd>Shift</kbd>+<kbd>Enter</kbd> Salto</span>
-          <span class="fa-kbd"><kbd>Esc</kbd> Minimizar</span>
-        </div>
-      </div>
       <form class="fa-input" id="faForm" autocomplete="off">
-        <button type="button" class="fa-mic-btn" id="faMicBtn" aria-label="Hablar con micrófono" title="Hablarle a Fibi (Micrófono)">${ICONS.mic}</button>
-        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe o pulsa el micrófono para hablar…" aria-label="Mensaje para el asistente"></textarea>
-        <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar (Enter)">${ICONS.send}</button>
+        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe tu consulta o falla técnica…" aria-label="Mensaje para el asistente"></textarea>
+        <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar mensaje">${ICONS.send}</button>
       </form>
-      <div class="fa-legal-row">
-        <span class="fa-legal-shield">${ICONS.shield} Atención oficial Fiberlink Teziutlán</span>
-        <span class="fa-legal-sep">·</span>
-        <span class="fa-legal-meta">✨ Voz de Gemini &amp; Diagnóstico IA en tiempo real</span>
+      <div class="fa-foot-bar">
+        <button type="button" class="fa-ticket-link" id="faTicketBtn" title="Levantar ticket con formulario">
+          ${ICONS.ticket}<span>Levantar ticket manual</span>
+        </button>
+        <span class="fa-foot-note">Presiona <kbd>Enter</kbd> para enviar · IA Gemini</span>
       </div>
     </footer>
   `;
@@ -204,301 +177,22 @@ function buildDom() {
     send: panel.querySelector('#faSend'),
     ticketBtn: panel.querySelector('#faTicketBtn'),
     expandBtn: panel.querySelector('#faExpand'),
-    voiceToggleBtn: panel.querySelector('#faVoiceToggle'),
-    voiceTestBtn: panel.querySelector('#faVoiceTest'),
-    voiceChip: panel.querySelector('#faVoiceChip'),
-    voiceChipName: panel.querySelector('#faVoiceChipName'),
-    voiceBar: panel.querySelector('#faVoiceBar'),
-    voiceStatus: panel.querySelector('#faVoiceStatus'),
-    voiceStopBtn: panel.querySelector('#faVoiceStopBtn'),
-    micBtn: panel.querySelector('#faMicBtn'),
     status: panel.querySelector('#faStatus')
   };
-}
-
-// ------------------------------------------
-// Motor de Voz Latina (TTS Natural Asíncrono + STT)
-// ------------------------------------------
-let voicesLoadedPromise = null;
-
-function loadVoicesAsync() {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return Promise.resolve([]);
-  const existing = window.speechSynthesis.getVoices();
-  if (existing && existing.length > 0) return Promise.resolve(existing);
-
-  if (!voicesLoadedPromise) {
-    voicesLoadedPromise = new Promise((resolve) => {
-      let resolved = false;
-      const done = () => {
-        if (!resolved) {
-          resolved = true;
-          resolve(window.speechSynthesis.getVoices() || []);
-        }
-      };
-      window.speechSynthesis.onvoiceschanged = done;
-      setTimeout(done, 700);
-    });
-  }
-  return voicesLoadedPromise;
-}
-
-function getAvailableLatinVoices() {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
-  const all = window.speechSynthesis.getVoices() || [];
-
-  // 1. Excluir radicalmente sintetizadores robóticos locales / SAPI5 / Desktop de Windows
-  const isRobotic = v => {
-    const n = (v.name || '').toLowerCase();
-    return /desktop|sapi|offline|synth\s*local|espeak/i.test(n);
-  };
-
-  // 2. Excluir voces de España peninsular (para evitar ceceo europeo)
-  const isSpain = v => {
-    const l = (v.lang || '').toLowerCase();
-    const n = (v.name || '').toLowerCase();
-    return l === 'es-es' || l === 'es_es' || /spain|españa|castilian/i.test(n);
-  };
-
-  // Filtrar voces latinas que NO sean robóticas
-  let candidates = all.filter(v => {
-    const l = (v.lang || '').toLowerCase();
-    return l.startsWith('es') && !isSpain(v) && !isRobotic(v);
-  });
-
-  // Ranking de máxima calidad natural y dicción latina
-  candidates.sort((a, b) => {
-    const score = v => {
-      const n = (v.name || '').toLowerCase();
-      const l = (v.lang || '').toLowerCase();
-      let s = 0;
-      // Voces neuronales online modernas (Microsoft / Google / Cloud)
-      if (/natural|neural|online/i.test(n)) s += 60;
-      if (/google/i.test(n)) s += 45;
-      // Nombres humanos conocidos de excelente calidad latina
-      if (/dalia|paulina|jorge|mia|monica|ximena|soledad|lupe|carlos/i.test(n)) s += 30;
-      // Español de México o neutro de Latinoamérica
-      if (l === 'es-mx' || l === 'es_mx') s += 35;
-      if (l === 'es-419' || l === 'es-us') s += 25;
-      if (/es-(co|ar|cl|pe|cr)/i.test(l)) s += 15;
-      return s;
-    };
-    return score(b) - score(a);
-  });
-
-  // Si el sistema no tiene ninguna voz natural online instalada, permitir las disponibles en español
-  if (!candidates.length) {
-    const fallbackEs = all.filter(v => (v.lang || '').toLowerCase().startsWith('es') && !isSpain(v));
-    candidates = fallbackEs.length ? fallbackEs : all.filter(v => (v.lang || '').toLowerCase().startsWith('es'));
-  }
-  return candidates;
-}
-
-function getBestSpanishVoice() {
-  const list = getAvailableLatinVoices();
-  if (!list.length) return null;
-  if (state.selectedVoiceURI) {
-    const saved = list.find(v => v.voiceURI === state.selectedVoiceURI || v.name === state.selectedVoiceURI);
-    if (saved) return saved;
-  }
-  return list[0];
-}
-
-function updateVoiceBadge() {
-  if (!els.voiceChipName) return;
-  els.voiceChipName.textContent = '✨ Voz Gemini';
-  if (els.voiceChip) els.voiceChip.title = 'Voz oficial de Google Gemini activa. Clic para escuchar prueba.';
-}
-
-function testVoice(sampleText = '¡Hola! Soy Fibi, asistente virtual de Fiberlink en Teziutlán con la voz oficial de Gemini. ¿En qué te puedo apoyar hoy?') {
-  speakAssistantMessage(sampleText, true);
-}
-
-// Carga inicial
-if (typeof window !== 'undefined') {
-  updateVoiceBadge();
-  if ('speechSynthesis' in window) {
-    loadVoicesAsync().then(() => updateVoiceBadge());
-    window.speechSynthesis.onvoiceschanged = () => updateVoiceBadge();
-  }
-}
-
-function updateVoiceBar(active, label = 'Fibi hablando (Voz de Gemini)…') {
-  if (!els.voiceBar) return;
-  state.isSpeaking = Boolean(active && !state.isListening);
-  const show = active || state.isListening || state.isSpeaking;
-  els.voiceBar.style.display = show ? 'flex' : 'none';
-  els.voiceBar.classList.toggle('active', show);
-  if (els.voiceStatus) els.voiceStatus.textContent = label;
-  if (els.avatar) els.avatar.classList.toggle('speaking', state.isSpeaking);
-  if (els.avatar) els.avatar.classList.toggle('listening', state.isListening);
-}
-
-let currentAudio = null;
-
-function fallbackBrowserSpeech(cleanText) {
-  if (!('speechSynthesis' in window)) {
-    updateVoiceBar(false);
-    return;
-  }
-  try {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'es-MX';
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    const esVoice = getBestSpanishVoice();
-    if (esVoice) utterance.voice = esVoice;
-
-    utterance.onstart = () => updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
-    utterance.onend = () => updateVoiceBar(false);
-    utterance.onerror = () => updateVoiceBar(false);
-    window.speechSynthesis.speak(utterance);
-  } catch (_) {
-    updateVoiceBar(false);
-  }
-}
-
-async function speakAssistantMessage(text, force = false) {
-  if (!state.voiceEnabled && !force) return;
-
-  // Detener cualquier audio o síntesis en reproducción previa
-  if (currentAudio) {
-    try {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    } catch (_) {}
-    currentAudio = null;
-  }
-  if ('speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch (_) {}
-  }
-
-  const cleanText = String(text || '')
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/[*_#`~[\]]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  if (!cleanText) return;
-
-  try {
-    updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
-    const audioUrl = `/api/assistant/tts?text=${encodeURIComponent(cleanText.slice(0, 180))}`;
-    const audio = new Audio(audioUrl);
-    currentAudio = audio;
-    audio.playbackRate = 1.04;
-
-    audio.onplay = () => {
-      updateVoiceBar(true, 'Fibi hablando (Voz de Gemini)…');
-    };
-
-    audio.onended = () => {
-      currentAudio = null;
-      updateVoiceBar(false);
-    };
-
-    audio.onerror = () => {
-      currentAudio = null;
-      fallbackBrowserSpeech(cleanText);
-    };
-
-    await audio.play();
-  } catch (err) {
-    console.warn('[Fibi Audio Stream Fallback]:', err);
-    fallbackBrowserSpeech(cleanText);
-  }
-}
-
-// Reconocimiento de Voz (Dictado por micrófono)
-let speechRecognitionInstance = null;
-
-function getSpeechRecognition() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) return null;
-  if (speechRecognitionInstance) return speechRecognitionInstance;
-
-  try {
-    const rec = new SpeechRec();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = 'es-MX'; // Español latino/mexicano
-    rec.maxAlternatives = 1;
-
-    rec.onstart = () => {
-      state.isListening = true;
-      if (els.micBtn) els.micBtn.classList.add('listening');
-      updateVoiceBar(true, '🎙️ Te escucho con atención… habla ahora');
-    };
-
-    rec.onresult = (e) => {
-      const transcript = Array.from(e.results)
-        .map(r => r[0]?.transcript || '')
-        .join('');
-      if (els.input) {
-        els.input.value = transcript;
-        els.input.style.height = 'auto';
-        els.input.style.height = Math.min(els.input.scrollHeight, 110) + 'px';
-      }
-    };
-
-    rec.onerror = (e) => {
-      console.warn('[Speech Recognition]:', e.error);
-      state.isListening = false;
-      if (els.micBtn) els.micBtn.classList.remove('listening');
-      updateVoiceBar(false);
-    };
-
-    rec.onend = () => {
-      state.isListening = false;
-      if (els.micBtn) els.micBtn.classList.remove('listening');
-      updateVoiceBar(false);
-      const val = (els.input?.value || '').trim();
-      if (val && !state.busy) {
-        sendUserMessage(val);
-        els.input.value = '';
-        els.input.style.height = '';
-      }
-    };
-
-    speechRecognitionInstance = rec;
-    return rec;
-  } catch (err) {
-    console.warn('[Speech Recognition Init Error]:', err);
-    return null;
-  }
-}
-
-function toggleListening() {
-  if (state.isSpeaking && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    updateVoiceBar(false);
-  }
-
-  const rec = getSpeechRecognition();
-  if (!rec) {
-    alert('Tu navegador no admite dictado por voz directo. Puedes escribir en el teclado.');
-    return;
-  }
-
-  if (state.isListening) {
-    try { rec.stop(); } catch (_) {}
-  } else {
-    try {
-      rec.lang = 'es-MX';
-      rec.start();
-    } catch (e) {
-      console.warn('[SpeechRec start]:', e);
-    }
-  }
 }
 
 // ------------------------------------------
 // Render
 // ------------------------------------------
 function renderProgress() {
+  if (!els.progress) return;
   if (state.mode === 'order') {
     const hasItems = state.orderDraft?.items?.length > 0;
+    if (!hasItems) {
+      els.progress.innerHTML = '';
+      els.progress.style.display = 'none';
+      return;
+    }
     const hasContact = Boolean(state.orderDraft?.clientName || state.draft?.name);
     const hasPhone = Boolean(state.orderDraft?.clientPhone || (state.draft?.phone && state.draft.phone.length === 10));
     const isDone = Boolean(state.orderFolio && state.action === 'confirm');
@@ -508,10 +202,11 @@ function renderProgress() {
       { label: 'WhatsApp', done: hasPhone }
     ];
     const doneCount = steps.filter(s => s.done).length;
+    els.progress.style.display = 'block';
     els.progress.innerHTML = `
       <div class="fa-progress-bar"><span style="width:${isDone ? 100 : Math.round((doneCount / steps.length) * 100)}%"></span></div>
       <div class="fa-steps">
-        <span class="fa-step-mode-tag">VENTAS &amp; PEDIDOS</span>
+        <span class="fa-step-mode-tag">PEDIDO</span>
         ${steps.map(s => `<span class="fa-step ${s.done ? 'done' : ''}">${s.done ? ICONS.check : ''}${s.label}</span>`).join('')}
       </div>
     `;
@@ -519,12 +214,19 @@ function renderProgress() {
   }
 
   const d = state.draft;
+  const doneCount = Object.keys(FIELD_LABELS).filter(k => (k === 'phone' ? String(d.phone || '').length === 10 : !!d[k])).length;
+  if (doneCount === 0 || state.ticket) {
+    els.progress.innerHTML = '';
+    els.progress.style.display = 'none';
+    return;
+  }
+
   const chips = Object.entries(FIELD_LABELS).map(([key, label]) => {
     const done = key === 'phone' ? String(d.phone || '').length === 10 : !!d[key];
     return `<span class="fa-step ${done ? 'done' : ''}">${done ? ICONS.check : ''}${label}</span>`;
   }).join('');
   const total = Object.keys(FIELD_LABELS).length;
-  const doneCount = Object.keys(FIELD_LABELS).filter(k => (k === 'phone' ? String(d.phone || '').length === 10 : !!d[k])).length;
+  els.progress.style.display = 'block';
   els.progress.innerHTML = `
     <div class="fa-progress-bar"><span style="width:${state.ticket ? 100 : Math.round((doneCount / total) * 100)}%"></span></div>
     <div class="fa-steps">${chips}</div>
@@ -556,7 +258,7 @@ function suggestedProductsHtml() {
   return `
     <div class="fa-card fa-products-card">
       <div class="fa-card-head">
-        <span class="fa-prod-badge">[CATÁLOGO OFICIAL]</span>
+        <span class="fa-prod-badge">CATÁLOGO FIBERLINK</span>
         <span>Productos recomendados</span>
       </div>
       <div class="fa-products-grid">
@@ -564,11 +266,11 @@ function suggestedProductsHtml() {
           <div class="fa-prod-item">
             <div class="fa-prod-info">
               <span class="fa-prod-cat">${escapeHtml((p.category || 'EQUIPO').toUpperCase())}</span>
-              <strong class="fa-prod-name">${escapeHtml(p.name)}</strong>
+              <strong class="fa-prod-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</strong>
               <span class="fa-prod-price">$${Number(p.price || 0).toLocaleString('es-MX')} MXN</span>
             </div>
             <button type="button" class="fa-prod-add-btn" data-add-prod="${escapeHtml(p.id)}" data-name="${escapeHtml(p.name)}" data-price="${p.price}">
-              ➕ Agregar al pedido
+              + Agregar
             </button>
           </div>
         `).join('')}
@@ -751,13 +453,10 @@ async function askAssistant() {
 
     state.messages.push({ role: 'model', text: data.reply || 'Cuéntame un poco más, por favor.' });
     if (els.status) els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente Fiberlink';
-    speakAssistantMessage(data.reply);
   } catch (err) {
     console.warn('[Asistente IA] Sin conexión con el servidor:', err.message);
-    const failMsg = 'Tuve un problema de conexión. Puedes usar el botón Levantar ticket o escribirnos por WhatsApp y un asesor te atiende de inmediato.';
-    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket** o escribirnos por WhatsApp y un asesor te atiende de inmediato.' });
+    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket manual** o escribirnos por WhatsApp y un asesor te atiende de inmediato.' });
     state.quickReplies = [];
-    speakAssistantMessage(failMsg);
   } finally {
     state.busy = false;
     saveSession();
@@ -772,15 +471,6 @@ async function askAssistant() {
 async function sendUserMessage(text) {
   const clean = String(text || '').trim();
   if (!clean || state.busy || state.ticket) return;
-
-  // Detener audio previo si el usuario ya está hablando de nuevo
-  if (currentAudio) {
-    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
-    currentAudio = null;
-  }
-  if ('speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch (_) {}
-  }
 
   primeNotificationPermission();
   state.messages.push({ role: 'user', text: clean });
@@ -826,10 +516,8 @@ async function submitTicket() {
   const d = state.draft;
   const missing = getMissing(d);
   if (missing.length) {
-    const missText = `Me falta un dato: ${FIELD_LABELS[missing[0]] || 'Dirección'}. ¿Me lo compartes?`;
     state.messages.push({ role: 'model', text: `Me falta un dato: **${FIELD_LABELS[missing[0]] || 'Dirección'}**. ¿Me lo compartes?` });
     render();
-    speakAssistantMessage(missText);
     return;
   }
 
@@ -866,9 +554,7 @@ async function submitTicket() {
       description: d.description,
       diagnosis: state.diagnosis
     };
-    const ticketSpeech = `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket ${state.ticket.folio} quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp.`;
     state.messages.push({ role: 'model', text: `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket **${state.ticket.folio}** quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp y agilizar tu atención. 💚` });
-    speakAssistantMessage(ticketSpeech);
 
     showPush(`Ticket ${state.ticket.folio} registrado ✔`, {
       body: `${state.ticket.service} · ${state.ticket.modality} · Prioridad ${state.ticket.priority}. Un técnico te contactará por WhatsApp.`,
@@ -884,7 +570,6 @@ async function submitTicket() {
   } catch (err) {
     console.error('[Asistente IA] Error al crear ticket:', err);
     state.messages.push({ role: 'model', text: 'No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp y la capturamos por ti.' });
-    speakAssistantMessage('No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp.');
   } finally {
     state.busy = false;
     state.showQuickForm = false;
@@ -937,9 +622,6 @@ function buildWhatsAppOrderUrl() {
 // Eventos
 // ------------------------------------------
 function resetConversation() {
-  if ('speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch (_) {}
-  }
   Object.assign(state, {
     mode: 'ticket',
     messages: [],
@@ -979,15 +661,13 @@ function syncMobileViewport() {
 }
 
 function greet() {
-  const welcomeText = '¡Hola! Soy Fibi, asistente virtual de Fiberlink con la voz oficial de Gemini. ¿En qué te apoyo hoy? ¿Tienes una falla técnica o deseas cotizar equipamiento y punto de venta?';
   state.messages.push({
     role: 'model',
-    text: '¡Hola! Soy **Fibi**, tu asistente virtual con IA de Fiberlink. 👋\n¿En qué te podemos apoyar hoy? ¿Requieres **soporte técnico** para tu equipo o **cotizar y comprar** productos de nuestro catálogo?'
+    text: '¡Hola! Soy **Fibi**, tu asistente virtual con IA de Fiberlink. 👋\n¿En qué te podemos apoyar hoy? ¿Requieres **soporte técnico** para tu equipo o deseas **cotizar y comprar** productos de nuestro catálogo?'
   });
   state.quickReplies = ['Cotizar Punto de Venta', 'Cámaras de seguridad', 'Mi computadora está lenta'];
   saveSession();
   render();
-  speakAssistantMessage(welcomeText);
 }
 
 function openPanel() {
@@ -998,7 +678,6 @@ function openPanel() {
   els.launcher.classList.add('hidden');
   document.documentElement.classList.add('fa-open');
   syncMobileViewport();
-  updateVoiceBadge();
   if (!state.messages.length) greet(); else render();
   setTimeout(() => { if (!state.ticket) els.input.focus({ preventScroll: true }); }, 280);
 }
@@ -1011,14 +690,6 @@ function closePanel() {
   els.panel.style.top = '';
   els.launcher.classList.remove('hidden');
   document.documentElement.classList.remove('fa-open');
-  if (currentAudio) {
-    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
-    currentAudio = null;
-  }
-  if ('speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch (_) {}
-  }
-  updateVoiceBar(false);
 }
 
 function bindFormEvents() {
@@ -1047,50 +718,8 @@ function bindFormEvents() {
 
 function bindEvents() {
   els.launcher.addEventListener('click', openPanel);
-  els.panel.querySelector('#faClose').addEventListener('click', closePanel);
-  els.panel.querySelector('#faReset').addEventListener('click', resetConversation);
-
-  // Probar y alternar voz mexicana
-  els.voiceChip?.addEventListener('click', () => { testVoice(); });
-  els.voiceTestBtn?.addEventListener('click', () => { testVoice(); });
-
-  els.panel.querySelector('#faVoiceToggle')?.addEventListener('click', () => {
-    state.voiceEnabled = !state.voiceEnabled;
-    localStorage.setItem('fiberlink_assistant_voice', state.voiceEnabled ? 'true' : 'false');
-    const vBtn = els.panel.querySelector('#faVoiceToggle');
-    if (vBtn) {
-      vBtn.innerHTML = state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff;
-      vBtn.title = state.voiceEnabled ? 'Desactivar voz' : 'Activar voz';
-    }
-    if (!state.voiceEnabled) {
-      if (currentAudio) {
-        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
-        currentAudio = null;
-      }
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      updateVoiceBar(false);
-    } else {
-      speakAssistantMessage('Voz activada. Con gusto te atiendo por voz.');
-    }
-  });
-
-  els.micBtn?.addEventListener('click', toggleListening);
-
-  els.voiceStopBtn?.addEventListener('click', () => {
-    if (currentAudio) {
-      try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
-      currentAudio = null;
-    }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    if (state.isListening && speechRecognitionInstance) {
-      try { speechRecognitionInstance.stop(); } catch (_) {}
-    }
-    updateVoiceBar(false);
-  });
+  els.panel.querySelector('#faClose')?.addEventListener('click', closePanel);
+  els.panel.querySelector('#faReset')?.addEventListener('click', resetConversation);
 
   els.form.addEventListener('submit', e => {
     e.preventDefault();
@@ -1108,10 +737,10 @@ function bindEvents() {
   });
   els.input.addEventListener('input', () => {
     els.input.style.height = 'auto';
-    els.input.style.height = Math.min(els.input.scrollHeight, 110) + 'px';
+    els.input.style.height = Math.min(els.input.scrollHeight, 120) + 'px';
   });
 
-  els.ticketBtn.addEventListener('click', () => {
+  els.ticketBtn?.addEventListener('click', () => {
     primeNotificationPermission();
     state.showQuickForm = !state.showQuickForm;
     render();
@@ -1121,8 +750,6 @@ function bindEvents() {
     const btn = e.target.closest('[data-reply]');
     if (btn) sendUserMessage(btn.dataset.reply);
   });
-
-  els.panel.querySelector('#faMinimize')?.addEventListener('click', closePanel);
 
   els.panel.querySelector('#faExpand')?.addEventListener('click', () => {
     state.expanded = !state.expanded;
@@ -1158,7 +785,6 @@ function bindEvents() {
 
       saveSession();
       render();
-      speakAssistantMessage(`Agregué ${name} a tu pedido.`);
       return;
     }
 
