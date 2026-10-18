@@ -31,7 +31,12 @@ const ICONS = {
   reset: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
   wa: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163A11.867 11.867 0 0 1 .157 11.89C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
-  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
+  compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>',
+  minimize: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
 };
 
 // ------------------------------------------
@@ -40,6 +45,7 @@ const ICONS = {
 const state = {
   open: false,
   busy: false,
+  expanded: localStorage.getItem('fiberlink_assistant_expanded') === 'true',
   messages: [],      // { role: 'user' | 'model', text }
   draft: {},
   diagnosis: '',
@@ -52,13 +58,16 @@ const state = {
 function loadSession() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved && typeof saved === 'object') Object.assign(state, saved, { open: false, busy: false });
+    if (saved && typeof saved === 'object') {
+      const exp = state.expanded;
+      Object.assign(state, saved, { open: false, busy: false, expanded: exp });
+    }
   } catch (_) { /* sesión corrupta: ignorar */ }
 }
 
 function saveSession() {
   try {
-    const { open, busy, ...persist } = state;
+    const { open, busy, expanded, ...persist } = state;
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
   } catch (_) { /* almacenamiento lleno */ }
 }
@@ -97,11 +106,14 @@ function buildDom() {
     <span class="fa-launcher-ring" aria-hidden="true"></span>
     <span class="fa-launcher-core">${ICONS.spark}</span>
     <span class="fa-launcher-badge" aria-hidden="true">IA</span>
-    <span class="fa-launcher-tip">¿Problemas técnicos? <strong>Te ayudo a levantar tu ticket</strong></span>
+    <span class="fa-launcher-tip">
+      <span class="fa-launcher-tip-badge">SOPORTE EN VIVO</span>
+      ¿Problemas con tu equipo o red? <strong>Te ayudo a levantar tu ticket</strong>
+    </span>
   `;
 
   const panel = document.createElement('section');
-  panel.className = 'fa-panel';
+  panel.className = `fa-panel${state.expanded ? ' expanded' : ''}`;
   panel.id = 'faPanel';
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'false');
@@ -109,13 +121,21 @@ function buildDom() {
   panel.setAttribute('aria-hidden', 'true');
   panel.innerHTML = `
     <header class="fa-head">
-      <div class="fa-avatar" aria-hidden="true">${ICONS.spark}<span class="fa-online"></span></div>
+      <div class="fa-avatar" aria-hidden="true">${ICONS.spark}<span class="fa-online" title="Sistema en línea"></span></div>
       <div class="fa-head-txt">
-        <h3 id="faTitle">Fibi <span class="fa-chip-ai">Asistente IA</span></h3>
-        <p><span class="fa-dot"></span><span id="faStatus">En línea · Impulsado por Gemini</span></p>
+        <div class="fa-head-title-row">
+          <h3 id="faTitle">Fibi</h3>
+          <span class="fa-chip-ai">Asistente IA</span>
+          <span class="fa-badge-sla">SLA &lt; 15 min</span>
+        </div>
+        <p><span class="fa-dot"></span><span id="faStatus">En línea · Diagnóstico asistido por Gemini</span></p>
       </div>
-      <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
-      <button type="button" class="fa-icon-btn" id="faClose" title="Cerrar" aria-label="Cerrar asistente">${ICONS.close}</button>
+      <div class="fa-head-actions">
+        <button type="button" class="fa-icon-btn fa-desktop-only" id="faExpand" title="Cambiar tamaño / Expandir" aria-label="Expandir asistente">${state.expanded ? ICONS.compress : ICONS.expand}</button>
+        <button type="button" class="fa-icon-btn" id="faReset" title="Nueva conversación" aria-label="Reiniciar conversación">${ICONS.reset}</button>
+        <button type="button" class="fa-icon-btn" id="faMinimize" title="Minimizar" aria-label="Minimizar asistente">${ICONS.minimize}</button>
+        <button type="button" class="fa-icon-btn fa-mobile-close" id="faClose" title="Cerrar" aria-label="Cerrar asistente">${ICONS.close}</button>
+      </div>
     </header>
 
     <div class="fa-progress" id="faProgress" aria-label="Datos capturados para tu ticket"></div>
@@ -125,12 +145,25 @@ function buildDom() {
     <div class="fa-quick" id="faQuick"></div>
 
     <footer class="fa-foot">
-      <button type="button" class="fa-ticket-btn" id="faTicketBtn" title="Levantar ticket con formulario rápido">${ICONS.ticket}<span>Levantar ticket</span></button>
+      <div class="fa-foot-bar">
+        <button type="button" class="fa-ticket-btn" id="faTicketBtn" title="Levantar ticket con formulario rápido">
+          ${ICONS.ticket}<span>Levantar ticket directo</span>
+        </button>
+        <div class="fa-shortcuts fa-desktop-only">
+          <span class="fa-kbd"><kbd>Enter</kbd> Enviar</span>
+          <span class="fa-kbd"><kbd>Shift</kbd>+<kbd>Enter</kbd> Salto</span>
+          <span class="fa-kbd"><kbd>Esc</kbd> Minimizar</span>
+        </div>
+      </div>
       <form class="fa-input" id="faForm" autocomplete="off">
-        <textarea id="faInput" rows="1" maxlength="600" placeholder="Describe tu problema…" aria-label="Mensaje para el asistente"></textarea>
-        <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje">${ICONS.send}</button>
+        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe tu mensaje o falla técnica…" aria-label="Mensaje para el asistente"></textarea>
+        <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar (Enter)">${ICONS.send}</button>
       </form>
-      <p class="fa-legal">Fibi captura tu solicitud; la solución la realiza un técnico certificado de Fiberlink.</p>
+      <div class="fa-legal-row">
+        <span class="fa-legal-shield">${ICONS.shield} Atención oficial Fiberlink Teziutlán</span>
+        <span class="fa-legal-sep">·</span>
+        <span class="fa-legal-meta">Delegación técnica en tiempo real</span>
+      </div>
     </footer>
   `;
 
@@ -145,7 +178,8 @@ function buildDom() {
     input: panel.querySelector('#faInput'),
     send: panel.querySelector('#faSend'),
     status: panel.querySelector('#faStatus'),
-    ticketBtn: panel.querySelector('#faTicketBtn')
+    ticketBtn: panel.querySelector('#faTicketBtn'),
+    expandBtn: panel.querySelector('#faExpand')
   };
 }
 
@@ -213,13 +247,19 @@ function successHtml(t) {
   return `
     <div class="fa-card fa-success">
       <div class="fa-success-burst" aria-hidden="true">${ICONS.check}</div>
-      <h4>¡Ticket levantado!</h4>
-      <p class="fa-folio">${escapeHtml(t.folio)}</p>
-      <p class="fa-success-txt">Tu solicitud ya está en la mesa de control. Un técnico de Fiberlink te contactará por WhatsApp al <strong>${escapeHtml(t.phone)}</strong>.</p>
+      <h4>¡Ticket levantado con éxito!</h4>
+      <div class="fa-folio-box">
+        <span class="fa-folio-tag">FOLIO OFICIAL</span>
+        <p class="fa-folio">${escapeHtml(t.folio)}</p>
+        <button type="button" class="fa-folio-copy-btn" data-fa="copy-folio" title="Copiar folio al portapapeles">
+          ${ICONS.copy}<span>Copiar</span>
+        </button>
+      </div>
+      <p class="fa-success-txt">Tu solicitud ya ingresó a la mesa técnica. Un especialista te contactará de inmediato por WhatsApp al <strong>${escapeHtml(t.phone)}</strong>.</p>
       <ul class="fa-success-meta">
         <li><span>Servicio</span>${escapeHtml(t.service)}</li>
         <li><span>Modalidad</span>${escapeHtml(t.modality)}</li>
-        <li><span>Prioridad</span>${escapeHtml(t.priority)}</li>
+        <li><span>Prioridad</span><strong class="fa-prio-tag-${(t.priority || 'Normal').toLowerCase()}">${escapeHtml(t.priority)}</strong></li>
       </ul>
       <button type="button" class="fa-btn-wa" data-fa="whatsapp">${ICONS.wa}<span>Finalizar y enviar por WhatsApp</span></button>
       <button type="button" class="fa-btn-ghost fa-btn-sm" data-fa="new">Levantar otro ticket</button>
@@ -535,6 +575,19 @@ function bindEvents() {
     if (btn) sendUserMessage(btn.dataset.reply);
   });
 
+  els.panel.querySelector('#faMinimize')?.addEventListener('click', closePanel);
+
+  els.panel.querySelector('#faExpand')?.addEventListener('click', () => {
+    state.expanded = !state.expanded;
+    els.panel.classList.toggle('expanded', state.expanded);
+    localStorage.setItem('fiberlink_assistant_expanded', state.expanded ? 'true' : 'false');
+    const expBtn = els.panel.querySelector('#faExpand');
+    if (expBtn) {
+      expBtn.innerHTML = state.expanded ? ICONS.compress : ICONS.expand;
+      expBtn.title = state.expanded ? 'Restaurar tamaño' : 'Expandir ventana';
+    }
+  });
+
   els.body.addEventListener('click', e => {
     const btn = e.target.closest('[data-fa]');
     if (!btn) return;
@@ -544,6 +597,19 @@ function bindEvents() {
     if (act === 'cancel-form') { state.showQuickForm = false; render(); }
     if (act === 'whatsapp') window.open(buildWhatsAppUrl(), '_blank', 'noopener,noreferrer');
     if (act === 'new') resetConversation();
+    if (act === 'copy-folio') {
+      const folio = state.ticket?.folio || '';
+      if (folio && navigator.clipboard) {
+        navigator.clipboard.writeText(folio).then(() => {
+          btn.classList.add('copied');
+          btn.innerHTML = `${ICONS.check}<span>¡Copiado!</span>`;
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `${ICONS.copy}<span>Copiar</span>`;
+          }, 2000);
+        }).catch(() => {});
+      }
+    }
   });
 
   document.addEventListener('keydown', e => {
