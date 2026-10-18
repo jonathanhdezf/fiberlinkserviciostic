@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/assistant/tts",
+      "destination": "/api/assistant/tts.js"
+    },
+    {
       "source": "/api/assistant/chat",
       "destination": "/api/assistant/chat.js"
     },
@@ -10,6 +14,9 @@
     }
   ],
   "functions": {
+    "api/assistant/tts.js": {
+      "maxDuration": 15
+    },
     "api/assistant/chat.js": {
       "maxDuration": 30
     },
