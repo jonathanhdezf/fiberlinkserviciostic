@@ -192,6 +192,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span class="nav-label">Usuarios & Roles</span>
         </button>
+        <button class="nav-btn" data-view="settings" title="Módulo de Configuración: Opciones, Cajeros, Folios, Cajas, Logotipo, Ticket, Pagos, Impuestos, Corte, Unidades, Notificaciones y Respaldo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="nav-label">Configuración</span>
+        </button>
       </nav>
 
       <!-- Sidebar Footer: Profile & Actions -->
@@ -2105,6 +2109,721 @@
 
                 <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:16px;">
                   <pre id="waCutMessagePreview" class="mono" style="white-space:pre-wrap; word-break:break-word; font-size:0.8rem; line-height:1.55; margin:0; color:var(--text-primary);"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 10: MÓDULO DE CONFIGURACIÓN DEL SISTEMA
+        ========================================== -->
+        <section id="view-settings" class="erp-view">
+          <!-- KPIs Superiores de Configuración -->
+          <div class="kpi-grid" style="margin-bottom:16px;">
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Identidad & Sucursal</span>
+                <div class="kpi-icon kpi-cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value" id="cfgKpiCompanyName" style="font-size:1.1rem;">FIBERLINK TIC</div>
+                <span class="kpi-trend trend-info mono" id="cfgKpiRfcBadge">FST2109148H2</span>
+              </div>
+              <div class="kpi-foot" id="cfgKpiPaperWidthFoot">Impresión térmica 80mm activa</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Cajas y Cajeros Activos</span>
+                <div class="kpi-icon kpi-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cfgKpiRegistersCount">3 Cajas</div>
+                <span class="kpi-trend trend-up tabular" id="cfgKpiCashiersCount">5 operadores</span>
+              </div>
+              <div class="kpi-foot">Terminales POS y personal autorizado</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Impuestos y Formas de Pago</span>
+                <div class="kpi-icon kpi-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cfgKpiTaxRate">IVA 16%</div>
+                <span class="kpi-trend trend-info tabular" id="cfgKpiPayMethodsCount">4 formas activas</span>
+              </div>
+              <div class="kpi-foot" id="cfgKpiTaxModeFoot">Precios con impuesto incluido · MXN</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Unidades & Respaldo DB</span>
+                <div class="kpi-icon kpi-amber">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="cfgKpiUnitsCount">7 Unidades</div>
+                <span class="kpi-trend trend-up">JSON Sync</span>
+              </div>
+              <div class="kpi-foot" id="cfgKpiUpdatedFoot">Respaldo y restauración instantánea</div>
+            </article>
+          </div>
+
+          <!-- Barra Superior de Acciones de Configuración -->
+          <div class="toolbar-bar surface-card" style="padding:12px 16px; border-radius:12px; margin-bottom:14px;">
+            <div>
+              <div class="panel-eyebrow">CENTRO DE PARÁMETROS DEL SISTEMA ERP</div>
+              <h3 style="font-size:1rem; margin:0;">Configuración General: Opciones, Cajeros, Folios, Cajas, Ticket, Pagos, Impuestos, Corte, Unidades y Respaldo</h3>
+            </div>
+            <div class="toolbar-filters">
+              <button type="button" class="btn btn-secondary" id="btnQuickDownloadBackup" title="Descargar copia de seguridad completa en formato JSON">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                <span>Descargar Respaldo</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btnSaveAllSettingsTop">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Guardar Toda la Configuración</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Navegación de 6 Sub-Pestañas de Configuración (Agrupando las 12 áreas solicitadas) -->
+          <div class="filter-pills" id="settingsModuleTabs" style="margin-bottom:16px; width:100%; overflow-x:auto;">
+            <button type="button" class="pill-btn active" data-cfgtab="options_cut">
+              <span>⚙️ Opciones Habilitadas & Corte</span>
+            </button>
+            <button type="button" class="pill-btn" data-cfgtab="cashiers_registers">
+              <span>🧑‍💼 Cajeros & Administrar Cajas</span>
+            </button>
+            <button type="button" class="pill-btn" data-cfgtab="folios_units">
+              <span>🔢 Modificar Folios & Unidades</span>
+            </button>
+            <button type="button" class="pill-btn" data-cfgtab="logo_ticket">
+              <span>🧾 Logotipo & Diseño de Ticket</span>
+            </button>
+            <button type="button" class="pill-btn" data-cfgtab="payments_taxes">
+              <span>💳 Formas de Pago & Impuestos</span>
+            </button>
+            <button type="button" class="pill-btn" data-cfgtab="notifications_backup">
+              <span>🔔 Notificaciones & Respaldo</span>
+            </button>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 1: OPCIONES HABILITADAS & REGLAS DE CORTE
+          ========================================== -->
+          <div id="cfgSubTabOptionsCut" class="cli-subtab-pane active">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (7 cols): Opciones Habilitadas del Programa -->
+              <div class="panel-card bento-span-7">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">1. OPCIONES HABILITADAS DEL SISTEMA</div>
+                    <h3>Comportamiento Operativo de Ventas, Inventario y Módulos</h3>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optAllowSellWithoutStock">
+                    <div>
+                      <strong>Permitir vender productos sin existencia (Stock negativo / Bajo pedido)</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Si se desactiva, el Punto de Venta bloqueará artículos físicos con existencia en 0.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optRequireClientForCredit" checked>
+                    <div>
+                      <strong>Exigir cliente registrado con línea autorizada en ventas a Crédito</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Verifica límite de crédito disponible y registra cargo automático en el Estado de Cuenta.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optOpenCashDrawer" checked>
+                    <div>
+                      <strong>Abrir cajón de dinero automáticamente al cobrar en Efectivo (Pulso RJ11)</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Envía señal de apertura a la impresora térmica conectada al cajón de dinero.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optAutoPrintTicket" checked>
+                    <div>
+                      <strong>Imprimir ticket de venta automáticamente al finalizar cobro en POS</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Lanza el diálogo de impresión térmica inmediatamente tras confirmar la venta.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optShowBarcodeInPos" checked>
+                    <div>
+                      <strong>Mostrar código de barras EAN y SKU en las tarjetas del Punto de Venta</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Facilita la identificación visual rápida y el uso del lector láser o cámara móvil.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optRoundCashCents">
+                    <div>
+                      <strong>Redondear centavos en cobros en efectivo a favor del cambio exacto</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Ajusta automáticamente importes con decimales al cobrar en efectivo en mostrador.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optRequireAdminForCancel" checked>
+                    <div>
+                      <strong>Requerir permisos de Administrador para cancelar ventas y devolver stock</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Protege la auditoría de caja restringiendo cancelaciones a cuentas supervisoras.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="optEnableWhatsappReceipts" checked>
+                    <div>
+                      <strong>Habilitar envío rápido de tickets, estados de cuenta y cortes por WhatsApp</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Activa los despachadores directos de WhatsApp en POS, Clientes y Cortes de Turno.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (5 cols): Configuración de Corte y Arqueo -->
+              <div class="panel-card bento-span-5">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">2. CONFIGURACIÓN DE CORTE Y ARQUEO</div>
+                    <h3>Parámetros de Turnos y Cierre de Caja</h3>
+                  </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns:1fr;">
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="cfgCutBlindMode">
+                    <div>
+                      <strong>🔒 Activar "Corte Ciego" para Cajeros</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Oculta el "Efectivo Esperado" a cajeros no administradores hasta que ingresen su conteo físico.</span>
+                    </div>
+                  </label>
+
+                  <label>Fondo Inicial de Caja Predeterminado ($ MXN)
+                    <input type="number" id="cfgCutDefaultFund" class="mono tabular" min="0" step="50" value="1500">
+                  </label>
+
+                  <label>Alerta de Efectivo Máximo en Cajón ($ MXN)
+                    <input type="number" id="cfgCutMaxCashAlert" class="mono tabular" min="1000" step="500" value="15000">
+                  </label>
+
+                  <label>Tolerancia de Diferencia en Arqueo ($ MXN)
+                    <input type="number" id="cfgCutTolerance" class="mono tabular" min="0" step="5" value="20">
+                  </label>
+
+                  <label>WhatsApp Predeterminado para Recibir Cortes
+                    <input type="tel" id="cfgCutDefaultWhatsapp" class="mono tabular" value="2311024672" placeholder="2311024672">
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgCutRequireDenominations">
+                    <span>Solicitar desglose de billetes y monedas en cada cierre de turno</span>
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgCutAutoWhatsapp">
+                    <span>Abrir envío de Corte por WhatsApp automáticamente al cerrar turno (Corte Z)</span>
+                  </label>
+
+                  <button type="button" class="btn btn-primary btn-full" id="btnSaveOptionsAndCutCfg" style="margin-top:8px;">
+                    <span>Guardar Opciones Habilitadas y Reglas de Corte</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 2: CAJEROS & ADMINISTRAR CAJAS
+          ========================================== -->
+          <div id="cfgSubTabCashiersRegisters" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (6 cols): Administrar Cajas Registradoras -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">3. ADMINISTRAR CAJAS REGISTRADORAS</div>
+                    <h3>Terminales POS y Puntos de Cobro</h3>
+                  </div>
+                </div>
+
+                <!-- Formulario rápido para agregar/editar Caja -->
+                <form id="cfgRegisterForm" class="form-grid" style="margin-bottom:14px; padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                  <input type="hidden" id="cfgRegId">
+                  <label>Código de Caja *
+                    <input type="text" id="cfgRegCode" class="mono" required placeholder="Ej. CAJA-04">
+                  </label>
+                  <label>Fondo Inicial Sugerido ($) *
+                    <input type="number" id="cfgRegFund" class="mono tabular" required min="0" step="50" value="1500">
+                  </label>
+                  <label class="full">Nombre de la Caja / Terminal *
+                    <input type="text" id="cfgRegName" required placeholder="Ej. Caja #4 — Sucursal Avenida">
+                  </label>
+                  <label>Sucursal / Área
+                    <input type="text" id="cfgRegBranch" placeholder="Ej. Matriz Centro Teziutlán" value="Matriz Centro Teziutlán">
+                  </label>
+                  <label>Impresora / Formato Asignado
+                    <input type="text" id="cfgRegPrinter" placeholder="Ej. Impresora Térmica 80mm" value="Impresora Térmica 80mm">
+                  </label>
+                  <div class="full" style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-ghost btn-sm" id="btnCfgRegReset">Limpiar</button>
+                    <button type="submit" class="btn btn-primary btn-sm">+ Guardar Caja Registradora</button>
+                  </div>
+                </form>
+
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Nombre de Caja / Impresora</th>
+                        <th style="text-align:right;">Fondo Sugerido</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cfgRegistersTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (6 cols): Administración de Cajeros y Operadores -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">4. CONTROL DE CAJEROS Y OPERADORES</div>
+                    <h3>Cajeros Autorizados en Punto de Venta</h3>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnCfgNewCashier">+ Nuevo Cajero</button>
+                </div>
+
+                <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px;">
+                  Administra los cajeros y operadores con acceso a Punto de Venta, apertura de turnos y cobro en mostrador.
+                </p>
+
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Cajero / Operador</th>
+                        <th>Usuario Login</th>
+                        <th>Rol / Permiso</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cfgCashiersTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 3: MODIFICAR FOLIOS & UNIDADES DE MEDIDA
+          ========================================== -->
+          <div id="cfgSubTabFoliosUnits" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (7 cols): Modificar Folios y Consecutivos -->
+              <div class="panel-card bento-span-7">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">5. MODIFICAR FOLIOS Y CONSECUTIVOS</div>
+                    <h3>Series de Documentos y Numeración del Sistema</h3>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSaveFoliosConfig">💾 Guardar Series y Folios</button>
+                </div>
+
+                <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px;">
+                  Define el prefijo (serie) y el siguiente número consecutivo para cada tipo de documento emitido por el ERP.
+                </p>
+
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Módulo / Documento</th>
+                        <th style="width:120px;">Prefijo (Serie)</th>
+                        <th style="width:140px;">Siguiente Folio #</th>
+                        <th>Vista Previa Próximo Folio</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cfgFoliosTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (5 cols): Unidades de Medida -->
+              <div class="panel-card bento-span-5">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">6. UNIDADES DE MEDIDA</div>
+                    <h3>Catálogo de Unidades de Almacén y SAT</h3>
+                  </div>
+                </div>
+
+                <form id="cfgUnitForm" class="form-grid" style="margin-bottom:14px; padding:12px; border-radius:10px; border:1px solid var(--border-subtle);">
+                  <label>Abreviatura *
+                    <input type="text" id="cfgUnitKey" class="mono" required placeholder="Ej. bobina" maxlength="10">
+                  </label>
+                  <label>Clave SAT (CFDI)
+                    <input type="text" id="cfgUnitSat" class="mono" placeholder="Ej. H87 / MTR" value="H87">
+                  </label>
+                  <label class="full">Descripción de la Unidad *
+                    <input type="text" id="cfgUnitName" required placeholder="Ej. Bobina de Cable UTP 305m">
+                  </label>
+                  <label class="checkbox-row full">
+                    <input type="checkbox" id="cfgUnitDecimals">
+                    <span>Permitir cantidades fraccionadas / decimales en POS</span>
+                  </label>
+                  <div class="full" style="display:flex; justify-content:flex-end;">
+                    <button type="submit" class="btn btn-primary btn-sm">+ Agregar Unidad de Medida</button>
+                  </div>
+                </form>
+
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Clave</th>
+                        <th>Unidad / Clave SAT</th>
+                        <th>Decimales</th>
+                        <th style="text-align:right;">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cfgUnitsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 4: LOGOTIPO DEL PROGRAMA & DISEÑO DE TICKET
+          ========================================== -->
+          <div id="cfgSubTabLogoTicket" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (7 cols): Logotipo del Programa y Configuración de Ticket -->
+              <div class="panel-card bento-span-7">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">7. LOGOTIPO DEL PROGRAMA Y DATOS DEL NEGOCIO</div>
+                    <h3>Identidad Corporativa y Formato de Ticket</h3>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSaveLogoAndTicketCfg">💾 Guardar Identidad y Ticket</button>
+                </div>
+
+                <!-- Subida y vista previa del logotipo del programa -->
+                <div class="client-feature-box" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
+                  <div style="width:76px; height:76px; border-radius:14px; background:var(--bg-elevated); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                    <img id="cfgLogoPreviewImg" src="/logo.gif" alt="Logotipo del programa" style="max-width:100%; max-height:100%; object-fit:contain;">
+                  </div>
+                  <div style="flex:1; min-width:220px;">
+                    <strong style="display:block; margin-bottom:4px;">Logotipo Oficial del Programa y Tickets</strong>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px;">
+                      Selecciona una imagen (PNG, JPG, GIF, SVG) desde tu equipo o ingresa la ruta del logotipo. Se actualizará en todo el sistema y en los tickets impresos.
+                    </span>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                      <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">
+                        <span>📁 Subir Imagen desde Equipo</span>
+                        <input type="file" id="cfgLogoFileInput" accept="image/*" style="display:none;">
+                      </label>
+                      <button type="button" class="btn btn-ghost btn-sm" id="btnRestoreDefaultLogo">Restaurar Logo Original</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <label>Nombre Comercial / Empresa *
+                    <input type="text" id="cfgCompCommercialName" value="FIBERLINK SERVICIOS TIC">
+                  </label>
+                  <label>Nombre del Programa (Header / ERP)
+                    <input type="text" id="cfgCompProgramName" value="Fiberlink Enterprise OS">
+                  </label>
+                  <label>RFC Emisor Fiscal
+                    <input type="text" id="cfgCompRfc" class="mono" value="FST2109148H2">
+                  </label>
+                  <label>Teléfono / WhatsApp en Ticket
+                    <input type="text" id="cfgCompPhone" class="tabular" value="231 102 4672">
+                  </label>
+                  <label class="full">Dirección de Sucursal / Matriz
+                    <input type="text" id="cfgCompAddress" value="Calle Hidalgo Centro, Teziutlán, Puebla, C.P. 73800">
+                  </label>
+
+                  <div class="full" style="border-top:1px solid var(--border-subtle); padding-top:12px; margin-top:4px;">
+                    <div class="panel-eyebrow" style="margin-bottom:8px;">8. CONFIGURACIÓN DE IMPRESIÓN DE TICKET</div>
+                  </div>
+
+                  <label>Ancho de Papel de Impresora
+                    <select id="cfgTicketPaperWidth">
+                      <option value="80mm">80mm (Estándar Impresora Térmica POS)</option>
+                      <option value="58mm">58mm (Compacto / Mini Impresora Portátil)</option>
+                      <option value="carta">Tamaño Carta / Media Carta</option>
+                    </select>
+                  </label>
+
+                  <label>Tamaño de Letra en Ticket
+                    <select id="cfgTicketFontSize">
+                      <option value="11px">Compacta (11px)</option>
+                      <option value="12px" selected>Estándar Legible (12px)</option>
+                      <option value="13px">Grande / Alto Contraste (13px)</option>
+                    </select>
+                  </label>
+
+                  <label class="full">Encabezado / Giro Comercial en Ticket
+                    <input type="text" id="cfgTicketHeaderLine1" value="Soporte Técnico, Redes, Fibra Óptica, CCTV y Punto de Venta">
+                  </label>
+
+                  <label class="full">Mensaje de Pie de Ticket (Agradecimiento)
+                    <input type="text" id="cfgTicketFooterMsg" value="¡Gracias por su preferencia! Garantía y soporte local en Teziutlán.">
+                  </label>
+
+                  <label class="full">Póliza / Condiciones de Garantía Impresas en el Ticket
+                    <textarea id="cfgTicketWarranty" rows="2">Equipos nuevos con 1 año de garantía contra defecto de fábrica. Servicios y reparaciones 30 días presentando este comprobante.</textarea>
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgTicketShowLogo" checked>
+                    <span>Imprimir logotipo en el encabezado del ticket</span>
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgTicketShowTax" checked>
+                    <span>Desglosar Subtotal e IVA en el ticket</span>
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgTicketShowCashier" checked>
+                    <span>Mostrar nombre del cajero y folio de turno</span>
+                  </label>
+
+                  <label class="checkbox-row">
+                    <input type="checkbox" id="cfgTicketShowSku" checked>
+                    <span>Mostrar clave SKU junto a cada artículo</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (5 cols): Vista Previa en Vivo del Ticket -->
+              <div class="panel-card bento-span-5">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">SIMULADOR DE IMPRESIÓN TÉRMICA</div>
+                    <h3>Vista Previa del Ticket en Vivo</h3>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnPrintTestTicket">🖨️ Imprimir Prueba</button>
+                </div>
+
+                <div style="background:#ffffff; color:#000000; border-radius:10px; padding:18px; max-width:340px; margin:0 auto; box-shadow:0 10px 25px rgba(0,0,0,0.25); font-family:monospace;" id="cfgLiveTicketPreviewBox">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 5: FORMAS DE PAGO & IMPUESTOS
+          ========================================== -->
+          <div id="cfgSubTabPaymentsTaxes" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (7 cols): Formas de Pago -->
+              <div class="panel-card bento-span-7">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">9. FORMAS DE PAGO ACEPTADAS EN CAJA</div>
+                    <h3>Métodos de Cobro, Referencias y Datos SPEI</h3>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSavePaymentMethodsCfg">💾 Guardar Formas de Pago</button>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Habilitado</th>
+                        <th>Forma de Pago</th>
+                        <th>Comisión (%)</th>
+                        <th>Pide Referencia</th>
+                        <th>Cuenta / Terminal / Instrucción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cfgPaymentMethodsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (5 cols): Impuestos y Moneda -->
+              <div class="panel-card bento-span-5">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">10. IMPUESTOS Y MONEDA</div>
+                    <h3>Configuración Fiscal (IVA / ISR)</h3>
+                  </div>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns:1fr;">
+                  <label>Nombre del Impuesto Principal
+                    <input type="text" id="cfgTaxName" value="IVA">
+                  </label>
+
+                  <label>Tasa de Impuesto General (%)
+                    <select id="cfgTaxRate">
+                      <option value="16" selected>16% — Tasa General México (IVA)</option>
+                      <option value="8">8% — Estímulo Región Fronteriza</option>
+                      <option value="0">0% — Tasa Exenta / Sin Impuesto</option>
+                    </select>
+                  </label>
+
+                  <label>Cálculo de Precios en Catálogo y POS
+                    <select id="cfgTaxIncludeMode">
+                      <option value="true" selected>Los precios del catálogo YA incluyen IVA (Desglosar)</option>
+                      <option value="false">Agregar IVA adicional sobre el precio de catálogo (+IVA)</option>
+                    </select>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="cfgTaxRetentionIsr">
+                    <div>
+                      <strong>Habilitar cálculo de Retención ISR (1.25% RESICO a Personas Morales)</strong>
+                      <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Útil para cotizaciones y facturación a clientes corporativos.</span>
+                    </div>
+                  </label>
+
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <label>Moneda Base
+                      <input type="text" id="cfgCurrencyCode" class="mono" value="MXN">
+                    </label>
+                    <label>Tipo de Cambio USD ($)
+                      <input type="number" id="cfgExchangeRateUsd" class="mono tabular" step="0.05" value="19.85">
+                    </label>
+                  </div>
+
+                  <button type="button" class="btn btn-primary btn-full" id="btnSaveTaxesCfg" style="margin-top:8px;">
+                    <span>Guardar Configuración de Impuestos</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 6: NOTIFICACIONES & RESPALDO DE BASE DE DATOS
+          ========================================== -->
+          <div id="cfgSubTabNotificationsBackup" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (6 cols): Notificaciones y Alertas -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">11. NOTIFICACIONES Y ALERTAS OPERATIVAS</div>
+                    <h3>Avisos Inteligentes de Stock, Crédito y Soporte</h3>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnTestNotificationNow">🔔 Probar Alerta</button>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifLowStock" checked>
+                    <div>
+                      <strong>📦 Alerta de Productos Bajos en Inventario</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Muestra indicador de advertencia cuando un artículo llega a su stock mínimo.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifOverdueCredit" checked>
+                    <div>
+                      <strong>💳 Alerta de Cuentas por Cobrar y Créditos de Clientes</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Destaca saldos pendientes de liquidación en el módulo de Clientes y POS.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifUrgentTickets" checked>
+                    <div>
+                      <strong>🚨 Alerta de Tickets de Soporte con Prioridad Urgente</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Resalta incidencias críticas pendientes de atención técnica.</span>
+                    </div>
+                  </label>
+
+                  <label class="checkbox-row client-feature-box" style="margin:0;">
+                    <input type="checkbox" id="notifSoundEffects" checked>
+                    <div>
+                      <strong>🔊 Sonidos de Confirmación en Escáner POS y Cobro</strong>
+                      <span style="display:block; font-size:0.75rem; color:var(--text-secondary);">Reproduce tono auditivo al escanear código de barras o completar venta.</span>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="form-grid">
+                  <label>WhatsApp de Dirección para Alertas
+                    <input type="tel" id="notifAdminWhatsapp" class="mono tabular" value="2311024672">
+                  </label>
+                  <label>Correo de Auditoría y Alertas
+                    <input type="email" id="notifAdminEmail" value="admin@fiberlink.mx">
+                  </label>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-full" id="btnSaveNotificationsCfg" style="margin-top:12px;">
+                  <span>Guardar Preferencias de Notificaciones</span>
+                </button>
+              </div>
+
+              <!-- Columna Derecha (6 cols): Respaldo y Restauración de Base de Datos -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">12. RESPALDO Y RESTAURACIÓN DEL SISTEMA</div>
+                    <h3>Copia de Seguridad Completa (Base de Datos JSON)</h3>
+                  </div>
+                </div>
+
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:14px;">
+                  Genera un respaldo integral con todos los catálogos, ventas, inventario, Kardex, clientes, estados de cuenta, turnos, cortes, tickets y configuración, o restaura un respaldo previo.
+                </p>
+
+                <!-- Resumen de registros almacenados -->
+                <div class="credit-live-summary" id="cfgBackupStatsGrid" style="margin-bottom:16px;"></div>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                  <div class="client-feature-box">
+                    <strong>📥 1. Exportar Respaldo Completo del Sistema (.JSON)</strong>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary); margin:4px 0 10px;">
+                      Descarga un archivo de seguridad con fecha y hora actual listo para resguardar en tu computadora o nube.
+                    </span>
+                    <button type="button" class="btn btn-primary btn-full" id="btnDownloadFullBackup">
+                      <span>💾 Descargar Respaldo Completo (.JSON)</span>
+                    </button>
+                  </div>
+
+                  <div class="client-feature-box">
+                    <strong>📤 2. Restaurar Sistema desde Archivo de Respaldo (.JSON)</strong>
+                    <span style="display:block; font-size:0.75rem; color:var(--text-secondary); margin:4px 0 10px;">
+                      Selecciona un archivo <code>.json</code> generado previamente por Fiberlink ERP para restaurar todas las colecciones.
+                    </span>
+                    <label class="btn btn-secondary btn-full" style="cursor:pointer; margin:0; justify-content:center;">
+                      <span>📂 Seleccionar Archivo de Respaldo (.JSON) y Restaurar</span>
+                      <input type="file" id="cfgRestoreBackupFileInput" accept=".json,application/json" style="display:none;">
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>

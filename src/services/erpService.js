@@ -231,6 +231,26 @@ export const erpService = {
     });
   },
 
+  // ---- SYSTEM SETTINGS & BACKUP (MÓDULO DE CONFIGURACIÓN) ----
+  async getSettings() {
+    return apiRequest('/settings');
+  },
+  async updateSettings(payload) {
+    return apiRequest('/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+  async exportBackup() {
+    return apiRequest('/settings/backup');
+  },
+  async restoreBackup(payload) {
+    return apiRequest('/settings/restore', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
   // ---- REPORTS & ACTIVITY ----
   async getReportsSummary() {
     return apiRequest('/reports/summary');

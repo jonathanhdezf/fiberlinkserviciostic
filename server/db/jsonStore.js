@@ -29,6 +29,7 @@ export const FILES = {
   shifts: path.join(DATA_DIR, 'shifts.json'),
   cashCuts: path.join(DATA_DIR, 'cash_cuts.json'),
   workshop: path.join(DATA_DIR, 'workshop.json'),
+  settings: path.join(DATA_DIR, 'settings.json'),
   activity: path.join(DATA_DIR, 'activity.json')
 };
 
@@ -1226,6 +1227,132 @@ const SEED_CASH_CUTS = [
   }
 ];
 
+export const SEED_SETTINGS = {
+  company: {
+    programName: 'Fiberlink Enterprise OS',
+    commercialName: 'FIBERLINK SERVICIOS TIC',
+    legalName: 'FIBERLINK SERVICIOS DE TELECOMUNICACIONES E INFORMÁTICA S.A. DE C.V.',
+    rfc: 'FST2109148H2',
+    taxRegime: '601 - General de Ley Personas Morales',
+    address: 'Calle Hidalgo Centro, Teziutlán, Puebla, C.P. 73800',
+    phone: '231 102 4672',
+    whatsapp: '2311024672',
+    email: 'contacto@fiberlink.mx',
+    website: 'https://fiberlinkserviciostic.vercel.app',
+    logoUrl: '/logo.gif'
+  },
+  enabledOptions: {
+    allowSellWithoutStock: false,
+    requireClientForCredit: true,
+    openCashDrawerOnCashSale: true,
+    autoPrintTicketOnSale: true,
+    roundCashCents: false,
+    showBarcodeInPos: true,
+    requireAdminForCancel: true,
+    enableWorkshopModule: true,
+    enableTicketsModule: true,
+    enableWhatsappReceipts: true
+  },
+  folios: {
+    sales: { prefix: 'VTA', nextNumber: 1005, description: 'Tickets de Venta en Mostrador (POS)' },
+    tickets: { prefix: 'FL', nextNumber: 1008, description: 'Tickets de Soporte Técnico y Redes' },
+    workshop: { prefix: 'OS', nextNumber: 1004, description: 'Órdenes de Servicio en Laboratorio / Taller' },
+    clients: { prefix: 'CLI', nextNumber: 1005, description: 'Padrón de Clientes y Cuentas de Crédito' },
+    inventoryMovements: { prefix: 'KDX', nextNumber: 1009, description: 'Movimientos de Almacén y Kardex' },
+    shifts: { prefix: 'TRN', nextNumber: 1004, description: 'Turnos de Trabajo en Caja' },
+    cashCuts: { prefix: 'COR', nextNumber: 1004, description: 'Cortes de Turno (X/Z) y Cortes del Día' }
+  },
+  registers: [
+    {
+      id: 'reg-1',
+      code: 'CAJA-01',
+      name: 'Caja Principal #1 — Mostrador Teziutlán',
+      branch: 'Matriz Centro Teziutlán',
+      printerName: 'Impresora Térmica 80mm USB/LAN',
+      defaultOpeningCash: 1500.00,
+      folioSeries: 'VTA',
+      active: true
+    },
+    {
+      id: 'reg-2',
+      code: 'CAJA-02',
+      name: 'Caja #2 — Laboratorio y Taller Técnico',
+      branch: 'Matriz Centro Teziutlán',
+      printerName: 'Impresora Térmica 58mm Recepción',
+      defaultOpeningCash: 1000.00,
+      folioSeries: 'VTA',
+      active: true
+    },
+    {
+      id: 'reg-3',
+      code: 'CAJA-03',
+      name: 'Caja Móvil — Cobranza en Campo',
+      branch: 'Unidades Móviles / Instalaciones',
+      printerName: 'Ticket Digital / WhatsApp PDF',
+      defaultOpeningCash: 500.00,
+      folioSeries: 'VTA',
+      active: true
+    }
+  ],
+  ticketConfig: {
+    paperWidth: '80mm',
+    fontSize: '12px',
+    showLogo: true,
+    showTaxBreakdown: true,
+    showCashierAndShift: true,
+    showSkuOnItems: true,
+    headerLine1: 'Soporte Técnico, Redes, Fibra Óptica, CCTV y Punto de Venta',
+    headerLine2: 'Teziutlán, Puebla · Tel / WhatsApp: 231 102 4672',
+    footerMessage: '¡Gracias por su preferencia! Garantía y soporte local en Teziutlán.',
+    warrantyPolicy: 'Equipos nuevos con 1 año de garantía contra defecto de fábrica. Servicios y reparaciones 30 días presentando este comprobante.'
+  },
+  paymentMethods: [
+    { id: 'pm-cash', key: 'Efectivo', label: '💵 Efectivo (Moneda Nacional)', enabled: true, feePercent: 0, requiresReference: false, opensDrawer: true, bankInfo: 'Cajón de dinero en mostrador' },
+    { id: 'pm-card', key: 'Tarjeta', label: '💳 Tarjeta Débito / Crédito (Terminal)', enabled: true, feePercent: 0, requiresReference: true, opensDrawer: false, bankInfo: 'Terminal Bancaria Clip / MercadoPago / BBVA' },
+    { id: 'pm-spei', key: 'Transferencia', label: '🏦 Transferencia Electrónica SPEI', enabled: true, feePercent: 0, requiresReference: true, opensDrawer: false, bankInfo: 'BBVA: 012180001928374651 · Fiberlink TIC' },
+    { id: 'pm-credit', key: 'Crédito', label: '📋 Crédito Autorizado de Cliente', enabled: true, feePercent: 0, requiresReference: false, opensDrawer: false, bankInfo: 'Sujeto a línea de crédito autorizada' },
+    { id: 'pm-check', key: 'Cheque', label: '🧾 Cheque Nominativo / Orden de Pago', enabled: false, feePercent: 0, requiresReference: true, opensDrawer: false, bankInfo: 'Salvo buen cobro' }
+  ],
+  taxes: {
+    taxName: 'IVA',
+    vatRate: 16,
+    pricesIncludeTax: true,
+    applyRetentionIsr: false,
+    retentionIsrRate: 1.25,
+    currencyCode: 'MXN',
+    currencySymbol: '$',
+    exchangeRateUsd: 19.85
+  },
+  cutRules: {
+    blindCutMode: false,
+    defaultOpeningFund: 1500.00,
+    maxCashInDrawerAlert: 15000.00,
+    allowedDiscrepancyTolerance: 20.00,
+    requireCountDenominations: false,
+    autoSendWhatsappOnCloseShift: false,
+    defaultCutWhatsappPhone: '2311024672'
+  },
+  unitsOfMeasure: [
+    { id: 'u-pza', key: 'pza', name: 'Pieza / Unidad Individual', allowDecimals: false, satKey: 'H87' },
+    { id: 'u-srv', key: 'srv', name: 'Servicio Técnico / Mano de Obra', allowDecimals: false, satKey: 'E48' },
+    { id: 'u-kit', key: 'kit', name: 'Kit / Paquete Completo', allowDecimals: false, satKey: 'KT' },
+    { id: 'u-m', key: 'm', name: 'Metro Lineal (Cable / Fibra)', allowDecimals: true, satKey: 'MTR' },
+    { id: 'u-caja', key: 'caja', name: 'Caja / Bobina (305m)', allowDecimals: false, satKey: 'XBX' },
+    { id: 'u-lic', key: 'lic', name: 'Licencia de Software / Póliza', allowDecimals: false, satKey: 'CE' },
+    { id: 'u-hr', key: 'hr', name: 'Hora de Ingeniería / Soporte', allowDecimals: true, satKey: 'HUR' }
+  ],
+  notifications: {
+    lowStockAlerts: true,
+    overdueCreditAlerts: true,
+    urgentTicketAlerts: true,
+    cashLimitAlerts: true,
+    soundEffects: true,
+    adminWhatsappNumber: '2311024672',
+    adminEmailAlert: 'admin@fiberlink.mx'
+  },
+  updatedAt: new Date().toISOString()
+};
+
 function ensureSeed(collectionName, seedData) {
   const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
@@ -1256,6 +1383,7 @@ ensureSeed('workshop', SEED_WORKSHOP);
 ensureSeed('sales', SEED_SALES);
 ensureSeed('shifts', SEED_SHIFTS);
 ensureSeed('cashCuts', SEED_CASH_CUTS);
+ensureSeed('settings', SEED_SETTINGS);
 ensureSeed('activity', SEED_ACTIVITY);
 
 // ==========================================
@@ -1276,7 +1404,7 @@ export function readCollection(name) {
     return parsed;
   } catch (err) {
     console.error(`[jsonStore] Error leyendo ${name}:`, err.message);
-    return [];
+    return name === 'settings' ? SEED_SETTINGS : [];
   }
 }
 
@@ -1315,18 +1443,50 @@ export function logActivity({ user = 'Sistema', role = 'system', module = 'gener
 
 export function generateNextFolio(collectionName, prefix, startAt = 1000) {
   const list = readCollection(collectionName);
+  let resolvedPrefix = prefix;
   let max = startAt;
-  const regex = new RegExp(`${prefix}-(\\d+)`);
-  list.forEach(item => {
-    if (item.folio) {
-      const m = item.folio.match(regex);
-      if (m) {
-        const num = parseInt(m[1], 10);
-        if (num > max) max = num;
+
+  try {
+    const settings = readCollection('settings');
+    const folioCfg = settings?.folios?.[collectionName];
+    if (folioCfg) {
+      if (folioCfg.prefix) resolvedPrefix = folioCfg.prefix.trim().toUpperCase();
+      if (Number(folioCfg.nextNumber) > 0) {
+        max = Math.max(max, Number(folioCfg.nextNumber) - 1);
       }
     }
-  });
-  return `${prefix}-${max + 1}`;
+  } catch (e) {
+    // Ignore settings read error
+  }
+
+  const regex = new RegExp(`${resolvedPrefix}-(\\d+)`);
+  if (Array.isArray(list)) {
+    list.forEach(item => {
+      const f = item.folio || item.code;
+      if (f) {
+        const m = f.match(regex);
+        if (m) {
+          const num = parseInt(m[1], 10);
+          if (num > max) max = num;
+        }
+      }
+    });
+  }
+
+  const nextNum = max + 1;
+
+  // Update nextNumber in settings.folios if available
+  try {
+    const settings = readCollection('settings');
+    if (settings?.folios?.[collectionName]) {
+      settings.folios[collectionName].nextNumber = nextNum + 1;
+      writeCollection('settings', settings);
+    }
+  } catch (e) {
+    // Ignore
+  }
+
+  return `${resolvedPrefix}-${nextNum}`;
 }
 
 export function recordInventoryMovement({

@@ -62,6 +62,12 @@ import {
   handleListCashCuts,
   handleCreateCashCut
 } from './controllers/shiftsController.js';
+import {
+  handleGetSettings,
+  handleUpdateSettings,
+  handleExportBackup,
+  handleRestoreBackup
+} from './controllers/settingsController.js';
 import { handleGetReportsSummary } from './controllers/reportsController.js';
 
 export { DATA_DIR };
@@ -407,7 +413,32 @@ export async function handleApiRequest(req, res, next) {
     }
 
     // ==========================================
-    // 9. REPORTS & ACTIVITY LOGS
+    // 9. SYSTEM SETTINGS & BACKUP (Módulo de Configuración)
+    // ==========================================
+    if (pathname === '/api/settings' && method === 'GET') {
+      const result = handleGetSettings();
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/settings' && (method === 'PATCH' || method === 'POST')) {
+      const body = await parseBody(req);
+      const result = handleUpdateSettings(body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/settings/backup' && method === 'GET') {
+      const result = handleExportBackup();
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/settings/restore' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleRestoreBackup(body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    // ==========================================
+    // 10. REPORTS & ACTIVITY LOGS
     // ==========================================
     if (pathname === '/api/reports/summary' && method === 'GET') {
       const result = handleGetReportsSummary(url.searchParams);

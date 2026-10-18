@@ -15,6 +15,7 @@ let allUsers = [];
 let allClients = [];
 let allShifts = [];
 let allCashCuts = [];
+let systemSettings = null;
 let reportsData = null;
 
 // UI State
@@ -47,7 +48,8 @@ const VIEW_META = {
   clients: { title: 'Control de Clientes, Facturación & Créditos', bc: 'Clientes & Créditos' },
   shifts: { title: 'Organización de Turnos, Arqueo y Cortes de Caja', bc: 'Cortes y Turnos' },
   reports: { title: 'Analítica Financiera y Reportes Ejecutivos', bc: 'Reportes & Analítica' },
-  users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' }
+  users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' },
+  settings: { title: 'Módulo de Configuración General del Sistema', bc: 'Configuración' }
 };
 
 const WORKSHOP_STATE_LABELS = {
@@ -84,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initShiftsModule();
   initReportsModule();
   initUsersModule();
+  initSettingsModule();
 });
 
 // ==========================================
@@ -213,7 +216,7 @@ async function enterDashboard() {
   document.getElementById('ucName').textContent = currentUser?.name || 'Usuario';
   document.getElementById('ucRole').textContent = currentUser?.permissions?.label || currentUser?.role || 'Personal';
 
-  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users'];
+  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users', 'settings'];
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
     btn.style.display = 'flex';
   });
@@ -394,12 +397,14 @@ function renderCommandResults(query) {
     { group: 'Acciones Rápidas', title: 'Realizar Corte del Turno (Arqueo X/Z)', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('turn_cut'); } },
     { group: 'Acciones Rápidas', title: 'Enviar Corte de Caja por WhatsApp', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('whatsapp_cut'); } },
     { group: 'Acciones Rápidas', title: 'Abrir Nuevo Turno de Trabajo', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); openNewShiftModal(); } },
+    { group: 'Acciones Rápidas', title: 'Descargar Respaldo Completo de Base de Datos (.JSON)', sub: 'Configuración', run: () => { closeModal('cmdPaletteModal'); downloadFullSystemBackup(); } },
     { group: 'Navegación', title: 'Ir a Resumen Ejecutivo Bento', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
     { group: 'Navegación', title: 'Ir a Tablero de Tickets', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('tickets'); } },
     { group: 'Navegación', title: 'Ir a Taller Técnico', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('workshop'); } },
     { group: 'Navegación', title: 'Ir a Clientes y Administración de Créditos', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('clients'); } },
     { group: 'Navegación', title: 'Ir a Tienda e Inventario', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('store'); } },
     { group: 'Navegación', title: 'Ir a Cortes y Turnos (Turno, Día, WhatsApp)', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); } },
+    { group: 'Navegación', title: 'Ir a Módulo de Configuración General', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('settings'); } },
     { group: 'Navegación', title: 'Ir a Reportes y Analítica', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
   ];
 
@@ -489,7 +494,7 @@ function highlightCmdSelection() {
 // ==========================================
 async function syncAllData() {
   try {
-    const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, reports] = await Promise.all([
+    const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, settings, reports] = await Promise.all([
       ticketService.getTickets(),
       erpService.getProducts().catch(() => []),
       erpService.getInventoryMovements().catch(() => []),
@@ -499,6 +504,7 @@ async function syncAllData() {
       erpService.getClients().catch(() => []),
       erpService.getShifts().catch(() => []),
       erpService.getCashCuts().catch(() => []),
+      erpService.getSettings().catch(() => null),
       erpService.getReportsSummary().catch(() => null)
     ]);
 
@@ -511,8 +517,10 @@ async function syncAllData() {
     allClients = Array.isArray(clients) ? clients : [];
     allShifts = Array.isArray(shifts) ? shifts : [];
     allCashCuts = Array.isArray(cashCuts) ? cashCuts : [];
+    if (settings) systemSettings = settings;
     reportsData = reports;
 
+    applySystemSettingsBranding();
     updateNavBadges();
     populateTechnicianSelects();
     populateCatalogPickers();
@@ -528,6 +536,7 @@ async function syncAllData() {
     renderShiftsModule();
     renderReportsView();
     renderUsersTable();
+    renderSettingsModule();
   } catch (err) {
     console.error('[ERP Sync Error]:', err);
   }
@@ -5672,5 +5681,795 @@ function printCashCutTicket(cut) {
   `;
   window.print();
 }
+
+// ==========================================
+// 16. VIEW 10: MÓDULO DE CONFIGURACIÓN DEL SISTEMA
+// ==========================================
+function switchSettingsSubTab(tabName) {
+  const paneMap = {
+    options_cut: 'cfgSubTabOptionsCut',
+    cashiers_registers: 'cfgSubTabCashiersRegisters',
+    folios_units: 'cfgSubTabFoliosUnits',
+    logo_ticket: 'cfgSubTabLogoTicket',
+    payments_taxes: 'cfgSubTabPaymentsTaxes',
+    notifications_backup: 'cfgSubTabNotificationsBackup'
+  };
+
+  document.querySelectorAll('#settingsModuleTabs .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cfgtab === tabName);
+  });
+
+  Object.entries(paneMap).forEach(([key, domId]) => {
+    const el = document.getElementById(domId);
+    if (el) el.classList.toggle('active', key === tabName);
+  });
+
+  if (tabName === 'logo_ticket') {
+    renderLiveTicketPreview();
+  }
+}
+
+function applySystemSettingsBranding() {
+  if (!systemSettings) return;
+  const comp = systemSettings.company || {};
+  const logoUrl = comp.logoUrl || '/logo.gif';
+
+  // Update sidebar and login logos dynamically
+  document.querySelectorAll('.sidebar-logo, .login-logo, #cfgLogoPreviewImg').forEach(img => {
+    img.src = logoUrl;
+  });
+
+  // Update openShiftModal register selector with configured registers
+  const regSel = document.getElementById('openShiftRegisterSelect');
+  const activeRegs = (systemSettings.registers || []).filter(r => r.active !== false);
+  if (regSel && activeRegs.length > 0) {
+    const prev = regSel.value;
+    regSel.innerHTML = activeRegs.map(r =>
+      `<option value="${r.name}">${r.name} (Fondo: ${formatMoney(r.defaultOpeningCash)})</option>`
+    ).join('');
+    if (prev && activeRegs.some(r => r.name === prev)) {
+      regSel.value = prev;
+    }
+  }
+}
+
+function initSettingsModule() {
+  // 6-Tab Switcher
+  document.querySelectorAll('#settingsModuleTabs .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchSettingsSubTab(btn.dataset.cfgtab || 'options_cut');
+    });
+  });
+
+  // Top Header Save & Backup Buttons
+  document.getElementById('btnSaveAllSettingsTop')?.addEventListener('click', () => {
+    saveAllSettingsSections('Configuración General Completa');
+  });
+  document.getElementById('btnQuickDownloadBackup')?.addEventListener('click', downloadFullSystemBackup);
+  document.getElementById('btnDownloadFullBackup')?.addEventListener('click', downloadFullSystemBackup);
+
+  // Sub-Tab 1: Opciones Habilitadas & Reglas de Corte
+  document.getElementById('btnSaveOptionsAndCutCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Opciones Habilitadas y Reglas de Corte');
+  });
+
+  // Sub-Tab 2: Administrar Cajas & Cajeros
+  document.getElementById('btnCfgRegReset')?.addEventListener('click', () => {
+    document.getElementById('cfgRegisterForm')?.reset();
+    document.getElementById('cfgRegId').value = '';
+  });
+
+  document.getElementById('cfgRegisterForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!systemSettings) return;
+    const id = document.getElementById('cfgRegId')?.value;
+    const code = (document.getElementById('cfgRegCode')?.value || '').trim().toUpperCase();
+    const name = (document.getElementById('cfgRegName')?.value || '').trim();
+    const branch = (document.getElementById('cfgRegBranch')?.value || 'Matriz Centro Teziutlán').trim();
+    const printerName = (document.getElementById('cfgRegPrinter')?.value || 'Impresora Térmica 80mm').trim();
+    const defaultOpeningCash = parseFloat(document.getElementById('cfgRegFund')?.value) || 1500;
+
+    if (!code || !name) return;
+    const list = Array.isArray(systemSettings.registers) ? [...systemSettings.registers] : [];
+    if (id) {
+      const idx = list.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], code, name, branch, printerName, defaultOpeningCash };
+      }
+    } else {
+      list.push({
+        id: `reg-${Date.now()}`,
+        code,
+        name,
+        branch,
+        printerName,
+        defaultOpeningCash,
+        folioSeries: 'VTA',
+        active: true
+      });
+    }
+
+    systemSettings.registers = list;
+    await persistSettings({ registers: list, sectionLabel: 'Administrar Cajas Registradoras' });
+    document.getElementById('cfgRegisterForm')?.reset();
+    document.getElementById('cfgRegId').value = '';
+    showToast('Caja registradora guardada exitosamente');
+  });
+
+  document.getElementById('btnCfgNewCashier')?.addEventListener('click', () => {
+    document.getElementById('userForm')?.reset();
+    document.getElementById('usrId').value = '';
+    document.getElementById('usrUsername').disabled = false;
+    document.getElementById('usrRole').value = 'ventas';
+    document.getElementById('usrSpecialty').value = 'Cajero Mostrador / POS';
+    document.getElementById('userModalTitle').textContent = 'Registrar Nuevo Cajero / Operador';
+    openModal('userModal');
+  });
+
+  // Sub-Tab 3: Modificar Folios & Unidades de Medida
+  document.getElementById('btnSaveFoliosConfig')?.addEventListener('click', async () => {
+    if (!systemSettings) return;
+    const folios = { ...(systemSettings.folios || {}) };
+    document.querySelectorAll('#cfgFoliosTableBody tr[data-foliokey]').forEach(tr => {
+      const key = tr.dataset.foliokey;
+      const prefix = (tr.querySelector('.cfg-folio-prefix')?.value || '').trim().toUpperCase();
+      const nextNumber = Math.max(1, parseInt(tr.querySelector('.cfg-folio-next')?.value, 10) || 1001);
+      if (folios[key]) {
+        folios[key] = { ...folios[key], prefix: prefix || folios[key].prefix, nextNumber };
+      }
+    });
+    systemSettings.folios = folios;
+    await persistSettings({ folios, sectionLabel: 'Modificar Folios y Series' });
+    showToast('Series y consecutivos de folios actualizados');
+  });
+
+  document.getElementById('cfgUnitForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!systemSettings) return;
+    const key = (document.getElementById('cfgUnitKey')?.value || '').trim().toLowerCase();
+    const satKey = (document.getElementById('cfgUnitSat')?.value || 'H87').trim().toUpperCase();
+    const name = (document.getElementById('cfgUnitName')?.value || '').trim();
+    const allowDecimals = Boolean(document.getElementById('cfgUnitDecimals')?.checked);
+
+    if (!key || !name) return;
+    const units = Array.isArray(systemSettings.unitsOfMeasure) ? [...systemSettings.unitsOfMeasure] : [];
+    const existingIdx = units.findIndex(u => u.key.toLowerCase() === key);
+    if (existingIdx !== -1) {
+      units[existingIdx] = { ...units[existingIdx], key, name, satKey, allowDecimals };
+    } else {
+      units.push({ id: `u-${Date.now()}`, key, name, satKey, allowDecimals });
+    }
+    systemSettings.unitsOfMeasure = units;
+    await persistSettings({ unitsOfMeasure: units, sectionLabel: 'Unidades de Medida' });
+    document.getElementById('cfgUnitForm')?.reset();
+    showToast(`Unidad de medida "${key}" agregada al catálogo`);
+  });
+
+  // Sub-Tab 4: Logotipo del Programa & Ticket
+  const logoFileInput = document.getElementById('cfgLogoFileInput');
+  logoFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result;
+      if (typeof dataUrl === 'string' && systemSettings) {
+        systemSettings.company = { ...(systemSettings.company || {}), logoUrl: dataUrl };
+        applySystemSettingsBranding();
+        renderLiveTicketPreview();
+        await persistSettings({ company: systemSettings.company, sectionLabel: 'Logotipo del Programa' });
+        showToast('Logotipo actualizado en el programa y formato de tickets');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('btnRestoreDefaultLogo')?.addEventListener('click', async () => {
+    if (!systemSettings) return;
+    systemSettings.company = { ...(systemSettings.company || {}), logoUrl: '/logo.gif' };
+    applySystemSettingsBranding();
+    renderLiveTicketPreview();
+    await persistSettings({ company: systemSettings.company, sectionLabel: 'Restaurar Logotipo Original' });
+    showToast('Logotipo original restaurado');
+  });
+
+  [
+    'cfgCompCommercialName', 'cfgCompProgramName', 'cfgCompRfc', 'cfgCompPhone', 'cfgCompAddress',
+    'cfgTicketPaperWidth', 'cfgTicketFontSize', 'cfgTicketHeaderLine1', 'cfgTicketFooterMsg',
+    'cfgTicketWarranty', 'cfgTicketShowLogo', 'cfgTicketShowTax', 'cfgTicketShowCashier', 'cfgTicketShowSku'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', renderLiveTicketPreview);
+    el?.addEventListener('change', renderLiveTicketPreview);
+  });
+
+  document.getElementById('btnSaveLogoAndTicketCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Identidad, Logotipo y Diseño de Ticket');
+  });
+
+  document.getElementById('btnPrintTestTicket')?.addEventListener('click', () => {
+    renderLiveTicketPreview();
+    const area = document.getElementById('printArea');
+    const preview = document.getElementById('cfgLiveTicketPreviewBox');
+    if (area && preview) {
+      area.innerHTML = `<div style="max-width:320px; margin:0 auto; font-family:monospace; color:#000;">${preview.innerHTML}</div>`;
+      window.print();
+    }
+  });
+
+  // Sub-Tab 5: Formas de Pago & Impuestos
+  document.getElementById('btnSavePaymentMethodsCfg')?.addEventListener('click', async () => {
+    if (!systemSettings) return;
+    const methods = collectPaymentMethodsFromTable();
+    systemSettings.paymentMethods = methods;
+    await persistSettings({ paymentMethods: methods, sectionLabel: 'Formas de Pago' });
+    showToast('Formas de pago actualizadas');
+  });
+
+  document.getElementById('btnSaveTaxesCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Impuestos y Moneda');
+  });
+
+  // Sub-Tab 6: Notificaciones & Respaldo
+  document.getElementById('btnSaveNotificationsCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Notificaciones y Alertas');
+  });
+
+  document.getElementById('btnTestNotificationNow')?.addEventListener('click', () => {
+    playErpNotificationBeep();
+    showToast('🔔 Alerta de prueba activa: Notificaciones visuales y sonoras funcionando correctamente');
+  });
+
+  const restoreFileInput = document.getElementById('cfgRestoreBackupFileInput');
+  restoreFileInput?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const parsed = JSON.parse(String(ev.target?.result || '{}'));
+        if (!confirm('¿Deseas restaurar la base de datos con este archivo de respaldo? Esto actualizará los registros actuales.')) {
+          restoreFileInput.value = '';
+          return;
+        }
+        const res = await erpService.restoreBackup(parsed);
+        restoreFileInput.value = '';
+        await syncAllData();
+        showToast(`Respaldo restaurado exitosamente (${res.restoredCollections || 10} módulos sincronizados)`);
+      } catch (err) {
+        showToast('Error al leer el archivo JSON de respaldo: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function playErpNotificationBeep() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.22);
+  } catch (e) {
+    // Ignore audio context restriction
+  }
+}
+
+async function persistSettings(partialPayload) {
+  try {
+    const res = await erpService.updateSettings(partialPayload);
+    if (res?.settings) {
+      systemSettings = res.settings;
+    }
+    await syncAllData();
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+function collectPaymentMethodsFromTable() {
+  if (!systemSettings) return [];
+  const current = Array.isArray(systemSettings.paymentMethods) ? [...systemSettings.paymentMethods] : [];
+  document.querySelectorAll('#cfgPaymentMethodsTableBody tr[data-pmid]').forEach(tr => {
+    const id = tr.dataset.pmid;
+    const idx = current.findIndex(m => m.id === id);
+    if (idx !== -1) {
+      current[idx] = {
+        ...current[idx],
+        enabled: Boolean(tr.querySelector('.cfg-pm-enabled')?.checked),
+        feePercent: Math.max(0, parseFloat(tr.querySelector('.cfg-pm-fee')?.value) || 0),
+        requiresReference: Boolean(tr.querySelector('.cfg-pm-ref')?.checked),
+        bankInfo: (tr.querySelector('.cfg-pm-bank')?.value || '').trim()
+      };
+    }
+  });
+  return current;
+}
+
+async function saveAllSettingsSections(sectionLabel = 'Configuración General') {
+  if (!systemSettings) return;
+
+  const enabledOptions = {
+    allowSellWithoutStock: Boolean(document.getElementById('optAllowSellWithoutStock')?.checked),
+    requireClientForCredit: Boolean(document.getElementById('optRequireClientForCredit')?.checked),
+    openCashDrawerOnCashSale: Boolean(document.getElementById('optOpenCashDrawer')?.checked),
+    autoPrintTicketOnSale: Boolean(document.getElementById('optAutoPrintTicket')?.checked),
+    showBarcodeInPos: Boolean(document.getElementById('optShowBarcodeInPos')?.checked),
+    roundCashCents: Boolean(document.getElementById('optRoundCashCents')?.checked),
+    requireAdminForCancel: Boolean(document.getElementById('optRequireAdminForCancel')?.checked),
+    enableWhatsappReceipts: Boolean(document.getElementById('optEnableWhatsappReceipts')?.checked)
+  };
+
+  const cutRules = {
+    blindCutMode: Boolean(document.getElementById('cfgCutBlindMode')?.checked),
+    defaultOpeningFund: parseFloat(document.getElementById('cfgCutDefaultFund')?.value) || 1500,
+    maxCashInDrawerAlert: parseFloat(document.getElementById('cfgCutMaxCashAlert')?.value) || 15000,
+    allowedDiscrepancyTolerance: parseFloat(document.getElementById('cfgCutTolerance')?.value) || 20,
+    defaultCutWhatsappPhone: (document.getElementById('cfgCutDefaultWhatsapp')?.value || '2311024672').trim(),
+    requireCountDenominations: Boolean(document.getElementById('cfgCutRequireDenominations')?.checked),
+    autoSendWhatsappOnCloseShift: Boolean(document.getElementById('cfgCutAutoWhatsapp')?.checked)
+  };
+
+  const company = {
+    ...(systemSettings.company || {}),
+    commercialName: (document.getElementById('cfgCompCommercialName')?.value || 'FIBERLINK SERVICIOS TIC').trim(),
+    programName: (document.getElementById('cfgCompProgramName')?.value || 'Fiberlink Enterprise OS').trim(),
+    rfc: (document.getElementById('cfgCompRfc')?.value || 'FST2109148H2').trim().toUpperCase(),
+    phone: (document.getElementById('cfgCompPhone')?.value || '231 102 4672').trim(),
+    address: (document.getElementById('cfgCompAddress')?.value || '').trim()
+  };
+
+  const ticketConfig = {
+    paperWidth: document.getElementById('cfgTicketPaperWidth')?.value || '80mm',
+    fontSize: document.getElementById('cfgTicketFontSize')?.value || '12px',
+    headerLine1: (document.getElementById('cfgTicketHeaderLine1')?.value || '').trim(),
+    footerMessage: (document.getElementById('cfgTicketFooterMsg')?.value || '').trim(),
+    warrantyPolicy: (document.getElementById('cfgTicketWarranty')?.value || '').trim(),
+    showLogo: Boolean(document.getElementById('cfgTicketShowLogo')?.checked),
+    showTaxBreakdown: Boolean(document.getElementById('cfgTicketShowTax')?.checked),
+    showCashierAndShift: Boolean(document.getElementById('cfgTicketShowCashier')?.checked),
+    showSkuOnItems: Boolean(document.getElementById('cfgTicketShowSku')?.checked)
+  };
+
+  const taxes = {
+    taxName: (document.getElementById('cfgTaxName')?.value || 'IVA').trim(),
+    vatRate: parseFloat(document.getElementById('cfgTaxRate')?.value) || 0,
+    pricesIncludeTax: document.getElementById('cfgTaxIncludeMode')?.value !== 'false',
+    applyRetentionIsr: Boolean(document.getElementById('cfgTaxRetentionIsr')?.checked),
+    retentionIsrRate: 1.25,
+    currencyCode: (document.getElementById('cfgCurrencyCode')?.value || 'MXN').trim().toUpperCase(),
+    currencySymbol: '$',
+    exchangeRateUsd: parseFloat(document.getElementById('cfgExchangeRateUsd')?.value) || 19.85
+  };
+
+  const notifications = {
+    lowStockAlerts: Boolean(document.getElementById('notifLowStock')?.checked),
+    overdueCreditAlerts: Boolean(document.getElementById('notifOverdueCredit')?.checked),
+    urgentTicketAlerts: Boolean(document.getElementById('notifUrgentTickets')?.checked),
+    soundEffects: Boolean(document.getElementById('notifSoundEffects')?.checked),
+    adminWhatsappNumber: (document.getElementById('notifAdminWhatsapp')?.value || '2311024672').trim(),
+    adminEmailAlert: (document.getElementById('notifAdminEmail')?.value || 'admin@fiberlink.mx').trim()
+  };
+
+  const paymentMethods = collectPaymentMethodsFromTable();
+
+  await persistSettings({
+    company,
+    enabledOptions,
+    cutRules,
+    ticketConfig,
+    taxes,
+    notifications,
+    paymentMethods,
+    sectionLabel
+  });
+  showToast(`Configuración guardada: ${sectionLabel}`);
+}
+
+function renderSettingsModule() {
+  if (!systemSettings) return;
+
+  const comp = systemSettings.company || {};
+  const opts = systemSettings.enabledOptions || {};
+  const cut = systemSettings.cutRules || {};
+  const tkt = systemSettings.ticketConfig || {};
+  const tax = systemSettings.taxes || {};
+  const notif = systemSettings.notifications || {};
+  const regs = Array.isArray(systemSettings.registers) ? systemSettings.registers : [];
+  const pms = Array.isArray(systemSettings.paymentMethods) ? systemSettings.paymentMethods : [];
+  const units = Array.isArray(systemSettings.unitsOfMeasure) ? systemSettings.unitsOfMeasure : [];
+
+  // Update Top 4 KPIs
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setTxt('cfgKpiCompanyName', comp.commercialName || 'FIBERLINK TIC');
+  setTxt('cfgKpiRfcBadge', comp.rfc || 'FST2109148H2');
+  setTxt('cfgKpiPaperWidthFoot', `Impresión térmica ${tkt.paperWidth || '80mm'} activa`);
+  setTxt('cfgKpiRegistersCount', `${regs.filter(r => r.active !== false).length} Cajas`);
+  setTxt('cfgKpiCashiersCount', `${allUsers.length} operadores`);
+  setTxt('cfgKpiTaxRate', `${tax.taxName || 'IVA'} ${tax.vatRate ?? 16}%`);
+  setTxt('cfgKpiPayMethodsCount', `${pms.filter(p => p.enabled).length} formas activas`);
+  setTxt('cfgKpiTaxModeFoot', `${tax.pricesIncludeTax !== false ? 'Precios con impuesto incluido' : 'Más impuestos'} · ${tax.currencyCode || 'MXN'}`);
+  setTxt('cfgKpiUnitsCount', `${units.length} Unidades`);
+
+  // Populate Checkboxes & Inputs in Sub-Tab 1 (Opciones Habilitadas & Corte)
+  const setChk = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(val);
+  };
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+
+  setChk('optAllowSellWithoutStock', opts.allowSellWithoutStock);
+  setChk('optRequireClientForCredit', opts.requireClientForCredit !== false);
+  setChk('optOpenCashDrawer', opts.openCashDrawerOnCashSale !== false);
+  setChk('optAutoPrintTicket', opts.autoPrintTicketOnSale !== false);
+  setChk('optShowBarcodeInPos', opts.showBarcodeInPos !== false);
+  setChk('optRoundCashCents', opts.roundCashCents);
+  setChk('optRequireAdminForCancel', opts.requireAdminForCancel !== false);
+  setChk('optEnableWhatsappReceipts', opts.enableWhatsappReceipts !== false);
+
+  setChk('cfgCutBlindMode', cut.blindCutMode);
+  setVal('cfgCutDefaultFund', cut.defaultOpeningFund ?? 1500);
+  setVal('cfgCutMaxCashAlert', cut.maxCashInDrawerAlert ?? 15000);
+  setVal('cfgCutTolerance', cut.allowedDiscrepancyTolerance ?? 20);
+  setVal('cfgCutDefaultWhatsapp', cut.defaultCutWhatsappPhone || '2311024672');
+  setChk('cfgCutRequireDenominations', cut.requireCountDenominations);
+  setChk('cfgCutAutoWhatsapp', cut.autoSendWhatsappOnCloseShift);
+
+  // Sub-Tab 2: Administrar Cajas & Cajeros
+  renderSettingsRegistersTable();
+  renderSettingsCashiersTable();
+
+  // Sub-Tab 3: Modificar Folios & Unidades de Medida
+  renderSettingsFoliosTable();
+  renderSettingsUnitsTable();
+
+  // Sub-Tab 4: Logotipo & Ticket
+  const logoImg = document.getElementById('cfgLogoPreviewImg');
+  if (logoImg) logoImg.src = comp.logoUrl || '/logo.gif';
+  setVal('cfgCompCommercialName', comp.commercialName || 'FIBERLINK SERVICIOS TIC');
+  setVal('cfgCompProgramName', comp.programName || 'Fiberlink Enterprise OS');
+  setVal('cfgCompRfc', comp.rfc || 'FST2109148H2');
+  setVal('cfgCompPhone', comp.phone || '231 102 4672');
+  setVal('cfgCompAddress', comp.address || '');
+
+  setVal('cfgTicketPaperWidth', tkt.paperWidth || '80mm');
+  setVal('cfgTicketFontSize', tkt.fontSize || '12px');
+  setVal('cfgTicketHeaderLine1', tkt.headerLine1 || '');
+  setVal('cfgTicketFooterMsg', tkt.footerMessage || '');
+  setVal('cfgTicketWarranty', tkt.warrantyPolicy || '');
+  setChk('cfgTicketShowLogo', tkt.showLogo !== false);
+  setChk('cfgTicketShowTax', tkt.showTaxBreakdown !== false);
+  setChk('cfgTicketShowCashier', tkt.showCashierAndShift !== false);
+  setChk('cfgTicketShowSku', tkt.showSkuOnItems !== false);
+  renderLiveTicketPreview();
+
+  // Sub-Tab 5: Formas de Pago & Impuestos
+  renderSettingsPaymentMethodsTable();
+  setVal('cfgTaxName', tax.taxName || 'IVA');
+  setVal('cfgTaxRate', String(tax.vatRate ?? 16));
+  setVal('cfgTaxIncludeMode', String(tax.pricesIncludeTax !== false));
+  setChk('cfgTaxRetentionIsr', tax.applyRetentionIsr);
+  setVal('cfgCurrencyCode', tax.currencyCode || 'MXN');
+  setVal('cfgExchangeRateUsd', tax.exchangeRateUsd ?? 19.85);
+
+  // Sub-Tab 6: Notificaciones & Respaldo
+  setChk('notifLowStock', notif.lowStockAlerts !== false);
+  setChk('notifOverdueCredit', notif.overdueCreditAlerts !== false);
+  setChk('notifUrgentTickets', notif.urgentTicketAlerts !== false);
+  setChk('notifSoundEffects', notif.soundEffects !== false);
+  setVal('notifAdminWhatsapp', notif.adminWhatsappNumber || '2311024672');
+  setVal('notifAdminEmail', notif.adminEmailAlert || 'admin@fiberlink.mx');
+  renderSettingsBackupStats();
+}
+
+function renderSettingsRegistersTable() {
+  const tbody = document.getElementById('cfgRegistersTableBody');
+  if (!tbody || !systemSettings) return;
+  const regs = Array.isArray(systemSettings.registers) ? systemSettings.registers : [];
+
+  tbody.innerHTML = regs.map(r => `
+    <tr>
+      <td data-label="Código" class="mono"><strong>${r.code}</strong></td>
+      <td data-label="Caja / Impresora">
+        <div><strong>${r.name}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${r.branch} · ${r.printerName}</div></div>
+      </td>
+      <td data-label="Fondo Sugerido" style="text-align:right;" class="mono tabular">${formatMoney(r.defaultOpeningCash)}</td>
+      <td data-label="Estado">
+        <span class="badge ${r.active !== false ? 'badge-green' : 'badge-amber'}">
+          ${r.active !== false ? 'Activa' : 'Inactiva'}
+        </span>
+      </td>
+      <td data-label="Acciones" style="text-align:right;">
+        <div style="display:inline-flex; gap:6px;">
+          <button type="button" class="btn btn-ghost btn-sm btn-edit-reg" data-id="${r.id}">Editar</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-toggle-reg" data-id="${r.id}">${r.active !== false ? 'Pausar' : 'Activar'}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.btn-edit-reg').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const reg = regs.find(x => x.id === btn.dataset.id);
+      if (!reg) return;
+      document.getElementById('cfgRegId').value = reg.id;
+      document.getElementById('cfgRegCode').value = reg.code;
+      document.getElementById('cfgRegName').value = reg.name;
+      document.getElementById('cfgRegBranch').value = reg.branch || '';
+      document.getElementById('cfgRegPrinter').value = reg.printerName || '';
+      document.getElementById('cfgRegFund').value = reg.defaultOpeningCash || 1500;
+    });
+  });
+
+  tbody.querySelectorAll('.btn-toggle-reg').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = regs.findIndex(x => x.id === btn.dataset.id);
+      if (idx === -1) return;
+      regs[idx].active = regs[idx].active === false;
+      await persistSettings({ registers: regs, sectionLabel: 'Estado de Caja Registradora' });
+      showToast(`Estado de ${regs[idx].code} actualizado`);
+    });
+  });
+}
+
+function renderSettingsCashiersTable() {
+  const tbody = document.getElementById('cfgCashiersTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = allUsers.map(u => `
+    <tr>
+      <td data-label="Cajero / Operador">
+        <div><strong>${u.name}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${u.specialty || 'Operador ERP'}</div></div>
+      </td>
+      <td data-label="Login" class="mono">@${u.username}</td>
+      <td data-label="Rol / Permiso"><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
+      <td data-label="Teléfono" class="mono tabular">${u.phone || '-'}</td>
+      <td data-label="Estado"><span class="badge badge-green">Autorizado</span></td>
+      <td data-label="Acciones" style="text-align:right;">
+        <button type="button" class="btn btn-secondary btn-sm btn-cfg-edit-cashier" data-id="${u.id}">Editar Cajero</button>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.btn-cfg-edit-cashier').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const u = allUsers.find(x => x.id === btn.dataset.id);
+      if (!u) return;
+      document.getElementById('usrId').value = u.id;
+      document.getElementById('usrName').value = u.name;
+      document.getElementById('usrUsername').value = u.username;
+      document.getElementById('usrUsername').disabled = true;
+      document.getElementById('usrPassword').value = '';
+      document.getElementById('usrRole').value = u.role;
+      document.getElementById('usrPhone').value = u.phone || '';
+      document.getElementById('usrSpecialty').value = u.specialty || '';
+      document.getElementById('userModalTitle').textContent = `Configurar Cajero: ${u.name}`;
+      openModal('userModal');
+    });
+  });
+}
+
+function renderSettingsFoliosTable() {
+  const tbody = document.getElementById('cfgFoliosTableBody');
+  if (!tbody || !systemSettings) return;
+  const folios = systemSettings.folios || {};
+  const entries = Object.entries(folios);
+
+  tbody.innerHTML = entries.map(([key, cfg]) => `
+    <tr data-foliokey="${key}">
+      <td data-label="Módulo / Documento">
+        <div><strong>${cfg.description || key}</strong><div class="mono" style="font-size:0.7rem; color:var(--text-muted);">Colección: ${key}</div></div>
+      </td>
+      <td data-label="Prefijo (Serie)">
+        <input type="text" class="cfg-folio-prefix mono" value="${cfg.prefix || ''}" maxlength="8" style="width:95px; text-transform:uppercase;">
+      </td>
+      <td data-label="Siguiente Folio #">
+        <input type="number" class="cfg-folio-next mono tabular" value="${cfg.nextNumber || 1001}" min="1" step="1" style="width:110px;">
+      </td>
+      <td data-label="Vista Previa">
+        <span class="badge badge-blue mono tabular cfg-folio-preview">${cfg.prefix}-${cfg.nextNumber}</span>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('tr[data-foliokey]').forEach(tr => {
+    const prefIn = tr.querySelector('.cfg-folio-prefix');
+    const nextIn = tr.querySelector('.cfg-folio-next');
+    const prevSpan = tr.querySelector('.cfg-folio-preview');
+    const updatePrev = () => {
+      if (prevSpan) {
+        prevSpan.textContent = `${(prefIn?.value || 'FOL').toUpperCase()}-${nextIn?.value || 1001}`;
+      }
+    };
+    prefIn?.addEventListener('input', updatePrev);
+    nextIn?.addEventListener('input', updatePrev);
+  });
+}
+
+function renderSettingsUnitsTable() {
+  const tbody = document.getElementById('cfgUnitsTableBody');
+  if (!tbody || !systemSettings) return;
+  const units = Array.isArray(systemSettings.unitsOfMeasure) ? systemSettings.unitsOfMeasure : [];
+
+  tbody.innerHTML = units.map(u => `
+    <tr>
+      <td data-label="Clave" class="mono"><strong>${u.key}</strong></td>
+      <td data-label="Unidad / SAT">
+        <div><strong>${u.name}</strong><div class="mono" style="font-size:0.7rem; color:var(--text-muted);">Clave SAT: ${u.satKey || 'H87'}</div></div>
+      </td>
+      <td data-label="Decimales">
+        <span class="badge ${u.allowDecimals ? 'badge-blue' : 'badge-purple'}">${u.allowDecimals ? 'Sí (0.00)' : 'Enteros'}</span>
+      </td>
+      <td data-label="Acción" style="text-align:right;">
+        ${units.length > 1 ? `<button type="button" class="btn btn-danger btn-sm btn-del-unit" data-key="${u.key}">✕</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.btn-del-unit').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const next = units.filter(u => u.key !== btn.dataset.key);
+      systemSettings.unitsOfMeasure = next;
+      await persistSettings({ unitsOfMeasure: next, sectionLabel: 'Eliminar Unidad de Medida' });
+      showToast('Unidad eliminada');
+    });
+  });
+}
+
+function renderLiveTicketPreview() {
+  const box = document.getElementById('cfgLiveTicketPreviewBox');
+  if (!box) return;
+
+  const commName = document.getElementById('cfgCompCommercialName')?.value || 'FIBERLINK SERVICIOS TIC';
+  const rfc = document.getElementById('cfgCompRfc')?.value || 'FST2109148H2';
+  const address = document.getElementById('cfgCompAddress')?.value || 'Teziutlán, Puebla';
+  const phone = document.getElementById('cfgCompPhone')?.value || '231 102 4672';
+  const header1 = document.getElementById('cfgTicketHeaderLine1')?.value || '';
+  const footerMsg = document.getElementById('cfgTicketFooterMsg')?.value || '';
+  const warranty = document.getElementById('cfgTicketWarranty')?.value || '';
+  const fontSize = document.getElementById('cfgTicketFontSize')?.value || '12px';
+  const showLogo = document.getElementById('cfgTicketShowLogo')?.checked !== false;
+  const showTax = document.getElementById('cfgTicketShowTax')?.checked !== false;
+  const showCashier = document.getElementById('cfgTicketShowCashier')?.checked !== false;
+  const showSku = document.getElementById('cfgTicketShowSku')?.checked !== false;
+  const logoSrc = systemSettings?.company?.logoUrl || '/logo.gif';
+
+  box.style.fontSize = fontSize;
+  box.innerHTML = `
+    <div style="text-align:center;">
+      ${showLogo ? `<img src="${logoSrc}" alt="Logo" style="max-height:48px; margin:0 auto 6px; display:block;">` : ''}
+      <strong style="font-size:1.1em; display:block;">${commName}</strong>
+      <div>RFC: ${rfc}</div>
+      <div style="font-size:0.9em;">${address}</div>
+      <div style="font-size:0.9em;">Tel/WhatsApp: ${phone}</div>
+      ${header1 ? `<div style="font-size:0.88em; margin-top:3px;">${header1}</div>` : ''}
+    </div>
+    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+    <div>
+      <div><strong>Folio Venta:</strong> VTA-1005</div>
+      <div><strong>Fecha:</strong> ${new Date().toLocaleString('es-MX')}</div>
+      <div><strong>Cliente:</strong> Mostrador / Público en General</div>
+      ${showCashier ? `<div><strong>Cajero:</strong> Lic. Sofía Navarro (TRN-1003)</div>` : ''}
+    </div>
+    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+    <table style="width:100%; border-collapse:collapse; font-size:inherit;">
+      <thead>
+        <tr style="border-bottom:1px solid #000;">
+          <th align="left">Cant. Descripción</th>
+          <th align="right">Importe</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:4px 0;">1x ${showSku ? '[POS-IMP-80] ' : ''}Impresora Térmica 80mm</td>
+          <td align="right">$1,890.00</td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;">1x ${showSku ? '[POS-CAJ-01] ' : ''}Cajón de Dinero RJ11</td>
+          <td align="right">$1,150.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+    <div style="text-align:right;">
+      ${showTax ? `<div>Subtotal (Sin IVA): $2,620.69</div><div>IVA (16%): $419.31</div>` : ''}
+      <strong style="font-size:1.12em;">TOTAL: $3,040.00 MXN</strong>
+      <div>Método de Pago: Efectivo</div>
+    </div>
+    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+    <div style="text-align:center; font-size:0.9em;">
+      <div><strong>${footerMsg}</strong></div>
+      ${warranty ? `<div style="margin-top:4px; font-size:0.85em; color:#333;">${warranty}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderSettingsPaymentMethodsTable() {
+  const tbody = document.getElementById('cfgPaymentMethodsTableBody');
+  if (!tbody || !systemSettings) return;
+  const pms = Array.isArray(systemSettings.paymentMethods) ? systemSettings.paymentMethods : [];
+
+  tbody.innerHTML = pms.map(pm => `
+    <tr data-pmid="${pm.id}">
+      <td data-label="Habilitado" style="text-align:center;">
+        <input type="checkbox" class="cfg-pm-enabled" ${pm.enabled ? 'checked' : ''}>
+      </td>
+      <td data-label="Forma de Pago">
+        <strong>${pm.label || pm.key}</strong>
+      </td>
+      <td data-label="Comisión (%)">
+        <input type="number" class="cfg-pm-fee mono tabular" value="${pm.feePercent || 0}" min="0" max="20" step="0.1" style="width:80px;">
+      </td>
+      <td data-label="Pide Referencia" style="text-align:center;">
+        <input type="checkbox" class="cfg-pm-ref" ${pm.requiresReference ? 'checked' : ''}>
+      </td>
+      <td data-label="Cuenta / Instrucción">
+        <input type="text" class="cfg-pm-bank" value="${pm.bankInfo || ''}" placeholder="Cuenta CLABE, terminal o nota...">
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderSettingsBackupStats() {
+  const grid = document.getElementById('cfgBackupStatsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div class="cls-item">
+      <span>Productos & SKUs</span>
+      <strong class="mono tabular">${allProducts.length}</strong>
+    </div>
+    <div class="cls-item">
+      <span>Clientes & Créditos</span>
+      <strong class="mono tabular">${allClients.length}</strong>
+    </div>
+    <div class="cls-item">
+      <span>Ventas & Kardex</span>
+      <strong class="mono tabular">${allSales.length + allInventoryMovements.length}</strong>
+    </div>
+    <div class="cls-item">
+      <span>Turnos & Cortes</span>
+      <strong class="mono tabular">${allShifts.length + allCashCuts.length}</strong>
+    </div>
+    <div class="cls-item">
+      <span>Tickets & Taller</span>
+      <strong class="mono tabular">${allTickets.length + allWorkshop.length}</strong>
+    </div>
+  `;
+}
+
+async function downloadFullSystemBackup() {
+  try {
+    const backupData = await erpService.exportBackup();
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fiberlink-erp-respaldo-completo-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Respaldo completo (.JSON) descargado exitosamente');
+  } catch (err) {
+    showToast('Error al generar respaldo: ' + err.message);
+  }
+}
+
 
 
