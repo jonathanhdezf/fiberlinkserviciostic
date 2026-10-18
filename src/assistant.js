@@ -107,6 +107,7 @@ function buildDom() {
   launcher.setAttribute('aria-label', 'Abrir asistente virtual con IA');
   launcher.innerHTML = `
     <span class="fa-launcher-ring" aria-hidden="true"></span>
+    <span class="fa-launcher-ring-2" aria-hidden="true"></span>
     <span class="fa-launcher-core">${ICONS.spark}</span>
     <span class="fa-launcher-badge" aria-hidden="true">IA</span>
     <span class="fa-launcher-tip">
@@ -721,8 +722,29 @@ function bindFormEvents() {
   });
 }
 
+function triggerLauncherEffect() {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try { navigator.vibrate(18); } catch (_) {}
+  }
+  if (!els.launcher) return;
+  els.launcher.classList.add('fa-tap-active');
+  const wave = document.createElement('span');
+  wave.className = 'fa-launcher-shockwave';
+  wave.setAttribute('aria-hidden', 'true');
+  els.launcher.appendChild(wave);
+  setTimeout(() => wave.remove(), 600);
+}
+
+function handleLauncherClick(e) {
+  triggerLauncherEffect();
+  setTimeout(() => {
+    if (els.launcher) els.launcher.classList.remove('fa-tap-active');
+    openPanel();
+  }, 160);
+}
+
 function bindEvents() {
-  els.launcher.addEventListener('click', openPanel);
+  els.launcher.addEventListener('click', handleLauncherClick);
   els.panel.querySelector('#faClose')?.addEventListener('click', closePanel);
   els.panel.querySelector('#faReset')?.addEventListener('click', resetConversation);
 

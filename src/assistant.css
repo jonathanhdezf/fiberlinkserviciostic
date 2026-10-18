@@ -30,10 +30,16 @@
   border-radius: 50%;
   cursor: pointer;
   background: transparent;
-  transition: transform 0.35s var(--fa-ease), opacity 0.3s ease;
+  transition: transform 0.25s var(--fa-ease), opacity 0.3s ease, filter 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .fa-launcher.hidden { transform: scale(0.35) rotate(-35deg); opacity: 0; pointer-events: none; }
 .fa-launcher:hover { transform: translateY(-4px) scale(1.06); }
+.fa-launcher:active,
+.fa-launcher.fa-tap-active {
+  transform: scale(0.91);
+}
 .fa-launcher-core {
   position: absolute;
   inset: 0;
@@ -44,15 +50,63 @@
   background: conic-gradient(from 200deg, var(--fa-lime), var(--fa-cyan), var(--fa-violet), var(--fa-lime));
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.72), 0 0 32px rgba(156, 195, 46, 0.45), inset 0 0 0 3.5px rgba(7, 8, 3, 0.88);
   animation: faSpinHue 8s linear infinite;
+  transition: box-shadow 0.25s ease, filter 0.25s ease;
+}
+.fa-launcher:active .fa-launcher-core,
+.fa-launcher.fa-tap-active .fa-launcher-core {
+  box-shadow: 0 0 45px rgba(156, 195, 46, 0.95), 0 0 24px rgba(124, 231, 255, 0.8), inset 0 0 14px rgba(255, 255, 255, 0.6);
+  filter: brightness(1.25) saturate(1.2);
 }
 .fa-launcher-core svg { width: 28px; height: 28px; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)); animation: faTwinkle 2.6s ease-in-out infinite; }
+
+/* Anillos de pulso estilo radar continuo (inspirado en pingRadar) */
 .fa-launcher-ring {
   position: absolute;
-  inset: -7px;
+  inset: -6px;
   border-radius: 50%;
-  border: 1.5px solid rgba(124, 231, 255, 0.55);
-  animation: faRing 2.4s var(--fa-ease) infinite;
+  border: 1.5px solid var(--fa-lime);
+  opacity: 0;
+  animation: faRadarPulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
 }
+.fa-launcher-ring-2 {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fa-cyan);
+  opacity: 0;
+  animation: faRadarPulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) 1.2s infinite;
+  pointer-events: none;
+}
+
+/* Onda de choque al tocar el launcher (efecto táctil háptico visual) */
+.fa-launcher-shockwave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--fa-lime-bright);
+  background: radial-gradient(circle, rgba(156, 195, 46, 0.4) 0%, rgba(124, 231, 255, 0.18) 50%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0.6);
+  pointer-events: none;
+  animation: faShockwave 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 2;
+}
+@keyframes faShockwave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 1;
+    box-shadow: 0 0 25px rgba(156, 195, 46, 0.9), inset 0 0 15px rgba(124, 231, 255, 0.8);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.8);
+    opacity: 0;
+    box-shadow: 0 0 45px rgba(156, 195, 46, 0);
+  }
+}
+
 .fa-launcher-badge {
   position: absolute;
   top: -4px;
@@ -101,7 +155,11 @@
 .fa-launcher:hover .fa-launcher-tip,
 .fa-launcher.tip-visible .fa-launcher-tip { opacity: 1; transform: translate(0, -50%); }
 
-@keyframes faRing { 0% { transform: scale(0.85); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
+@keyframes faRadarPulse {
+  0% { transform: scale(0.75); opacity: 0.85; box-shadow: 0 0 12px currentColor; }
+  50% { opacity: 0.45; }
+  100% { transform: scale(1.65); opacity: 0; box-shadow: 0 0 24px transparent; }
+}
 @keyframes faSpinHue { to { filter: hue-rotate(25deg); } }
 @keyframes faTwinkle { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.12) rotate(18deg); } }
 
@@ -599,7 +657,12 @@
 @media (max-width: 680px) {
   .fa-desktop-only { display: none !important; }
   .fa-mobile-close { display: grid; }
-  .fa-launcher { right: 14px; bottom: 80px; width: 56px; height: 56px; }
+  .fa-launcher {
+    right: 18px;
+    bottom: 22px;
+    width: 62px;
+    height: 62px;
+  }
   .fa-launcher-tip { display: none; }
   
   .fa-panel {
@@ -615,7 +678,6 @@
   }
   .fa-panel.expanded { width: 100vw; height: 100dvh; }
   html.fa-open, html.fa-open body { overflow: hidden; }
-  html.fa-open #chatFloatBtn { opacity: 0; pointer-events: none; }
   
   .fa-head {
     padding: 12px 14px;
