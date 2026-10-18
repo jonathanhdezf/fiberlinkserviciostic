@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Digital Verificado | Fiberlink Servicios TIC</title>
+  <link rel="icon" type="image/gif" href="/logo.gif">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #090d16;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent: #0284c7;
+      --emerald: #059669;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 14px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .digital-ticket-shell {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+    .dt-top-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      padding: 22px 20px 18px;
+      text-align: center;
+      border-bottom: 3px solid #38bdf8;
+    }
+    .dt-logo-box {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+    .dt-logo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .dt-verified-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .dt-company-name {
+      font-size: 1.12rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .dt-company-sub {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+    .dt-body {
+      padding: 20px;
+    }
+    .dt-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 0.78rem;
+    }
+    .dt-meta-item span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+    .dt-meta-item strong {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-main);
+    }
+    .dt-meta-item.full {
+      grid-column: 1 / -1;
+      border-top: 1px dashed var(--border);
+      padding-top: 8px;
+    }
+    .dt-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .dt-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+    }
+    .dt-items-table th {
+      text-align: left;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dt-items-table td {
+      padding: 9px 0;
+      border-bottom: 1px dashed var(--border);
+      vertical-align: top;
+    }
+    .dt-item-sku {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+      background: #f0f9ff;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+    .dt-totals-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .dt-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding: 3px 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .dt-total-row.grand {
+      border-top: 1px solid var(--border);
+      margin-top: 6px;
+      padding-top: 8px;
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .dt-qr-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      background: #fcfcfd;
+    }
+    .dt-qr-img {
+      width: 78px;
+      height: 78px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: #fff;
+      padding: 4px;
+    }
+    .dt-qr-info {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .dt-qr-info strong {
+      display: block;
+      color: var(--text-main);
+      margin-bottom: 2px;
+      font-size: 0.78rem;
+    }
+    .dt-footer-notes {
+      text-align: center;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .dt-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .dt-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.86rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.12s ease, opacity 0.15s ease;
+    }
+    .dt-btn:active { transform: scale(0.98); }
+    .dt-btn-primary {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .dt-btn-wa {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .dt-btn-outline {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .digital-ticket-shell { box-shadow: none; max-width: 100%; border-radius: 0; }
+      .dt-actions { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="digital-ticket-shell" id="ticketApp">
+    <header class="dt-top-banner">
+      <div class="dt-logo-box" id="dtLogoBox">
+        <img id="dtLogoImg" src="/logo.gif" alt="Fiberlink">
+      </div>
+      <div class="dt-verified-pill">
+        <span>✓ Ticket Digital Verificado</span>
+      </div>
+      <h1 class="dt-company-name" id="dtCompanyName">FIBERLINK SERVICIOS TIC</h1>
+      <p class="dt-company-sub" id="dtCompanyInfo">
+        RFC: FST2109148H2<br>
+        Calle Hidalgo Centro, Teziutlán, Puebla · Tel: 231 102 4672
+      </p>
+    </header>
+
+    <div class="dt-body">
+      <div class="dt-meta-grid">
+        <div class="dt-meta-item">
+          <span>Folio Comprobante</span>
+          <strong id="dtFolio">VTA-1005</strong>
+        </div>
+        <div class="dt-meta-item">
+          <span>Fecha y Hora</span>
+          <strong id="dtDate">-</strong>
+        </div>
+        <div class="dt-meta-item">
+          <span>Método de Pago</span>
+          <strong id="dtMethod">Efectivo</strong>
+        </div>
+        <div class="dt-meta-item">
+          <span>Atendió en Caja</span>
+          <strong id="dtCashier">Mostrador</strong>
+        </div>
+        <div class="dt-meta-item full">
+          <span>Cliente</span>
+          <strong id="dtClient">Mostrador / Público en General</strong>
+        </div>
+      </div>
+
+      <div class="dt-section-label">Conceptos Adquiridos</div>
+      <table class="dt-items-table">
+        <thead>
+          <tr>
+            <th>Cant. / Descripción</th>
+            <th style="text-align:right;">Importe</th>
+          </tr>
+        </thead>
+        <tbody id="dtItemsBody"></tbody>
+      </table>
+
+      <div class="dt-totals-box" id="dtTotalsBox"></div>
+
+      <div class="dt-qr-box" id="dtQrContainer">
+        <img id="dtQrImg" class="dt-qr-img" alt="QR de verificación" src="">
+        <div class="dt-qr-info">
+          <strong>Sello Digital de Autenticidad</strong>
+          <span>Escanea este código QR para verificar la validez de tu ticket o solicitar garantía en sucursal.</span>
+        </div>
+      </div>
+
+      <div class="dt-footer-notes">
+        <p><strong id="dtFooterMsg">¡Gracias por su preferencia! Garantía y soporte local en Teziutlán.</strong></p>
+        <p id="dtWarrantyMsg" style="margin-top:6px; font-size:0.72rem;">
+          Equipos nuevos con 1 año de garantía contra defecto de fábrica. Servicios y reparaciones 30 días presentando este ticket digital.
+        </p>
+      </div>
+
+      <div class="dt-actions">
+        <button type="button" class="dt-btn dt-btn-primary" id="btnPrintDigitalTicket">
+          <span>🖨️ Descargar PDF / Imprimir Ticket</span>
+        </button>
+        <a href="https://wa.me/522311024672" target="_blank" rel="noopener noreferrer" class="dt-btn dt-btn-wa" id="btnSupportWhatsapp">
+          <span>💬 Dudas o Garantía por WhatsApp</span>
+        </a>
+        <a href="/catalogo.html" class="dt-btn dt-btn-outline">
+          <span>🛍️ Ver Catálogo en Línea de Fiberlink</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function money(n) {
+      const v = parseFloat(n) || 0;
+      return '$' + v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function decodeTicketPayload(str) {
+      try {
+        const json = decodeURIComponent(escape(atob(str)));
+        return JSON.parse(json);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function initDigitalTicket() {
+      const params = new URLSearchParams(window.location.search);
+      const folioParam = params.get('folio') || 'VTA-1001';
+      const encodedData = params.get('d');
+
+      let payload = encodedData ? decodeTicketPayload(encodedData) : null;
+      let sale = payload?.sale || null;
+      let cfg = payload?.cfg || null;
+
+      if (!sale) {
+        try {
+          const res = await fetch('/api/sales/' + encodeURIComponent(folioParam));
+          if (res.ok) sale = await res.json();
+        } catch (e) {}
+      }
+
+      if (!cfg) {
+        try {
+          const res = await fetch('/api/settings');
+          if (res.ok) cfg = await res.json();
+        } catch (e) {}
+      }
+
+      // Fallback demo sale if opened directly without parameters
+      if (!sale) {
+        sale = {
+          folio: folioParam,
+          date: new Date().toISOString(),
+          clientName: 'Mostrador / Público en General',
+          cashier: 'Lic. Sofía Navarro',
+          paymentMethod: 'Efectivo',
+          subtotal: 3040,
+          discount: 0,
+          total: 3040,
+          amountReceived: 3040,
+          change: 0,
+          items: [
+            { sku: 'POS-IMP-80', name: 'Impresora Térmica 80mm Autocorte USB + LAN', qty: 1, price: 1890, subtotal: 1890 },
+            { sku: 'POS-CAJ-01', name: 'Cajón de Dinero Automático Metálico RJ11', qty: 1, price: 1150, subtotal: 1150 }
+          ]
+        };
+      }
+
+      const comp = cfg?.company || {};
+      const tkt = cfg?.ticketConfig || {};
+      const tax = cfg?.taxes || {};
+
+      document.getElementById('dtCompanyName').textContent = comp.commercialName || 'FIBERLINK SERVICIOS TIC';
+      document.getElementById('dtCompanyInfo').innerHTML = `
+        RFC: ${comp.rfc || 'FST2109148H2'}<br>
+        ${comp.address || 'Calle Hidalgo Centro, Teziutlán, Puebla'} · Tel: ${comp.phone || '231 102 4672'}
+      `;
+
+      if (comp.logoUrl) {
+        document.getElementById('dtLogoImg').src = comp.logoUrl;
+      }
+      if (tkt.showLogo === false) {
+        document.getElementById('dtLogoBox').style.display = 'none';
+      }
+
+      document.getElementById('dtFolio').textContent = sale.folio || folioParam;
+      document.getElementById('dtDate').textContent = new Date(sale.date || Date.now()).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+      document.getElementById('dtMethod').textContent = sale.paymentMethod || 'Efectivo';
+      document.getElementById('dtCashier').textContent = sale.cashier || 'Mostrador';
+      document.getElementById('dtClient').textContent = sale.clientName || 'Mostrador / Público en General';
+
+      const items = Array.isArray(sale.items) ? sale.items : [];
+      const showSku = tkt.showSkuOnItems !== false;
+      document.getElementById('dtItemsBody').innerHTML = items.map(it => {
+        const lineSub = it.subtotal || ((parseFloat(it.price) || 0) * (Number(it.qty) || 1));
+        return `
+          <tr>
+            <td>
+              <div><strong>${it.qty || 1}x</strong> ${showSku && it.sku ? `<span class="dt-item-sku">${it.sku}</span>` : ''}${it.name || it.concept || 'Artículo'}</div>
+              <div style="font-size:0.72rem; color:#64748b;">Precio unit.: ${money(it.price)}</div>
+            </td>
+            <td style="text-align:right; font-family:'JetBrains Mono',monospace; font-weight:600;">${money(lineSub)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const total = parseFloat(sale.total) || 0;
+      const discount = parseFloat(sale.discount) || 0;
+      const vatRate = parseFloat(tax.vatRate ?? 16) || 16;
+      const baseAmount = vatRate > 0 ? (total / (1 + vatRate / 100)) : total;
+      const vatAmount = Math.max(0, total - baseAmount);
+
+      let totalsHtml = '';
+      if (discount > 0) {
+        totalsHtml += `<div class="dt-total-row"><span>Subtotal Original:</span><span>${money(sale.subtotal || (total + discount))}</span></div>`;
+        totalsHtml += `<div class="dt-total-row" style="color:#059669;"><span>Descuento Aplicado:</span><span>-${money(discount)}</span></div>`;
+      }
+      if (tkt.showTaxBreakdown !== false && vatRate > 0) {
+        totalsHtml += `<div class="dt-total-row"><span>Subtotal Base:</span><span>${money(baseAmount)}</span></div>`;
+        totalsHtml += `<div class="dt-total-row"><span>${tax.taxName || 'IVA'} (${vatRate}%):</span><span>${money(vatAmount)}</span></div>`;
+      }
+      totalsHtml += `<div class="dt-total-row grand"><span>TOTAL PAGADO:</span><span>${money(total)} ${tax.currencyCode || 'MXN'}</span></div>`;
+      if (sale.paymentMethod === 'Efectivo' && sale.amountReceived) {
+        totalsHtml += `<div class="dt-total-row"><span>Efectivo Recibido:</span><span>${money(sale.amountReceived)}</span></div>`;
+        totalsHtml += `<div class="dt-total-row"><span>Cambio Entregado:</span><span>${money(sale.change || 0)}</span></div>`;
+      }
+      document.getElementById('dtTotalsBox').innerHTML = totalsHtml;
+
+      if (tkt.footerMessage) document.getElementById('dtFooterMsg').textContent = tkt.footerMessage;
+      if (tkt.warrantyPolicy) document.getElementById('dtWarrantyMsg').textContent = tkt.warrantyPolicy;
+
+      // QR Code generation for verification
+      const qrContainer = document.getElementById('dtQrContainer');
+      if (tkt.digitalTicketShowQr === false) {
+        qrContainer.style.display = 'none';
+      } else {
+        const verifyUrl = window.location.href;
+        document.getElementById('dtQrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(verifyUrl);
+      }
+
+      const waPhone = (comp.whatsapp || comp.phone || '2311024672').replace(/\D/g, '');
+      const normPhone = waPhone.length === 10 ? '52' + waPhone : waPhone;
+      const supBtn = document.getElementById('btnSupportWhatsapp');
+      if (tkt.digitalTicketShowSupportBtn === false) {
+        supBtn.style.display = 'none';
+      } else {
+        supBtn.href = `https://wa.me/${normPhone}?text=${encodeURIComponent('Hola Fiberlink, tengo una consulta sobre mi Ticket Digital ' + (sale.folio || folioParam))}`;
+      }
+
+      document.getElementById('btnPrintDigitalTicket').addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    initDigitalTicket();
+  </script>
+</body>
+</html>

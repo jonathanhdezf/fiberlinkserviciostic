@@ -2061,7 +2061,14 @@ function initPosModule() {
       renderPosCatalog();
       await syncAllData();
       showToast(`Venta ${res.sale.folio} procesada con éxito (${paymentMethod})`);
-      printPosReceipt(res.sale);
+
+      const autoPrint = systemSettings?.enabledOptions?.autoPrintTicketOnSale !== false;
+      const digitalEnabled = systemSettings?.ticketConfig?.enableDigitalTicket !== false;
+      if (digitalEnabled) {
+        openDigitalTicketModal(res.sale);
+      } else if (autoPrint) {
+        printPosReceipt(res.sale);
+      }
     } catch (err) {
       showToast(err.message);
     }
@@ -2312,14 +2319,22 @@ function renderPosSalesHistory() {
         <td data-label="Total" style="text-align:right;" class="mono tabular"><strong>${formatMoney(s.total)}</strong></td>
         <td data-label="Estado"><span class="badge ${isCancelled ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isCancelled ? 'dot-red' : 'dot-lime'}"></span>${s.status}</span></td>
         <td data-label="Acciones" style="text-align:right;">
-          <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
-            <button class="btn btn-ghost btn-sm btn-print-sale" data-id="${s.id}">Ticket</button>
+          <div style="display:inline-flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm btn-digital-ticket-sale" data-id="${s.id}" title="Enviar enlace de Ticket Digital por WhatsApp">📲 Ticket Digital</button>
+            <button class="btn btn-ghost btn-sm btn-print-sale" data-id="${s.id}" title="Imprimir Ticket Físico">🖨️ Impreso</button>
             ${!isCancelled && currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-cancel-sale" data-id="${s.id}">Cancelar</button>` : ''}
           </div>
         </td>
       </tr>
     `;
   }).join('');
+
+  tbody.querySelectorAll('.btn-digital-ticket-sale').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sale = allSales.find(x => x.id === btn.dataset.id);
+      if (sale) openDigitalTicketModal(sale);
+    });
+  });
 
   tbody.querySelectorAll('.btn-print-sale').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -5683,28 +5698,48 @@ function printCashCutTicket(cut) {
 }
 
 // ==========================================
-// 16. VIEW 10: MÓDULO DE CONFIGURACIÓN DEL SISTEMA
+// 16. VIEW 10: MÓDULO DE CONFIGURACIÓN DEL SISTEMA (12 PESTAÑAS + TICKET DIGITAL WHATSAPP)
 // ==========================================
-function switchSettingsSubTab(tabName) {
-  const paneMap = {
-    options_cut: 'cfgSubTabOptionsCut',
-    cashiers_registers: 'cfgSubTabCashiersRegisters',
-    folios_units: 'cfgSubTabFoliosUnits',
-    logo_ticket: 'cfgSubTabLogoTicket',
-    payments_taxes: 'cfgSubTabPaymentsTaxes',
-    notifications_backup: 'cfgSubTabNotificationsBackup'
-  };
+const SETTINGS_TABS_META = [
+  { key: 'options', title: '1. Opciones habilitadas', paneId: 'cfgTabPane-options' },
+  { key: 'cashiers', title: '2. Cajeros', paneId: 'cfgTabPane-cashiers' },
+  { key: 'folios', title: '3. Modificar folios', paneId: 'cfgTabPane-folios' },
+  { key: 'registers', title: '4. Administrar cajas', paneId: 'cfgTabPane-registers' },
+  { key: 'logo', title: '5. Logotipo del programa', paneId: 'cfgTabPane-logo' },
+  { key: 'ticket', title: '6. Ticket (Físico y Digital por WhatsApp)', paneId: 'cfgTabPane-ticket' },
+  { key: 'payments', title: '7. Formas de pago', paneId: 'cfgTabPane-payments' },
+  { key: 'taxes', title: '8. Impuestos', paneId: 'cfgTabPane-taxes' },
+  { key: 'cut', title: '9. Corte', paneId: 'cfgTabPane-cut' },
+  { key: 'units', title: '10. Unidades de medida', paneId: 'cfgTabPane-units' },
+  { key: 'notifications', title: '11. Notificaciones', paneId: 'cfgTabPane-notifications' },
+  { key: 'backup', title: '12. Respaldo', paneId: 'cfgTabPane-backup' }
+];
 
-  document.querySelectorAll('#settingsModuleTabs .pill-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cfgtab === tabName);
+let currentSettingsTabKey = 'options';
+let currentTicketPreviewMode = 'digital'; // 'digital' | 'thermal'
+let activeDigitalTicketSale = null;
+
+function switchSettingsSubTab(tabKey) {
+  const foundIdx = SETTINGS_TABS_META.findIndex(t => t.key === tabKey);
+  const idx = foundIdx !== -1 ? foundIdx : 0;
+  const activeMeta = SETTINGS_TABS_META[idx];
+  currentSettingsTabKey = activeMeta.key;
+
+  document.querySelectorAll('#settingsModuleTabs .settings-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cfgtab === currentSettingsTabKey);
   });
 
-  Object.entries(paneMap).forEach(([key, domId]) => {
-    const el = document.getElementById(domId);
-    if (el) el.classList.toggle('active', key === tabName);
+  SETTINGS_TABS_META.forEach(meta => {
+    const pane = document.getElementById(meta.paneId);
+    if (pane) pane.classList.toggle('active', meta.key === currentSettingsTabKey);
   });
 
-  if (tabName === 'logo_ticket') {
+  const badgeEl = document.getElementById('cfgActiveTabBadge');
+  const titleEl = document.getElementById('cfgActiveTabTitle');
+  if (badgeEl) badgeEl.textContent = `Pestaña ${idx + 1} de ${SETTINGS_TABS_META.length}`;
+  if (titleEl) titleEl.textContent = activeMeta.title;
+
+  if (currentSettingsTabKey === 'ticket' || currentSettingsTabKey === 'logo') {
     renderLiveTicketPreview();
   }
 }
@@ -5734,11 +5769,23 @@ function applySystemSettingsBranding() {
 }
 
 function initSettingsModule() {
-  // 6-Tab Switcher
-  document.querySelectorAll('#settingsModuleTabs .pill-btn').forEach(btn => {
+  // 12-Tab Switcher
+  document.querySelectorAll('#settingsModuleTabs .settings-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      switchSettingsSubTab(btn.dataset.cfgtab || 'options_cut');
+      switchSettingsSubTab(btn.dataset.cfgtab || 'options');
     });
+  });
+
+  document.getElementById('btnCfgPrevTab')?.addEventListener('click', () => {
+    const curIdx = SETTINGS_TABS_META.findIndex(t => t.key === currentSettingsTabKey);
+    const prevIdx = (curIdx - 1 + SETTINGS_TABS_META.length) % SETTINGS_TABS_META.length;
+    switchSettingsSubTab(SETTINGS_TABS_META[prevIdx].key);
+  });
+
+  document.getElementById('btnCfgNextTab')?.addEventListener('click', () => {
+    const curIdx = SETTINGS_TABS_META.findIndex(t => t.key === currentSettingsTabKey);
+    const nextIdx = (curIdx + 1) % SETTINGS_TABS_META.length;
+    switchSettingsSubTab(SETTINGS_TABS_META[nextIdx].key);
   });
 
   // Top Header Save & Backup Buttons
@@ -5748,12 +5795,15 @@ function initSettingsModule() {
   document.getElementById('btnQuickDownloadBackup')?.addEventListener('click', downloadFullSystemBackup);
   document.getElementById('btnDownloadFullBackup')?.addEventListener('click', downloadFullSystemBackup);
 
-  // Sub-Tab 1: Opciones Habilitadas & Reglas de Corte
+  // Pestaña 1 (Opciones habilitadas) & Pestaña 9 (Corte)
   document.getElementById('btnSaveOptionsAndCutCfg')?.addEventListener('click', () => {
-    saveAllSettingsSections('Opciones Habilitadas y Reglas de Corte');
+    saveAllSettingsSections('Opciones Habilitadas');
+  });
+  document.getElementById('btnSaveCutOnlyCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Reglas de Corte y Arqueo');
   });
 
-  // Sub-Tab 2: Administrar Cajas & Cajeros
+  // Pestaña 4: Administrar Cajas & Pestaña 2: Cajeros
   document.getElementById('btnCfgRegReset')?.addEventListener('click', () => {
     document.getElementById('cfgRegisterForm')?.reset();
     document.getElementById('cfgRegId').value = '';
@@ -5806,7 +5856,7 @@ function initSettingsModule() {
     openModal('userModal');
   });
 
-  // Sub-Tab 3: Modificar Folios & Unidades de Medida
+  // Pestaña 3: Modificar Folios & Pestaña 10: Unidades de Medida
   document.getElementById('btnSaveFoliosConfig')?.addEventListener('click', async () => {
     if (!systemSettings) return;
     const folios = { ...(systemSettings.folios || {}) };
@@ -5845,7 +5895,7 @@ function initSettingsModule() {
     showToast(`Unidad de medida "${key}" agregada al catálogo`);
   });
 
-  // Sub-Tab 4: Logotipo del Programa & Ticket
+  // Pestaña 5: Logotipo del Programa & Pestaña 6: Ticket (Físico y Digital)
   const logoFileInput = document.getElementById('cfgLogoFileInput');
   logoFileInput?.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
@@ -5876,15 +5926,45 @@ function initSettingsModule() {
   [
     'cfgCompCommercialName', 'cfgCompProgramName', 'cfgCompRfc', 'cfgCompPhone', 'cfgCompAddress',
     'cfgTicketPaperWidth', 'cfgTicketFontSize', 'cfgTicketHeaderLine1', 'cfgTicketFooterMsg',
-    'cfgTicketWarranty', 'cfgTicketShowLogo', 'cfgTicketShowTax', 'cfgTicketShowCashier', 'cfgTicketShowSku'
+    'cfgTicketWarranty', 'cfgTicketShowLogo', 'cfgTicketShowTax', 'cfgTicketShowCashier', 'cfgTicketShowSku',
+    'cfgDigitalTicketEnabled', 'cfgDigitalTicketShowQr', 'cfgDigitalTicketShowSupportBtn', 'cfgDigitalTicketWhatsappTpl'
   ].forEach(id => {
     const el = document.getElementById(id);
     el?.addEventListener('input', renderLiveTicketPreview);
     el?.addEventListener('change', renderLiveTicketPreview);
   });
 
+  // Switch between Digital Ticket Web Preview and Thermal Print Preview
+  document.querySelectorAll('#cfgTicketPreviewModePills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#cfgTicketPreviewModePills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTicketPreviewMode = btn.dataset.tktmode === 'thermal' ? 'thermal' : 'digital';
+      const digBox = document.getElementById('cfgLiveDigitalTicketPreviewBox');
+      const thmBox = document.getElementById('cfgLiveTicketPreviewBox');
+      if (digBox) digBox.style.display = currentTicketPreviewMode === 'digital' ? 'block' : 'none';
+      if (thmBox) thmBox.style.display = currentTicketPreviewMode === 'thermal' ? 'block' : 'none';
+      renderLiveTicketPreview();
+    });
+  });
+
+  document.getElementById('btnOpenSampleDigitalTicket')?.addEventListener('click', () => {
+    const sampleSale = getSampleOrLatestSaleForPreview();
+    const url = buildDigitalTicketUrl(sampleSale, true);
+    window.open(url, '_blank', 'noopener');
+  });
+
+  document.getElementById('btnTestWhatsappDigitalTicket')?.addEventListener('click', () => {
+    const sampleSale = getSampleOrLatestSaleForPreview();
+    openDigitalTicketModal(sampleSale);
+  });
+
+  document.getElementById('btnSaveLogoOnlyCfg')?.addEventListener('click', () => {
+    saveAllSettingsSections('Logotipo del Programa y Datos Fiscales');
+  });
+
   document.getElementById('btnSaveLogoAndTicketCfg')?.addEventListener('click', () => {
-    saveAllSettingsSections('Identidad, Logotipo y Diseño de Ticket');
+    saveAllSettingsSections('Diseño de Ticket Físico y Ticket Digital por WhatsApp');
   });
 
   document.getElementById('btnPrintTestTicket')?.addEventListener('click', () => {
@@ -5897,7 +5977,7 @@ function initSettingsModule() {
     }
   });
 
-  // Sub-Tab 5: Formas de Pago & Impuestos
+  // Pestaña 7: Formas de Pago & Pestaña 8: Impuestos
   document.getElementById('btnSavePaymentMethodsCfg')?.addEventListener('click', async () => {
     if (!systemSettings) return;
     const methods = collectPaymentMethodsFromTable();
@@ -5910,7 +5990,7 @@ function initSettingsModule() {
     saveAllSettingsSections('Impuestos y Moneda');
   });
 
-  // Sub-Tab 6: Notificaciones & Respaldo
+  // Pestaña 11: Notificaciones & Pestaña 12: Respaldo
   document.getElementById('btnSaveNotificationsCfg')?.addEventListener('click', () => {
     saveAllSettingsSections('Notificaciones y Alertas');
   });
@@ -5942,6 +6022,212 @@ function initSettingsModule() {
     };
     reader.readAsText(file);
   });
+
+  // Wire Digital Ticket Modal (#digitalTicketModal) Events
+  document.getElementById('btnDtCopyLink')?.addEventListener('click', async () => {
+    const linkIn = document.getElementById('dtModalLinkInput');
+    if (!linkIn || !linkIn.value) return;
+    try {
+      await navigator.clipboard.writeText(linkIn.value);
+      showToast('📋 Enlace del Ticket Digital copiado al portapapeles');
+    } catch (e) {
+      linkIn.select();
+      document.execCommand('copy');
+      showToast('📋 Enlace copiado');
+    }
+  });
+
+  document.getElementById('btnDtOpenLink')?.addEventListener('click', () => {
+    const linkIn = document.getElementById('dtModalLinkInput');
+    if (linkIn?.value) {
+      window.open(linkIn.value, '_blank', 'noopener');
+    }
+  });
+
+  document.getElementById('btnDtPrintThermal')?.addEventListener('click', () => {
+    if (activeDigitalTicketSale) {
+      printPosReceipt(activeDigitalTicketSale);
+    }
+  });
+
+  document.getElementById('btnDtSendWhatsappNow')?.addEventListener('click', () => {
+    const rawPhone = (document.getElementById('dtModalPhoneInput')?.value || '').replace(/\D/g, '');
+    const msg = (document.getElementById('dtModalMessagePreview')?.value || '').trim();
+    if (!msg) return;
+    let cleanPhone = rawPhone;
+    if (cleanPhone.length === 10) {
+      cleanPhone = `52${cleanPhone}`;
+    }
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank', 'noopener');
+    showToast('📲 Abriendo WhatsApp con el enlace del Ticket Digital...');
+  });
+}
+
+function getSampleOrLatestSaleForPreview() {
+  if (allSales.length > 0) {
+    return allSales[0];
+  }
+  return {
+    id: 'sale-sample',
+    folio: 'VTA-1005',
+    date: new Date().toISOString(),
+    clientName: 'Mostrador / Público en General',
+    cashier: currentUser?.name || 'Lic. Sofía Navarro',
+    paymentMethod: 'Efectivo',
+    subtotal: 3040,
+    discount: 0,
+    total: 3040,
+    items: [
+      { sku: 'POS-IMP-80', name: 'Impresora Térmica 80mm Autocorte', qty: 1, price: 1890 },
+      { sku: 'POS-CAJ-01', name: 'Cajón de Dinero Automático RJ11', qty: 1, price: 1150 }
+    ]
+  };
+}
+
+function encodeBase64Unicode(obj) {
+  try {
+    const json = JSON.stringify(obj);
+    return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
+  } catch (e) {
+    return '';
+  }
+}
+
+function buildDigitalTicketUrl(sale, useLiveFormValues = false) {
+  const s = sale || getSampleOrLatestSaleForPreview();
+  const comp = systemSettings?.company || {};
+  const tkt = systemSettings?.ticketConfig || {};
+  const tax = systemSettings?.taxes || {};
+
+  // Avoid embedding huge data:image base64 strings inside URL query params
+  const rawLogo = comp.logoUrl || '/logo.gif';
+  const safeLogoUrl = rawLogo.startsWith('data:') ? '/logo.gif' : rawLogo;
+
+  const snapshot = {
+    sale: {
+      folio: s.folio || 'VTA-1001',
+      date: s.date || new Date().toISOString(),
+      clientName: s.clientName || 'Mostrador / Público en General',
+      cashier: s.cashier || 'Cajero POS',
+      paymentMethod: s.paymentMethod || 'Efectivo',
+      linkedRef: s.linkedRef || '',
+      subtotal: Number(s.subtotal ?? s.total) || 0,
+      discount: Number(s.discount) || 0,
+      total: Number(s.total) || 0,
+      status: s.status || 'completada',
+      items: (s.items || []).map(it => ({
+        sku: it.sku || '',
+        name: it.name || 'Artículo',
+        qty: Number(it.qty) || 1,
+        price: Number(it.price) || 0
+      }))
+    },
+    settings: {
+      company: {
+        commercialName: useLiveFormValues
+          ? (document.getElementById('cfgCompCommercialName')?.value || comp.commercialName || 'FIBERLINK SERVICIOS TIC')
+          : (comp.commercialName || 'FIBERLINK SERVICIOS TIC'),
+        rfc: useLiveFormValues
+          ? (document.getElementById('cfgCompRfc')?.value || comp.rfc || 'FST2109148H2')
+          : (comp.rfc || 'FST2109148H2'),
+        address: useLiveFormValues
+          ? (document.getElementById('cfgCompAddress')?.value || comp.address || 'Teziutlán, Puebla')
+          : (comp.address || 'Teziutlán, Puebla'),
+        phone: useLiveFormValues
+          ? (document.getElementById('cfgCompPhone')?.value || comp.phone || '231 102 4672')
+          : (comp.phone || '231 102 4672'),
+        whatsapp: comp.whatsapp || '2311024672',
+        logoUrl: safeLogoUrl
+      },
+      ticketConfig: {
+        headerLine1: useLiveFormValues
+          ? (document.getElementById('cfgTicketHeaderLine1')?.value ?? tkt.headerLine1 ?? '')
+          : (tkt.headerLine1 || ''),
+        footerMessage: useLiveFormValues
+          ? (document.getElementById('cfgTicketFooterMsg')?.value ?? tkt.footerMessage ?? '')
+          : (tkt.footerMessage || ''),
+        warrantyPolicy: useLiveFormValues
+          ? (document.getElementById('cfgTicketWarranty')?.value ?? tkt.warrantyPolicy ?? '')
+          : (tkt.warrantyPolicy || ''),
+        showLogo: useLiveFormValues
+          ? (document.getElementById('cfgTicketShowLogo')?.checked !== false)
+          : (tkt.showLogo !== false),
+        showTaxBreakdown: useLiveFormValues
+          ? (document.getElementById('cfgTicketShowTax')?.checked !== false)
+          : (tkt.showTaxBreakdown !== false),
+        showCashierAndShift: useLiveFormValues
+          ? (document.getElementById('cfgTicketShowCashier')?.checked !== false)
+          : (tkt.showCashierAndShift !== false),
+        showSkuOnItems: useLiveFormValues
+          ? (document.getElementById('cfgTicketShowSku')?.checked !== false)
+          : (tkt.showSkuOnItems !== false)
+      },
+      taxes: {
+        taxName: tax.taxName || 'IVA',
+        vatRate: Number(tax.vatRate ?? 16),
+        pricesIncludeTax: tax.pricesIncludeTax !== false,
+        currencyCode: tax.currencyCode || 'MXN'
+      }
+    }
+  };
+
+  const encoded = encodeBase64Unicode(snapshot);
+  const origin = window.location.origin;
+  return `${origin}/ticket.html?folio=${encodeURIComponent(s.folio || 'VTA-1001')}&d=${encodeURIComponent(encoded)}`;
+}
+
+function buildDigitalTicketWhatsappMessage(sale, ticketUrl) {
+  const s = sale || getSampleOrLatestSaleForPreview();
+  const compName = systemSettings?.company?.commercialName || 'FIBERLINK SERVICIOS TIC';
+  const rawTpl = document.getElementById('cfgDigitalTicketWhatsappTpl')?.value
+    || systemSettings?.ticketConfig?.digitalTicketWhatsappTemplate
+    || 'Hola *{cliente}*, gracias por tu compra en *{empresa}*. Aquí puedes consultar y descargar tu Ticket Digital *{folio}* por *{total}*:\n{enlace}';
+
+  return rawTpl
+    .replace(/\{cliente\}/g, s.clientName || 'Cliente')
+    .replace(/\{empresa\}/g, compName)
+    .replace(/\{folio\}/g, s.folio || 'VTA-1001')
+    .replace(/\{total\}/g, `${formatMoney(s.total)} MXN`)
+    .replace(/\{enlace\}/g, ticketUrl);
+}
+
+function openDigitalTicketModal(sale) {
+  const s = sale || getSampleOrLatestSaleForPreview();
+  activeDigitalTicketSale = s;
+
+  const url = buildDigitalTicketUrl(s, false);
+  const msg = buildDigitalTicketWhatsappMessage(s, url);
+
+  // Try to prefill client's phone if client is registered in allClients
+  let clientPhone = '';
+  if (s.clientId) {
+    const c = allClients.find(x => x.id === s.clientId);
+    if (c?.phone) clientPhone = c.phone;
+  } else if (s.clientName) {
+    const c = allClients.find(x => x.name.toLowerCase() === s.clientName.toLowerCase());
+    if (c?.phone) clientPhone = c.phone;
+  }
+
+  const badgeEl = document.getElementById('dtModalFolioBadge');
+  const folioEl = document.getElementById('dtModalFolio');
+  const clientEl = document.getElementById('dtModalClient');
+  const totalEl = document.getElementById('dtModalTotal');
+  const phoneIn = document.getElementById('dtModalPhoneInput');
+  const linkIn = document.getElementById('dtModalLinkInput');
+  const msgIn = document.getElementById('dtModalMessagePreview');
+
+  if (badgeEl) badgeEl.textContent = `TICKET DIGITAL VERIFICADO · ${s.folio}`;
+  if (folioEl) folioEl.textContent = s.folio;
+  if (clientEl) clientEl.textContent = s.clientName || 'Mostrador';
+  if (totalEl) totalEl.textContent = formatMoney(s.total);
+  if (phoneIn) phoneIn.value = clientPhone;
+  if (linkIn) linkIn.value = url;
+  if (msgIn) msgIn.value = msg;
+
+  openModal('digitalTicketModal');
 }
 
 function playErpNotificationBeep() {
@@ -6038,7 +6324,11 @@ async function saveAllSettingsSections(sectionLabel = 'Configuración General') 
     showLogo: Boolean(document.getElementById('cfgTicketShowLogo')?.checked),
     showTaxBreakdown: Boolean(document.getElementById('cfgTicketShowTax')?.checked),
     showCashierAndShift: Boolean(document.getElementById('cfgTicketShowCashier')?.checked),
-    showSkuOnItems: Boolean(document.getElementById('cfgTicketShowSku')?.checked)
+    showSkuOnItems: Boolean(document.getElementById('cfgTicketShowSku')?.checked),
+    enableDigitalTicket: Boolean(document.getElementById('cfgDigitalTicketEnabled')?.checked),
+    digitalTicketShowQr: Boolean(document.getElementById('cfgDigitalTicketShowQr')?.checked),
+    digitalTicketShowSupportBtn: Boolean(document.getElementById('cfgDigitalTicketShowSupportBtn')?.checked),
+    digitalTicketWhatsappTemplate: (document.getElementById('cfgDigitalTicketWhatsappTpl')?.value || '').trim()
   };
 
   const taxes = {
@@ -6096,7 +6386,7 @@ function renderSettingsModule() {
   };
   setTxt('cfgKpiCompanyName', comp.commercialName || 'FIBERLINK TIC');
   setTxt('cfgKpiRfcBadge', comp.rfc || 'FST2109148H2');
-  setTxt('cfgKpiPaperWidthFoot', `Impresión térmica ${tkt.paperWidth || '80mm'} activa`);
+  setTxt('cfgKpiPaperWidthFoot', `Térmica ${tkt.paperWidth || '80mm'} + ${tkt.enableDigitalTicket !== false ? 'Ticket Digital WhatsApp' : 'Impreso'}`);
   setTxt('cfgKpiRegistersCount', `${regs.filter(r => r.active !== false).length} Cajas`);
   setTxt('cfgKpiCashiersCount', `${allUsers.length} operadores`);
   setTxt('cfgKpiTaxRate', `${tax.taxName || 'IVA'} ${tax.vatRate ?? 16}%`);
@@ -6104,7 +6394,6 @@ function renderSettingsModule() {
   setTxt('cfgKpiTaxModeFoot', `${tax.pricesIncludeTax !== false ? 'Precios con impuesto incluido' : 'Más impuestos'} · ${tax.currencyCode || 'MXN'}`);
   setTxt('cfgKpiUnitsCount', `${units.length} Unidades`);
 
-  // Populate Checkboxes & Inputs in Sub-Tab 1 (Opciones Habilitadas & Corte)
   const setChk = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.checked = Boolean(val);
@@ -6114,6 +6403,7 @@ function renderSettingsModule() {
     if (el && val !== undefined && val !== null) el.value = val;
   };
 
+  // Pestaña 1: Opciones Habilitadas & Pestaña 9: Corte
   setChk('optAllowSellWithoutStock', opts.allowSellWithoutStock);
   setChk('optRequireClientForCredit', opts.requireClientForCredit !== false);
   setChk('optOpenCashDrawer', opts.openCashDrawerOnCashSale !== false);
@@ -6131,15 +6421,15 @@ function renderSettingsModule() {
   setChk('cfgCutRequireDenominations', cut.requireCountDenominations);
   setChk('cfgCutAutoWhatsapp', cut.autoSendWhatsappOnCloseShift);
 
-  // Sub-Tab 2: Administrar Cajas & Cajeros
+  // Pestaña 2 & 4: Administrar Cajas & Cajeros
   renderSettingsRegistersTable();
   renderSettingsCashiersTable();
 
-  // Sub-Tab 3: Modificar Folios & Unidades de Medida
+  // Pestaña 3 & 10: Modificar Folios & Unidades de Medida
   renderSettingsFoliosTable();
   renderSettingsUnitsTable();
 
-  // Sub-Tab 4: Logotipo & Ticket
+  // Pestaña 5 & 6: Logotipo & Ticket (Físico y Digital)
   const logoImg = document.getElementById('cfgLogoPreviewImg');
   if (logoImg) logoImg.src = comp.logoUrl || '/logo.gif';
   setVal('cfgCompCommercialName', comp.commercialName || 'FIBERLINK SERVICIOS TIC');
@@ -6157,9 +6447,19 @@ function renderSettingsModule() {
   setChk('cfgTicketShowTax', tkt.showTaxBreakdown !== false);
   setChk('cfgTicketShowCashier', tkt.showCashierAndShift !== false);
   setChk('cfgTicketShowSku', tkt.showSkuOnItems !== false);
+
+  setChk('cfgDigitalTicketEnabled', tkt.enableDigitalTicket !== false);
+  setChk('cfgDigitalTicketShowQr', tkt.digitalTicketShowQr !== false);
+  setChk('cfgDigitalTicketShowSupportBtn', tkt.digitalTicketShowSupportBtn !== false);
+  setVal(
+    'cfgDigitalTicketWhatsappTpl',
+    tkt.digitalTicketWhatsappTemplate ||
+      'Hola *{cliente}*, gracias por tu compra en *{empresa}*. Aquí puedes consultar y descargar tu Ticket Digital *{folio}* por *{total}*:\n{enlace}'
+  );
+
   renderLiveTicketPreview();
 
-  // Sub-Tab 5: Formas de Pago & Impuestos
+  // Pestaña 7 & 8: Formas de Pago & Impuestos
   renderSettingsPaymentMethodsTable();
   setVal('cfgTaxName', tax.taxName || 'IVA');
   setVal('cfgTaxRate', String(tax.vatRate ?? 16));
@@ -6168,7 +6468,7 @@ function renderSettingsModule() {
   setVal('cfgCurrencyCode', tax.currencyCode || 'MXN');
   setVal('cfgExchangeRateUsd', tax.exchangeRateUsd ?? 19.85);
 
-  // Sub-Tab 6: Notificaciones & Respaldo
+  // Pestaña 11 & 12: Notificaciones & Respaldo
   setChk('notifLowStock', notif.lowStockAlerts !== false);
   setChk('notifOverdueCredit', notif.overdueCreditAlerts !== false);
   setChk('notifUrgentTickets', notif.urgentTicketAlerts !== false);
@@ -6334,7 +6634,7 @@ function renderSettingsUnitsTable() {
 
 function renderLiveTicketPreview() {
   const box = document.getElementById('cfgLiveTicketPreviewBox');
-  if (!box) return;
+  const digBox = document.getElementById('cfgLiveDigitalTicketPreviewBox');
 
   const commName = document.getElementById('cfgCompCommercialName')?.value || 'FIBERLINK SERVICIOS TIC';
   const rfc = document.getElementById('cfgCompRfc')?.value || 'FST2109148H2';
@@ -6348,56 +6648,117 @@ function renderLiveTicketPreview() {
   const showTax = document.getElementById('cfgTicketShowTax')?.checked !== false;
   const showCashier = document.getElementById('cfgTicketShowCashier')?.checked !== false;
   const showSku = document.getElementById('cfgTicketShowSku')?.checked !== false;
+  const showQr = document.getElementById('cfgDigitalTicketShowQr')?.checked !== false;
+  const showSupportBtn = document.getElementById('cfgDigitalTicketShowSupportBtn')?.checked !== false;
   const logoSrc = systemSettings?.company?.logoUrl || '/logo.gif';
 
-  box.style.fontSize = fontSize;
-  box.innerHTML = `
-    <div style="text-align:center;">
-      ${showLogo ? `<img src="${logoSrc}" alt="Logo" style="max-height:48px; margin:0 auto 6px; display:block;">` : ''}
-      <strong style="font-size:1.1em; display:block;">${commName}</strong>
-      <div>RFC: ${rfc}</div>
-      <div style="font-size:0.9em;">${address}</div>
-      <div style="font-size:0.9em;">Tel/WhatsApp: ${phone}</div>
-      ${header1 ? `<div style="font-size:0.88em; margin-top:3px;">${header1}</div>` : ''}
-    </div>
-    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
-    <div>
-      <div><strong>Folio Venta:</strong> VTA-1005</div>
-      <div><strong>Fecha:</strong> ${new Date().toLocaleString('es-MX')}</div>
-      <div><strong>Cliente:</strong> Mostrador / Público en General</div>
-      ${showCashier ? `<div><strong>Cajero:</strong> Lic. Sofía Navarro (TRN-1003)</div>` : ''}
-    </div>
-    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
-    <table style="width:100%; border-collapse:collapse; font-size:inherit;">
-      <thead>
-        <tr style="border-bottom:1px solid #000;">
-          <th align="left">Cant. Descripción</th>
-          <th align="right">Importe</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding:4px 0;">1x ${showSku ? '[POS-IMP-80] ' : ''}Impresora Térmica 80mm</td>
-          <td align="right">$1,890.00</td>
-        </tr>
-        <tr>
-          <td style="padding:4px 0;">1x ${showSku ? '[POS-CAJ-01] ' : ''}Cajón de Dinero RJ11</td>
-          <td align="right">$1,150.00</td>
-        </tr>
-      </tbody>
-    </table>
-    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
-    <div style="text-align:right;">
-      ${showTax ? `<div>Subtotal (Sin IVA): $2,620.69</div><div>IVA (16%): $419.31</div>` : ''}
-      <strong style="font-size:1.12em;">TOTAL: $3,040.00 MXN</strong>
-      <div>Método de Pago: Efectivo</div>
-    </div>
-    <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
-    <div style="text-align:center; font-size:0.9em;">
-      <div><strong>${footerMsg}</strong></div>
-      ${warranty ? `<div style="margin-top:4px; font-size:0.85em; color:#333;">${warranty}</div>` : ''}
-    </div>
-  `;
+  if (box) {
+    box.style.fontSize = fontSize;
+    box.innerHTML = `
+      <div style="text-align:center;">
+        ${showLogo ? `<img src="${logoSrc}" alt="Logo" style="max-height:48px; margin:0 auto 6px; display:block;">` : ''}
+        <strong style="font-size:1.1em; display:block;">${commName}</strong>
+        <div>RFC: ${rfc}</div>
+        <div style="font-size:0.9em;">${address}</div>
+        <div style="font-size:0.9em;">Tel/WhatsApp: ${phone}</div>
+        ${header1 ? `<div style="font-size:0.88em; margin-top:3px;">${header1}</div>` : ''}
+      </div>
+      <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+      <div>
+        <div><strong>Folio Venta:</strong> VTA-1005</div>
+        <div><strong>Fecha:</strong> ${new Date().toLocaleString('es-MX')}</div>
+        <div><strong>Cliente:</strong> Mostrador / Público en General</div>
+        ${showCashier ? `<div><strong>Cajero:</strong> Lic. Sofía Navarro (TRN-1003)</div>` : ''}
+      </div>
+      <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+      <table style="width:100%; border-collapse:collapse; font-size:inherit;">
+        <thead>
+          <tr style="border-bottom:1px solid #000;">
+            <th align="left">Cant. Descripción</th>
+            <th align="right">Importe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:4px 0;">1x ${showSku ? '[POS-IMP-80] ' : ''}Impresora Térmica 80mm</td>
+            <td align="right">$1,890.00</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 0;">1x ${showSku ? '[POS-CAJ-01] ' : ''}Cajón de Dinero RJ11</td>
+            <td align="right">$1,150.00</td>
+          </tr>
+        </tbody>
+      </table>
+      <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+      <div style="text-align:right;">
+        ${showTax ? `<div>Subtotal (Sin IVA): $2,620.69</div><div>IVA (16%): $419.31</div>` : ''}
+        <strong style="font-size:1.12em;">TOTAL: $3,040.00 MXN</strong>
+        <div>Método de Pago: Efectivo</div>
+      </div>
+      <hr style="border:none; border-top:1px dashed #000; margin:8px 0;">
+      <div style="text-align:center; font-size:0.9em;">
+        <div><strong>${footerMsg}</strong></div>
+        ${warranty ? `<div style="margin-top:4px; font-size:0.85em; color:#333;">${warranty}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (digBox) {
+    const sampleUrl = `${window.location.origin}/ticket.html?folio=VTA-1005`;
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(sampleUrl)}`;
+    digBox.innerHTML = `
+      <div style="text-align:center; border-bottom:1px dashed rgba(148,163,184,0.25); padding-bottom:12px; margin-bottom:12px;">
+        <div style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; background:rgba(16,185,129,0.16); color:#10b981; font-size:0.68rem; font-weight:700; margin-bottom:8px;">
+          ✓ TICKET DIGITAL VERIFICADO
+        </div>
+        ${showLogo ? `<img src="${logoSrc}" alt="Logo" style="max-height:44px; margin:0 auto 6px; display:block; border-radius:8px;">` : ''}
+        <strong style="font-size:1rem; display:block; color:#fff;">${commName}</strong>
+        <div style="font-size:0.74rem; color:#94a3b8;">RFC: ${rfc} · Tel: ${phone}</div>
+        <div style="font-size:0.72rem; color:#94a3b8;">${address}</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:rgba(2,6,23,0.55); padding:10px; border-radius:10px; font-size:0.75rem; margin-bottom:12px;">
+        <div><span style="color:#94a3b8; display:block; font-size:0.66rem;">FOLIO</span><strong class="mono" style="color:#38bdf8;">VTA-1005</strong></div>
+        <div><span style="color:#94a3b8; display:block; font-size:0.66rem;">MÉTODO</span><strong>Efectivo</strong></div>
+        <div><span style="color:#94a3b8; display:block; font-size:0.66rem;">CLIENTE</span><strong>Mostrador</strong></div>
+        ${showCashier ? `<div><span style="color:#94a3b8; display:block; font-size:0.66rem;">CAJERO</span><strong>Sofía N.</strong></div>` : ''}
+      </div>
+
+      <div style="font-size:0.78rem; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(148,163,184,0.12);">
+          <span>1x ${showSku ? '<small class="mono" style="color:#38bdf8;">[POS-IMP-80]</small> ' : ''}Impresora Térmica 80mm</span>
+          <strong class="mono">$1,890.00</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(148,163,184,0.12);">
+          <span>1x ${showSku ? '<small class="mono" style="color:#38bdf8;">[POS-CAJ-01]</small> ' : ''}Cajón de Dinero RJ11</span>
+          <strong class="mono">$1,150.00</strong>
+        </div>
+      </div>
+
+      <div style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.28); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
+        ${showTax ? `<div style="display:flex; justify-content:space-between; font-size:0.73rem; color:#94a3b8;"><span>Subtotal + IVA (16%):</span><span class="mono">$2,620.69 + $419.31</span></div>` : ''}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+          <strong style="font-size:0.82rem;">TOTAL PAGADO</strong>
+          <strong class="mono" style="font-size:1.08rem; color:#38bdf8;">$3,040.00 MXN</strong>
+        </div>
+      </div>
+
+      ${showQr ? `
+        <div style="display:flex; align-items:center; gap:10px; background:rgba(2,6,23,0.45); padding:8px 10px; border-radius:10px; margin-bottom:10px;">
+          <img src="${qrApi}" alt="QR" style="width:52px; height:52px; border-radius:6px; background:#fff; padding:3px;">
+          <div style="font-size:0.7rem; color:#94a3b8;">
+            <strong style="color:#e2e8f0; display:block;">Enlace Web Verificado</strong>
+            El cliente abre este enlace desde su WhatsApp y puede descargar su PDF.
+          </div>
+        </div>
+      ` : ''}
+
+      <div style="text-align:center; font-size:0.72rem; color:#94a3b8;">
+        <strong style="color:#e2e8f0; display:block;">${footerMsg}</strong>
+        ${showSupportBtn ? `<div style="margin-top:8px; padding:6px 10px; border-radius:8px; background:#10b981; color:#042f2e; font-weight:700;">💬 Botón de Soporte por WhatsApp Activo</div>` : ''}
+      </div>
+    `;
+  }
 }
 
 function renderSettingsPaymentMethodsTable() {
@@ -6470,6 +6831,7 @@ async function downloadFullSystemBackup() {
     showToast('Error al generar respaldo: ' + err.message);
   }
 }
+
 
 
 

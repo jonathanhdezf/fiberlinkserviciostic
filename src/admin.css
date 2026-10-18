@@ -2916,3 +2916,113 @@ input:focus, textarea:focus, select:focus {
     font-family: Arial, sans-serif;
   }
 }
+
+/* ============================
+   SETTINGS 12-TAB ENTERPRISE NAVIGATION & DIGITAL TICKET
+============================ */
+.settings-nav-shell {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  box-shadow: var(--inner-highlight);
+}
+.settings-nav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.settings-step-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.settings-step-badge {
+  background: var(--primary-tint);
+  color: var(--primary);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+.settings-tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 7px;
+}
+@media (max-width: 720px) {
+  .settings-tabs-grid {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  .settings-tab-btn {
+    min-width: 155px;
+    scroll-snap-align: start;
+  }
+}
+.settings-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-2);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.16s var(--ease-out);
+}
+.settings-tab-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+.settings-tab-btn.active {
+  background: var(--primary-tint);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary-tint);
+}
+.settings-tab-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--bg-surface-3);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.settings-tab-btn.active .settings-tab-num {
+  background: var(--primary);
+  color: #041016;
+}
+.digital-ticket-preview-shell {
+  background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
+  color: #f8fafc;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: 18px;
+  max-width: 370px;
+  margin: 0 auto;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-sans);
+}
+

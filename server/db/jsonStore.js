@@ -1304,7 +1304,11 @@ export const SEED_SETTINGS = {
     headerLine1: 'Soporte Técnico, Redes, Fibra Óptica, CCTV y Punto de Venta',
     headerLine2: 'Teziutlán, Puebla · Tel / WhatsApp: 231 102 4672',
     footerMessage: '¡Gracias por su preferencia! Garantía y soporte local en Teziutlán.',
-    warrantyPolicy: 'Equipos nuevos con 1 año de garantía contra defecto de fábrica. Servicios y reparaciones 30 días presentando este comprobante.'
+    warrantyPolicy: 'Equipos nuevos con 1 año de garantía contra defecto de fábrica. Servicios y reparaciones 30 días presentando este comprobante.',
+    enableDigitalTicket: true,
+    digitalTicketShowQr: true,
+    digitalTicketShowSupportBtn: true,
+    digitalTicketWhatsappTemplate: 'Hola *{cliente}*, gracias por tu compra en *{empresa}*. Aquí puedes consultar y descargar tu Ticket Digital *{folio}* por *{total}*:\n{enlace}'
   },
   paymentMethods: [
     { id: 'pm-cash', key: 'Efectivo', label: '💵 Efectivo (Moneda Nacional)', enabled: true, feePercent: 0, requiresReference: false, opensDrawer: true, bankInfo: 'Cajón de dinero en mostrador' },

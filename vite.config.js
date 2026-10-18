@@ -35,7 +35,8 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
         soluciones: resolve(__dirname, 'soluciones.html'),
-        catalogo: resolve(__dirname, 'catalogo.html')
+        catalogo: resolve(__dirname, 'catalogo.html'),
+        ticket: resolve(__dirname, 'ticket.html')
       }
     }
   }
