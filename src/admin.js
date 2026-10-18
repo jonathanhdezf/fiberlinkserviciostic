@@ -4878,16 +4878,9 @@ function switchShiftsSubTab(tabName) {
     if (el) el.classList.toggle('active', meta.key === currentShiftsTabKey);
   });
 
-  const badgeEl = document.getElementById('shiftsActiveTabBadge');
-  const titleEl = document.getElementById('shiftsActiveTabTitle');
-  const progEl = document.getElementById('shiftsProgressBar');
   const footInfoEl = document.getElementById('shiftsFooterTabInfo');
-
-  if (badgeEl) badgeEl.textContent = `Pestaña ${idx + 1} de ${SHIFTS_TABS_META.length}`;
-  if (titleEl) titleEl.textContent = activeMeta.title;
-  if (progEl) progEl.style.width = `${(((idx + 1) / SHIFTS_TABS_META.length) * 100).toFixed(2)}%`;
   if (footInfoEl) {
-    footInfoEl.innerHTML = `Viendo <strong style="color:var(--primary);">Pestaña ${idx + 1} de ${SHIFTS_TABS_META.length}</strong> · ${activeMeta.title}`;
+    footInfoEl.innerHTML = `<strong style="color:var(--primary);">${activeMeta.title}</strong>`;
   }
 
   if (currentShiftsTabKey === 'whatsapp_cut') {

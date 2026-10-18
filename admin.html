@@ -1647,21 +1647,8 @@
             </div>
           </div>
 
-          <!-- Navegación de 5 Pestañas de Cortes y Turnos (Sticky Desktop Tab Shell) -->
-          <div class="settings-nav-shell">
-            <div class="settings-nav-top">
-              <div class="settings-step-indicator">
-                <span class="settings-step-badge" id="shiftsActiveTabBadge">Pestaña 1 de 5</span>
-                <strong id="shiftsActiveTabTitle" style="color:var(--text-main);">1. Corte del Turno (Arqueo de Caja)</strong>
-              </div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <button type="button" class="btn btn-ghost btn-sm" id="btnShiftsPrevTab" title="Pestaña anterior (Flecha Izquierda)">← Anterior</button>
-                <button type="button" class="btn btn-secondary btn-sm" id="btnShiftsNextTab" title="Siguiente pestaña (Flecha Derecha)">Siguiente →</button>
-              </div>
-            </div>
-            <div class="settings-progress-track">
-              <div class="settings-progress-bar" id="shiftsProgressBar" style="width:20%;"></div>
-            </div>
+          <!-- Navegación Fija de 5 Pestañas de Cortes y Turnos en Escritorio -->
+          <div class="settings-nav-shell shifts-nav-shell">
             <div class="settings-tabs-grid shifts-tabs-grid" id="shiftsModuleTabs" role="tablist">
               <button type="button" class="settings-tab-btn active" data-shifttab="turn_cut" role="tab" aria-selected="true">
                 <span class="settings-tab-num">01</span>
@@ -2179,11 +2166,11 @@
 
           <!-- Barra Inferior de Navegación Rápida entre Pestañas de Cortes y Turnos -->
           <div class="settings-pane-footer-bar">
-            <button type="button" class="btn btn-secondary" id="btnShiftsFooterPrev">← Pestaña Anterior</button>
+            <button type="button" class="btn btn-secondary" id="btnShiftsFooterPrev">← Anterior</button>
             <div style="text-align:center; font-size:0.82rem; color:var(--text-secondary);">
-              <span id="shiftsFooterTabInfo">Viendo <strong style="color:var(--primary);">Pestaña 1 de 5</strong> · 1. Corte del Turno (Arqueo de Caja)</span>
+              <span id="shiftsFooterTabInfo"><strong style="color:var(--primary);">1. Corte del Turno (Arqueo de Caja)</strong></span>
             </div>
-            <button type="button" class="btn btn-primary" id="btnShiftsFooterNext">Siguiente Pestaña →</button>
+            <button type="button" class="btn btn-primary" id="btnShiftsFooterNext">Siguiente →</button>
           </div>
         </section>
 

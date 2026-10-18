@@ -2945,10 +2945,11 @@ input:focus, textarea:focus, select:focus {
   padding: 14px 16px;
   margin-bottom: 18px;
   box-shadow: var(--inner-highlight), var(--elevation-sm);
-  position: sticky;
-  top: 8px;
-  z-index: 40;
-  backdrop-filter: blur(16px);
+  position: static;
+}
+.settings-nav-shell.shifts-nav-shell {
+  padding: 10px 12px;
+  position: static;
 }
 .settings-nav-top {
   display: flex;
