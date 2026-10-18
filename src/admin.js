@@ -1748,7 +1748,7 @@ function renderWorkshopGrid() {
           <strong>Diagnóstico:</strong> ${o.technicalDiagnosis || 'Pendiente'}
         </div>
         <div class="ws-card-foot">
-          <span>Ing: <strong>${o.assignedTech || 'Sin asignar'}</strong></span>
+          <span>${(o.assignedTech && o.assignedTech.startsWith('Ing')) ? '' : 'Téc: '}<strong>${o.assignedTech || 'Sin asignar'}</strong></span>
           <span class="mono tabular" style="color:${o.paid ? 'var(--primary)' : 'var(--secondary)'}; font-weight:600;">
             ${o.paid ? 'LIQUIDADO ' + formatMoney(o.total) : 'Saldo: ' + formatMoney(balance)}
           </span>
