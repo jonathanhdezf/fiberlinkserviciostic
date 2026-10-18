@@ -304,53 +304,25 @@ function getBestSpanishVoice() {
 }
 
 function updateVoiceBadge() {
-  const v = getBestSpanishVoice();
   if (!els.voiceChipName) return;
-  if (v) {
-    let cleanName = v.name
-      .replace(/Microsoft\s+/i, '')
-      .replace(/Online\s*\(Natural\)/i, 'Natural')
-      .replace(/Google\s+/i, '')
-      .replace(/-?\s*Spanish\s*\(.*?\)/i, '')
-      .trim();
-    if (cleanName.length > 15) cleanName = cleanName.slice(0, 14) + '…';
-    els.voiceChipName.textContent = cleanName || 'Voz Latina';
-    if (els.voiceChip) els.voiceChip.title = `Voz activa: ${v.name}. Clic para probar o cambiar.`;
-  } else {
-    els.voiceChipName.textContent = 'Voz Latina';
-  }
+  els.voiceChipName.textContent = 'Voz Mexicana';
+  if (els.voiceChip) els.voiceChip.title = 'Voz nativa de México activa. Clic para escuchar prueba.';
 }
 
-function cycleVoice() {
-  const list = getAvailableLatinVoices();
-  if (list.length <= 1) {
-    testVoice();
-    return;
-  }
-  const current = getBestSpanishVoice();
-  const idx = list.findIndex(v => v === current || v.name === current?.name);
-  const next = list[(idx + 1) % list.length];
-  state.selectedVoiceURI = next.voiceURI || next.name;
-  localStorage.setItem('fiberlink_assistant_voice_uri', state.selectedVoiceURI);
-  updateVoiceBadge();
-  const label = next.name.replace(/Microsoft\s+/i, '').replace(/\s*\(.*?\)/g, '');
-  testVoice(`Cambiado a voz ${label}. ¡Hola! ¿En qué te ayudo hoy?`);
-}
-
-function testVoice(sampleText = '¡Hola! Soy Fibi, asistente de Fiberlink en Teziutlán. ¿En qué te puedo apoyar hoy?') {
-  if (!('speechSynthesis' in window)) return;
+function testVoice(sampleText = '¡Hola! Soy Fibi, asistente de Fiberlink en Teziutlán. ¿En qué te podemos apoyar hoy?') {
   speakAssistantMessage(sampleText, true);
 }
 
-// Carga inicial y escucha de cambios en navegador
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  loadVoicesAsync().then(() => updateVoiceBadge());
-  window.speechSynthesis.onvoiceschanged = () => {
-    updateVoiceBadge();
-  };
+// Carga inicial
+if (typeof window !== 'undefined') {
+  updateVoiceBadge();
+  if ('speechSynthesis' in window) {
+    loadVoicesAsync().then(() => updateVoiceBadge());
+    window.speechSynthesis.onvoiceschanged = () => updateVoiceBadge();
+  }
 }
 
-function updateVoiceBar(active, label = 'Fibi hablando (Voz Latina)…') {
+function updateVoiceBar(active, label = 'Fibi hablando (Voz Mexicana)…') {
   if (!els.voiceBar) return;
   state.isSpeaking = Boolean(active && !state.isListening);
   const show = active || state.isListening || state.isSpeaking;
@@ -361,50 +333,80 @@ function updateVoiceBar(active, label = 'Fibi hablando (Voz Latina)…') {
   if (els.avatar) els.avatar.classList.toggle('listening', state.isListening);
 }
 
-async function speakAssistantMessage(text, force = false) {
-  if ((!state.voiceEnabled && !force) || !('speechSynthesis' in window)) return;
+let currentAudio = null;
+
+function fallbackBrowserSpeech(cleanText) {
+  if (!('speechSynthesis' in window)) {
+    updateVoiceBar(false);
+    return;
+  }
   try {
-    await loadVoicesAsync();
     window.speechSynthesis.cancel();
-    updateVoiceBadge();
-
-    const cleanText = String(text || '')
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/[*_#`~[\]]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (!cleanText) return;
-
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'es-MX';
-    utterance.rate = 1.02;
+    utterance.rate = 1.05;
     utterance.pitch = 1.0;
-
     const esVoice = getBestSpanishVoice();
-    if (esVoice) {
-      utterance.voice = esVoice;
-      utterance.lang = esVoice.lang || 'es-MX';
-    }
+    if (esVoice) utterance.voice = esVoice;
 
-    utterance.onstart = () => {
-      const vLabel = esVoice ? esVoice.name.replace(/Microsoft\s+/i, '').replace(/\s*\(.*?\)/g, '').trim() : 'Voz Latina';
-      updateVoiceBar(true, `Fibi hablando (${vLabel})…`);
-    };
-
-    utterance.onend = () => {
-      updateVoiceBar(false);
-    };
-
-    utterance.onerror = () => {
-      updateVoiceBar(false);
-    };
-
+    utterance.onstart = () => updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
+    utterance.onend = () => updateVoiceBar(false);
+    utterance.onerror = () => updateVoiceBar(false);
     window.speechSynthesis.speak(utterance);
-  } catch (err) {
-    console.warn('[Fibi TTS]:', err);
+  } catch (_) {
     updateVoiceBar(false);
+  }
+}
+
+async function speakAssistantMessage(text, force = false) {
+  if (!state.voiceEnabled && !force) return;
+
+  // Detener cualquier audio o síntesis en reproducción previa
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    } catch (_) {}
+    currentAudio = null;
+  }
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (_) {}
+  }
+
+  const cleanText = String(text || '')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/[*_#`~[\]]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleanText) return;
+
+  try {
+    updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
+    const audioUrl = `/api/assistant/tts?text=${encodeURIComponent(cleanText.slice(0, 200))}`;
+    const audio = new Audio(audioUrl);
+    currentAudio = audio;
+    audio.playbackRate = 1.04;
+
+    audio.onplay = () => {
+      updateVoiceBar(true, 'Fibi hablando (Voz Mexicana)…');
+    };
+
+    audio.onended = () => {
+      currentAudio = null;
+      updateVoiceBar(false);
+    };
+
+    audio.onerror = () => {
+      currentAudio = null;
+      fallbackBrowserSpeech(cleanText);
+    };
+
+    await audio.play();
+  } catch (err) {
+    console.warn('[Fibi Audio Stream Fallback]:', err);
+    fallbackBrowserSpeech(cleanText);
   }
 }
 
@@ -720,6 +722,7 @@ function render({ scroll = true } = {}) {
 // ------------------------------------------
 async function askAssistant() {
   state.busy = true;
+  if (els.status) els.status.textContent = 'Fibi pensando… ⚡';
   render();
   try {
     const res = await fetch('/api/assistant/chat', {
@@ -747,7 +750,7 @@ async function askAssistant() {
     }
 
     state.messages.push({ role: 'model', text: data.reply || 'Cuéntame un poco más, por favor.' });
-    els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente Fiberlink';
+    if (els.status) els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente Fiberlink';
     speakAssistantMessage(data.reply);
   } catch (err) {
     console.warn('[Asistente IA] Sin conexión con el servidor:', err.message);
@@ -769,6 +772,16 @@ async function askAssistant() {
 async function sendUserMessage(text) {
   const clean = String(text || '').trim();
   if (!clean || state.busy || state.ticket) return;
+
+  // Detener audio previo si el usuario ya está hablando de nuevo
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
+    currentAudio = null;
+  }
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch (_) {}
+  }
+
   primeNotificationPermission();
   state.messages.push({ role: 'user', text: clean });
   state.quickReplies = [];
@@ -974,9 +987,14 @@ function closePanel() {
   els.panel.setAttribute('aria-hidden', 'true');
   els.launcher.classList.remove('hidden');
   document.documentElement.classList.remove('fa-open');
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
+    currentAudio = null;
+  }
   if ('speechSynthesis' in window) {
     try { window.speechSynthesis.cancel(); } catch (_) {}
   }
+  updateVoiceBar(false);
 }
 
 function bindFormEvents() {
@@ -1008,8 +1026,8 @@ function bindEvents() {
   els.panel.querySelector('#faClose').addEventListener('click', closePanel);
   els.panel.querySelector('#faReset').addEventListener('click', resetConversation);
 
-  // Probar y alternar voz latina
-  els.voiceChip?.addEventListener('click', () => { cycleVoice(); });
+  // Probar y alternar voz mexicana
+  els.voiceChip?.addEventListener('click', () => { testVoice(); });
   els.voiceTestBtn?.addEventListener('click', () => { testVoice(); });
 
   els.panel.querySelector('#faVoiceToggle')?.addEventListener('click', () => {
@@ -1020,10 +1038,16 @@ function bindEvents() {
       vBtn.innerHTML = state.voiceEnabled ? ICONS.voiceOn : ICONS.voiceOff;
       vBtn.title = state.voiceEnabled ? 'Desactivar voz' : 'Activar voz';
     }
-    if (!state.voiceEnabled && ('speechSynthesis' in window)) {
-      window.speechSynthesis.cancel();
+    if (!state.voiceEnabled) {
+      if (currentAudio) {
+        try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
+        currentAudio = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
       updateVoiceBar(false);
-    } else if (state.voiceEnabled) {
+    } else {
       speakAssistantMessage('Voz activada. Con gusto te atiendo por voz.');
     }
   });
@@ -1031,6 +1055,10 @@ function bindEvents() {
   els.micBtn?.addEventListener('click', toggleListening);
 
   els.voiceStopBtn?.addEventListener('click', () => {
+    if (currentAudio) {
+      try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (_) {}
+      currentAudio = null;
+    }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }

@@ -301,7 +301,7 @@ function localEngine(messages, prevDraft, prevOrderDraft = {}) {
 }
 
 // ------------------------------------------
-// Llamada a Gemini
+// Llamada a Gemini Optimizada para Baja Latencia
 // ------------------------------------------
 async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
   let model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
@@ -310,18 +310,20 @@ async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
   }
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-  const contents = messages.slice(-16).map(m => ({
+  // Enviar solo los últimos 5 mensajes concisos para reducir drásticamente la latencia de procesamiento
+  const contents = messages.slice(-5).map(m => ({
     role: m.role === 'user' ? 'user' : 'model',
-    parts: [{ text: String(m.text || '').slice(0, 1200) }]
+    parts: [{ text: String(m.text || '').slice(0, 350) }]
   }));
-  // Contexto de estado: borrador actual y campos pendientes
+
+  // Contexto de estado ultra compacto
   contents.push({
     role: 'user',
-    parts: [{ text: `[ESTADO INTERNO - no lo menciones] Borrador ticket actual: ${JSON.stringify(prevDraft)}. Borrador pedido actual: ${JSON.stringify(prevOrderDraft || {})}. Responde al último mensaje del cliente con precios exactos del catálogo si pregunta por productos, o capturando el ticket si reporta un problema.` }]
+    parts: [{ text: `[ESTADO] Ticket: ${JSON.stringify(prevDraft || {})}. Pedido: ${JSON.stringify(prevOrderDraft || {})}. Da respuesta concisa de 1-2 oraciones con precios si preguntan catálogo.` }]
   });
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000);
+  const timer = setTimeout(() => controller.abort(), 12000);
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -331,8 +333,8 @@ async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents,
         generationConfig: {
-          temperature: 0.35,
-          maxOutputTokens: 2048,
+          temperature: 0.2,
+          maxOutputTokens: 280,
           responseMimeType: 'application/json',
           responseSchema: RESPONSE_SCHEMA
         }
@@ -347,6 +349,48 @@ async function callGemini(messages, prevDraft, prevOrderDraft, apiKey) {
   }
 }
 
+// ------------------------------------------
+// Sintetizador de Voz Mexicana Auténtica (Audio Stream)
+// ------------------------------------------
+export async function handleAssistantTts(text = '') {
+  let clean = String(text || '')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/[*_#`~[\]]/g, '')
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Para respuestas habladas ultra fluidas, sintetizar las 2 primeras oraciones o hasta 180 chars
+  if (clean.length > 180) {
+    const sentences = clean.split(/[.?!]/).filter(s => s.trim().length > 3);
+    clean = sentences.slice(0, 2).join('. ') + '.';
+  }
+  if (!clean || clean.length < 2) clean = 'Hola, soy Fibi de Fiberlink.';
+
+  const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=es-MX&client=tw-ob&q=${encodeURIComponent(clean)}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 7000);
+  try {
+    const response = await fetch(ttsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Referer': 'https://translate.google.com/'
+      },
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`TTS upstream error HTTP ${response.status}`);
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      status: 200,
+      buffer: Buffer.from(arrayBuffer),
+      contentType: 'audio/mpeg'
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function handleAssistantChat(body = {}) {
   ensureEnv();
   const messages = Array.isArray(body.messages) ? body.messages.filter(m => m && m.text) : [];
@@ -356,6 +400,25 @@ export async function handleAssistantChat(body = {}) {
   if (!messages.length) {
     const out = localEngine([], prevDraft, prevOrderDraft);
     return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local' } };
+  }
+
+  const userMsgs = messages.filter(m => m.role === 'user');
+  const lastText = (userMsgs[userMsgs.length - 1]?.text || '').trim();
+
+  // Aceleración instantánea (0ms) para consultas directas de catálogo y botones rápidos
+  const directProducts = localFindProducts(lastText);
+  const isDirectProductQuery = directProducts.length > 0 && /(precio|costo|cuanto|cuánto|tienen|venden|catalogo|catálogo|cajon|impresora|lector|camara|cámara|kit|licencia|windows|pos|software)/i.test(lastText);
+
+  if (isDirectProductQuery) {
+    const out = localEngine(messages, prevDraft, prevOrderDraft);
+    return {
+      status: 200,
+      data: {
+        ...out,
+        missing: getMissingFields(out.draft),
+        engine: 'instant-catalog'
+      }
+    };
   }
 
   const apiKey = (process.env.GEMINI_API_KEY || '').trim();
@@ -386,10 +449,10 @@ export async function handleAssistantChat(body = {}) {
       };
     } catch (err) {
       lastGeminiErr = err.message;
-      console.warn('[assistantController] Gemini no disponible, usando motor local:', err.message);
+      console.warn('[assistantController] Gemini tardó o falló, respondiendo con motor rápido:', err.message);
     }
   }
 
   const out = localEngine(messages, prevDraft, prevOrderDraft);
-  return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'local', geminiError: lastGeminiErr } };
+  return { status: 200, data: { ...out, missing: getMissingFields(out.draft), engine: 'fast-local', geminiError: lastGeminiErr } };
 }

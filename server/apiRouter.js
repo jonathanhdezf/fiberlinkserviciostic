@@ -75,7 +75,7 @@ import {
   handleUpdateChatLead,
   handleDeleteChatLead
 } from './controllers/chatController.js';
-import { handleAssistantChat } from './controllers/assistantController.js';
+import { handleAssistantChat, handleAssistantTts } from './controllers/assistantController.js';
 
 export { DATA_DIR };
 export const DATA_FILE = FILES.tickets;
@@ -515,6 +515,17 @@ export async function handleApiRequest(req, res, next) {
       const body = await parseBody(req);
       const result = await handleAssistantChat(body);
       return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/assistant/tts' && method === 'GET') {
+      const text = url.searchParams.get('text') || '';
+      const result = await handleAssistantTts(text);
+      res.writeHead(result.status || 200, {
+        'Content-Type': result.contentType || 'audio/mpeg',
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(result.buffer);
     }
 
     return sendJSON(res, 404, { error: 'Ruta de API no encontrada', path: pathname });
