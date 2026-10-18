@@ -69,6 +69,12 @@ import {
   handleRestoreBackup
 } from './controllers/settingsController.js';
 import { handleGetReportsSummary } from './controllers/reportsController.js';
+import {
+  handleListChatLeads,
+  handleCreateChatLead,
+  handleUpdateChatLead,
+  handleDeleteChatLead
+} from './controllers/chatController.js';
 
 export { DATA_DIR };
 export const DATA_FILE = FILES.tickets;
@@ -448,6 +454,32 @@ export async function handleApiRequest(req, res, next) {
     if (pathname === '/api/activity' && method === 'GET') {
       const logs = readCollection('activity');
       return sendJSON(res, 200, logs.slice(0, 50));
+    }
+
+    // ==========================================
+    // 11. CHAT WEB & WHATSAPP LEADS
+    // ==========================================
+    if (pathname === '/api/chat-leads' && method === 'GET') {
+      const result = handleListChatLeads(url.searchParams);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/chat-leads' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleCreateChatLead(body);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    const chatLeadIdMatch = pathname.match(/^\/api\/chat-leads\/([a-zA-Z0-9_-]+)$/);
+    if (chatLeadIdMatch && method === 'PATCH') {
+      const body = await parseBody(req);
+      const result = handleUpdateChatLead(chatLeadIdMatch[1], body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (chatLeadIdMatch && method === 'DELETE') {
+      const result = handleDeleteChatLead(chatLeadIdMatch[1], currentUser);
+      return sendJSON(res, result.status, result.data);
     }
 
     return sendJSON(res, 404, { error: 'Ruta de API no encontrada', path: pathname });

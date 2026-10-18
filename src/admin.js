@@ -17,10 +17,13 @@ let allShifts = [];
 let allCashCuts = [];
 let systemSettings = null;
 let reportsData = null;
+let allChatLeads = [];
 
 // UI State
 let chartPeriod = '7d';
 let overviewTxFilter = 'all';
+let currentChatFilter = 'all';
+let currentChatLeadId = null;
 let ticketsViewMode = 'kanban'; // 'kanban' | 'table'
 let currentTicketId = null;
 let currentWorkshopOrder = null;
@@ -603,7 +606,7 @@ function highlightCmdSelection() {
 // ==========================================
 async function syncAllData() {
   try {
-    const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, settings, reports] = await Promise.all([
+    const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, settings, reports, chatLeads] = await Promise.all([
       ticketService.getTickets(),
       erpService.getProducts().catch(() => []),
       erpService.getInventoryMovements().catch(() => []),
@@ -614,7 +617,8 @@ async function syncAllData() {
       erpService.getShifts().catch(() => []),
       erpService.getCashCuts().catch(() => []),
       erpService.getSettings().catch(() => null),
-      erpService.getReportsSummary().catch(() => null)
+      erpService.getReportsSummary().catch(() => null),
+      erpService.getChatLeads().catch(() => [])
     ]);
 
     allTickets = Array.isArray(tickets) ? tickets : [];
@@ -626,6 +630,7 @@ async function syncAllData() {
     allClients = Array.isArray(clients) ? clients : [];
     allShifts = Array.isArray(shifts) ? shifts : [];
     allCashCuts = Array.isArray(cashCuts) ? cashCuts : [];
+    allChatLeads = Array.isArray(chatLeads) ? chatLeads : [];
     if (settings) systemSettings = settings;
     reportsData = reports;
 
@@ -699,9 +704,10 @@ function renderControlPanelNotifications() {
   const creditClients = showCredit
     ? allClients.filter(c => (Number(c.currentBalance) || 0) > 0)
     : [];
+  const newChatLeads = allChatLeads.filter(l => l.status === 'nuevo');
 
-  const totalAlerts = urgentTickets.length + lowStockItems.length + creditClients.length;
-  const criticalCount = urgentTickets.length + lowStockItems.length;
+  const totalAlerts = urgentTickets.length + lowStockItems.length + creditClients.length + newChatLeads.length;
+  const criticalCount = urgentTickets.length + lowStockItems.length + newChatLeads.length;
 
   const bellBtn = document.getElementById('topbarNotifBtn');
   const countBadge = document.getElementById('topbarNotifBadge');
@@ -716,13 +722,28 @@ function renderControlPanelNotifications() {
     countBadge.textContent = totalAlerts;
   }
   if (summaryBadge) {
-    summaryBadge.textContent = criticalCount > 0 ? `${criticalCount} crítica(s)` : `${totalAlerts} activa(s)`;
+    summaryBadge.textContent = criticalCount > 0 ? `${criticalCount} activa(s)` : `${totalAlerts} activa(s)`;
     summaryBadge.className = criticalCount > 0 ? 'badge badge-red badge-low-stock-pulse' : 'badge badge-green';
   }
 
   if (!bodyEl) return;
 
   const items = [];
+
+  newChatLeads.forEach(lead => {
+    const cleanPh = (lead.phone || '').replace(/\D/g, '');
+    items.push({
+      severity: 'critical',
+      badgeHtml: `<span class="badge badge-green badge-low-stock-pulse" style="background:rgba(37,211,102,0.18); color:#25d366; border-color:rgba(37,211,102,0.4);"><span class="status-dot dot-green"></span>NUEVO CHAT</span>`,
+      title: `💬 Prospecto Web: ${lead.name}`,
+      sub: `Tel: ${cleanPh} · "${(lead.message || 'Sin mensaje').slice(0, 48)}${(lead.message || '').length > 48 ? '...' : ''}"`,
+      onClick: () => {
+        document.getElementById('notifPopover')?.classList.add('hidden');
+        switchView('overview');
+        openChatLeadModal(lead.id);
+      }
+    });
+  });
 
   urgentTickets.forEach(t => {
     items.push({
@@ -857,6 +878,90 @@ function initOverviewControls() {
       overviewTxFilter = btn.dataset.txfilter;
       renderOverviewUnifiedTransactions();
     });
+  });
+
+  // Chat Leads Filter Pills
+  document.querySelectorAll('#overviewChatFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#overviewChatFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentChatFilter = btn.dataset.chatfilter || 'all';
+      renderOverviewChatLeads();
+    });
+  });
+
+  // Refresh Chat Leads Button
+  document.getElementById('btnRefreshChatLeads')?.addEventListener('click', async () => {
+    try {
+      const leads = await erpService.getChatLeads();
+      allChatLeads = Array.isArray(leads) ? leads : [];
+      renderOverviewChatLeads();
+      renderControlPanelNotifications();
+      showToast('Prospectos de chat actualizados');
+    } catch (e) {
+      showToast('Error al refrescar prospectos');
+    }
+  });
+
+  // Chat Lead Modal: Status change pills
+  document.querySelectorAll('#leadStatusActionPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!currentChatLeadId) return;
+      const newStatus = btn.dataset.setstatus;
+      try {
+        const updated = await erpService.updateChatLead(currentChatLeadId, { status: newStatus });
+        const idx = allChatLeads.findIndex(l => l.id === currentChatLeadId);
+        if (idx !== -1) allChatLeads[idx] = updated;
+        showToast(`Estado actualizado a ${newStatus}`);
+        openChatLeadModal(currentChatLeadId);
+        renderOverviewChatLeads();
+        renderControlPanelNotifications();
+      } catch (e) {
+        showToast('Error al actualizar estado del prospecto');
+      }
+    });
+  });
+
+  // Chat Lead Modal: Add Note
+  document.getElementById('btnLeadAddNote')?.addEventListener('click', async () => {
+    if (!currentChatLeadId) return;
+    const input = document.getElementById('leadNewNoteInput');
+    const noteText = input?.value.trim();
+    if (!noteText) return;
+
+    try {
+      const updated = await erpService.updateChatLead(currentChatLeadId, { newNote: noteText });
+      const idx = allChatLeads.findIndex(l => l.id === currentChatLeadId);
+      if (idx !== -1) allChatLeads[idx] = updated;
+      input.value = '';
+      showToast('Nota de seguimiento guardada');
+      openChatLeadModal(currentChatLeadId);
+      renderOverviewChatLeads();
+    } catch (e) {
+      showToast('Error al guardar nota');
+    }
+  });
+
+  // Chat Lead Modal: Delete Lead
+  document.getElementById('btnLeadDelete')?.addEventListener('click', async () => {
+    if (!currentChatLeadId) return;
+    if (!confirm('¿Deseas eliminar este prospecto de chat permanentemente?')) return;
+    try {
+      await erpService.deleteChatLead(currentChatLeadId);
+      allChatLeads = allChatLeads.filter(l => l.id !== currentChatLeadId);
+      closeModal('chatLeadModal');
+      renderOverviewChatLeads();
+      renderControlPanelNotifications();
+      showToast('Prospecto eliminado');
+    } catch (e) {
+      showToast('Error al eliminar prospecto');
+    }
+  });
+
+  // Chat Lead Modal: Convert to ticket
+  document.getElementById('btnLeadConvertToTicket')?.addEventListener('click', () => {
+    if (!currentChatLeadId) return;
+    convertLeadToTicket(currentChatLeadId);
   });
 }
 
@@ -1049,7 +1154,194 @@ function renderOverview() {
     }
   }
 
+  renderOverviewChatLeads();
   animateSectionStatsAndBars('#view-overview');
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m]));
+}
+
+function renderOverviewChatLeads() {
+  const tbody = document.getElementById('overviewChatLeadsBody');
+  if (!tbody) return;
+
+  let leads = [...allChatLeads];
+  if (currentChatFilter !== 'all') {
+    leads = leads.filter(l => l.status === currentChatFilter);
+  }
+
+  if (leads.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.84rem;">Sin prospectos de chat registrados con este filtro.</td></tr>`;
+    return;
+  }
+
+  const statusMap = {
+    nuevo: { label: 'Nuevo', badge: 'badge-green', pulse: 'badge-low-stock-pulse' },
+    en_seguimiento: { label: 'En Seguimiento', badge: 'badge-amber', pulse: '' },
+    atendido: { label: 'Atendido', badge: 'badge-blue', pulse: '' },
+    convertido_ticket: { label: 'Ticket Creado', badge: 'badge-purple', pulse: '' }
+  };
+
+  tbody.innerHTML = leads.map(lead => {
+    const dateFormatted = lead.createdAt
+      ? new Date(lead.createdAt).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : '-';
+
+    const st = statusMap[lead.status] || { label: lead.status || 'Nuevo', badge: 'badge-gray', pulse: '' };
+    const cleanPhone = (lead.phone || '').toString().replace(/\D/g, '');
+    const waUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(`Hola ${lead.name}, te escribe el Ing. Roberto Méndez de Fiberlink respecto a tu mensaje en nuestro portal web.`)}`;
+
+    return `
+      <tr class="chat-lead-row" data-id="${lead.id}">
+        <td data-label="Fecha" class="tabular mono" style="font-size:0.78rem; color:var(--text-muted);">${dateFormatted}</td>
+        <td data-label="Prospecto">
+          <div style="font-weight:600; color:var(--text-main);">${escapeHtml(lead.name)}</div>
+          ${lead.notes && lead.notes.length > 1 ? `<span style="font-size:0.72rem; color:var(--text-muted);">${lead.notes.length} notas internas</span>` : ''}
+        </td>
+        <td data-label="WhatsApp" class="mono">
+          <a href="${waUrl}" target="_blank" class="btn btn-ghost btn-xs" style="color:#25d366; display:inline-flex; align-items:center; gap:5px; font-weight:600;" title="Abrir chat en WhatsApp">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
+            ${cleanPhone}
+          </a>
+        </td>
+        <td data-label="Mensaje" style="max-width:300px;">
+          <div style="font-size:0.83rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(lead.message || '')}">
+            ${escapeHtml(lead.message || 'Sin mensaje')}
+          </div>
+        </td>
+        <td data-label="Estado">
+          <span class="badge ${st.badge} ${st.pulse}">
+            ${lead.status === 'nuevo' ? '<span class="status-dot dot-green"></span>' : ''}
+            ${st.label}
+          </span>
+        </td>
+        <td data-label="Acciones" style="text-align:right;">
+          <div style="display:inline-flex; gap:6px;">
+            <button type="button" class="btn btn-secondary btn-xs btn-lead-track" data-id="${lead.id}" title="Ver seguimiento y notas">
+              📝 Seguimiento
+            </button>
+            <button type="button" class="btn btn-ghost btn-xs btn-lead-ticket" data-id="${lead.id}" title="Convertir a ticket de soporte">
+              🎫 Ticket
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-lead-track').forEach(btn => {
+    btn.addEventListener('click', () => openChatLeadModal(btn.dataset.id));
+  });
+
+  tbody.querySelectorAll('.btn-lead-ticket').forEach(btn => {
+    btn.addEventListener('click', () => convertLeadToTicket(btn.dataset.id));
+  });
+}
+
+function openChatLeadModal(leadId) {
+  const lead = allChatLeads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  currentChatLeadId = leadId;
+
+  const nameEl = document.getElementById('leadDetailName');
+  const modalNameEl = document.getElementById('chatLeadModalName');
+  const phoneEl = document.getElementById('leadDetailPhone');
+  const dateEl = document.getElementById('leadDetailDate');
+  const msgEl = document.getElementById('leadDetailMessage');
+  const badgeEl = document.getElementById('leadDetailStatusBadge');
+  const waBtn = document.getElementById('btnLeadOpenWhatsapp');
+  const timelineEl = document.getElementById('leadNotesTimeline');
+
+  if (nameEl) nameEl.textContent = lead.name;
+  if (modalNameEl) modalNameEl.textContent = `Prospecto: ${lead.name}`;
+  if (phoneEl) phoneEl.textContent = lead.phone || '-';
+  if (dateEl) {
+    dateEl.textContent = lead.createdAt
+      ? new Date(lead.createdAt).toLocaleString('es-MX', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })
+      : '';
+  }
+  if (msgEl) msgEl.textContent = lead.message || 'Sin mensaje registrado.';
+
+  const statusMap = {
+    nuevo: { label: 'Nuevo', badge: 'badge-green' },
+    en_seguimiento: { label: 'En Seguimiento', badge: 'badge-amber' },
+    atendido: { label: 'Atendido', badge: 'badge-blue' },
+    convertido_ticket: { label: 'Ticket Creado', badge: 'badge-purple' }
+  };
+  const st = statusMap[lead.status] || { label: lead.status || 'Nuevo', badge: 'badge-gray' };
+  if (badgeEl) {
+    badgeEl.innerHTML = `<span class="badge ${st.badge}">${st.label}</span>`;
+  }
+
+  // Active pill highlight
+  document.querySelectorAll('#leadStatusActionPills .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.setstatus === lead.status);
+  });
+
+  if (waBtn) {
+    const clean = (lead.phone || '').replace(/\D/g, '');
+    const waText = `Hola ${lead.name}, te contactamos de Fiberlink Servicios TIC en relación a tu solicitud enviada por nuestra página web.`;
+    waBtn.href = `https://wa.me/52${clean}?text=${encodeURIComponent(waText)}`;
+  }
+
+  // Render notes timeline
+  if (timelineEl) {
+    const notes = Array.isArray(lead.notes) ? lead.notes : [];
+    if (notes.length === 0) {
+      timelineEl.innerHTML = `<div style="font-size:0.78rem; color:var(--text-muted); padding:4px 0;">Sin notas internas registradas.</div>`;
+    } else {
+      timelineEl.innerHTML = notes.map(n => {
+        const timeFormatted = n.createdAt
+          ? new Date(n.createdAt).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+          : '';
+        return `
+          <div class="act-item" style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div style="font-size:0.8rem; color:var(--text-main);">
+              <strong>${escapeHtml(n.user || 'Sistema')}:</strong> ${escapeHtml(n.text)}
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">${timeFormatted}</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  openModal('chatLeadModal');
+}
+
+function convertLeadToTicket(leadId) {
+  const lead = allChatLeads.find(l => l.id === leadId);
+  if (!lead) return;
+
+  closeModal('chatLeadModal');
+  switchView('tickets');
+  openModal('newTicketModal');
+
+  const form = document.getElementById('newTicketForm');
+  if (form) {
+    if (form.elements['name']) form.elements['name'].value = lead.name || '';
+    if (form.elements['phone']) form.elements['phone'].value = lead.phone || '';
+    if (form.elements['description']) {
+      form.elements['description'].value = `[Prospecto Web / WhatsApp]\n${lead.message || ''}`;
+    }
+  }
+
+  // Update lead status to convertido_ticket in background
+  erpService.updateChatLead(leadId, { status: 'convertido_ticket' }).then(updated => {
+    const idx = allChatLeads.findIndex(l => l.id === leadId);
+    if (idx !== -1) allChatLeads[idx] = updated;
+    renderOverviewChatLeads();
+    renderControlPanelNotifications();
+  }).catch(() => {});
 }
 
 function renderOverviewRevenueChart() {

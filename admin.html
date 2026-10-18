@@ -394,6 +394,47 @@
               <div class="panel-eyebrow" style="margin-bottom:8px;">ACTIVIDAD RECIENTE DEL SISTEMA</div>
               <div id="overviewActivityList" class="activity-feed"></div>
             </div>
+
+            <!-- Row 4: Prospectos y Mensajes de Chat Web (WhatsApp) (Span 12) -->
+            <div class="panel-card bento-span-12" id="overviewChatLeadsPanel">
+              <div class="panel-head">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div class="kpi-icon-box" style="background:rgba(37,211,102,0.14); color:#25d366; border-color:rgba(37,211,102,0.35);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
+                  </div>
+                  <div>
+                    <div class="panel-eyebrow">PORTAL WEB & WHATSAPP</div>
+                    <h3>Atención y Seguimiento de Prospectos (Chat Web)</h3>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="filter-pills" id="overviewChatFilterPills">
+                    <button type="button" class="pill-btn active" data-chatfilter="all">Todos</button>
+                    <button type="button" class="pill-btn" data-chatfilter="nuevo">Nuevos</button>
+                    <button type="button" class="pill-btn" data-chatfilter="en_seguimiento">En Seguimiento</button>
+                    <button type="button" class="pill-btn" data-chatfilter="atendido">Atendidos</button>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" id="btnRefreshChatLeads" title="Refrescar lista de prospectos">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha / Hora</th>
+                      <th>Prospecto</th>
+                      <th>WhatsApp</th>
+                      <th>Mensaje / Consulta</th>
+                      <th>Estado</th>
+                      <th style="text-align:right;">Acciones & Seguimiento</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewChatLeadsBody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -4142,6 +4183,75 @@
         <div class="modal-actions" style="justify-content:space-between; margin-top:16px;">
           <button type="button" class="btn btn-secondary btn-sm" id="btnLightboxEditPhotos">📷 Agregar / Administrar Fotografías</button>
           <button type="button" class="btn btn-ghost" data-close="productPhotoLightboxModal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 16: GESTIÓN Y SEGUIMIENTO DE PROSPECTO (CHAT WEB)
+  ============================ -->
+  <div id="chatLeadModal" class="modal">
+    <div class="modal-back" data-close="chatLeadModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:580px;">
+      <div class="modal-head">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="kpi-icon-box" style="background:rgba(37,211,102,0.14); color:#25d366; border-color:rgba(37,211,102,0.35);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
+          </div>
+          <div>
+            <div class="lbl mono" id="chatLeadFolioLbl" style="color:var(--primary); margin-bottom:2px;">PROSPECTO WEB</div>
+            <h2 id="chatLeadModalName">Seguimiento de Prospecto</h2>
+          </div>
+        </div>
+        <button class="close-btn" data-close="chatLeadModal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:var(--surface-raised); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div style="font-weight:700; font-size:1.05rem; color:var(--text-main);" id="leadDetailName">Nombre del Prospecto</div>
+            <div id="leadDetailStatusBadge"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; color:var(--text-muted); font-size:0.84rem;">
+            <span>📱 WhatsApp: <strong id="leadDetailPhone" class="mono text-white">231...</strong></span>
+            <span>·</span>
+            <span id="leadDetailDate">Fecha</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:12px; font-size:0.88rem; color:var(--text-main); line-height:1.5; border-left:3px solid #25d366; margin-bottom:14px;" id="leadDetailMessage">
+            Mensaje del cliente...
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a id="btnLeadOpenWhatsapp" href="#" target="_blank" class="btn btn-sm" style="background:#25d366; color:#0b141a; font-weight:700; text-decoration:none;">
+              📲 Chatear por WhatsApp
+            </a>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnLeadConvertToTicket">
+              🎫 Convertir a Ticket
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:0.82rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Actualizar Estado del Prospecto</label>
+          <div class="filter-pills" id="leadStatusActionPills">
+            <button type="button" class="pill-btn" data-setstatus="nuevo">Nuevo</button>
+            <button type="button" class="pill-btn" data-setstatus="en_seguimiento">En Seguimiento</button>
+            <button type="button" class="pill-btn" data-setstatus="atendido">Atendido</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.82rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Bitácora de Notas y Seguimiento Interno</label>
+          <div id="leadNotesTimeline" class="activity-feed" style="max-height:160px; overflow-y:auto; margin-bottom:12px; background:rgba(0,0,0,0.15); border-radius:8px; padding:10px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="leadNewNoteInput" placeholder="Agregar nota (ej. 'Cotización enviada', 'Llamar a las 4pm')..." style="flex:1; margin:0;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnLeadAddNote">Guardar Nota</button>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="justify-content:space-between; margin-top:20px;">
+          <button type="button" class="btn btn-ghost btn-sm text-red" id="btnLeadDelete" style="color:#ef4444;">🗑️ Eliminar</button>
+          <button type="button" class="btn btn-ghost" data-close="chatLeadModal">Cerrar</button>
         </div>
       </div>
     </div>

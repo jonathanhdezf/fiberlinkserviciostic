@@ -1782,11 +1782,65 @@
   </div>
 </div>
 
-<!-- Terminal demo button -->
-<button id="demoBtn" class="btn-neon magnetic" aria-label="Ver estado en línea">
+<!-- Floating WhatsApp / Chat Button -->
+<button id="chatFloatBtn" class="btn-neon magnetic" aria-label="Chatea con nosotros">
   <span class="npulse" aria-hidden="true"></span>
-  Ver estado en línea
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
+  Chatea con nosotros
 </button>
+
+<!-- Modal Chatea con Nosotros -->
+<div class="chat-modal-overlay" id="chatModalOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="chatModalTitle">
+  <div class="chat-modal-backdrop" id="chatModalBackdrop"></div>
+  <div class="chat-modal-card">
+    <div class="chat-modal-header">
+      <div class="chat-modal-header-left">
+        <div class="chat-modal-avatar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="chat-status-pulse"></span>
+        </div>
+        <div>
+          <h3 id="chatModalTitle" class="chat-modal-title">Chatea con nosotros</h3>
+          <p class="chat-modal-sub">Atención técnica y comercial en línea vía WhatsApp</p>
+        </div>
+      </div>
+      <button class="chat-modal-close" id="chatModalClose" type="button" aria-label="Cerrar modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <form id="chatLeadForm" class="chat-modal-form" novalidate>
+      <div class="chat-form-group">
+        <label for="chatLeadName" class="chat-form-label">Tu Nombre Completo <span class="req">*</span></label>
+        <div class="chat-input-wrap">
+          <svg class="chat-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="chatLeadName" name="name" class="chat-input" placeholder="Ej. Roberto Gómez" required minlength="2" autocomplete="name">
+        </div>
+      </div>
+
+      <div class="chat-form-group">
+        <label for="chatLeadPhone" class="chat-form-label">Número de WhatsApp (10 dígitos) <span class="req">*</span></label>
+        <div class="chat-input-wrap">
+          <svg class="chat-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="tel" id="chatLeadPhone" name="phone" class="chat-input" placeholder="Ej. 2311024672" required maxlength="10" inputmode="numeric" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="chat-form-group">
+        <label for="chatLeadMessage" class="chat-form-label">¿En qué podemos ayudarte? <span class="opt">(Opcional)</span></label>
+        <textarea id="chatLeadMessage" name="message" class="chat-textarea" rows="3" placeholder="Cuéntanos brevemente sobre tu requerimiento o consulta..."></textarea>
+      </div>
+
+      <div class="chat-modal-footer">
+        <button type="submit" id="chatLeadSubmitBtn" class="chat-submit-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
+          <span>Iniciar Chat por WhatsApp</span>
+        </button>
+        <p class="chat-privacy-hint">🔒 Atención directa al WhatsApp oficial Fiberlink: <strong>231 102 4672</strong></p>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- Terminal demo overlay -->
 <div class="term-overlay" id="termOverlay" aria-hidden="true" role="dialog" aria-label="Estado del sistema">

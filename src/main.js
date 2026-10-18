@@ -625,6 +625,127 @@ function initUI() {
     });
   }
 
+  // Floating Chat / WhatsApp Modal Handler
+  const chatFloatBtn = document.getElementById('chatFloatBtn');
+  const chatModalOverlay = document.getElementById('chatModalOverlay');
+  const chatModalClose = document.getElementById('chatModalClose');
+  const chatModalBackdrop = document.getElementById('chatModalBackdrop');
+  const chatLeadForm = document.getElementById('chatLeadForm');
+  const chatLeadSubmitBtn = document.getElementById('chatLeadSubmitBtn');
+  const chatLeadPhone = document.getElementById('chatLeadPhone');
+
+  const openChatModal = () => {
+    if (!chatModalOverlay) return;
+    chatModalOverlay.classList.add('open');
+    chatModalOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      document.getElementById('chatLeadName')?.focus();
+    }, 150);
+  };
+
+  const closeChatModal = () => {
+    if (!chatModalOverlay) return;
+    chatModalOverlay.classList.remove('open');
+    chatModalOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  if (chatFloatBtn) {
+    chatFloatBtn.addEventListener('click', openChatModal);
+  }
+
+  if (chatModalClose) {
+    chatModalClose.addEventListener('click', closeChatModal);
+  }
+
+  if (chatModalBackdrop) {
+    chatModalBackdrop.addEventListener('click', closeChatModal);
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && chatModalOverlay?.classList.contains('open')) {
+      closeChatModal();
+    }
+  });
+
+  // Only allow digits in phone input
+  if (chatLeadPhone) {
+    chatLeadPhone.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+      e.target.value = val;
+    });
+  }
+
+  if (chatLeadForm) {
+    chatLeadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nameInput = document.getElementById('chatLeadName');
+      const phoneInput = document.getElementById('chatLeadPhone');
+      const messageInput = document.getElementById('chatLeadMessage');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+      const message = messageInput ? messageInput.value.trim() : '';
+
+      if (!name || name.length < 2) {
+        alert('Por favor ingresa tu nombre completo.');
+        nameInput?.focus();
+        return;
+      }
+
+      if (!phone || phone.length < 10) {
+        alert('Por favor ingresa un número de WhatsApp a 10 dígitos.');
+        phoneInput?.focus();
+        return;
+      }
+
+      // Indicate loading
+      const originalBtnHtml = chatLeadSubmitBtn ? chatLeadSubmitBtn.innerHTML : '';
+      if (chatLeadSubmitBtn) {
+        chatLeadSubmitBtn.disabled = true;
+        chatLeadSubmitBtn.innerHTML = `
+          <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+          <span>Conectando a WhatsApp...</span>
+        `;
+      }
+
+      try {
+        // Save lead in backend API
+        await fetch('/api/chat-leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, message })
+        }).catch(err => console.warn('[ChatWeb] Error sincronizando lead con el servidor:', err));
+      } catch (err) {
+        console.warn('[ChatWeb] Fallback local:', err);
+      }
+
+      // Build WhatsApp message
+      const officialPhone = '522311024672';
+      let waMessage = `Hola Fiberlink! Mi nombre es *${name}* (Tel: ${phone}).`;
+      if (message) {
+        waMessage += `\n\n*Consulta o Requerimiento:*\n${message}`;
+      } else {
+        waMessage += `\n\nMe gustaría recibir información técnica y comercial sobre sus servicios.`;
+      }
+
+      const waUrl = `https://wa.me/${officialPhone}?text=${encodeURIComponent(waMessage)}`;
+
+      // Open WhatsApp window
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+
+      // Reset form and close
+      chatLeadForm.reset();
+      if (chatLeadSubmitBtn) {
+        chatLeadSubmitBtn.disabled = false;
+        chatLeadSubmitBtn.innerHTML = originalBtnHtml;
+      }
+      closeChatModal();
+    });
+  }
+
   // Hover Glow and 3D Tilt effects (Only on desktop/non-touch devices for maximum performance)
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
   if (!isTouch) {

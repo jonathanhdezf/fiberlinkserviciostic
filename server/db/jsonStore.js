@@ -30,7 +30,8 @@ export const FILES = {
   cashCuts: path.join(DATA_DIR, 'cash_cuts.json'),
   workshop: path.join(DATA_DIR, 'workshop.json'),
   settings: path.join(DATA_DIR, 'settings.json'),
-  activity: path.join(DATA_DIR, 'activity.json')
+  activity: path.join(DATA_DIR, 'activity.json'),
+  chatLeads: path.join(DATA_DIR, 'chat_leads.json')
 };
 
 // Ensure data directory exists
@@ -1357,6 +1358,41 @@ export const SEED_SETTINGS = {
   updatedAt: new Date().toISOString()
 };
 
+const SEED_CHAT_LEADS = [
+  {
+    id: 'lead-1718000000001',
+    name: 'Ing. Carlos Ortega',
+    phone: '2311054321',
+    message: 'Hola, requiero cotización para enlace de fibra óptica simétrica y cableado estructurado para oficina.',
+    status: 'nuevo',
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    notes: [
+      {
+        id: 'n-1',
+        text: 'Lead generado desde el botón flotante del portal web.',
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        user: 'Portal Web'
+      }
+    ]
+  },
+  {
+    id: 'lead-1718000000002',
+    name: 'Mariana Rosas',
+    phone: '2311128765',
+    message: 'Buen día, tienen disponible en tienda el router MikroTik hEX S?',
+    status: 'en_seguimiento',
+    createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
+    notes: [
+      {
+        id: 'n-2',
+        text: 'Se le envió catálogo de equipos por WhatsApp. Pendiente confirmación de pago.',
+        createdAt: new Date(Date.now() - 3600000 * 16).toISOString(),
+        user: 'Ing. Roberto Méndez'
+      }
+    ]
+  }
+];
+
 function ensureSeed(collectionName, seedData) {
   const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
@@ -1389,6 +1425,7 @@ ensureSeed('shifts', SEED_SHIFTS);
 ensureSeed('cashCuts', SEED_CASH_CUTS);
 ensureSeed('settings', SEED_SETTINGS);
 ensureSeed('activity', SEED_ACTIVITY);
+ensureSeed('chatLeads', SEED_CHAT_LEADS);
 
 // ==========================================
 // GENERIC CRUD HELPERS

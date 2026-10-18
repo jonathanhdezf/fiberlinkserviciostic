@@ -257,5 +257,30 @@ export const erpService = {
   },
   async getActivityLogs() {
     return apiRequest('/activity');
+  },
+
+  // ---- CHAT WEB & WHATSAPP LEADS ----
+  async getChatLeads(params = {}) {
+    const q = new URLSearchParams();
+    if (params.status) q.set('status', params.status);
+    if (params.q) q.set('q', params.q);
+    return apiRequest(`/chat-leads${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  async createChatLead(payload) {
+    return apiRequest('/chat-leads', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  async updateChatLead(id, payload) {
+    return apiRequest(`/chat-leads/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+  async deleteChatLead(id) {
+    return apiRequest(`/chat-leads/${id}`, {
+      method: 'DELETE'
+    });
   }
 };

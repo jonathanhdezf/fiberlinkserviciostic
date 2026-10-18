@@ -1,0 +1,34 @@
+[
+  {
+    "id": "lead-1718000000001",
+    "name": "Ing. Carlos Ortega",
+    "phone": "2311054321",
+    "message": "Hola, requiero cotización para enlace de fibra óptica simétrica y cableado estructurado para oficina.",
+    "status": "nuevo",
+    "createdAt": "2026-10-18T04:46:20.967Z",
+    "notes": [
+      {
+        "id": "n-1",
+        "text": "Lead generado desde el botón flotante del portal web.",
+        "createdAt": "2026-10-18T04:46:20.967Z",
+        "user": "Portal Web"
+      }
+    ]
+  },
+  {
+    "id": "lead-1718000000002",
+    "name": "Mariana Rosas",
+    "phone": "2311128765",
+    "message": "Buen día, tienen disponible en tienda el router MikroTik hEX S?",
+    "status": "en_seguimiento",
+    "createdAt": "2026-10-17T12:46:20.967Z",
+    "notes": [
+      {
+        "id": "n-2",
+        "text": "Se le envió catálogo de equipos por WhatsApp. Pendiente confirmación de pago.",
+        "createdAt": "2026-10-17T14:46:20.967Z",
+        "user": "Ing. Roberto Méndez"
+      }
+    ]
+  }
+]
