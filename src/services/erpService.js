@@ -203,6 +203,34 @@ export const erpService = {
     });
   },
 
+  // ---- SHIFTS & CASH CUTS (CORTES Y TURNOS) ----
+  async getShifts() {
+    return apiRequest('/shifts');
+  },
+  async openShift(payload) {
+    return apiRequest('/shifts', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  async addShiftCashMovement(shiftId, payload) {
+    return apiRequest(`/shifts/${shiftId}/movements`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+  async getCashCuts(params = {}) {
+    const q = new URLSearchParams();
+    if (params.cutType) q.set('cutType', params.cutType);
+    return apiRequest(`/cash-cuts${q.toString() ? '?' + q.toString() : ''}`);
+  },
+  async createCashCut(payload) {
+    return apiRequest('/cash-cuts', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
   // ---- REPORTS & ACTIVITY ----
   async getReportsSummary() {
     return apiRequest('/reports/summary');

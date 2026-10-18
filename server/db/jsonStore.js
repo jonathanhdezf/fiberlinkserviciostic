@@ -26,6 +26,8 @@ export const FILES = {
   products: path.join(DATA_DIR, 'products.json'),
   inventoryMovements: path.join(DATA_DIR, 'inventory_movements.json'),
   sales: path.join(DATA_DIR, 'sales.json'),
+  shifts: path.join(DATA_DIR, 'shifts.json'),
+  cashCuts: path.join(DATA_DIR, 'cash_cuts.json'),
   workshop: path.join(DATA_DIR, 'workshop.json'),
   activity: path.join(DATA_DIR, 'activity.json')
 };
@@ -1039,6 +1041,191 @@ const SEED_INVENTORY_MOVEMENTS = [
   }
 ];
 
+const SEED_SHIFTS = [
+  {
+    id: 'shift-1003',
+    folio: 'TRN-1003',
+    shiftName: 'Turno Matutino (08:00 - 16:00)',
+    registerName: 'Caja Principal #1 — Mostrador Teziutlán',
+    cashier: 'Lic. Sofía Navarro',
+    openedBy: 'Lic. Sofía Navarro',
+    openedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+    closedAt: null,
+    status: 'abierto',
+    openingCash: 1500.00,
+    cashMovements: [
+      {
+        id: 'cm-101',
+        folio: 'MCJ-101',
+        date: new Date(Date.now() - 3600000 * 3).toISOString(),
+        type: 'entrada_efectivo',
+        concept: 'Dotación de morralla y cambio para mostrador',
+        amount: 500.00,
+        author: 'Ing. Roberto Méndez'
+      },
+      {
+        id: 'cm-102',
+        folio: 'MCJ-102',
+        date: new Date(Date.now() - 3600000 * 1.5).toISOString(),
+        type: 'salida_gasto',
+        concept: 'Pago de guía de paquetería urgente (refacciones taller)',
+        amount: 220.00,
+        author: 'Lic. Sofía Navarro'
+      }
+    ],
+    closingCashCounted: null,
+    expectedCash: null,
+    difference: 0,
+    cutFolio: null,
+    notes: 'Turno operativo actual en mostrador principal.'
+  },
+  {
+    id: 'shift-1002',
+    folio: 'TRN-1002',
+    shiftName: 'Turno Vespertino (14:00 - 21:00)',
+    registerName: 'Caja Principal #1 — Mostrador Teziutlán',
+    cashier: 'Lic. Sofía Navarro',
+    openedBy: 'Lic. Sofía Navarro',
+    openedAt: new Date(Date.now() - 86400000 - 3600000 * 7).toISOString(),
+    closedAt: new Date(Date.now() - 86400000).toISOString(),
+    status: 'cerrado',
+    openingCash: 1500.00,
+    cashMovements: [
+      {
+        id: 'cm-100',
+        folio: 'MCJ-100',
+        date: new Date(Date.now() - 86400000 - 3600000 * 3).toISOString(),
+        type: 'salida_gasto',
+        concept: 'Compra de cintillos y alcohol isopropílico para laboratorio',
+        amount: 150.00,
+        author: 'Lic. Sofía Navarro'
+      }
+    ],
+    closingCashCounted: 5530.00,
+    expectedCash: 5530.00,
+    difference: 0.00,
+    cutFolio: 'COR-1002',
+    notes: 'Cierre de turno vespertino sin diferencias en arqueo.'
+  },
+  {
+    id: 'shift-1001',
+    folio: 'TRN-1001',
+    shiftName: 'Turno Matutino (08:00 - 16:00)',
+    registerName: 'Caja Principal #1 — Mostrador Teziutlán',
+    cashier: 'Mariana Salazar',
+    openedBy: 'Ing. Roberto Méndez',
+    openedAt: new Date(Date.now() - 86400000 * 2 - 3600000 * 8).toISOString(),
+    closedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    status: 'cerrado',
+    openingCash: 1000.00,
+    cashMovements: [],
+    closingCashCounted: 4930.00,
+    expectedCash: 4950.00,
+    difference: -20.00,
+    cutFolio: 'COR-1001',
+    notes: 'Diferencia menor de -$20.00 en cambio de monedas.'
+  }
+];
+
+const SEED_CASH_CUTS = [
+  {
+    id: 'cut-1003',
+    folio: 'COR-1003',
+    cutType: 'dia',
+    shiftId: 'ALL',
+    shiftFolio: 'CONSOLIDADO-DIA',
+    shiftName: 'Corte General del Día (Consolidado)',
+    registerName: 'Todas las Cajas — Sucursal Teziutlán',
+    cashier: 'Ing. Roberto Méndez',
+    date: new Date(Date.now() - 86400000 + 1800000).toISOString(),
+    periodStart: new Date(Date.now() - 86400000 - 3600000 * 12).toISOString(),
+    periodEnd: new Date(Date.now() - 86400000 + 1800000).toISOString(),
+    salesCount: 6,
+    cancelledCount: 0,
+    openingCash: 2500.00,
+    cashSales: 8130.00,
+    cardSales: 3450.00,
+    transferSales: 6470.00,
+    creditSales: 6380.00,
+    creditPaymentsCash: 2000.00,
+    creditPaymentsOther: 1980.00,
+    cashInTotal: 0.00,
+    cashOutTotal: 150.00,
+    totalGrossSales: 24430.00,
+    totalCollectedRevenue: 22030.00,
+    expectedCashInDrawer: 12480.00,
+    countedCashInDrawer: 12480.00,
+    difference: 0.00,
+    denominations: { b1000: 6, b500: 8, b200: 9, b100: 5, b50: 3, b20: 1, coins: 10 },
+    whatsappPhone: '2311024672',
+    notes: 'Corte Z del día auditado por Dirección General. Depósito bancario programado.'
+  },
+  {
+    id: 'cut-1002',
+    folio: 'COR-1002',
+    cutType: 'turno',
+    shiftId: 'shift-1002',
+    shiftFolio: 'TRN-1002',
+    shiftName: 'Turno Vespertino (14:00 - 21:00)',
+    registerName: 'Caja Principal #1 — Mostrador Teziutlán',
+    cashier: 'Lic. Sofía Navarro',
+    date: new Date(Date.now() - 86400000).toISOString(),
+    periodStart: new Date(Date.now() - 86400000 - 3600000 * 7).toISOString(),
+    periodEnd: new Date(Date.now() - 86400000).toISOString(),
+    salesCount: 4,
+    cancelledCount: 0,
+    openingCash: 1500.00,
+    cashSales: 4180.00,
+    cardSales: 1850.00,
+    transferSales: 2490.00,
+    creditSales: 0.00,
+    creditPaymentsCash: 0.00,
+    creditPaymentsOther: 1980.00,
+    cashInTotal: 0.00,
+    cashOutTotal: 150.00,
+    totalGrossSales: 8520.00,
+    totalCollectedRevenue: 10500.00,
+    expectedCashInDrawer: 5530.00,
+    countedCashInDrawer: 5530.00,
+    difference: 0.00,
+    denominations: { b1000: 2, b500: 5, b200: 4, b100: 2, b50: 0, b20: 1, coins: 10 },
+    whatsappPhone: '2311024672',
+    notes: 'Cuadre exacto al cierre del turno vespertino.'
+  },
+  {
+    id: 'cut-1001',
+    folio: 'COR-1001',
+    cutType: 'turno',
+    shiftId: 'shift-1001',
+    shiftFolio: 'TRN-1001',
+    shiftName: 'Turno Matutino (08:00 - 16:00)',
+    registerName: 'Caja Principal #1 — Mostrador Teziutlán',
+    cashier: 'Mariana Salazar',
+    date: new Date(Date.now() - 86400000 * 2).toISOString(),
+    periodStart: new Date(Date.now() - 86400000 * 2 - 3600000 * 8).toISOString(),
+    periodEnd: new Date(Date.now() - 86400000 * 2).toISOString(),
+    salesCount: 3,
+    cancelledCount: 0,
+    openingCash: 1000.00,
+    cashSales: 3950.00,
+    cardSales: 1600.00,
+    transferSales: 3980.00,
+    creditSales: 0.00,
+    creditPaymentsCash: 0.00,
+    creditPaymentsOther: 0.00,
+    cashInTotal: 0.00,
+    cashOutTotal: 0.00,
+    totalGrossSales: 9530.00,
+    totalCollectedRevenue: 9530.00,
+    expectedCashInDrawer: 4950.00,
+    countedCashInDrawer: 4930.00,
+    difference: -20.00,
+    denominations: { b1000: 2, b500: 4, b200: 4, b100: 1, b50: 0, b20: 1, coins: 10 },
+    whatsappPhone: '2311024672',
+    notes: 'Faltante menor de $20.00 en morralla.'
+  }
+];
+
 function ensureSeed(collectionName, seedData) {
   const filePath = FILES[collectionName];
   if (!fs.existsSync(filePath)) {
@@ -1067,6 +1254,8 @@ ensureSeed('products', SEED_PRODUCTS);
 ensureSeed('inventoryMovements', SEED_INVENTORY_MOVEMENTS);
 ensureSeed('workshop', SEED_WORKSHOP);
 ensureSeed('sales', SEED_SALES);
+ensureSeed('shifts', SEED_SHIFTS);
+ensureSeed('cashCuts', SEED_CASH_CUTS);
 ensureSeed('activity', SEED_ACTIVITY);
 
 // ==========================================

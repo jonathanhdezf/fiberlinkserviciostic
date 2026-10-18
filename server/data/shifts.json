@@ -1,0 +1,85 @@
+[
+  {
+    "id": "shift-1003",
+    "folio": "TRN-1003",
+    "shiftName": "Turno Matutino (08:00 - 16:00)",
+    "registerName": "Caja Principal #1 — Mostrador Teziutlán",
+    "cashier": "Lic. Sofía Navarro",
+    "openedBy": "Lic. Sofía Navarro",
+    "openedAt": "2026-10-17T19:59:40.200Z",
+    "closedAt": null,
+    "status": "abierto",
+    "openingCash": 1500,
+    "cashMovements": [
+      {
+        "id": "cm-101",
+        "folio": "MCJ-101",
+        "date": "2026-10-17T21:59:40.200Z",
+        "type": "entrada_efectivo",
+        "concept": "Dotación de morralla y cambio para mostrador",
+        "amount": 500,
+        "author": "Ing. Roberto Méndez"
+      },
+      {
+        "id": "cm-102",
+        "folio": "MCJ-102",
+        "date": "2026-10-17T23:29:40.200Z",
+        "type": "salida_gasto",
+        "concept": "Pago de guía de paquetería urgente (refacciones taller)",
+        "amount": 220,
+        "author": "Lic. Sofía Navarro"
+      }
+    ],
+    "closingCashCounted": null,
+    "expectedCash": null,
+    "difference": 0,
+    "cutFolio": null,
+    "notes": "Turno operativo actual en mostrador principal."
+  },
+  {
+    "id": "shift-1002",
+    "folio": "TRN-1002",
+    "shiftName": "Turno Vespertino (14:00 - 21:00)",
+    "registerName": "Caja Principal #1 — Mostrador Teziutlán",
+    "cashier": "Lic. Sofía Navarro",
+    "openedBy": "Lic. Sofía Navarro",
+    "openedAt": "2026-10-16T17:59:40.200Z",
+    "closedAt": "2026-10-17T00:59:40.200Z",
+    "status": "cerrado",
+    "openingCash": 1500,
+    "cashMovements": [
+      {
+        "id": "cm-100",
+        "folio": "MCJ-100",
+        "date": "2026-10-16T21:59:40.200Z",
+        "type": "salida_gasto",
+        "concept": "Compra de cintillos y alcohol isopropílico para laboratorio",
+        "amount": 150,
+        "author": "Lic. Sofía Navarro"
+      }
+    ],
+    "closingCashCounted": 5530,
+    "expectedCash": 5530,
+    "difference": 0,
+    "cutFolio": "COR-1002",
+    "notes": "Cierre de turno vespertino sin diferencias en arqueo."
+  },
+  {
+    "id": "shift-1001",
+    "folio": "TRN-1001",
+    "shiftName": "Turno Matutino (08:00 - 16:00)",
+    "registerName": "Caja Principal #1 — Mostrador Teziutlán",
+    "cashier": "Mariana Salazar",
+    "openedBy": "Ing. Roberto Méndez",
+    "openedAt": "2026-10-15T16:59:40.200Z",
+    "closedAt": "2026-10-16T00:59:40.200Z",
+    "status": "cerrado",
+    "openingCash": 1000,
+    "cashMovements": [],
+    "closingCashCounted": 4930,
+    "expectedCash": 4950,
+    "difference": -20,
+    "cutFolio": "COR-1001",
+    "notes": "Diferencia menor de -$20.00 en cambio de monedas."
+  }
+]

@@ -13,6 +13,8 @@ let allWorkshop = [];
 let allSales = [];
 let allUsers = [];
 let allClients = [];
+let allShifts = [];
+let allCashCuts = [];
 let reportsData = null;
 
 // UI State
@@ -29,6 +31,8 @@ let cliCreditFilter = 'all';
 let currentStatementClientId = null;
 let currentStatementFilter = 'all';
 let invMovFilter = 'all';
+let cutsHistoryFilter = 'all';
+let currentDetailCutId = null;
 
 // Command Palette state
 let cmdItems = [];
@@ -41,7 +45,8 @@ const VIEW_META = {
   pos: { title: 'Terminal Punto de Venta (POS)', bc: 'Punto de Venta' },
   store: { title: 'Manejo de Inventario, Reportes & Kardex', bc: 'Inventario & Kardex' },
   clients: { title: 'Control de Clientes, Facturación & Créditos', bc: 'Clientes & Créditos' },
-  reports: { title: 'Analítica Financiera y Corte', bc: 'Reportes & Caja' },
+  shifts: { title: 'Organización de Turnos, Arqueo y Cortes de Caja', bc: 'Cortes y Turnos' },
+  reports: { title: 'Analítica Financiera y Reportes Ejecutivos', bc: 'Reportes & Analítica' },
   users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' }
 };
 
@@ -76,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPosModule();
   initStoreModule();
   initClientsModule();
+  initShiftsModule();
   initReportsModule();
   initUsersModule();
 });
@@ -207,7 +213,7 @@ async function enterDashboard() {
   document.getElementById('ucName').textContent = currentUser?.name || 'Usuario';
   document.getElementById('ucRole').textContent = currentUser?.permissions?.label || currentUser?.role || 'Personal';
 
-  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'reports', 'users'];
+  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users'];
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
     btn.style.display = 'flex';
   });
@@ -385,12 +391,16 @@ function renderCommandResults(query) {
     { group: 'Acciones Rápidas', title: 'Registrar Nuevo Cliente (Crédito / CFDI)', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); openClientModalForCreate(); } },
     { group: 'Acciones Rápidas', title: 'Registrar Abono o Liquidación de Crédito', sub: 'Créditos', run: () => { closeModal('cmdPaletteModal'); openCreditMovementModal(); } },
     { group: 'Acciones Rápidas', title: 'Exportar Padrón de Clientes a CSV', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); exportClientsToCSV(); } },
+    { group: 'Acciones Rápidas', title: 'Realizar Corte del Turno (Arqueo X/Z)', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('turn_cut'); } },
+    { group: 'Acciones Rápidas', title: 'Enviar Corte de Caja por WhatsApp', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('whatsapp_cut'); } },
+    { group: 'Acciones Rápidas', title: 'Abrir Nuevo Turno de Trabajo', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); openNewShiftModal(); } },
     { group: 'Navegación', title: 'Ir a Resumen Ejecutivo Bento', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('overview'); } },
     { group: 'Navegación', title: 'Ir a Tablero de Tickets', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('tickets'); } },
     { group: 'Navegación', title: 'Ir a Taller Técnico', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('workshop'); } },
     { group: 'Navegación', title: 'Ir a Clientes y Administración de Créditos', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('clients'); } },
     { group: 'Navegación', title: 'Ir a Tienda e Inventario', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('store'); } },
-    { group: 'Navegación', title: 'Ir a Reportes y Corte de Caja', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
+    { group: 'Navegación', title: 'Ir a Cortes y Turnos (Turno, Día, WhatsApp)', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); } },
+    { group: 'Navegación', title: 'Ir a Reportes y Analítica', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
   ];
 
   const ticketMatches = allTickets.map(t => ({
@@ -479,7 +489,7 @@ function highlightCmdSelection() {
 // ==========================================
 async function syncAllData() {
   try {
-    const [tickets, products, movements, workshop, sales, users, clients, reports] = await Promise.all([
+    const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, reports] = await Promise.all([
       ticketService.getTickets(),
       erpService.getProducts().catch(() => []),
       erpService.getInventoryMovements().catch(() => []),
@@ -487,6 +497,8 @@ async function syncAllData() {
       erpService.getSales().catch(() => []),
       erpService.getUsers().catch(() => []),
       erpService.getClients().catch(() => []),
+      erpService.getShifts().catch(() => []),
+      erpService.getCashCuts().catch(() => []),
       erpService.getReportsSummary().catch(() => null)
     ]);
 
@@ -497,6 +509,8 @@ async function syncAllData() {
     allSales = Array.isArray(sales) ? sales : [];
     allUsers = Array.isArray(users) ? users : [];
     allClients = Array.isArray(clients) ? clients : [];
+    allShifts = Array.isArray(shifts) ? shifts : [];
+    allCashCuts = Array.isArray(cashCuts) ? cashCuts : [];
     reportsData = reports;
 
     updateNavBadges();
@@ -511,6 +525,7 @@ async function syncAllData() {
     renderPosSalesHistory();
     renderInventoryModule();
     renderClientsModule();
+    renderShiftsModule();
     renderReportsView();
     renderUsersTable();
   } catch (err) {
@@ -523,6 +538,7 @@ function updateNavBadges() {
   const activeWorkshop = allWorkshop.filter(w => w.estado !== 'entregado').length;
   const lowStockCount = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3)).length;
   const clientsWithBalance = allClients.filter(c => (Number(c.currentBalance) || 0) > 0).length;
+  const activeShift = allShifts.find(s => s.status === 'abierto');
 
   document.getElementById('navBadgeTickets').textContent = activeTickets;
   document.getElementById('navBadgeWorkshop').textContent = activeWorkshop;
@@ -535,6 +551,11 @@ function updateNavBadges() {
   if (cliBadge) {
     cliBadge.style.display = allClients.length > 0 ? 'inline-block' : 'none';
     cliBadge.textContent = clientsWithBalance > 0 ? `${clientsWithBalance}` : `${allClients.length}`;
+  }
+  const shiftBadge = document.getElementById('navBadgeShiftStatus');
+  if (shiftBadge) {
+    shiftBadge.textContent = activeShift ? 'ON' : 'OFF';
+    shiftBadge.classList.toggle('warn', !activeShift);
   }
 }
 
@@ -4533,4 +4554,1123 @@ function printCreditMovementReceipt(client, movement) {
   `;
   window.print();
 }
+
+// ==========================================
+// 15. VIEW 9: MÓDULO DE CORTES Y TURNOS (TURNO, DÍA, MANEJO, HISTORIAL Y WHATSAPP)
+// ==========================================
+function switchShiftsSubTab(tabName) {
+  const paneMap = {
+    turn_cut: 'shiftsSubTabTurnCut',
+    day_cut: 'shiftsSubTabDayCut',
+    manage_shifts: 'shiftsSubTabManage',
+    cuts_history: 'shiftsSubTabHistory',
+    whatsapp_cut: 'shiftsSubTabWhatsapp'
+  };
+
+  document.querySelectorAll('#shiftsModuleTabs .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.shifttab === tabName);
+  });
+
+  Object.entries(paneMap).forEach(([key, domId]) => {
+    const el = document.getElementById(domId);
+    if (el) el.classList.toggle('active', key === tabName);
+  });
+
+  if (tabName === 'whatsapp_cut') {
+    updateWhatsappCutPreview();
+  }
+}
+
+function initShiftsModule() {
+  // Restore saved WhatsApp recipient phone
+  const savedWaPhone = localStorage.getItem('fiberlink_wa_cut_phone');
+  const waPhoneEl = document.getElementById('waCutPhoneInput');
+  if (savedWaPhone && waPhoneEl) {
+    waPhoneEl.value = savedWaPhone;
+  }
+
+  // 5-Tab Switcher
+  document.querySelectorAll('#shiftsModuleTabs .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchShiftsSubTab(btn.dataset.shifttab || 'turn_cut');
+    });
+  });
+
+  // Top Header Quick Action Buttons
+  document.getElementById('btnOpenNewShiftModal')?.addEventListener('click', openNewShiftModal);
+  document.getElementById('btnManageOpenNewShift')?.addEventListener('click', openNewShiftModal);
+  document.getElementById('btnOpenCashMovementModal')?.addEventListener('click', openCashMovementModal);
+  document.getElementById('btnTurnQuickAddCashMov')?.addEventListener('click', openCashMovementModal);
+  document.getElementById('btnManageAddCashMov')?.addEventListener('click', openCashMovementModal);
+  document.getElementById('btnQuickWhatsappCut')?.addEventListener('click', () => {
+    switchShiftsSubTab('whatsapp_cut');
+  });
+
+  // Sub-Tab 1: Corte del Turno (Selector, Denominaciones y Arqueo)
+  document.getElementById('turnCutSelectShift')?.addEventListener('change', () => {
+    renderTurnCutTab(true);
+  });
+
+  document.querySelectorAll('.denom-input').forEach(inp => {
+    inp.addEventListener('input', recalculateDenominationsTotal);
+  });
+
+  document.getElementById('arqueoCountedInput')?.addEventListener('input', updateArqueoDifferenceDisplay);
+
+  document.getElementById('btnTurnMatchExpected')?.addEventListener('click', () => {
+    const metrics = computeSelectedShiftMetrics();
+    const countedIn = document.getElementById('arqueoCountedInput');
+    if (countedIn) {
+      countedIn.value = metrics.expectedCashInDrawer.toFixed(2);
+      updateArqueoDifferenceDisplay();
+      showToast('Arqueo ajustado al efectivo esperado exacto');
+    }
+  });
+
+  document.getElementById('btnSavePartialTurnCut')?.addEventListener('click', () => {
+    submitTurnCut(false);
+  });
+
+  document.getElementById('btnCloseShiftAndCut')?.addEventListener('click', () => {
+    submitTurnCut(true);
+  });
+
+  document.getElementById('btnSendTurnCutWhatsapp')?.addEventListener('click', () => {
+    const sel = document.getElementById('waCutSourceSelect');
+    if (sel) sel.value = 'live_turn';
+    switchShiftsSubTab('whatsapp_cut');
+    sendCurrentWhatsappCut();
+  });
+
+  document.getElementById('btnPrintTurnCutPreview')?.addEventListener('click', () => {
+    const metrics = computeSelectedShiftMetrics();
+    printCashCutTicket(metrics);
+  });
+
+  // Sub-Tab 2: Corte del Día
+  document.getElementById('dayCutScopeSelect')?.addEventListener('change', renderDayCutTab);
+  document.getElementById('btnExportDayCutCsv')?.addEventListener('click', exportSalesToCSV);
+  document.getElementById('btnPrintDayCutReport')?.addEventListener('click', () => {
+    const metrics = computeDayCutMetrics();
+    printCashCutTicket(metrics);
+  });
+  document.getElementById('btnDayCutWhatsapp')?.addEventListener('click', () => {
+    const sel = document.getElementById('waCutSourceSelect');
+    if (sel) sel.value = 'live_day';
+    switchShiftsSubTab('whatsapp_cut');
+    sendCurrentWhatsappCut();
+  });
+  document.getElementById('btnSaveOfficialDayCut')?.addEventListener('click', submitOfficialDayCut);
+
+  // Sub-Tab 4: Historial de Cortes
+  document.getElementById('cutsHistorySearchInput')?.addEventListener('input', renderCutsHistoryTable);
+  document.querySelectorAll('#cutsHistoryFilterPills .pill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#cutsHistoryFilterPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cutsHistoryFilter = btn.dataset.cutfilter || 'all';
+      renderCutsHistoryTable();
+    });
+  });
+  document.getElementById('btnExportCutsHistoryCsv')?.addEventListener('click', exportCutsHistoryToCSV);
+
+  // Sub-Tab 5: Corte por WhatsApp
+  ['waCutSourceSelect', 'waCutPhoneInput', 'waCutRecipientName', 'waIncMethods', 'waIncArqueo', 'waIncMovements', 'waIncOperations', 'waCutCustomNote'].forEach(id => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', updateWhatsappCutPreview);
+    el?.addEventListener('change', updateWhatsappCutPreview);
+  });
+
+  document.getElementById('btnLaunchWhatsappCut')?.addEventListener('click', sendCurrentWhatsappCut);
+  document.getElementById('btnCopyWhatsappCutText')?.addEventListener('click', async () => {
+    const text = buildWhatsappCutMessage();
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Texto del corte copiado al portapapeles');
+    } catch (e) {
+      showToast('No se pudo copiar automáticamente');
+    }
+  });
+
+  // Modal 11: Abrir Nuevo Turno
+  document.getElementById('openShiftForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      shiftName: document.getElementById('openShiftNameSelect')?.value,
+      registerName: document.getElementById('openShiftRegisterSelect')?.value,
+      cashier: document.getElementById('openShiftCashierSelect')?.value,
+      openingCash: parseFloat(document.getElementById('openShiftOpeningCash')?.value) || 0,
+      notes: document.getElementById('openShiftNotes')?.value.trim() || ''
+    };
+    try {
+      const res = await erpService.openShift(payload);
+      closeModal('openShiftModal');
+      await syncAllData();
+      showToast(`Turno ${res.shift?.folio || ''} iniciado exitosamente`);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Modal 12: Entrada / Salida de Efectivo en Caja
+  document.getElementById('cashMovementForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const activeShift = getActiveOrLatestShift();
+    if (!activeShift) {
+      showToast('Primero abre un turno para registrar movimientos de caja');
+      return;
+    }
+    const payload = {
+      type: document.getElementById('cashMovType')?.value || 'salida_gasto',
+      amount: parseFloat(document.getElementById('cashMovAmount')?.value) || 0,
+      author: document.getElementById('cashMovAuthor')?.value.trim() || currentUser?.name || activeShift.cashier,
+      concept: document.getElementById('cashMovConcept')?.value.trim() || 'Movimiento en cajón'
+    };
+    try {
+      await erpService.addShiftCashMovement(activeShift.id, payload);
+      closeModal('cashMovementModal');
+      await syncAllData();
+      showToast('Movimiento de efectivo registrado en el turno actual');
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Modal 13: Reimprimir o Enviar Corte desde Detalle
+  document.getElementById('btnModalPrintCut')?.addEventListener('click', () => {
+    const cut = allCashCuts.find(c => c.id === currentDetailCutId);
+    if (cut) printCashCutTicket(cut);
+  });
+  document.getElementById('btnModalWhatsappCut')?.addEventListener('click', () => {
+    const cut = allCashCuts.find(c => c.id === currentDetailCutId);
+    if (!cut) return;
+    closeModal('cutDetailModal');
+    const sel = document.getElementById('waCutSourceSelect');
+    if (sel) {
+      sel.value = `cut:${cut.id}`;
+    }
+    switchShiftsSubTab('whatsapp_cut');
+    sendCurrentWhatsappCut();
+  });
+}
+
+function getActiveOrLatestShift() {
+  return allShifts.find(s => s.status === 'abierto') || allShifts[0] || null;
+}
+
+function openNewShiftModal() {
+  const cashierSel = document.getElementById('openShiftCashierSelect');
+  if (cashierSel) {
+    const names = allUsers.length > 0
+      ? allUsers.map(u => u.name)
+      : ['Lic. Sofía Navarro', 'Ing. Roberto Méndez', 'Mariana Salazar'];
+    cashierSel.innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+    if (currentUser?.name && names.includes(currentUser.name)) {
+      cashierSel.value = currentUser.name;
+    }
+  }
+  const openCashEl = document.getElementById('openShiftOpeningCash');
+  if (openCashEl) openCashEl.value = '1500';
+  const notesEl = document.getElementById('openShiftNotes');
+  if (notesEl) notesEl.value = '';
+  openModal('openShiftModal');
+}
+
+function openCashMovementModal() {
+  const authorEl = document.getElementById('cashMovAuthor');
+  if (authorEl) authorEl.value = currentUser?.name || 'Ing. Roberto Méndez';
+  const amtEl = document.getElementById('cashMovAmount');
+  if (amtEl) amtEl.value = '';
+  const conceptEl = document.getElementById('cashMovConcept');
+  if (conceptEl) conceptEl.value = '';
+  openModal('cashMovementModal');
+}
+
+function computeSelectedShiftMetrics() {
+  const shiftSel = document.getElementById('turnCutSelectShift');
+  const selectedId = shiftSel?.value;
+  const shift = allShifts.find(s => s.id === selectedId) || getActiveOrLatestShift();
+
+  const validSales = allSales.filter(s => s.status !== 'cancelada');
+  const cancelledSales = allSales.filter(s => s.status === 'cancelada');
+
+  // Filter sales belonging to this shift window (or all active sales if demo shift is active)
+  let shiftSales = validSales;
+  if (shift && shift.status === 'cerrado' && shift.openedAt && shift.closedAt) {
+    const tStart = new Date(shift.openedAt).getTime();
+    const tEnd = new Date(shift.closedAt).getTime();
+    const inWindow = validSales.filter(s => {
+      const t = new Date(s.date).getTime();
+      return t >= tStart && t <= tEnd;
+    });
+    if (inWindow.length > 0) shiftSales = inWindow;
+  }
+
+  const openingCash = parseFloat(shift?.openingCash) || 0;
+  const cashSales = shiftSales.filter(s => s.paymentMethod === 'Efectivo').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const cardSales = shiftSales.filter(s => s.paymentMethod === 'Tarjeta').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const transferSales = shiftSales.filter(s => s.paymentMethod === 'Transferencia').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const creditSales = shiftSales.filter(s => s.paymentMethod === 'Crédito').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+
+  // Credit abonos in cash vs other
+  let creditPaymentsCash = 0;
+  let creditPaymentsOther = 0;
+  allClients.forEach(c => {
+    (c.ledger || []).forEach(m => {
+      if (m.type === 'abono' || m.type === 'liquidacion') {
+        if (m.paymentMethod === 'Efectivo') {
+          creditPaymentsCash += parseFloat(m.amount) || 0;
+        } else {
+          creditPaymentsOther += parseFloat(m.amount) || 0;
+        }
+      }
+    });
+  });
+
+  const movs = Array.isArray(shift?.cashMovements) ? shift.cashMovements : [];
+  const cashInTotal = movs.filter(m => m.type === 'entrada_efectivo').reduce((acc, m) => acc + (parseFloat(m.amount) || 0), 0);
+  const cashOutTotal = movs.filter(m => m.type !== 'entrada_efectivo').reduce((acc, m) => acc + (parseFloat(m.amount) || 0), 0);
+
+  const totalGrossSales = cashSales + cardSales + transferSales + creditSales;
+  const totalCollectedRevenue = cashSales + cardSales + transferSales + creditPaymentsCash + creditPaymentsOther;
+  const expectedCashInDrawer = openingCash + cashSales + creditPaymentsCash + cashInTotal - cashOutTotal;
+
+  const countedInputEl = document.getElementById('arqueoCountedInput');
+  const countedCashInDrawer = countedInputEl ? (parseFloat(countedInputEl.value) || 0) : expectedCashInDrawer;
+  const difference = countedCashInDrawer - expectedCashInDrawer;
+
+  return {
+    folio: shift?.cutFolio || 'EN-VIVO',
+    cutType: 'turno',
+    shiftId: shift?.id || null,
+    shiftFolio: shift?.folio || 'TRN-ACTUAL',
+    shiftName: shift?.shiftName || 'Turno Operativo',
+    registerName: shift?.registerName || 'Caja Principal #1',
+    cashier: shift?.cashier || currentUser?.name || 'Cajero en Turno',
+    status: shift?.status || 'abierto',
+    openedAt: shift?.openedAt || new Date().toISOString(),
+    closedAt: shift?.closedAt || null,
+    date: new Date().toISOString(),
+    salesCount: shiftSales.length,
+    cancelledCount: cancelledSales.length,
+    openingCash,
+    cashSales,
+    cardSales,
+    transferSales,
+    creditSales,
+    creditPaymentsCash,
+    creditPaymentsOther,
+    cashInTotal,
+    cashOutTotal,
+    totalGrossSales,
+    totalCollectedRevenue,
+    expectedCashInDrawer,
+    countedCashInDrawer,
+    difference,
+    cashMovements: movs
+  };
+}
+
+function computeDayCutMetrics() {
+  const scope = document.getElementById('dayCutScopeSelect')?.value || 'all_active';
+  const now = Date.now();
+  const validSales = allSales.filter(s => {
+    if (s.status === 'cancelada') return false;
+    if (scope === 'today') {
+      return (now - new Date(s.date).getTime()) <= 86400000;
+    }
+    return true;
+  });
+
+  const openingCash = allShifts.reduce((acc, sh) => acc + (parseFloat(sh.openingCash) || 0), 0);
+  const cashSales = validSales.filter(s => s.paymentMethod === 'Efectivo').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const cardSales = validSales.filter(s => s.paymentMethod === 'Tarjeta').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const transferSales = validSales.filter(s => s.paymentMethod === 'Transferencia').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+  const creditSales = validSales.filter(s => s.paymentMethod === 'Crédito').reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
+
+  let estimatedCost = 0;
+  validSales.forEach(s => {
+    (s.items || []).forEach(it => {
+      estimatedCost += (parseFloat(it.cost) || 0) * (Number(it.qty) || 1);
+    });
+  });
+
+  let creditPaymentsCash = 0;
+  let creditPaymentsOther = 0;
+  allClients.forEach(c => {
+    (c.ledger || []).forEach(m => {
+      if (m.type === 'abono' || m.type === 'liquidacion') {
+        if (m.paymentMethod === 'Efectivo') creditPaymentsCash += parseFloat(m.amount) || 0;
+        else creditPaymentsOther += parseFloat(m.amount) || 0;
+      }
+    });
+  });
+
+  let cashInTotal = 0;
+  let cashOutTotal = 0;
+  allShifts.forEach(sh => {
+    (sh.cashMovements || []).forEach(m => {
+      if (m.type === 'entrada_efectivo') cashInTotal += parseFloat(m.amount) || 0;
+      else cashOutTotal += parseFloat(m.amount) || 0;
+    });
+  });
+
+  const totalGrossSales = cashSales + cardSales + transferSales + creditSales;
+  const totalCollectedRevenue = cashSales + cardSales + transferSales + creditPaymentsCash + creditPaymentsOther;
+  const expectedCashInDrawer = openingCash + cashSales + creditPaymentsCash + cashInTotal - cashOutTotal;
+  const estimatedProfit = Math.max(0, totalGrossSales - estimatedCost);
+
+  return {
+    folio: 'CORTE-DIA',
+    cutType: 'dia',
+    shiftId: 'ALL',
+    shiftFolio: 'CONSOLIDADO-DIA',
+    shiftName: 'Corte General del Día (Consolidado)',
+    registerName: 'Todas las Cajas — Sucursal Teziutlán',
+    cashier: currentUser?.name || 'Ing. Roberto Méndez',
+    date: new Date().toISOString(),
+    salesCount: validSales.length,
+    cancelledCount: allSales.filter(s => s.status === 'cancelada').length,
+    openingCash,
+    cashSales,
+    cardSales,
+    transferSales,
+    creditSales,
+    creditPaymentsCash,
+    creditPaymentsOther,
+    cashInTotal,
+    cashOutTotal,
+    totalGrossSales,
+    totalCollectedRevenue,
+    expectedCashInDrawer,
+    countedCashInDrawer: expectedCashInDrawer,
+    difference: 0,
+    estimatedProfit,
+    salesList: validSales
+  };
+}
+
+function renderShiftsModule() {
+  const activeShift = getActiveOrLatestShift();
+  const shiftSel = document.getElementById('turnCutSelectShift');
+  if (shiftSel) {
+    const prev = shiftSel.value;
+    shiftSel.innerHTML = allShifts.map(s =>
+      `<option value="${s.id}">[${s.folio}] ${s.shiftName} — ${s.cashier} (${s.status.toUpperCase()})</option>`
+    ).join('');
+    if (prev && allShifts.some(s => s.id === prev)) {
+      shiftSel.value = prev;
+    } else if (activeShift) {
+      shiftSel.value = activeShift.id;
+    }
+  }
+
+  // Populate WhatsApp Cut Source Picker with Live options + Historical Cuts
+  const waSourceSel = document.getElementById('waCutSourceSelect');
+  if (waSourceSel) {
+    const prevWa = waSourceSel.value;
+    waSourceSel.innerHTML = `
+      <option value="live_turn">⚡ Corte del Turno Actual en Curso (En Vivo)</option>
+      <option value="live_day">📅 Corte General del Día (Consolidado En Vivo)</option>
+      ${allCashCuts.map(c => `<option value="cut:${c.id}">🗂️ [${c.folio}] ${c.cutType === 'dia' ? 'Corte del Día' : 'Corte de Turno'} (${c.shiftFolio}) — ${formatMoney(c.totalGrossSales)}</option>`).join('')}
+    `;
+    if (prevWa && Array.from(waSourceSel.options).some(o => o.value === prevWa)) {
+      waSourceSel.value = prevWa;
+    }
+  }
+
+  renderTurnCutTab(false);
+  renderDayCutTab();
+  renderManageShiftsTable();
+  renderCutsHistoryTable();
+  updateWhatsappCutPreview();
+
+  // Update Top 4 KPI Cards
+  const turnMetrics = computeSelectedShiftMetrics();
+  const dayMetrics = computeDayCutMetrics();
+
+  const kpiFolio = document.getElementById('shiftKpiCurrentFolio');
+  const kpiStatus = document.getElementById('shiftKpiCurrentStatus');
+  const kpiMeta = document.getElementById('shiftKpiCurrentMeta');
+  const kpiExpCash = document.getElementById('shiftKpiExpectedCash');
+  const kpiOpenBadge = document.getElementById('shiftKpiOpeningCashBadge');
+  const kpiDaySales = document.getElementById('shiftKpiDaySales');
+  const kpiDayCount = document.getElementById('shiftKpiDayCount');
+  const kpiTotalCuts = document.getElementById('shiftKpiTotalCuts');
+  const kpiLastCut = document.getElementById('shiftKpiLastCutBadge');
+  const tabHistCount = document.getElementById('shiftsTabHistoryCount');
+
+  if (kpiFolio) kpiFolio.textContent = activeShift ? activeShift.folio : 'SIN TURNO';
+  if (kpiStatus) {
+    const isOpen = activeShift?.status === 'abierto';
+    kpiStatus.textContent = isOpen ? 'EN CURSO' : 'CERRADO';
+    kpiStatus.className = `kpi-trend ${isOpen ? 'trend-up' : 'trend-warn'}`;
+  }
+  if (kpiMeta) kpiMeta.textContent = activeShift ? `${activeShift.cashier} · ${activeShift.registerName}` : 'Abre un nuevo turno para operar';
+  if (kpiExpCash) kpiExpCash.textContent = formatMoney(turnMetrics.expectedCashInDrawer);
+  if (kpiOpenBadge) kpiOpenBadge.textContent = `Fondo: ${formatMoney(turnMetrics.openingCash)}`;
+  if (kpiDaySales) kpiDaySales.textContent = formatMoney(dayMetrics.totalGrossSales);
+  if (kpiDayCount) kpiDayCount.textContent = `${dayMetrics.salesCount} ventas`;
+  if (kpiTotalCuts) kpiTotalCuts.textContent = allCashCuts.length;
+  if (kpiLastCut) kpiLastCut.textContent = allCashCuts[0]?.folio || 'COR-1000';
+  if (tabHistCount) tabHistCount.textContent = allCashCuts.length;
+}
+
+function renderTurnCutTab(resetCountedInput = false) {
+  const m = computeSelectedShiftMetrics();
+
+  const eyeEl = document.getElementById('turnCutShiftEyebrow');
+  const titleEl = document.getElementById('turnCutShiftTitle');
+  const cashEl = document.getElementById('turnCutCashier');
+  const regEl = document.getElementById('turnCutRegister');
+  const openAtEl = document.getElementById('turnCutOpenedAt');
+  const statusEl = document.getElementById('turnCutStatusBadge');
+
+  if (eyeEl) eyeEl.textContent = `TURNO SELECCIONADO · ${m.shiftFolio}`;
+  if (titleEl) titleEl.textContent = `Corte del Turno — ${m.shiftName}`;
+  if (cashEl) cashEl.textContent = m.cashier;
+  if (regEl) regEl.textContent = m.registerName;
+  if (openAtEl) openAtEl.textContent = new Date(m.openedAt).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+  if (statusEl) {
+    statusEl.innerHTML = m.status === 'abierto'
+      ? `<span class="badge badge-green"><span class="status-dot dot-lime"></span>Abierto (En Curso)</span>`
+      : `<span class="badge badge-amber"><span class="status-dot dot-amber"></span>Cerrado</span>`;
+  }
+
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setTxt('turnCutOpeningCash', formatMoney(m.openingCash));
+  setTxt('turnCutCashSales', formatMoney(m.cashSales));
+  setTxt('turnCutCreditCash', formatMoney(m.creditPaymentsCash));
+  setTxt('turnCutCashIn', formatMoney(m.cashInTotal));
+  setTxt('turnCutCashOut', `-${formatMoney(m.cashOutTotal)}`);
+  setTxt('turnCutExpectedCash', formatMoney(m.expectedCashInDrawer));
+
+  setTxt('turnCutMethodCash', formatMoney(m.cashSales));
+  setTxt('turnCutMethodCard', formatMoney(m.cardSales));
+  setTxt('turnCutMethodTransfer', formatMoney(m.transferSales));
+  setTxt('turnCutMethodCredit', formatMoney(m.creditSales));
+  setTxt('turnCutSalesCount', `${m.salesCount} completadas`);
+  setTxt('turnCutGrossSales', formatMoney(m.totalGrossSales));
+  setTxt('arqueoExpectedDisplay', formatMoney(m.expectedCashInDrawer));
+
+  const countedInput = document.getElementById('arqueoCountedInput');
+  if (countedInput && (resetCountedInput || !countedInput.dataset.initialized)) {
+    countedInput.value = m.expectedCashInDrawer.toFixed(2);
+    countedInput.dataset.initialized = 'true';
+  }
+  updateArqueoDifferenceDisplay();
+
+  // Render Cash Movements Table for this shift
+  const tbody = document.getElementById('turnCutCashMovementsBody');
+  if (tbody) {
+    if (!m.cashMovements || m.cashMovements.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:14px;">Sin entradas o salidas adicionales de efectivo en este turno.</td></tr>`;
+    } else {
+      tbody.innerHTML = m.cashMovements.map(cm => {
+        const isIn = cm.type === 'entrada_efectivo';
+        const badge = isIn
+          ? `<span class="badge badge-green">➕ Entrada</span>`
+          : cm.type === 'retiro_parcial'
+          ? `<span class="badge badge-purple">🔒 Retiro Bóveda</span>`
+          : `<span class="badge badge-amber">➖ Gasto / Salida</span>`;
+        return `
+          <tr>
+            <td data-label="Folio" class="mono"><strong>${cm.folio}</strong></td>
+            <td data-label="Hora" class="mono tabular">${new Date(cm.date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+            <td data-label="Tipo">${badge}</td>
+            <td data-label="Concepto">${cm.concept}</td>
+            <td data-label="Importe" style="text-align:right; color:${isIn ? 'var(--secondary)' : 'var(--danger)'};" class="mono tabular"><strong>${isIn ? '+' : '-'}${formatMoney(cm.amount)}</strong></td>
+            <td data-label="Autorizó">${cm.author || '-'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function recalculateDenominationsTotal() {
+  let sum = 0;
+  document.querySelectorAll('.denom-input').forEach(inp => {
+    const mult = parseFloat(inp.dataset.val) || 1;
+    const qty = Math.max(0, parseFloat(inp.value) || 0);
+    sum += mult * qty;
+  });
+  const countedInput = document.getElementById('arqueoCountedInput');
+  if (countedInput) {
+    countedInput.value = sum.toFixed(2);
+  }
+  updateArqueoDifferenceDisplay();
+}
+
+function updateArqueoDifferenceDisplay() {
+  const m = computeSelectedShiftMetrics();
+  const counted = parseFloat(document.getElementById('arqueoCountedInput')?.value) || 0;
+  const diff = Number((counted - m.expectedCashInDrawer).toFixed(2));
+  const diffEl = document.getElementById('arqueoDiffDisplay');
+  if (!diffEl) return;
+
+  if (Math.abs(diff) < 0.01) {
+    diffEl.textContent = '$0.00 (Cuadre Exacto)';
+    diffEl.style.color = 'var(--secondary)';
+  } else if (diff > 0) {
+    diffEl.textContent = `+${formatMoney(diff)} (Sobrante)`;
+    diffEl.style.color = 'var(--primary)';
+  } else {
+    diffEl.textContent = `${formatMoney(diff)} (Faltante)`;
+    diffEl.style.color = 'var(--danger)';
+  }
+}
+
+async function submitTurnCut(closeShift = false) {
+  const m = computeSelectedShiftMetrics();
+  const counted = parseFloat(document.getElementById('arqueoCountedInput')?.value) || 0;
+  const notes = document.getElementById('turnCutNotesInput')?.value.trim() || (closeShift ? 'Cierre de turno (Corte Z)' : 'Corte parcial de turno (Corte X)');
+  const waPhone = document.getElementById('waCutPhoneInput')?.value.trim() || '2311024672';
+
+  const denominations = {
+    b1000: parseInt(document.getElementById('denom1000')?.value, 10) || 0,
+    b500: parseInt(document.getElementById('denom500')?.value, 10) || 0,
+    b200: parseInt(document.getElementById('denom200')?.value, 10) || 0,
+    b100: parseInt(document.getElementById('denom100')?.value, 10) || 0,
+    b50: parseInt(document.getElementById('denom50')?.value, 10) || 0,
+    b20: parseInt(document.getElementById('denom20')?.value, 10) || 0,
+    coins: parseFloat(document.getElementById('denomCoins')?.value) || 0
+  };
+
+  try {
+    const res = await erpService.createCashCut({
+      ...m,
+      cutType: 'turno',
+      countedCashInDrawer: counted,
+      denominations,
+      whatsappPhone: waPhone,
+      notes,
+      closeShift
+    });
+    await syncAllData();
+    showToast(closeShift
+      ? `Corte Z (${res.cut?.folio}) guardado y turno ${m.shiftFolio} cerrado exitosamente`
+      : `Corte del turno (${res.cut?.folio}) registrado en el historial`);
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+async function submitOfficialDayCut() {
+  const m = computeDayCutMetrics();
+  const waPhone = document.getElementById('waCutPhoneInput')?.value.trim() || '2311024672';
+  try {
+    const res = await erpService.createCashCut({
+      ...m,
+      cutType: 'dia',
+      countedCashInDrawer: m.expectedCashInDrawer,
+      whatsappPhone: waPhone,
+      notes: 'Corte General del Día (Consolidado Z Diario)',
+      closeShift: false
+    });
+    await syncAllData();
+    showToast(`Corte General del Día (${res.cut?.folio}) guardado en el historial`);
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+function renderDayCutTab() {
+  const m = computeDayCutMetrics();
+
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setTxt('dayCutTotalSales', formatMoney(m.totalGrossSales));
+  setTxt('dayCutTotalCash', formatMoney(m.cashSales + m.creditPaymentsCash));
+  setTxt('dayCutTotalElectronic', formatMoney(m.cardSales + m.transferSales + m.creditPaymentsOther));
+  setTxt('dayCutTotalCredit', formatMoney(m.creditSales));
+  setTxt('dayCutEstimatedProfit', formatMoney(m.estimatedProfit));
+
+  const breakdownEl = document.getElementById('dayCutMethodsBreakdown');
+  if (breakdownEl) {
+    const totalBase = Math.max(1, m.totalGrossSales);
+    const rows = [
+      { label: '💵 Ventas en Efectivo', val: m.cashSales },
+      { label: '💳 Ventas con Tarjeta', val: m.cardSales },
+      { label: '🏦 Transferencia SPEI', val: m.transferSales },
+      { label: '📋 Ventas a Crédito Cliente', val: m.creditSales },
+      { label: '➕ Abonos de Crédito Recibidos', val: m.creditPaymentsCash + m.creditPaymentsOther },
+      { label: '🏦 Efectivo Esperado Total en Cajas', val: m.expectedCashInDrawer }
+    ];
+    breakdownEl.innerHTML = rows.map(r => `
+      <div class="sbar-row">
+        <div class="sbar-top"><span>${r.label}</span><strong class="mono tabular">${formatMoney(r.val)}</strong></div>
+        <div class="sbar-track"><div class="sbar-fill" style="width:${Math.min(100, Math.round((r.val / totalBase) * 100))}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  const shiftsBody = document.getElementById('dayCutShiftsTableBody');
+  if (shiftsBody) {
+    shiftsBody.innerHTML = allShifts.map(s => `
+      <tr>
+        <td data-label="Folio Turno" class="mono"><strong>${s.folio}</strong></td>
+        <td data-label="Horario / Caja">
+          <div><strong>${s.shiftName}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${s.registerName}</div></div>
+        </td>
+        <td data-label="Cajero">${s.cashier}</td>
+        <td data-label="Fondo Inicial" style="text-align:right;" class="mono tabular">${formatMoney(s.openingCash)}</td>
+        <td data-label="Estado">
+          <span class="badge ${s.status === 'abierto' ? 'badge-green' : 'badge-amber'}">
+            ${s.status === 'abierto' ? 'Abierto' : 'Cerrado'}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  const salesBody = document.getElementById('dayCutSalesTableBody');
+  if (salesBody) {
+    if (m.salesList.length === 0) {
+      salesBody.innerHTML = `<tr><td colspan="9">${renderEmptyState('Sin ventas en el periodo', 'Registra ventas en la terminal POS para ver el desglose del día.')}</td></tr>`;
+    } else {
+      salesBody.innerHTML = m.salesList.map(s => `
+        <tr>
+          <td data-label="Folio Venta" class="mono"><strong>${s.folio}</strong></td>
+          <td data-label="Fecha / Hora" class="mono tabular">${new Date(s.date).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</td>
+          <td data-label="Cliente">${s.clientName}</td>
+          <td data-label="Cajero">${s.cashier}</td>
+          <td data-label="Método Pago"><span class="badge badge-blue">${s.paymentMethod}</span></td>
+          <td data-label="Subtotal" style="text-align:right;" class="mono tabular">${formatMoney(s.subtotal)}</td>
+          <td data-label="Descuento" style="text-align:right;" class="mono tabular">${formatMoney(s.discount)}</td>
+          <td data-label="Total" style="text-align:right;" class="mono tabular"><strong>${formatMoney(s.total)}</strong></td>
+          <td data-label="Estado"><span class="badge badge-green">Completada</span></td>
+        </tr>
+      `).join('');
+    }
+  }
+}
+
+function renderManageShiftsTable() {
+  const tbody = document.getElementById('manageShiftsTableBody');
+  if (!tbody) return;
+
+  if (allShifts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10">${renderEmptyState('Sin turnos registrados', 'Abre un nuevo turno de trabajo para iniciar el control de caja.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allShifts.map(s => {
+    const movs = Array.isArray(s.cashMovements) ? s.cashMovements : [];
+    const netMovs = movs.reduce((acc, m) => acc + (m.type === 'entrada_efectivo' ? (parseFloat(m.amount) || 0) : -(parseFloat(m.amount) || 0)), 0);
+    const isOpen = s.status === 'abierto';
+
+    return `
+      <tr>
+        <td data-label="Folio Turno" class="mono"><strong>${s.folio}</strong></td>
+        <td data-label="Turno / Caja">
+          <div><strong>${s.shiftName}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${s.registerName}</div></div>
+        </td>
+        <td data-label="Cajero"><strong>${s.cashier}</strong></td>
+        <td data-label="Apertura" class="mono tabular" style="font-size:0.76rem;">${new Date(s.openedAt).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</td>
+        <td data-label="Cierre" class="mono tabular" style="font-size:0.76rem;">${s.closedAt ? new Date(s.closedAt).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '<span style="color:var(--secondary);">En curso</span>'}</td>
+        <td data-label="Fondo Inicial" style="text-align:right;" class="mono tabular">${formatMoney(s.openingCash)}</td>
+        <td data-label="Mov. Caja (Neto)" style="text-align:right; color:${netMovs >= 0 ? 'var(--secondary)' : 'var(--amber)'};" class="mono tabular">${netMovs >= 0 ? '+' : ''}${formatMoney(netMovs)} (${movs.length})</td>
+        <td data-label="Efectivo Contado" style="text-align:right;" class="mono tabular"><strong>${s.closingCashCounted !== null && s.closingCashCounted !== undefined ? formatMoney(s.closingCashCounted) : '—'}</strong></td>
+        <td data-label="Estado / Corte">
+          <span class="badge ${isOpen ? 'badge-green' : 'badge-blue'}">
+            <span class="status-dot ${isOpen ? 'dot-lime' : 'dot-blue'}"></span>
+            ${isOpen ? 'Abierto' : `Cerrado (${s.cutFolio || 'S/C'})`}
+          </span>
+        </td>
+        <td data-label="Acciones" style="text-align:right;">
+          <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm btn-shift-audit" data-id="${s.id}">✂️ Arqueo / Corte</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-shift-wa" data-id="${s.id}">📲 WhatsApp</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-shift-audit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sel = document.getElementById('turnCutSelectShift');
+      if (sel) sel.value = btn.dataset.id;
+      switchShiftsSubTab('turn_cut');
+      renderTurnCutTab(true);
+    });
+  });
+
+  tbody.querySelectorAll('.btn-shift-wa').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sel = document.getElementById('turnCutSelectShift');
+      if (sel) sel.value = btn.dataset.id;
+      renderTurnCutTab(true);
+      const waSel = document.getElementById('waCutSourceSelect');
+      if (waSel) waSel.value = 'live_turn';
+      switchShiftsSubTab('whatsapp_cut');
+    });
+  });
+}
+
+function renderCutsHistoryTable() {
+  const tbody = document.getElementById('cutsHistoryTableBody');
+  if (!tbody) return;
+
+  const q = (document.getElementById('cutsHistorySearchInput')?.value || '').toLowerCase().trim();
+  const filtered = allCashCuts.filter(c => {
+    if (cutsHistoryFilter === 'turno' && c.cutType !== 'turno') return false;
+    if (cutsHistoryFilter === 'dia' && c.cutType !== 'dia') return false;
+    if (cutsHistoryFilter === 'exact' && Math.abs(parseFloat(c.difference) || 0) >= 0.01) return false;
+    if (cutsHistoryFilter === 'diff' && Math.abs(parseFloat(c.difference) || 0) < 0.01) return false;
+    if (q) {
+      const hay = `${c.folio} ${c.shiftFolio} ${c.shiftName} ${c.cashier} ${c.notes || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10">${renderEmptyState('Sin cortes en el historial', 'Realiza un Corte del Turno o Corte del Día para registrarlo en la bitácora.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const diff = parseFloat(c.difference) || 0;
+    const diffBadge = Math.abs(diff) < 0.01
+      ? `<span class="badge badge-green">Exacto ($0.00)</span>`
+      : diff > 0
+      ? `<span class="badge badge-blue">Sobrante +${formatMoney(diff)}</span>`
+      : `<span class="badge badge-red">Faltante ${formatMoney(diff)}</span>`;
+
+    return `
+      <tr>
+        <td data-label="Folio Corte" class="mono"><strong>${c.folio}</strong></td>
+        <td data-label="Tipo de Corte">
+          <span class="badge ${c.cutType === 'dia' ? 'badge-purple' : 'badge-blue'}">
+            ${c.cutType === 'dia' ? '📅 Corte del Día' : '✂️ Corte de Turno'}
+          </span>
+        </td>
+        <td data-label="Turno / Caja">
+          <div><strong class="mono">${c.shiftFolio}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${c.shiftName}</div></div>
+        </td>
+        <td data-label="Fecha y Hora" class="mono tabular" style="font-size:0.76rem;">${new Date(c.date).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</td>
+        <td data-label="Responsable">${c.cashier}</td>
+        <td data-label="Ventas Totales" style="text-align:right;" class="mono tabular"><strong>${formatMoney(c.totalGrossSales)}</strong></td>
+        <td data-label="Efectivo Esperado" style="text-align:right;" class="mono tabular">${formatMoney(c.expectedCashInDrawer)}</td>
+        <td data-label="Efectivo Contado" style="text-align:right;" class="mono tabular"><strong>${formatMoney(c.countedCashInDrawer)}</strong></td>
+        <td data-label="Diferencia" style="text-align:right;">${diffBadge}</td>
+        <td data-label="Acciones" style="text-align:right;">
+          <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+            <button type="button" class="btn btn-secondary btn-sm btn-view-cut" data-id="${c.id}">👁️ Detalle</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-print-cut" data-id="${c.id}">🖨️</button>
+            <button type="button" class="btn btn-primary btn-sm btn-wa-cut" data-id="${c.id}" title="Enviar este corte por WhatsApp">📲 WhatsApp</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.btn-view-cut').forEach(btn => {
+    btn.addEventListener('click', () => openCutDetailModal(btn.dataset.id));
+  });
+  tbody.querySelectorAll('.btn-print-cut').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cut = allCashCuts.find(x => x.id === btn.dataset.id);
+      if (cut) printCashCutTicket(cut);
+    });
+  });
+  tbody.querySelectorAll('.btn-wa-cut').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cut = allCashCuts.find(x => x.id === btn.dataset.id);
+      if (!cut) return;
+      const sel = document.getElementById('waCutSourceSelect');
+      if (sel) sel.value = `cut:${cut.id}`;
+      switchShiftsSubTab('whatsapp_cut');
+      sendCurrentWhatsappCut();
+    });
+  });
+}
+
+function openCutDetailModal(cutId) {
+  const cut = allCashCuts.find(c => c.id === cutId);
+  if (!cut) return;
+  currentDetailCutId = cut.id;
+
+  const folioEl = document.getElementById('cutDetailFolio');
+  const titleEl = document.getElementById('cutDetailTitle');
+  const bodyEl = document.getElementById('cutDetailBody');
+
+  if (folioEl) folioEl.textContent = `${cut.folio} · ${cut.cutType === 'dia' ? 'CORTE GENERAL DEL DÍA' : 'CORTE DE TURNO'}`;
+  if (titleEl) titleEl.textContent = `${cut.shiftName} (${cut.shiftFolio})`;
+
+  const diff = parseFloat(cut.difference) || 0;
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="credit-live-summary" style="margin-bottom:14px;">
+        <div class="cls-item">
+          <span>Fecha y Hora</span>
+          <strong class="mono tabular" style="font-size:0.84rem;">${new Date(cut.date).toLocaleString('es-MX')}</strong>
+        </div>
+        <div class="cls-item">
+          <span>Cajero / Responsable</span>
+          <strong>${cut.cashier}</strong>
+        </div>
+        <div class="cls-item">
+          <span>Ventas Brutas</span>
+          <strong class="mono tabular" style="color:var(--primary);">${formatMoney(cut.totalGrossSales)}</strong>
+        </div>
+        <div class="cls-item">
+          <span>Diferencia Arqueo</span>
+          <strong class="mono tabular" style="color:${Math.abs(diff) < 0.01 ? 'var(--secondary)' : diff > 0 ? 'var(--primary)' : 'var(--danger)'};">
+            ${diff > 0 ? '+' : ''}${formatMoney(diff)}
+          </strong>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
+        <div class="surface-card" style="padding:14px; border-radius:10px; border:1px solid var(--border-subtle);">
+          <div class="panel-eyebrow" style="margin-bottom:8px;">DESGLOSE DE VENTAS</div>
+          <div class="pos-row"><span>💵 Efectivo:</span><strong class="mono tabular">${formatMoney(cut.cashSales)}</strong></div>
+          <div class="pos-row"><span>💳 Tarjeta:</span><strong class="mono tabular">${formatMoney(cut.cardSales)}</strong></div>
+          <div class="pos-row"><span>🏦 Transferencia SPEI:</span><strong class="mono tabular">${formatMoney(cut.transferSales)}</strong></div>
+          <div class="pos-row"><span>📋 Crédito Otorgado:</span><strong class="mono tabular">${formatMoney(cut.creditSales)}</strong></div>
+          <div class="pos-row"><span>🧾 Operaciones:</span><strong class="mono tabular">${cut.salesCount} ventas</strong></div>
+        </div>
+
+        <div class="surface-card" style="padding:14px; border-radius:10px; border:1px solid var(--border-subtle);">
+          <div class="panel-eyebrow" style="margin-bottom:8px;">ARQUEO DE EFECTIVO EN CAJÓN</div>
+          <div class="pos-row"><span>(+) Fondo Inicial:</span><strong class="mono tabular">${formatMoney(cut.openingCash)}</strong></div>
+          <div class="pos-row"><span>(+) Ventas Efectivo + Abonos:</span><strong class="mono tabular">${formatMoney((cut.cashSales || 0) + (cut.creditPaymentsCash || 0))}</strong></div>
+          <div class="pos-row"><span>(+) Entradas / (-) Salidas:</span><strong class="mono tabular">+${formatMoney(cut.cashInTotal)} / -${formatMoney(cut.cashOutTotal)}</strong></div>
+          <div class="pos-row"><span>(=) Efectivo Esperado:</span><strong class="mono tabular">${formatMoney(cut.expectedCashInDrawer)}</strong></div>
+          <div class="pos-row"><span>(=) Efectivo Físico Contado:</span><strong class="mono tabular" style="color:var(--primary);">${formatMoney(cut.countedCashInDrawer)}</strong></div>
+        </div>
+      </div>
+
+      <p style="margin-top:12px; font-size:0.82rem; color:var(--text-secondary);">
+        <strong>Observaciones de Auditoría:</strong> ${cut.notes || 'Sin observaciones adicionales.'}
+      </p>
+    `;
+  }
+
+  openModal('cutDetailModal');
+}
+
+function getSelectedWhatsappCutData() {
+  const sourceVal = document.getElementById('waCutSourceSelect')?.value || 'live_turn';
+  if (sourceVal === 'live_day') {
+    return computeDayCutMetrics();
+  }
+  if (sourceVal.startsWith('cut:')) {
+    const cutId = sourceVal.replace('cut:', '');
+    const found = allCashCuts.find(c => c.id === cutId);
+    if (found) return found;
+  }
+  return computeSelectedShiftMetrics();
+}
+
+function buildWhatsappCutMessage() {
+  const data = getSelectedWhatsappCutData();
+  const recipient = (document.getElementById('waCutRecipientName')?.value || 'Dirección General').trim();
+  const incMethods = document.getElementById('waIncMethods')?.checked !== false;
+  const incArqueo = document.getElementById('waIncArqueo')?.checked !== false;
+  const incMovs = document.getElementById('waIncMovements')?.checked !== false;
+  const incOps = document.getElementById('waIncOperations')?.checked !== false;
+  const customNote = (document.getElementById('waCutCustomNote')?.value || '').trim();
+
+  const isDay = data.cutType === 'dia';
+  const headerTitle = isDay
+    ? '📅 *REPORTE DE CORTE GENERAL DEL DÍA*'
+    : `✂️ *REPORTE DE CORTE DE TURNO (${data.shiftFolio || 'TRN'})*`;
+
+  const diff = (parseFloat(data.countedCashInDrawer) || 0) - (parseFloat(data.expectedCashInDrawer) || 0);
+  const diffLabel = Math.abs(diff) < 0.01
+    ? '✅ $0.00 (Cuadre Exacto)'
+    : diff > 0
+    ? `➕ +${formatMoney(diff)} (Sobrante)`
+    : `⚠️ ${formatMoney(diff)} (Faltante)`;
+
+  const lines = [
+    `🏢 *FIBERLINK SERVICIOS TIC — ERP*`,
+    headerTitle,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `👤 *Para:* ${recipient}`,
+    `🧑‍💼 *Responsable:* ${data.cashier}`,
+    `🖥️ *Caja / Turno:* ${data.shiftName} (${data.registerName || 'Mostrador'})`,
+    `🕒 *Fecha/Hora:* ${new Date(data.date || Date.now()).toLocaleString('es-MX')}`,
+    `🧾 *Folio Corte:* ${data.folio || 'EN-VIVO'}`
+  ];
+
+  if (incMethods) {
+    lines.push(
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `💰 *RESUMEN DE VENTAS (${data.salesCount || 0} oper.)*`,
+      `• 💵 Efectivo: *${formatMoney(data.cashSales)}*`,
+      `• 💳 Tarjeta: *${formatMoney(data.cardSales)}*`,
+      `• 🏦 Transferencia SPEI: *${formatMoney(data.transferSales)}*`,
+      `• 📋 Crédito Otorgado: *${formatMoney(data.creditSales)}*`,
+      `• 🤝 Abonos Crédito Recibidos: *${formatMoney((data.creditPaymentsCash || 0) + (data.creditPaymentsOther || 0))}*`,
+      `📈 *VENTA BRUTA TOTAL: ${formatMoney(data.totalGrossSales)}*`
+    );
+  }
+
+  if (incArqueo) {
+    lines.push(
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `🗄️ *ARQUEO DE EFECTIVO EN CAJÓN*`,
+      `• (+) Fondo Inicial: ${formatMoney(data.openingCash)}`,
+      `• (+) Ventas Efectivo: ${formatMoney(data.cashSales)}`,
+      `• (+) Abonos Crédito (Efec.): ${formatMoney(data.creditPaymentsCash)}`,
+      `• (+) Entradas Caja: +${formatMoney(data.cashInTotal)}`,
+      `• (-) Salidas / Gastos: -${formatMoney(data.cashOutTotal)}`,
+      `• (=) *Efectivo Esperado:* *${formatMoney(data.expectedCashInDrawer)}*`,
+      `• (=) *Efectivo Físico Contado:* *${formatMoney(data.countedCashInDrawer)}*`,
+      `• ⚖️ *Diferencia:* ${diffLabel}`
+    );
+  }
+
+  if (incMovs && Array.isArray(data.cashMovements) && data.cashMovements.length > 0) {
+    lines.push(
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `💸 *DETALLE ENTRADAS / SALIDAS DE CAJA*`
+    );
+    data.cashMovements.slice(0, 5).forEach(cm => {
+      const sign = cm.type === 'entrada_efectivo' ? '+' : '-';
+      lines.push(`• [${cm.folio}] ${sign}${formatMoney(cm.amount)} — ${cm.concept}`);
+    });
+  }
+
+  if (incOps) {
+    const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
+    const resolvedTickets = allTickets.filter(t => t.estado === 'resuelto').length;
+    const readyWorkshop = allWorkshop.filter(w => w.estado === 'listo_entrega' || w.estado === 'entregado').length;
+    lines.push(
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `🛠️ *PULSO OPERATIVO SUCURSAL*`,
+      `• 🎫 Tickets Soporte: ${resolvedTickets} resueltos / ${activeTickets} activos`,
+      `• 🔬 Laboratorio / Taller: ${readyWorkshop} listos o entregados`
+    );
+  }
+
+  if (customNote || data.notes) {
+    lines.push(
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `📝 *Observaciones:* ${customNote || data.notes}`
+    );
+  }
+
+  lines.push(`━━━━━━━━━━━━━━━━━━━━`, `_Generado desde Fiberlink Enterprise OS_`);
+  return lines.join('\n');
+}
+
+function updateWhatsappCutPreview() {
+  const previewEl = document.getElementById('waCutMessagePreview');
+  if (!previewEl) return;
+  previewEl.textContent = buildWhatsappCutMessage();
+}
+
+function sendCurrentWhatsappCut() {
+  const rawPhone = (document.getElementById('waCutPhoneInput')?.value || '2311024672').replace(/\D/g, '');
+  if (!rawPhone) {
+    showToast('Ingresa un número de WhatsApp válido');
+    return;
+  }
+  localStorage.setItem('fiberlink_wa_cut_phone', rawPhone);
+
+  const normalizedPhone = rawPhone.length === 10 ? `52${rawPhone}` : rawPhone;
+  const message = buildWhatsappCutMessage();
+  const waUrl = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, '_blank', 'noopener,noreferrer');
+  showToast(`Abriendo WhatsApp para enviar el corte al ${rawPhone}...`);
+}
+
+function exportCutsHistoryToCSV() {
+  const headers = ['FolioCorte', 'Tipo', 'FolioTurno', 'NombreTurno', 'Caja', 'Fecha', 'Responsable', 'FondoInicial', 'VentasEfectivo', 'VentasTarjeta', 'VentasSPEI', 'VentasCredito', 'TotalVentas', 'EfectivoEsperado', 'EfectivoContado', 'Diferencia', 'Notas'];
+  const rows = allCashCuts.map(c => [
+    c.folio,
+    c.cutType,
+    c.shiftFolio,
+    `"${(c.shiftName || '').replace(/"/g, '""')}"`,
+    `"${(c.registerName || '').replace(/"/g, '""')}"`,
+    c.date,
+    `"${(c.cashier || '').replace(/"/g, '""')}"`,
+    c.openingCash,
+    c.cashSales,
+    c.cardSales,
+    c.transferSales,
+    c.creditSales,
+    c.totalGrossSales,
+    c.expectedCashInDrawer,
+    c.countedCashInDrawer,
+    c.difference,
+    `"${(c.notes || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fiberlink-historial-cortes-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Historial de cortes exportado a CSV');
+}
+
+function printCashCutTicket(cut) {
+  const area = document.getElementById('printArea');
+  if (!area || !cut) return;
+  const diff = (parseFloat(cut.countedCashInDrawer) || 0) - (parseFloat(cut.expectedCashInDrawer) || 0);
+
+  area.innerHTML = `
+    <div style="max-width:340px; margin:0 auto; font-family:monospace; color:#000;">
+      <h2 style="text-align:center; margin-bottom:4px;">FIBERLINK SERVICIOS TIC</h2>
+      <p style="text-align:center; font-size:12px; margin-bottom:8px;">
+        ${cut.cutType === 'dia' ? 'CORTE GENERAL DEL DÍA (Z)' : 'CORTE DE TURNO Y ARQUEO DE CAJA'}<br>
+        Teziutlán, Puebla · Tel: 231 102 4672
+      </p>
+      <hr>
+      <p style="font-size:12px; margin:6px 0;">
+        <strong>Folio Corte:</strong> ${cut.folio || 'EN-VIVO'}<br>
+        <strong>Turno:</strong> [${cut.shiftFolio || 'TRN'}] ${cut.shiftName || ''}<br>
+        <strong>Caja:</strong> ${cut.registerName || 'Caja Principal #1'}<br>
+        <strong>Cajero:</strong> ${cut.cashier || ''}<br>
+        <strong>Fecha:</strong> ${new Date(cut.date || Date.now()).toLocaleString('es-MX')}
+      </p>
+      <hr>
+      <p style="font-size:12px; margin:6px 0;">
+        <strong>DESGLOSE DE VENTAS (${cut.salesCount || 0} oper.)</strong><br>
+        Efectivo: ${formatMoney(cut.cashSales)}<br>
+        Tarjeta: ${formatMoney(cut.cardSales)}<br>
+        Transferencia SPEI: ${formatMoney(cut.transferSales)}<br>
+        Crédito Clientes: ${formatMoney(cut.creditSales)}<br>
+        <strong>VENTA BRUTA TOTAL: ${formatMoney(cut.totalGrossSales)}</strong>
+      </p>
+      <hr>
+      <p style="font-size:12px; margin:6px 0;">
+        <strong>ARQUEO DE EFECTIVO EN CAJÓN</strong><br>
+        (+) Fondo Inicial: ${formatMoney(cut.openingCash)}<br>
+        (+) Ventas Efectivo: ${formatMoney(cut.cashSales)}<br>
+        (+) Abonos Crédito (Efec.): ${formatMoney(cut.creditPaymentsCash)}<br>
+        (+) Entradas Caja: +${formatMoney(cut.cashInTotal)}<br>
+        (-) Salidas / Gastos: -${formatMoney(cut.cashOutTotal)}<br>
+        <strong>(=) EFECTIVO ESPERADO: ${formatMoney(cut.expectedCashInDrawer)}</strong><br>
+        <strong>(=) EFECTIVO CONTADO: ${formatMoney(cut.countedCashInDrawer)}</strong><br>
+        <strong>DIFERENCIA: ${diff >= 0 ? '+' : ''}${formatMoney(diff)}</strong>
+      </p>
+      <hr>
+      <p style="font-size:11px; margin:8px 0;">Notas: ${cut.notes || 'Sin observaciones'}</p>
+      <div style="margin-top:28px; text-align:center; font-size:11px;">
+        ___________________________<br>
+        Firma Cajero / Auditoría (${cut.cashier})
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
 

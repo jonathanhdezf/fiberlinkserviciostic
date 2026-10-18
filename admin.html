@@ -179,9 +179,14 @@
         </button>
 
         <div class="nav-group-label">INTELIGENCIA & SISTEMA</div>
-        <button class="nav-btn" data-view="reports" title="Reportes Financieros y Corte">
+        <button class="nav-btn" data-view="shifts" title="Organización de Turnos, Corte del Turno, Corte del Día, Historial y Envío por WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="nav-label">Cortes y Turnos</span>
+          <span class="nav-badge tabular" id="navBadgeShiftStatus">ON</span>
+        </button>
+        <button class="nav-btn" data-view="reports" title="Reportes Financieros y Analítica">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-          <span class="nav-label">Reportes & Caja</span>
+          <span class="nav-label">Reportes & Analítica</span>
         </button>
         <button class="nav-btn" data-view="users" title="Usuarios y Roles RBAC">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1531,6 +1536,581 @@
           </div>
         </section>
 
+        <!-- ==========================================
+             VIEW 9: CORTES Y TURNOS (ORGANIZACIÓN DE TURNOS, ARQUEO Y WHATSAPP)
+        ========================================== -->
+        <section id="view-shifts" class="erp-view">
+          <!-- KPIs Ejecutivos de Cortes y Turnos -->
+          <div class="kpi-grid" style="margin-bottom:16px;">
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Turno Operativo en Curso</span>
+                <div class="kpi-icon kpi-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="shiftKpiCurrentFolio" style="font-size:1.35rem;">TRN-1003</div>
+                <span class="kpi-trend trend-up" id="shiftKpiCurrentStatus">ABIERTO</span>
+              </div>
+              <div class="kpi-foot" id="shiftKpiCurrentMeta">Lic. Sofía Navarro · Caja Principal #1</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Efectivo Esperado en Cajón</span>
+                <div class="kpi-icon kpi-cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="shiftKpiExpectedCash">$0.00</div>
+                <span class="kpi-trend trend-info tabular" id="shiftKpiOpeningCashBadge">Fondo: $1,500.00</span>
+              </div>
+              <div class="kpi-foot">Fondo inicial + ventas efectivo + entradas - salidas</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Ventas Acumuladas del Día</span>
+                <div class="kpi-icon kpi-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="shiftKpiDaySales">$0.00</div>
+                <span class="kpi-trend trend-up tabular" id="shiftKpiDayCount">0 operaciones</span>
+              </div>
+              <div class="kpi-foot">Efectivo, Tarjeta, Transferencia SPEI y Crédito</div>
+            </article>
+
+            <article class="kpi-card surface-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Cortes Registrados & WhatsApp</span>
+                <div class="kpi-icon kpi-amber">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value tabular" id="shiftKpiTotalCuts">0</div>
+                <span class="kpi-trend trend-info" id="shiftKpiLastCutBadge">COR-1003</span>
+              </div>
+              <div class="kpi-foot">Auditoría de cortes X/Z y envío directo por WhatsApp</div>
+            </article>
+          </div>
+
+          <!-- Barra Superior de Operaciones de Turnos y Cortes -->
+          <div class="toolbar-bar surface-card" style="padding:12px 16px; border-radius:12px; margin-bottom:14px;">
+            <div>
+              <div class="panel-eyebrow">CONTROL DE CAJA, ARQUEO Y AUDITORÍA DIARIA</div>
+              <h3 style="font-size:1rem; margin:0;">Organiza los Turnos y Cortes: Turno, Día, Historial y WhatsApp</h3>
+            </div>
+            <div class="toolbar-filters">
+              <button type="button" class="btn btn-secondary" id="btnOpenNewShiftModal" title="Abrir un nuevo turno de trabajo con fondo inicial">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Abrir Nuevo Turno</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnOpenCashMovementModal" title="Registrar entrada de cambio, gasto menor o retiro parcial de efectivo">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Entrada / Salida Caja</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btnQuickWhatsappCut" title="Preparar y enviar el corte actual por WhatsApp">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                <span>Corte por WhatsApp</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Navegación de 5 Sub-Pestañas de Cortes y Turnos -->
+          <div class="filter-pills" id="shiftsModuleTabs" style="margin-bottom:16px; width:100%; overflow-x:auto;">
+            <button type="button" class="pill-btn active" data-shifttab="turn_cut">
+              <span>✂️ Corte del Turno</span>
+            </button>
+            <button type="button" class="pill-btn" data-shifttab="day_cut">
+              <span>📅 Corte del Día</span>
+            </button>
+            <button type="button" class="pill-btn" data-shifttab="manage_shifts">
+              <span>🕐 Manejo de Turnos</span>
+            </button>
+            <button type="button" class="pill-btn" data-shifttab="cuts_history">
+              <span>🗂️ Historial de Cortes</span>
+              <span class="kbd-tag tabular" id="shiftsTabHistoryCount" style="margin-left:4px;">0</span>
+            </button>
+            <button type="button" class="pill-btn" data-shifttab="whatsapp_cut">
+              <span>📲 Corte por WhatsApp</span>
+            </button>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 1: CORTE DEL TURNO (ARQUEO EN VIVO Y CIERRE DE TURNO)
+          ========================================== -->
+          <div id="shiftsSubTabTurnCut" class="cli-subtab-pane active">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (7 cols): Resumen Financiero del Turno Actual -->
+              <div class="panel-card bento-span-7">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow" id="turnCutShiftEyebrow">TURNO ACTIVO EN CURSO · TRN-1003</div>
+                    <h3 id="turnCutShiftTitle">Corte del Turno — Arqueo de Caja</h3>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <select id="turnCutSelectShift" class="select-pill" title="Seleccionar turno a auditar"></select>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btnPrintTurnCutPreview">🖨️ Imprimir</button>
+                  </div>
+                </div>
+
+                <!-- Ficha de Datos del Turno -->
+                <div class="credit-live-summary" style="margin-bottom:16px;">
+                  <div class="cls-item">
+                    <span>Cajero Responsable</span>
+                    <strong id="turnCutCashier">-</strong>
+                  </div>
+                  <div class="cls-item">
+                    <span>Caja / Terminal</span>
+                    <strong id="turnCutRegister" style="font-size:0.84rem;">-</strong>
+                  </div>
+                  <div class="cls-item">
+                    <span>Apertura del Turno</span>
+                    <strong id="turnCutOpenedAt" class="mono tabular" style="font-size:0.82rem;">-</strong>
+                  </div>
+                  <div class="cls-item">
+                    <span>Estado</span>
+                    <strong id="turnCutStatusBadge"><span class="badge badge-green">Abierto</span></strong>
+                  </div>
+                </div>
+
+                <!-- Desglose Matemático del Efectivo en Cajón -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+                  <div class="surface-card" style="padding:14px; border-radius:10px; border:1px solid var(--border-subtle);">
+                    <div class="panel-eyebrow" style="margin-bottom:8px;">FLUJO DE EFECTIVO EN CAJÓN</div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>(+) Fondo Inicial de Caja:</span>
+                      <strong id="turnCutOpeningCash" class="mono tabular">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>(+) Ventas en Efectivo:</span>
+                      <strong id="turnCutCashSales" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>(+) Abonos Crédito (Efectivo):</span>
+                      <strong id="turnCutCreditCash" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>(+) Entradas Efectivo Caja:</span>
+                      <strong id="turnCutCashIn" class="mono tabular" style="color:var(--primary);">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>(-) Salidas / Gastos / Retiros:</span>
+                      <strong id="turnCutCashOut" class="mono tabular" style="color:var(--danger);">-$0.00</strong>
+                    </div>
+                    <div class="pos-row total-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
+                      <span>(=) EFECTIVO ESPERADO:</span>
+                      <strong id="turnCutExpectedCash" class="mono tabular" style="color:var(--primary); font-size:1.1rem;">$0.00</strong>
+                    </div>
+                  </div>
+
+                  <div class="surface-card" style="padding:14px; border-radius:10px; border:1px solid var(--border-subtle);">
+                    <div class="panel-eyebrow" style="margin-bottom:8px;">VENTAS POR MÉTODO DE PAGO</div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>💵 Efectivo:</span>
+                      <strong id="turnCutMethodCash" class="mono tabular">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>💳 Tarjeta Débito / Crédito:</span>
+                      <strong id="turnCutMethodCard" class="mono tabular">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>🏦 Transferencia SPEI:</span>
+                      <strong id="turnCutMethodTransfer" class="mono tabular">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>📋 Ventas a Crédito Cliente:</span>
+                      <strong id="turnCutMethodCredit" class="mono tabular" style="color:var(--amber);">$0.00</strong>
+                    </div>
+                    <div class="pos-row" style="padding:5px 0;">
+                      <span>🧾 Operaciones Registradas:</span>
+                      <strong id="turnCutSalesCount" class="mono tabular">0 ventas</strong>
+                    </div>
+                    <div class="pos-row total-row" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-subtle);">
+                      <span>TOTAL VENTAS TURNO:</span>
+                      <strong id="turnCutGrossSales" class="mono tabular" style="color:var(--secondary); font-size:1.1rem;">$0.00</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Movimientos de Caja dentro del Turno -->
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span class="panel-eyebrow">MOVIMIENTOS DE EFECTIVO EN CAJA DURANTE EL TURNO</span>
+                    <button type="button" class="btn btn-ghost btn-sm" id="btnTurnQuickAddCashMov">+ Registrar Entrada / Salida</button>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="erp-table">
+                      <thead>
+                        <tr>
+                          <th>Folio</th>
+                          <th>Hora</th>
+                          <th>Tipo</th>
+                          <th>Concepto / Justificación</th>
+                          <th style="text-align:right;">Importe</th>
+                          <th>Autorizó</th>
+                        </tr>
+                      </thead>
+                      <tbody id="turnCutCashMovementsBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (5 cols): Calculadora de Arqueo Físico y Botones de Corte -->
+              <div class="panel-card bento-span-5">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">CONTEO FÍSICO DE BILLETES Y MONEDAS</div>
+                    <h3>Arqueo y Cierre del Turno</h3>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm" id="btnTurnMatchExpected" title="Autocompletar con el efectivo esperado">Cuadrar Exacto</button>
+                </div>
+
+                <!-- Desglose por denominaciones -->
+                <div class="form-grid" style="grid-template-columns:repeat(2, 1fr); gap:8px; margin-bottom:12px;">
+                  <label style="font-size:0.76rem;">Billetes de $1,000
+                    <input type="number" class="denom-input tabular mono" id="denom1000" data-val="1000" min="0" step="1" value="0">
+                  </label>
+                  <label style="font-size:0.76rem;">Billetes de $500
+                    <input type="number" class="denom-input tabular mono" id="denom500" data-val="500" min="0" step="1" value="0">
+                  </label>
+                  <label style="font-size:0.76rem;">Billetes de $200
+                    <input type="number" class="denom-input tabular mono" id="denom200" data-val="200" min="0" step="1" value="0">
+                  </label>
+                  <label style="font-size:0.76rem;">Billetes de $100
+                    <input type="number" class="denom-input tabular mono" id="denom100" data-val="100" min="0" step="1" value="0">
+                  </label>
+                  <label style="font-size:0.76rem;">Billetes de $50
+                    <input type="number" class="denom-input tabular mono" id="denom50" data-val="50" min="0" step="1" value="0">
+                  </label>
+                  <label style="font-size:0.76rem;">Billetes de $20
+                    <input type="number" class="denom-input tabular mono" id="denom20" data-val="20" min="0" step="1" value="0">
+                  </label>
+                  <label class="full" style="font-size:0.76rem;">Total en Monedas / Morralla ($ MXN)
+                    <input type="number" class="denom-input tabular mono" id="denomCoins" data-val="1" min="0" step="0.5" value="0">
+                  </label>
+                </div>
+
+                <!-- Efectivo Físico Contado Total y Diferencia -->
+                <div class="credit-live-summary" style="margin-bottom:12px;">
+                  <div class="cls-item">
+                    <span>Efectivo Esperado</span>
+                    <strong id="arqueoExpectedDisplay" class="mono tabular">$0.00</strong>
+                  </div>
+                  <div class="cls-item">
+                    <span>Efectivo Físico Contado ($)</span>
+                    <input type="number" id="arqueoCountedInput" class="mono tabular" step="0.01" min="0" value="0.00" style="font-weight:700; font-size:1rem; text-align:right; width:130px;">
+                  </div>
+                  <div class="cls-item">
+                    <span>Diferencia (Arqueo)</span>
+                    <strong id="arqueoDiffDisplay" class="mono tabular" style="color:var(--secondary);">$0.00 (Exacto)</strong>
+                  </div>
+                </div>
+
+                <label style="display:block; font-size:0.8rem; margin-bottom:12px;">Observaciones del Corte de Turno
+                  <input type="text" id="turnCutNotesInput" placeholder="Ej. Se entrega turno con fondo completo, sin incidencias...">
+                </label>
+
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <button type="button" class="btn btn-secondary btn-full" id="btnSavePartialTurnCut">
+                    <span>📋 Guardar Corte Parcial del Turno (Corte X)</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-full" id="btnCloseShiftAndCut">
+                    <span>🔒 Realizar Corte Z y Cerrar Turno Actual</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-full" id="btnSendTurnCutWhatsapp" style="border-color:rgba(16,185,129,0.4); color:var(--secondary);">
+                    <span>📲 Enviar Corte del Turno por WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 2: CORTE DEL DÍA (CONSOLIDADO DIARIO)
+          ========================================== -->
+          <div id="shiftsSubTabDayCut" class="cli-subtab-pane">
+            <div class="toolbar-bar" style="margin-bottom:14px;">
+              <div class="toolbar-search">
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.84rem;">
+                  <span>Fecha / Alcance del Corte del Día:</span>
+                  <select id="dayCutScopeSelect" class="select-pill">
+                    <option value="all_active">Consolidado General Operativo (Todas las Jornadas)</option>
+                    <option value="today">Sólo Operaciones de Hoy (24 hrs)</option>
+                  </select>
+                </label>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnExportDayCutCsv">📥 Exportar CSV</button>
+                <button type="button" class="btn btn-secondary" id="btnPrintDayCutReport">🖨️ Imprimir Corte del Día</button>
+                <button type="button" class="btn btn-secondary" id="btnDayCutWhatsapp" style="border-color:rgba(16,185,129,0.4); color:var(--secondary);">📲 Enviar por WhatsApp</button>
+                <button type="button" class="btn btn-primary" id="btnSaveOfficialDayCut">💾 Guardar Corte General del Día (Z)</button>
+              </div>
+            </div>
+
+            <!-- Resumen Ejecutivo del Día -->
+            <div class="credit-live-summary" id="dayCutSummaryCards" style="margin-bottom:16px;">
+              <div class="cls-item">
+                <span>Ventas Brutas del Día</span>
+                <strong id="dayCutTotalSales" class="mono tabular" style="color:var(--primary);">$0.00</strong>
+              </div>
+              <div class="cls-item">
+                <span>Cobrado en Efectivo</span>
+                <strong id="dayCutTotalCash" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+              </div>
+              <div class="cls-item">
+                <span>Tarjeta + SPEI</span>
+                <strong id="dayCutTotalElectronic" class="mono tabular">$0.00</strong>
+              </div>
+              <div class="cls-item">
+                <span>Otorgado a Crédito</span>
+                <strong id="dayCutTotalCredit" class="mono tabular" style="color:var(--amber);">$0.00</strong>
+              </div>
+              <div class="cls-item">
+                <span>Utilidad Estimada Día</span>
+                <strong id="dayCutEstimatedProfit" class="mono tabular" style="color:var(--secondary);">$0.00</strong>
+              </div>
+            </div>
+
+            <div class="bento-grid">
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">CONCENTRADO DE MEDIOS DE PAGO</div>
+                    <h3>Desglose Financiero del Día</h3>
+                  </div>
+                </div>
+                <div id="dayCutMethodsBreakdown" class="status-bars"></div>
+              </div>
+
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">TURNOS OPERADOS</div>
+                    <h3>Resumen por Turno y Cajero</h3>
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <table class="erp-table">
+                    <thead>
+                      <tr>
+                        <th>Folio Turno</th>
+                        <th>Horario / Caja</th>
+                        <th>Cajero</th>
+                        <th style="text-align:right;">Fondo Inicial</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dayCutShiftsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card" style="margin-top:16px;">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">DETALLE DE OPERACIONES DEL CORTE DEL DÍA</div>
+                  <h3>Ventas y Cobros Incluidos en el Corte del Día</h3>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio Venta</th>
+                      <th>Fecha / Hora</th>
+                      <th>Cliente</th>
+                      <th>Cajero</th>
+                      <th>Método Pago</th>
+                      <th style="text-align:right;">Subtotal</th>
+                      <th style="text-align:right;">Descuento</th>
+                      <th style="text-align:right;">Total</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dayCutSalesTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 3: MANEJO DE TURNOS (APERTURA, CIERRE Y MOVIMIENTOS DE CAJA)
+          ========================================== -->
+          <div id="shiftsSubTabManage" class="cli-subtab-pane">
+            <div class="toolbar-bar" style="margin-bottom:14px;">
+              <div>
+                <div class="panel-eyebrow">ADMINISTRACIÓN DE JORNADAS Y CAJAS REGISTRADORAS</div>
+                <h3 style="font-size:0.98rem; margin:0;">Control de Turnos Abiertos, Cerrados y Dotaciones / Retiros</h3>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnManageAddCashMov">💸 Registrar Entrada / Salida de Efectivo</button>
+                <button type="button" class="btn btn-primary" id="btnManageOpenNewShift">🔓 Abrir Nuevo Turno</button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio Turno</th>
+                      <th>Nombre del Turno / Caja</th>
+                      <th>Cajero Asignado</th>
+                      <th>Apertura</th>
+                      <th>Cierre</th>
+                      <th style="text-align:right;">Fondo Inicial</th>
+                      <th style="text-align:right;">Mov. Caja (Neto)</th>
+                      <th style="text-align:right;">Efectivo Contado</th>
+                      <th>Estado / Corte</th>
+                      <th style="text-align:right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="manageShiftsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 4: HISTORIAL DE CORTES (BITÁCORA DE AUDITORÍA X / Z)
+          ========================================== -->
+          <div id="shiftsSubTabHistory" class="cli-subtab-pane">
+            <div class="toolbar-bar" style="margin-bottom:14px;">
+              <div class="toolbar-search">
+                <div class="input-icon-wrap">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input type="text" id="cutsHistorySearchInput" placeholder="Buscar por folio (COR-1001), turno (TRN-), cajero o notas...">
+                </div>
+                <div class="filter-pills" id="cutsHistoryFilterPills">
+                  <button type="button" class="pill-btn active" data-cutfilter="all">Todos</button>
+                  <button type="button" class="pill-btn" data-cutfilter="turno">Cortes de Turno</button>
+                  <button type="button" class="pill-btn" data-cutfilter="dia">Cortes del Día</button>
+                  <button type="button" class="pill-btn" data-cutfilter="exact">Cuadre Exacto</button>
+                  <button type="button" class="pill-btn" data-cutfilter="diff">Con Diferencia</button>
+                </div>
+              </div>
+              <div class="toolbar-filters">
+                <button type="button" class="btn btn-secondary" id="btnExportCutsHistoryCsv">📥 Exportar Historial CSV</button>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="table-responsive">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Folio Corte</th>
+                      <th>Tipo de Corte</th>
+                      <th>Turno / Caja</th>
+                      <th>Fecha y Hora</th>
+                      <th>Cajero / Responsable</th>
+                      <th style="text-align:right;">Ventas Totales</th>
+                      <th style="text-align:right;">Efectivo Esperado</th>
+                      <th style="text-align:right;">Efectivo Contado</th>
+                      <th style="text-align:right;">Diferencia</th>
+                      <th style="text-align:right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cutsHistoryTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               SUB-TAB 5: CORTE POR WHATSAPP (GENERADOR Y DESPACHADOR EJECUTIVO)
+          ========================================== -->
+          <div id="shiftsSubTabWhatsapp" class="cli-subtab-pane">
+            <div class="bento-grid">
+              <!-- Columna Izquierda (6 cols): Configuración del Reporte de WhatsApp -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">AUTOMATIZACIÓN DE REPORTE A DIRECCIÓN</div>
+                    <h3>Configurar Envío de Corte por WhatsApp</h3>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <label class="full">1. Seleccionar Origen del Corte *
+                    <select id="waCutSourceSelect">
+                      <option value="live_turn">⚡ Corte del Turno Actual en Curso (En Vivo)</option>
+                      <option value="live_day">📅 Corte General del Día (Consolidado En Vivo)</option>
+                    </select>
+                  </label>
+
+                  <label>2. Número de WhatsApp Destino *
+                    <input type="tel" id="waCutPhoneInput" class="mono tabular" value="2311024672" placeholder="Ej. 2311024672">
+                  </label>
+
+                  <label>Destinatario / Cargo
+                    <input type="text" id="waCutRecipientName" value="Dirección General — Fiberlink" placeholder="Ej. Ing. Roberto Méndez">
+                  </label>
+
+                  <div class="full client-feature-box">
+                    <div class="panel-eyebrow" style="margin-bottom:8px;">3. SECCIONES A INCLUIR EN EL MENSAJE DE WHATSAPP</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px;">
+                      <label class="checkbox-row">
+                        <input type="checkbox" id="waIncMethods" checked>
+                        <span>Desglose por Método de Pago</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input type="checkbox" id="waIncArqueo" checked>
+                        <span>Arqueo de Efectivo y Diferencia</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input type="checkbox" id="waIncMovements" checked>
+                        <span>Entradas / Salidas de Caja</span>
+                      </label>
+                      <label class="checkbox-row">
+                        <input type="checkbox" id="waIncOperations" checked>
+                        <span>Resumen de Tickets y Taller</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <label class="full">4. Nota o Comentario Adicional del Cajero
+                    <input type="text" id="waCutCustomNote" placeholder="Ej. Efectivo resguardado en sobre sellado #04 en caja fuerte...">
+                  </label>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+                  <button type="button" class="btn btn-primary" id="btnLaunchWhatsappCut" style="flex:1; min-width:220px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    <span>📲 Enviar Corte Ahora por WhatsApp</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnCopyWhatsappCutText">
+                    <span>📋 Copiar Mensaje</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Columna Derecha (6 cols): Vista Previa en Vivo del Mensaje de WhatsApp -->
+              <div class="panel-card bento-span-6">
+                <div class="panel-head">
+                  <div>
+                    <div class="panel-eyebrow">VISTA PREVIA EN TIEMPO REAL</div>
+                    <h3>Mensaje Formateado para WhatsApp</h3>
+                  </div>
+                  <span class="badge badge-green"><span class="status-dot dot-lime"></span>Listo para enviar</span>
+                </div>
+
+                <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:16px;">
+                  <pre id="waCutMessagePreview" class="mono" style="white-space:pre-wrap; word-break:break-word; font-size:0.8rem; line-height:1.55; margin:0; color:var(--text-primary);"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
 
       <!-- Ergonomic Mobile Bottom Tab Bar -->
@@ -2389,6 +2969,123 @@
           <button type="submit" class="btn btn-primary">Aplicar Ajuste en Kardex</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 11: ABRIR NUEVO TURNO (MANEJO DE TURNOS)
+  ============================ -->
+  <div id="openShiftModal" class="modal">
+    <div class="modal-back" data-close="openShiftModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:540px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">MANEJO DE TURNOS · CAJA</div>
+          <h2>Abrir Nuevo Turno de Trabajo</h2>
+        </div>
+        <button class="close-btn" data-close="openShiftModal">✕</button>
+      </div>
+
+      <form id="openShiftForm" class="modal-body form-grid">
+        <label class="full">Horario / Denominación del Turno *
+          <select id="openShiftNameSelect" required>
+            <option value="Turno Matutino (08:00 - 16:00)">Turno Matutino (08:00 - 16:00)</option>
+            <option value="Turno Vespertino (14:00 - 21:00)">Turno Vespertino (14:00 - 21:00)</option>
+            <option value="Turno Completo (09:00 - 19:00)">Turno Completo (09:00 - 19:00)</option>
+            <option value="Turno Guardia / Fin de Semana">Turno Guardia / Fin de Semana</option>
+          </select>
+        </label>
+
+        <label class="full">Caja Registradora / Terminal *
+          <select id="openShiftRegisterSelect" required>
+            <option value="Caja Principal #1 — Mostrador Teziutlán">Caja Principal #1 — Mostrador Teziutlán</option>
+            <option value="Caja #2 — Laboratorio y Taller Técnico">Caja #2 — Laboratorio y Taller Técnico</option>
+            <option value="Caja Móvil — Cobranza en Campo">Caja Móvil — Cobranza en Campo</option>
+          </select>
+        </label>
+
+        <label>Cajero / Responsable Asignado *
+          <select id="openShiftCashierSelect" required></select>
+        </label>
+
+        <label>Fondo Inicial de Caja ($ MXN) *
+          <input type="number" id="openShiftOpeningCash" class="mono tabular" required min="0" step="10" value="1500">
+        </label>
+
+        <label class="full">Observaciones de Apertura
+          <input type="text" id="openShiftNotes" placeholder="Ej. Se recibe cajón con morralla completa y billetes de $100 y $200">
+        </label>
+
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="openShiftModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">🔓 Iniciar Turno Ahora</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 12: ENTRADA / SALIDA DE EFECTIVO EN CAJA
+  ============================ -->
+  <div id="cashMovementModal" class="modal">
+    <div class="modal-back" data-close="cashMovementModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:520px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">FLUJO DE CAJÓN · ARQUEO</div>
+          <h2>Registrar Entrada o Salida de Efectivo</h2>
+        </div>
+        <button class="close-btn" data-close="cashMovementModal">✕</button>
+      </div>
+
+      <form id="cashMovementForm" class="modal-body form-grid">
+        <label class="full">Tipo de Movimiento en Cajón *
+          <select id="cashMovType" required>
+            <option value="entrada_efectivo">➕ Entrada de Efectivo (Dotación de cambio / morralla)</option>
+            <option value="salida_gasto">➖ Salida por Gasto Menor (Paquetería, insumos, comida)</option>
+            <option value="retiro_parcial">🔒 Retiro Parcial de Efectivo (Resguardo en bóveda / sobre)</option>
+          </select>
+        </label>
+
+        <label>Importe en Efectivo ($ MXN) *
+          <input type="number" id="cashMovAmount" class="mono tabular" required min="1" step="0.5" placeholder="0.00">
+        </label>
+
+        <label>Autorizado por
+          <input type="text" id="cashMovAuthor" placeholder="Ej. Ing. Roberto Méndez">
+        </label>
+
+        <label class="full">Concepto / Justificación *
+          <input type="text" id="cashMovConcept" required placeholder="Ej. Pago de guía DHL para garantía o dotación de cambio">
+        </label>
+
+        <div class="full modal-actions">
+          <button type="button" class="btn btn-ghost" data-close="cashMovementModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Movimiento en Turno</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================
+       MODAL 13: DETALLE DE CORTE HISTÓRICO (COR-XXXX)
+  ============================ -->
+  <div id="cutDetailModal" class="modal">
+    <div class="modal-back" data-close="cutDetailModal"></div>
+    <div class="modal-panel surface-elevated" style="max-width:680px;">
+      <div class="modal-head">
+        <div>
+          <div class="lbl" id="cutDetailFolio" style="margin-bottom:3px; font-family:var(--font-mono); color:var(--primary);">COR-0000</div>
+          <h2 id="cutDetailTitle">Detalle de Corte de Caja</h2>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnModalPrintCut">🖨️ Reimprimir</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnModalWhatsappCut">📲 WhatsApp</button>
+          <button class="close-btn" data-close="cutDetailModal">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body" id="cutDetailBody"></div>
     </div>
   </div>
 

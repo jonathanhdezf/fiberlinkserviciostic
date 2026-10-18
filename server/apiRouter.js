@@ -55,6 +55,13 @@ import {
   handleDeleteClient,
   handleRegisterCreditMovement
 } from './controllers/clientsController.js';
+import {
+  handleListShifts,
+  handleOpenShift,
+  handleAddCashMovement,
+  handleListCashCuts,
+  handleCreateCashCut
+} from './controllers/shiftsController.js';
 import { handleGetReportsSummary } from './controllers/reportsController.js';
 
 export { DATA_DIR };
@@ -368,7 +375,39 @@ export async function handleApiRequest(req, res, next) {
     }
 
     // ==========================================
-    // 8. REPORTS & ACTIVITY LOGS
+    // 8. SHIFTS & CASH CUTS MODULE (Cortes y Turnos)
+    // ==========================================
+    if (pathname === '/api/shifts' && method === 'GET') {
+      const result = handleListShifts();
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/shifts' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleOpenShift(body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    const shiftMovMatch = pathname.match(/^\/api\/shifts\/([a-zA-Z0-9_-]+)\/movements$/);
+    if (shiftMovMatch && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleAddCashMovement(shiftMovMatch[1], body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/cash-cuts' && method === 'GET') {
+      const result = handleListCashCuts(url.searchParams);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    if (pathname === '/api/cash-cuts' && method === 'POST') {
+      const body = await parseBody(req);
+      const result = handleCreateCashCut(body, currentUser);
+      return sendJSON(res, result.status, result.data);
+    }
+
+    // ==========================================
+    // 9. REPORTS & ACTIVITY LOGS
     // ==========================================
     if (pathname === '/api/reports/summary' && method === 'GET') {
       const result = handleGetReportsSummary(url.searchParams);
