@@ -3247,3 +3247,299 @@ input:focus, textarea:focus, select:focus {
 #view-overview.active .bento-grid > .panel-card:nth-child(2) { animation-delay: 160ms; }
 #view-overview.active .bento-grid > .panel-card:nth-child(3) { animation-delay: 230ms; }
 #view-overview.active .bento-grid > .panel-card:nth-child(4) { animation-delay: 300ms; }
+
+/* ============================
+   REFINED ANIMATIONS: LOW STOCK IN RED, URGENT TICKETS & NOTIFICATIONS
+============================ */
+@keyframes crimsonSonarRing {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.78;
+  }
+  75% {
+    transform: scale(2.45);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.45);
+    opacity: 0;
+  }
+}
+
+@keyframes crimsonBadgeBreath {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35), inset 0 0 8px rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.42);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.28), inset 0 0 12px rgba(239, 68, 68, 0.24);
+    border-color: rgba(248, 113, 113, 0.78);
+  }
+}
+
+@keyframes urgentCardAura {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.42);
+    box-shadow: 0 4px 16px -4px rgba(239, 68, 68, 0.16), inset 0 1px 0 rgba(248, 113, 113, 0.2);
+  }
+  50% {
+    border-color: rgba(248, 113, 113, 0.82);
+    box-shadow: 0 6px 22px -2px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(248, 113, 113, 0.4);
+  }
+}
+
+@keyframes bellRefinedSwing {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  8% { transform: rotate(13deg); }
+  16% { transform: rotate(-11deg); }
+  24% { transform: rotate(8deg); }
+  32% { transform: rotate(-6deg); }
+  40% { transform: rotate(3deg); }
+  48% { transform: rotate(0deg); }
+}
+
+@keyframes notifSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Red Status Dot Radar Pulse */
+.status-dot.dot-red {
+  position: relative;
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+}
+.status-dot.dot-red::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1.5px solid #ef4444;
+  animation: crimsonSonarRing 2.1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
+/* Low Stock Badges & Sidebar Warn Badge */
+.badge-red.badge-low-stock-pulse,
+.nav-badge.warn {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.48);
+  animation: crimsonBadgeBreath 2.5s ease-in-out infinite;
+}
+[data-theme="light"] .badge-red.badge-low-stock-pulse,
+[data-theme="light"] .nav-badge.warn {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* Low Stock Table Rows & Cards */
+.low-stock-row-alert {
+  position: relative;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.085) 0%, rgba(239, 68, 68, 0.015) 60%, transparent 100%);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.low-stock-row-alert td:first-child {
+  border-left: 3px solid #ef4444;
+}
+.low-stock-row-alert:hover {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.04) 70%, transparent 100%) !important;
+}
+
+/* Urgent Ticket Kanban Cards, Badges & KPI Alert */
+.ticket-card.ticket-urgent-card {
+  position: relative;
+  border: 1px solid rgba(239, 68, 68, 0.52);
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, var(--bg-surface-2) 68%);
+  animation: urgentCardAura 2.8s ease-in-out infinite;
+  overflow: hidden;
+}
+.ticket-card.ticket-urgent-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3.5px;
+  background: linear-gradient(180deg, #ef4444, #f59e0b);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+}
+
+.tc-priority.prio-urgente,
+.badge-urgent-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.16) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  animation: crimsonBadgeBreath 2.3s ease-in-out infinite;
+  font-weight: 700;
+}
+[data-theme="light"] .tc-priority.prio-urgente,
+[data-theme="light"] .badge-urgent-pulse {
+  color: #dc2626 !important;
+}
+
+.ticket-row-urgent {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, transparent 75%);
+}
+.ticket-row-urgent td:first-child {
+  border-left: 3px solid #ef4444;
+}
+
+.kpi-card.kpi-urgent-active {
+  border-color: rgba(239, 68, 68, 0.42);
+  box-shadow: 0 6px 20px -6px rgba(239, 68, 68, 0.18);
+}
+.kpi-delta.alert {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  animation: crimsonBadgeBreath 2.4s ease-in-out infinite;
+}
+[data-theme="light"] .kpi-delta.alert {
+  color: #dc2626;
+}
+
+/* Control Panel Notification Bell & Popover */
+.notif-bell-wrap {
+  position: relative;
+}
+.notif-bell-btn {
+  position: relative;
+}
+.notif-bell-btn.has-alerts {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--text-main);
+}
+.notif-bell-btn.has-alerts .notif-bell-svg {
+  transform-origin: top center;
+  animation: bellRefinedSwing 3.4s ease-in-out infinite;
+  color: #f87171;
+}
+.notif-count-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+  pointer-events: none;
+}
+.notif-count-badge::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 1.5px solid #ef4444;
+  animation: crimsonSonarRing 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.notif-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 370px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.55), var(--inner-highlight);
+  z-index: 1200;
+  overflow: hidden;
+  animation: kpiCardReveal 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.notif-popover-head {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-surface-2);
+}
+.notif-popover-head h4 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 2px 0 0;
+}
+.notif-popover-body {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notif-popover-foot {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notif-card-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface-2);
+  cursor: pointer;
+  transition: all 0.18s var(--ease-out);
+  animation: notifSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--notif-idx, 0) * 55ms);
+}
+.notif-card-item:hover {
+  transform: translateX(3px);
+  border-color: var(--border-hover);
+  background: var(--bg-surface-3);
+}
+.notif-card-item.critical {
+  border-left: 3px solid #ef4444;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, var(--bg-surface-2) 80%);
+}
+.notif-card-item.warning {
+  border-left: 3px solid #f59e0b;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.09) 0%, var(--bg-surface-2) 80%);
+}
+.notif-card-item.info {
+  border-left: 3px solid var(--primary);
+}
+
+/* Activity Feed & Notification Items in Overview */
+.act-item {
+  animation: notifSlideIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--act-idx, 0) * 60ms);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.act-item:hover {
+  transform: translateX(3px);
+  border-color: var(--border-color);
+}
+.act-item.act-urgent {
+  border-left: 3px solid #ef4444;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.09) 0%, var(--bg-surface-2) 85%);
+}
+

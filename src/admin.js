@@ -370,6 +370,32 @@ function initNavigationAndShell() {
   document.getElementById('quickNewWorkshopBtn')?.addEventListener('click', () => {
     openWorkshopModalForCreate();
   });
+
+  // Control Panel Notification Bell & Popover
+  const notifBtn = document.getElementById('topbarNotifBtn');
+  const notifPop = document.getElementById('notifPopover');
+  const notifWrap = document.getElementById('topbarNotifWrap');
+
+  notifBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifPop?.classList.toggle('hidden');
+  });
+
+  document.getElementById('btnNotifClosePopover')?.addEventListener('click', () => {
+    notifPop?.classList.add('hidden');
+  });
+
+  document.getElementById('btnNotifGoSettings')?.addEventListener('click', () => {
+    notifPop?.classList.add('hidden');
+    switchView('settings');
+    switchSettingsSubTab('notifications');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (notifWrap && !notifWrap.contains(e.target)) {
+      notifPop?.classList.add('hidden');
+    }
+  });
 }
 
 function switchView(viewName) {
@@ -625,12 +651,17 @@ async function syncAllData() {
 
 function updateNavBadges() {
   const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
+  const urgentTicketsCount = allTickets.filter(t => t.priority === 'Urgente' && t.estado !== 'resuelto').length;
   const activeWorkshop = allWorkshop.filter(w => w.estado !== 'entregado').length;
   const lowStockCount = allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3)).length;
   const clientsWithBalance = allClients.filter(c => (Number(c.currentBalance) || 0) > 0).length;
   const activeShift = allShifts.find(s => s.status === 'abierto');
 
-  document.getElementById('navBadgeTickets').textContent = activeTickets;
+  const navTicketsEl = document.getElementById('navBadgeTickets');
+  if (navTicketsEl) {
+    navTicketsEl.textContent = activeTickets;
+    navTicketsEl.classList.toggle('warn', urgentTicketsCount > 0);
+  }
   document.getElementById('navBadgeWorkshop').textContent = activeWorkshop;
   const lowBadge = document.getElementById('navBadgeLowStock');
   if (lowBadge) {
@@ -647,6 +678,111 @@ function updateNavBadges() {
     shiftBadge.textContent = activeShift ? 'ON' : 'OFF';
     shiftBadge.classList.toggle('warn', !activeShift);
   }
+
+  renderControlPanelNotifications();
+}
+
+function renderControlPanelNotifications() {
+  const notifConf = systemSettings?.notifications || {};
+  const showUrgent = notifConf.urgentTicketsAlert !== false;
+  const showLowStock = notifConf.lowStockAlert !== false;
+  const showCredit = notifConf.overdueCreditAlert !== false;
+
+  const urgentTickets = showUrgent
+    ? allTickets.filter(t => t.priority === 'Urgente' && t.estado !== 'resuelto')
+    : [];
+  const lowStockItems = showLowStock
+    ? allProducts.filter(p => !p.isService && Number(p.stock) <= Number(p.minStock || 3))
+    : [];
+  const creditClients = showCredit
+    ? allClients.filter(c => (Number(c.currentBalance) || 0) > 0)
+    : [];
+
+  const totalAlerts = urgentTickets.length + lowStockItems.length + creditClients.length;
+  const criticalCount = urgentTickets.length + lowStockItems.length;
+
+  const bellBtn = document.getElementById('topbarNotifBtn');
+  const countBadge = document.getElementById('topbarNotifBadge');
+  const summaryBadge = document.getElementById('notifPopoverSummaryBadge');
+  const bodyEl = document.getElementById('notifPopoverBody');
+
+  if (bellBtn) {
+    bellBtn.classList.toggle('has-alerts', totalAlerts > 0);
+  }
+  if (countBadge) {
+    countBadge.style.display = totalAlerts > 0 ? 'inline-flex' : 'none';
+    countBadge.textContent = totalAlerts;
+  }
+  if (summaryBadge) {
+    summaryBadge.textContent = criticalCount > 0 ? `${criticalCount} crítica(s)` : `${totalAlerts} activa(s)`;
+    summaryBadge.className = criticalCount > 0 ? 'badge badge-red badge-low-stock-pulse' : 'badge badge-green';
+  }
+
+  if (!bodyEl) return;
+
+  const items = [];
+
+  urgentTickets.forEach(t => {
+    items.push({
+      severity: 'critical',
+      badgeHtml: `<span class="badge badge-red badge-urgent-pulse"><span class="status-dot dot-red"></span>URGENTE</span>`,
+      title: `🚨 Ticket ${t.folio} — ${t.name}`,
+      sub: `${t.service || 'Soporte Técnico'} · Asignado: ${t.assignedTo || 'Sin asignar'}`,
+      onClick: () => {
+        document.getElementById('notifPopover')?.classList.add('hidden');
+        openTicketDetail(t.id);
+      }
+    });
+  });
+
+  lowStockItems.forEach(p => {
+    items.push({
+      severity: 'critical',
+      badgeHtml: `<span class="badge badge-red badge-low-stock-pulse"><span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}</span>`,
+      title: `📦 Stock Bajo: ${p.name}`,
+      sub: `SKU: ${p.sku} · Mínimo requerido: ${p.minStock || 3} ${p.unit || 'pza'}`,
+      onClick: () => {
+        document.getElementById('notifPopover')?.classList.add('hidden');
+        switchView('store');
+        openAddInventoryModal(p.id);
+      }
+    });
+  });
+
+  creditClients.slice(0, 3).forEach(c => {
+    items.push({
+      severity: 'warning',
+      badgeHtml: `<span class="badge badge-amber"><span class="status-dot dot-amber"></span>${formatMoney(c.currentBalance)}</span>`,
+      title: `💳 Saldo Crédito: ${c.name}`,
+      sub: `[${c.code}] Límite autorizado: ${formatMoney(c.creditLimit)}`,
+      onClick: () => {
+        document.getElementById('notifPopover')?.classList.add('hidden');
+        openClientStatementModal(c.id);
+      }
+    });
+  });
+
+  if (items.length === 0) {
+    bodyEl.innerHTML = `<div style="padding:18px 12px; text-align:center; font-size:0.8rem; color:var(--text-muted);">✓ Sin alertas críticas pendientes en el sistema.</div>`;
+    return;
+  }
+
+  bodyEl.innerHTML = items.map((it, idx) => `
+    <div class="notif-card-item ${it.severity}" data-nidx="${idx}" style="--notif-idx:${idx};">
+      <div style="min-width:0; flex:1;">
+        <div style="font-size:0.8rem; font-weight:600; color:var(--text-main); margin-bottom:2px;">${it.title}</div>
+        <div style="font-size:0.72rem; color:var(--text-muted);">${it.sub}</div>
+      </div>
+      <div style="flex-shrink:0;">${it.badgeHtml}</div>
+    </div>
+  `).join('');
+
+  bodyEl.querySelectorAll('.notif-card-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = items[Number(el.dataset.nidx)];
+      if (item?.onClick) item.onClick();
+    });
+  });
 }
 
 function populateTechnicianSelects() {
@@ -769,16 +905,16 @@ function renderOverview() {
         </div>
       </div>
 
-      <div class="kpi-card kpi-anim-enter" style="--stagger:2;">
+      <div class="kpi-card kpi-anim-enter ${urgentTickets > 0 ? 'kpi-urgent-active' : ''}" style="--stagger:2;">
         <div class="kpi-top">
           <span class="kpi-label">TICKETS DE SOPORTE</span>
-          <div class="kpi-icon-box">
+          <div class="kpi-icon-box" ${urgentTickets > 0 ? 'style="color:#f87171; border-color:rgba(239,68,68,0.45);"' : ''}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
           </div>
         </div>
         <div class="kpi-mid">
           <div class="kpi-value tabular ${urgentTickets > 0 ? 'warn' : ''}" data-countup="${activeTickets}" data-format="int">${activeTickets}</div>
-          <span class="kpi-delta ${urgentTickets > 0 ? 'alert' : 'up'}" ${urgentTickets > 0 ? `data-countup="${urgentTickets}" data-format="int" data-suffix=" Urgente(s)"` : ''}>${urgentTickets > 0 ? urgentTickets + ' Urgente(s)' : 'SLA 98.4%'}</span>
+          <span class="kpi-delta ${urgentTickets > 0 ? 'alert' : 'up'}" ${urgentTickets > 0 ? `data-countup="${urgentTickets}" data-format="int" data-prefix="🚨 " data-suffix=" Urgente(s)"` : ''}>${urgentTickets > 0 ? '🚨 ' + urgentTickets + ' Urgente(s)' : 'SLA 98.4%'}</span>
         </div>
         <div class="kpi-foot">
           <span data-countup="${resolvedTickets}" data-format="int" data-suffix=" resueltos">${resolvedTickets} resueltos</span>
@@ -786,7 +922,7 @@ function renderOverview() {
         </div>
       </div>
 
-      <div class="kpi-card kpi-anim-enter" style="--stagger:3;">
+      <div class="kpi-card kpi-anim-enter ${lowStock.length > 0 ? 'kpi-urgent-active' : ''}" style="--stagger:3;">
         <div class="kpi-top">
           <span class="kpi-label">ÓRDENES EN LABORATORIO</span>
           <div class="kpi-icon-box">
@@ -799,10 +935,18 @@ function renderOverview() {
         </div>
         <div class="kpi-foot">
           <span>Equipos en taller</span>
-          <span class="mono" data-countup="${lowStock.length}" data-format="int" data-suffix=" alertas stock">${lowStock.length} alertas stock</span>
+          <span class="badge ${lowStock.length > 0 ? 'badge-red badge-low-stock-pulse' : 'badge-green'} mono" ${lowStock.length > 0 ? 'style="cursor:pointer;" id="kpiLowStockBadgeBtn"' : ''}>
+            ${lowStock.length > 0 ? `<span class="status-dot dot-red"></span>` : ''}
+            <span data-countup="${lowStock.length}" data-format="int" data-suffix=" alertas stock">${lowStock.length} alertas stock</span>
+          </span>
         </div>
       </div>
     `;
+
+    document.getElementById('kpiLowStockBadgeBtn')?.addEventListener('click', () => {
+      switchView('store');
+      switchInventorySubTab('low_stock');
+    });
   }
 
   renderOverviewRevenueChart();
@@ -849,39 +993,53 @@ function renderOverview() {
     }).join('');
   }
 
-  // Low stock
+  // Low stock in red with pulse & click-to-restock
   const lowEl = document.getElementById('overviewLowStockList');
   if (lowEl) {
     if (lowStock.length === 0) {
       lowEl.innerHTML = `<div style="font-size:0.79rem; color:var(--text-muted); padding:6px 0;">✓ Inventario físico en niveles óptimos.</div>`;
     } else {
       lowEl.innerHTML = `<div class="table-responsive"><table class="erp-table">
-        <thead><tr><th>SKU</th><th>Artículo</th><th style="text-align:right;">Stock</th></tr></thead>
+        <thead><tr><th>SKU</th><th>Artículo</th><th style="text-align:right;">Stock Crítico</th></tr></thead>
         <tbody>
-          ${lowStock.slice(0, 4).map(p => `
-            <tr>
-              <td data-label="SKU" class="mono">${p.sku}</td>
+          ${lowStock.slice(0, 5).map(p => `
+            <tr class="low-stock-row-alert overview-lowstock-row" data-id="${p.id}" style="cursor:pointer;" title="Clic para surtir este artículo en almacén">
+              <td data-label="SKU" class="mono"><strong>${p.sku}</strong></td>
               <td data-label="Artículo">${p.name}</td>
-              <td data-label="Stock" style="text-align:right;"><span class="badge badge-red"><span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}</span></td>
+              <td data-label="Stock" style="text-align:right;">
+                <span class="badge badge-red badge-low-stock-pulse">
+                  <span class="status-dot dot-red"></span>${p.stock} ${p.unit || 'pza'}
+                </span>
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table></div>`;
+
+      lowEl.querySelectorAll('.overview-lowstock-row').forEach(tr => {
+        tr.addEventListener('click', () => {
+          openAddInventoryModal(tr.dataset.id);
+        });
+      });
     }
   }
 
-  // Recent Activity
+  // Recent Activity & Notifications Feed
   const actEl = document.getElementById('overviewActivityList');
   if (actEl) {
     const logs = reportsData?.recentActivity || [];
     if (logs.length === 0) {
       actEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem;">Sin actividad registrada.</p>`;
     } else {
-      actEl.innerHTML = logs.slice(0, 8).map(a => {
+      actEl.innerHTML = logs.slice(0, 8).map((a, idx) => {
         const t = a.date ? new Date(a.date).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const isCrit = /urgente|bajo|cancel|faltante|elimin/i.test(a.action || '');
         return `
-          <div class="act-item">
-            <div><strong>${a.user}:</strong> ${a.action}</div>
+          <div class="act-item ${isCrit ? 'act-urgent' : ''}" style="--act-idx:${idx};">
+            <div style="display:flex; align-items:center; gap:7px;">
+              <span class="status-dot ${isCrit ? 'dot-red' : 'dot-lime'}"></span>
+              <div><strong>${a.user}:</strong> ${a.action}</div>
+            </div>
             <span class="act-time tabular">${t}</span>
           </div>
         `;
@@ -1299,9 +1457,10 @@ function renderTicketsKanban() {
     } else {
       tbody.innerHTML = filtered.map(t => {
         const total = parseFloat(t.pos?.total) || 0;
-        const prioBadge = t.priority === 'Urgente' ? 'badge-red' : t.priority === 'Alta' ? 'badge-amber' : 'badge-blue';
+        const isUrgent = t.priority === 'Urgente' && normalizeTicketStateDomId(t.estado) !== 'resuelto';
+        const prioBadge = t.priority === 'Urgente' ? `badge-red ${isUrgent ? 'badge-urgent-pulse' : ''}` : t.priority === 'Alta' ? 'badge-amber' : 'badge-blue';
         return `
-          <tr class="ticket-row-item" data-id="${t.id}" style="cursor:pointer;">
+          <tr class="ticket-row-item ${isUrgent ? 'ticket-row-urgent' : ''}" data-id="${t.id}" style="cursor:pointer;">
             <td data-label="Folio" class="mono"><strong>${t.folio}</strong></td>
             <td data-label="Cliente / Empresa">
               <div><strong>${t.name}</strong><div style="font-size:0.74rem; color:var(--text-muted);">${t.company || t.phone || ''}</div></div>
@@ -1309,7 +1468,7 @@ function renderTicketsKanban() {
             <td data-label="Servicio">
               <div><div>${t.service}</div><div style="font-size:0.72rem; color:var(--text-muted);">${t.modality || ''}</div></div>
             </td>
-            <td data-label="Prioridad"><span class="badge ${prioBadge}">${t.priority}</span></td>
+            <td data-label="Prioridad"><span class="badge ${prioBadge}">${t.priority === 'Urgente' ? '<span class="status-dot dot-red"></span>' : ''}${t.priority}</span></td>
             <td data-label="Técnico">${t.assignedTo || 'Sin asignar'}</td>
             <td data-label="Estado"><span class="kbd-tag">${t.estado.toUpperCase()}</span></td>
             <td data-label="Cargos POS" style="text-align:right;" class="mono tabular">${formatMoney(total)}</td>
@@ -1329,7 +1488,8 @@ function renderTicketsKanban() {
 
 function createTicketCard(ticket) {
   const div = document.createElement('div');
-  div.className = 'ticket-card';
+  const isUrgentActive = ticket.priority === 'Urgente' && normalizeTicketStateDomId(ticket.estado) !== 'resuelto';
+  div.className = `ticket-card${isUrgentActive ? ' ticket-urgent-card' : ''}`;
   div.onclick = () => openTicketDetail(ticket.id);
 
   const dateStr = ticket.createdAt
@@ -1354,7 +1514,7 @@ function createTicketCard(ticket) {
     <div class="tc-title">${ticket.name || 'Sin nombre'}${companyBadge}</div>
     <div class="tc-desc">${ticket.description || 'Sin descripción'}</div>
     <div class="tc-foot">
-      <span class="tc-priority ${prioClass}">${ticket.priority || 'Normal'}</span>
+      <span class="tc-priority ${prioClass}">${ticket.priority === 'Urgente' ? '<span class="status-dot dot-red" style="margin-right:4px;"></span>' : ''}${ticket.priority || 'Normal'}</span>
       <span class="tc-source">${ticket.assignedTo || ticket.service || 'Soporte'}</span>
       ${posTag}
     </div>
@@ -2779,12 +2939,21 @@ function renderInventoryModule() {
 
   if (elUnits) elUnits.textContent = totalUnits.toLocaleString('es-MX');
   if (elSkus) elSkus.textContent = `${physical.length} SKUs físicos`;
-  if (elLow) elLow.textContent = lowStockItems.length;
-  if (elOut) elOut.textContent = `${outStockItems.length} agotados`;
+  if (elLow) {
+    elLow.textContent = lowStockItems.length;
+    elLow.closest('.kpi-card')?.classList.toggle('kpi-urgent-active', lowStockItems.length > 0);
+  }
+  if (elOut) {
+    elOut.innerHTML = `<span class="status-dot dot-red"></span>${outStockItems.length} agotados`;
+    elOut.classList.toggle('badge-low-stock-pulse', outStockItems.length > 0 || lowStockItems.length > 0);
+  }
   if (elCost) elCost.textContent = formatMoney(totalCostVal);
   if (elRetail) elRetail.textContent = formatMoney(totalRetailVal);
   if (elMovs) elMovs.textContent = `${allInventoryMovements.length} mov. Kardex`;
-  if (elTabLow) elTabLow.textContent = lowStockItems.length;
+  if (elTabLow) {
+    elTabLow.textContent = lowStockItems.length;
+    elTabLow.classList.toggle('badge-low-stock-pulse', lowStockItems.length > 0);
+  }
 
   // Populate Kardex Product Selector preserving selection
   const kdxSel = document.getElementById('kardexProductSelect');
@@ -2830,7 +2999,7 @@ function renderStoreTable() {
     const isLow = !p.isService && Number(p.stock) <= Number(p.minStock || 3);
     const margin = p.price > 0 ? Math.round(((p.price - (p.cost || 0)) / p.price) * 100) : 0;
     return `
-      <tr>
+      <tr class="${isLow ? 'low-stock-row-alert' : ''}">
         <td data-label="SKU / Barras" class="mono">
           <div><strong>${p.sku}</strong><div style="font-size:0.68rem; color:var(--text-muted);">|||| ${p.barcode || '-'}</div></div>
         </td>
@@ -2845,7 +3014,7 @@ function renderStoreTable() {
           ${p.isService
             ? '<span class="badge badge-purple">Servicio</span>'
             : `<div>
-                 <span class="badge ${isLow ? 'badge-red' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>
+                 <span class="badge ${isLow ? 'badge-red badge-low-stock-pulse' : 'badge-green'}"><span class="status-dot ${isLow ? 'dot-red' : 'dot-lime'}"></span>${p.stock} ${p.unit || 'pza'}</span>
                  <div class="mono tabular" style="font-size:0.68rem; color:var(--text-muted); margin-top:2px;">Mín: ${p.minStock || 0}</div>
                </div>`
           }
@@ -2931,12 +3100,12 @@ function renderLowStockTable() {
     const suggested = Math.max(5, (min * 2) - stock);
     const estCost = suggested * (parseFloat(p.cost) || 0);
     return `
-      <tr>
+      <tr class="low-stock-row-alert">
         <td data-label="SKU / Código" class="mono"><strong>${p.sku}</strong></td>
         <td data-label="Producto"><strong>${p.name}</strong></td>
         <td data-label="Categoría"><span class="kbd-tag">${CATEGORY_LABELS[p.category] || p.category}</span></td>
         <td data-label="Existencia Actual" style="text-align:center;">
-          <span class="badge badge-red"><span class="status-dot dot-red"></span>${stock} ${p.unit || 'pza'}</span>
+          <span class="badge badge-red badge-low-stock-pulse"><span class="status-dot dot-red"></span>${stock} ${p.unit || 'pza'}</span>
         </td>
         <td data-label="Stock Mínimo" style="text-align:center;" class="mono tabular">${min} ${p.unit || 'pza'}</td>
         <td data-label="Sugerido a Pedir" style="text-align:center;" class="mono tabular">
