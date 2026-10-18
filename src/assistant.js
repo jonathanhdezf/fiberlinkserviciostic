@@ -244,13 +244,7 @@ function messageHtml(m) {
 }
 
 function diagnosisHtml() {
-  if (!state.diagnosis || state.ticket) return '';
-  return `
-    <div class="fa-diag">
-      <span class="fa-diag-lbl">${ICONS.spark} Pre-diagnóstico IA</span>
-      <p>${escapeHtml(state.diagnosis)}</p>
-      <small>Un técnico confirmará la causa real y aplicará la solución.</small>
-    </div>`;
+  return '';
 }
 
 function suggestedProductsHtml() {
@@ -325,6 +319,7 @@ function summaryHtml() {
   const d = state.draft;
   const rows = [
     ['Problema', d.description],
+    state.diagnosis ? ['Pre-diagnóstico IA', state.diagnosis] : null,
     ['Servicio', d.service],
     ['Modalidad', d.modality],
     ['Prioridad', d.priority || 'Normal'],
@@ -395,7 +390,6 @@ function quickFormHtml() {
 function render({ scroll = true } = {}) {
   renderProgress();
   let html = state.messages.map(messageHtml).join('');
-  html += diagnosisHtml();
   html += suggestedProductsHtml();
   html += orderCardHtml();
 
@@ -413,7 +407,7 @@ function render({ scroll = true } = {}) {
   els.input.disabled = state.busy || !!state.ticket;
   els.send.disabled = state.busy || !!state.ticket;
   els.ticketBtn.style.display = state.ticket ? 'none' : '';
-  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe o pulsa el micrófono…');
+  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe tu consulta o falla técnica…');
 
   if (scroll) requestAnimationFrame(() => { els.body.scrollTop = els.body.scrollHeight; });
   bindFormEvents();
