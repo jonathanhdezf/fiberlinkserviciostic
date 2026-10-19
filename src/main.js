@@ -6,6 +6,9 @@ import { ticketService } from './services/ticketService.js';
 import { initAssistant } from './assistant.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Initialize Dark / Light Theme Controller
+  initThemeController();
+
   // 1. Initialize Cyber Background canvas (floating matrix particles)
   initCyberBg();
 
@@ -1110,9 +1113,10 @@ function initCyberBg() {
       else if (d.y < -14) d.y = h + 2;
       if (Math.random() < d.flip) d.c = d.c === '0' ? '7' : '0';
       const a = (Math.sin(d.p) + 1) / 2;
+      const isLight = document.documentElement.classList.contains('light');
       ctx.fillStyle = d.lime
-        ? 'rgba(156,195,46,' + (0.14 + a * 0.40).toFixed(3) + ')'
-        : 'rgba(242,244,239,' + (0.025 + a * 0.08).toFixed(3) + ')';
+        ? (isLight ? 'rgba(108,148,18,' + (0.24 + a * 0.40).toFixed(3) + ')' : 'rgba(156,195,46,' + (0.14 + a * 0.40).toFixed(3) + ')')
+        : (isLight ? 'rgba(30,45,25,' + (0.04 + a * 0.08).toFixed(3) + ')' : 'rgba(242,244,239,' + (0.025 + a * 0.08).toFixed(3) + ')');
       ctx.fillText(d.c, d.x + Math.sin(d.dx) * 1.6, d.y);
     }
     raf = requestAnimationFrame(loop);
@@ -1448,5 +1452,63 @@ function initProcessPipeline() {
     });
 
     steps.forEach(step => observer.observe(step));
+  }
+}
+
+// ==========================================
+// THEME CONTROLLER (DARK / LIGHT MODE)
+// ==========================================
+export function initThemeController() {
+  const THEME_STORAGE_KEY = 'fiberlink_theme';
+
+  function getPreferredTheme() {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  function applyTheme(theme) {
+    const isLight = theme === 'light';
+    document.documentElement.classList.toggle('light', isLight);
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch (e) {}
+
+    // Update aria labels & titles on all toggle triggers
+    document.querySelectorAll('#themeToggleBtn, .theme-toggle-trigger').forEach(btn => {
+      btn.setAttribute('aria-label', isLight ? 'Cambiar a Modo Oscuro' : 'Cambiar a Modo Claro');
+      btn.setAttribute('title', isLight ? 'Modo Oscuro (Obsidian Cyber)' : 'Modo Claro (Clean Slate)');
+      const label = btn.querySelector('.theme-text-indicator');
+      if (label) {
+        label.textContent = isLight ? 'Modo Oscuro' : 'Modo Claro';
+      }
+    });
+
+    // Notify any components listening to theme change
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme, isLight } }));
+  }
+
+  // Initial apply
+  const current = getPreferredTheme();
+  applyTheme(current);
+
+  // Bind all buttons (header desktop button, mobile drawer button, etc.)
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('#themeToggleBtn, .theme-toggle-trigger');
+    if (!trigger) return;
+    e.preventDefault();
+    const isCurrentLight = document.documentElement.classList.contains('light');
+    const newTheme = isCurrentLight ? 'dark' : 'light';
+    applyTheme(newTheme);
+  });
+
+  // Listen to system changes if user hasn't explicitly chosen
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+        applyTheme(e.matches ? 'light' : 'dark');
+      }
+    });
   }
 }

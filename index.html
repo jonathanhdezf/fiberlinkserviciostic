@@ -46,6 +46,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="/src/style.css" />
+
+  <!-- Anti-FOUC Theme Script (Instant Dark/Light Persistence) -->
+  <script>
+    (function() {
+      try {
+        const storedTheme = localStorage.getItem('fiberlink_theme');
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (storedTheme === 'light' || (!storedTheme && prefersLight)) {
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -242,6 +259,28 @@
         <span class="hud-status-code">SYS.OK</span>
       </div>
 
+      <!-- Theme Switcher (Dark / Light) -->
+      <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Cambiar a Modo Claro" title="Modo Claro / Oscuro">
+        <span class="theme-toggle-icon icon-sun" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </span>
+        <span class="theme-toggle-icon icon-moon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+      </button>
+
       <!-- Main Action: Solicitar Ticket -->
       <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
@@ -286,6 +325,15 @@
       <span class="live-dot" aria-hidden="true"></span>
       <span>[SYS.ONLINE] · Teziutlán & Región TIC</span>
     </div>
+
+    <!-- Theme Switcher Drawer Trigger -->
+    <button class="drawer-theme-toggle theme-toggle-trigger" type="button" aria-label="Alternar Modo Claro / Oscuro">
+      <span class="theme-toggle-badge">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+        <span class="theme-text-indicator">Modo Claro</span>
+      </span>
+      <span>⚡ SWITCH</span>
+    </button>
 
     <nav class="drawer-nav">
       <a class="dl" href="#servicios" data-glitch="Servicios">
@@ -472,115 +520,220 @@
   </section>
 
   <!-- ============================
-       FRANJA DE SERVICIO A DOMICILIO (ANIMADA & REFINADA)
+       FRANJA DE SERVICIO A DOMICILIO (MARQUEE LIGERO DE ALTO RENDIMIENTO)
   ============================ -->
-  <section class="domicilio-strip" aria-label="Servicio a domicilio y atención técnica in situ">
-    <div class="domicilio-laser-beam" aria-hidden="true"></div>
-    <div class="domicilio-track-wrapper">
-      <div class="domicilio-track">
-        <!-- Loop Group 1 -->
-        <div class="domicilio-group">
-          <div class="dom-badge">
-            <span class="dom-pulse"></span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            <span>SERVICIO A DOMICILIO</span>
-          </div>
+  <section class="tools-band domicilio-band" aria-label="Servicio a domicilio y atención técnica in situ">
+    <div class="marquee-row">
+      <div class="marquee">
+        <div class="tool-pill tool-pill--accent"><span class="tpd" aria-hidden="true"></span>Servicio a Domicilio</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Atención In Situ en Hogares, Oficinas y Negocios</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Cobertura en Teziutlán, Chignautla y Región</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Diagnóstico y Reparación de Redes, CCTV y Cómputo</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Recolección y Entrega Segura para Taller & Lab</div>
+        <div class="tool-pill tool-pill--accent"><span class="tpd" aria-hidden="true"></span>Soporte Técnico en Sitio</div>
+        <div class="tool-pill"><span class="tpd" aria-hidden="true"></span>Instalaciones y Mantenimiento TIC</div>
 
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </span>
-            <span class="dom-text">Atención <strong>In Situ</strong> en Hogares, Oficinas y Negocios</span>
-          </div>
+        <!-- Duplicado para loop continuo sin cortes -->
+        <div class="tool-pill tool-pill--accent" aria-hidden="true"><span class="tpd"></span>Servicio a Domicilio</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Atención In Situ en Hogares, Oficinas y Negocios</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Cobertura en Teziutlán, Chignautla y Región</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Diagnóstico y Reparación de Redes, CCTV y Cómputo</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Recolección y Entrega Segura para Taller & Lab</div>
+        <div class="tool-pill tool-pill--accent" aria-hidden="true"><span class="tpd"></span>Soporte Técnico en Sitio</div>
+        <div class="tool-pill" aria-hidden="true"><span class="tpd"></span>Instalaciones y Mantenimiento TIC</div>
+      </div>
+    </div>
+  </section>
 
-          <span class="dom-sparkle">✦</span>
+  <!-- ============================
+       CYBERNETIC PRECISION: MESA TÉCNICA & TELEMETRÍA (STITCH DELUXE)
+  ============================ -->
+  <section class="cyber-console-section" id="mesa-operativa" aria-label="Mesa de Soporte Operaciones y Telemetría">
+    <div class="wrap" style="padding-top:28px; padding-bottom:12px;">
+      <!-- 1. LIVE TELEMETRY & SLA STRIP -->
+      <div class="telemetry-strip reveal from-bottom">
+        <div class="telemetry-left">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span class="telemetry-tag">TEZ.HUB // MESA ACTIVA</span>
+          <span class="telemetry-sub">Latencia: 11ms · Guardia SLA: &lt;15m · Teziutlán & Región</span>
+        </div>
+        <div class="telemetry-badge">PUEBLA-04 // SYS.OK</div>
+      </div>
 
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-            </span>
-            <span class="dom-text">Cobertura en <strong>Teziutlán</strong>, Chignautla, Xiutetelco y Región</span>
-          </div>
-
-          <span class="dom-sparkle">✦</span>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-            </span>
-            <span class="dom-text">Diagnóstico y Reparación de <strong>Redes, CCTV y Cómputo</strong></span>
-          </div>
-
-          <span class="dom-sparkle">✦</span>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </span>
-            <span class="dom-text">Recolección y Entrega Segura de Equipos para Taller & Lab</span>
-          </div>
-
-          <span class="dom-sparkle">✦</span>
-
-          <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20quisiera%20solicitar%20un%20servicio%20a%20domicilio%20para%20mi%20hogar%20o%20negocio." target="_blank" rel="noopener" class="dom-cta-pill">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
-            <span>Agendar Visita a Domicilio ➜</span>
+      <!-- 2. SOS COMMAND ACTION BAR (1-TAP ACTIONS) -->
+      <div class="sos-command-card reveal from-bottom">
+        <div class="sos-header">
+          <span class="sos-eyebrow">// DESPACHO Y ASISTENCIA INMEDIATA</span>
+          <span class="sos-prio-tag">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Prioridad Alta
+          </span>
+        </div>
+        <div class="sos-grid">
+          <a class="sos-btn sos-btn-primary" href="https://wa.me/522311024672?text=URGENTE:%20Requiero%20soporte%20t%C3%A9cnico%20inmediato%20en%20Teziutl%C3%A1n" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <strong>WhatsApp SOS</strong>
+            <span>Chat Directo</span>
           </a>
+          <a class="sos-btn" href="tel:+522311024672">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <strong>Llamar a Guardia</strong>
+            <span>(231) 102 4672</span>
+          </a>
+          <button class="sos-btn open-ticket" type="button" data-service="Urgencia Operativa">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <strong>Levantar Folio</strong>
+            <span>Ticket Express</span>
+          </button>
+        </div>
+      </div>
 
-          <span class="dom-sparkle">✦</span>
+      <!-- 3. HIGH SPEED METRIC CARDS (2x2 / 4-COL GRID) -->
+      <div class="kpi-speed-grid reveal from-bottom">
+        <div class="kpi-speed-card">
+          <div class="kpi-top">
+            <span class="kpi-top-lbl">Áreas TIC</span>
+            <span class="kpi-top-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </span>
+          </div>
+          <div class="kpi-val">4 Áreas</div>
+          <p class="kpi-desc">POS · CCTV · Cómputo · Redes</p>
         </div>
 
-        <!-- Loop Group 2 (Duplicate for continuous loop) -->
-        <div class="domicilio-group" aria-hidden="true">
-          <div class="dom-badge">
-            <span class="dom-pulse"></span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            <span>SERVICIO A DOMICILIO</span>
-          </div>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="kpi-speed-card">
+          <div class="kpi-top">
+            <span class="kpi-top-lbl">Cobertura</span>
+            <span class="kpi-top-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             </span>
-            <span class="dom-text">Atención <strong>In Situ</strong> en Hogares, Oficinas y Negocios</span>
           </div>
+          <div class="kpi-val">Sierra Nor.</div>
+          <p class="kpi-desc">Tez · Chignautla · Xiutetelco</p>
+        </div>
 
-          <span class="dom-sparkle">✦</span>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div class="kpi-speed-card">
+          <div class="kpi-top">
+            <span class="kpi-top-lbl">SLA Urgencias</span>
+            <span class="kpi-top-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </span>
-            <span class="dom-text">Cobertura en <strong>Teziutlán</strong>, Chignautla, Xiutetelco y Región</span>
           </div>
+          <div class="kpi-val highlight">&lt; 15 min</div>
+          <p class="kpi-desc">Respuesta técnica directa</p>
+        </div>
 
-          <span class="dom-sparkle">✦</span>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <div class="kpi-speed-card">
+          <div class="kpi-top">
+            <span class="kpi-top-lbl">Satisfacción</span>
+            <span class="kpi-top-icon" style="color:var(--status-warning)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </span>
-            <span class="dom-text">Diagnóstico y Reparación de <strong>Redes, CCTV y Cómputo</strong></span>
           </div>
+          <div class="kpi-val">4.9 / 5.0</div>
+          <p class="kpi-desc">+150 clientes atendidos</p>
+        </div>
+      </div>
 
-          <span class="dom-sparkle">✦</span>
-
-          <div class="dom-item">
-            <span class="dom-icon-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </span>
-            <span class="dom-text">Recolección y Entrega Segura de Equipos para Taller & Lab</span>
+      <!-- 4. INTERACTIVE INCIDENT SOLVER -->
+      <div class="incident-solver-box reveal from-bottom">
+        <div class="incident-head">
+          <div>
+            <h3>¿Atorado con la tecnología en tu negocio?</h3>
+            <p>Toca tu problema y lo resolvemos hoy mismo por soporte remoto o visita técnica presencial.</p>
           </div>
-
-          <span class="dom-sparkle">✦</span>
-
-          <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20quisiera%20solicitar%20un%20servicio%20a%20domicilio%20para%20mi%20hogar%20o%20negocio." target="_blank" rel="noopener" class="dom-cta-pill">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.34C9.36 7.34 9.09 7.4 8.87 7.65C8.65 7.89 8.02 8.48 8.02 9.7C8.02 10.92 8.91 12.1 9.03 12.26C9.15 12.43 10.77 14.93 13.25 16C13.84 16.26 14.3 16.41 14.66 16.53C15.26 16.72 15.8 16.69 16.24 16.63C16.72 16.56 17.72 16.03 17.93 15.44C18.14 14.86 18.14 14.36 18.08 14.25C18.01 14.15 17.85 14.09 17.6 13.97C17.36 13.84 16.14 13.24 15.91 13.16C15.69 13.07 15.52 13.03 15.36 13.28C15.19 13.52 14.72 14.09 14.58 14.25C14.43 14.42 14.29 14.44 14.04 14.32C13.8 14.19 13.01 13.94 12.08 13.11C11.36 12.46 10.87 11.67 10.73 11.42C10.58 11.18 10.71 11.04 10.84 10.92C10.95 10.8 11.09 10.62 11.21 10.47C11.34 10.33 11.38 10.22 11.46 10.06C11.54 9.89 11.5 9.75 11.44 9.63C11.38 9.5 10.88 8.29 10.68 7.79C10.48 7.31 10.28 7.37 10.13 7.36C9.98 7.35 9.81 7.34 9.53 7.34Z"/></svg>
-            <span>Agendar Visita a Domicilio ➜</span>
+        </div>
+        <div class="incident-grid">
+          <!-- Incident 1 -->
+          <a class="incident-card" href="https://wa.me/522311024672?text=SOS%20POS:%20Se%20trabo%20mi%20Punto%20de%20Venta%20o%20caja%20con%20clientes." target="_blank" rel="noopener">
+            <div class="incident-left">
+              <div class="incident-icon-box alert">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              </div>
+              <div class="incident-info">
+                <div class="incident-title-row">
+                  <span class="incident-title">Punto de Venta o Caja Congelada</span>
+                  <span class="incident-pill urgente">URGENTE // CAJA</span>
+                </div>
+                <span class="incident-desc">Destrabar software, base de datos y cobro con tarjeta al instante.</span>
+              </div>
+            </div>
+            <div class="incident-arrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
           </a>
 
-          <span class="dom-sparkle">✦</span>
+          <!-- Incident 2 -->
+          <a class="incident-card" href="https://wa.me/522311024672?text=SOS%20IMPRESORA:%20Impresora%20termica%20o%20escaner%20no%20responde." target="_blank" rel="noopener">
+            <div class="incident-left">
+              <div class="incident-icon-box info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              </div>
+              <div class="incident-info">
+                <div class="incident-title-row">
+                  <span class="incident-title">Impresora Térmica no Imprime Tickets</span>
+                  <span class="incident-pill remota">REMOTA // &lt; 15 MIN</span>
+                </div>
+                <span class="incident-desc">Revisión de drivers, cola de impresión de Windows y corte automático.</span>
+              </div>
+            </div>
+            <div class="incident-arrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </a>
+
+          <!-- Incident 3 -->
+          <a class="incident-card" href="https://wa.me/522311024672?text=SOS%20PC:%20Computadora%20lenta%20o%20con%20virus." target="_blank" rel="noopener">
+            <div class="incident-left">
+              <div class="incident-icon-box warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="incident-info">
+                <div class="incident-title-row">
+                  <span class="incident-title">Computadora Lenta, Bloqueada o con Virus</span>
+                  <span class="incident-pill sitio">DIAGNÓSTICO</span>
+                </div>
+                <span class="incident-desc">Limpieza digital, aceleración SSD y respaldo seguro sin perder tus archivos.</span>
+              </div>
+            </div>
+            <div class="incident-arrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </a>
+
+          <!-- Incident 4 -->
+          <a class="incident-card" href="https://wa.me/522311024672?text=SOS%20RED:%20Se%20cayo%20el%20internet%20en%20el%20mostrador%20de%20mi%20negocio." target="_blank" rel="noopener">
+            <div class="incident-left">
+              <div class="incident-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+              </div>
+              <div class="incident-info">
+                <div class="incident-title-row">
+                  <span class="incident-title">Caída de Red o Wi-Fi en Mostrador</span>
+                  <span class="incident-pill remota">TELECOM // RED</span>
+                </div>
+                <span class="incident-desc">Diagnóstico de cable, switch, router y restablecimiento de señal.</span>
+              </div>
+            </div>
+            <div class="incident-arrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </a>
         </div>
+      </div>
+
+      <!-- 5. ON-SITE VISIT CALLOUT CARD -->
+      <div class="onsite-callout-card reveal from-scale">
+        <div class="onsite-badge">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>ATENCIÓN TÉCNICA A DOMICILIO & EN NEGOCIOS</span>
+        </div>
+        <h3 class="onsite-title">¿Prefieres que un técnico acuda directamente a tus instalaciones?</h3>
+        <p class="onsite-desc">Diagnosticamos en sitio en Teziutlán, Chignautla y municipios vecinos. Revisamos cableado estructurado, terminales de cobro, DVRs y computadoras fijas.</p>
+        <a class="onsite-btn" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20quisiera%20agendar%20una%20visita%20a%20domicilio%20en%20mis%20instalaciones." target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Agendar Visita In Situ por WhatsApp</span>
+        </a>
       </div>
     </div>
   </section>

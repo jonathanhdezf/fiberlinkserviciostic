@@ -35,7 +35,8 @@ const ICONS = {
   expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>',
   compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>',
   copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'
 };
 
 // ------------------------------------------
@@ -106,13 +107,22 @@ function buildDom() {
   launcher.id = 'faLauncher';
   launcher.setAttribute('aria-label', 'Abrir asistente virtual con IA');
   launcher.innerHTML = `
+    <span class="fa-launcher-glow" aria-hidden="true"></span>
     <span class="fa-launcher-ring" aria-hidden="true"></span>
     <span class="fa-launcher-ring-2" aria-hidden="true"></span>
-    <span class="fa-launcher-core">${ICONS.spark}</span>
-    <span class="fa-launcher-badge" aria-hidden="true">IA</span>
+    <span class="fa-launcher-halo" aria-hidden="true"></span>
+    <span class="fa-launcher-core">
+      <span class="fa-launcher-shimmer" aria-hidden="true"></span>
+      <span class="fa-launcher-icon" aria-hidden="true">${ICONS.spark}</span>
+    </span>
+    <span class="fa-launcher-badge" aria-hidden="true">
+      <span class="fa-status-dot"></span>IA
+    </span>
     <span class="fa-launcher-tip">
-      <span class="fa-launcher-tip-badge">ASISTENTE VIRTUAL IA</span>
-      ¿Soporte o cotización de equipos? <strong>Chatea con Fibi</strong>
+      <span class="fa-launcher-tip-badge">
+        <span class="fa-tip-dot"></span> FIBI • ASISTENTE IA
+      </span>
+      <span class="fa-launcher-tip-text">¿Soporte o cotización de equipos? <strong>Chatea en vivo</strong></span>
     </span>
   `;
 
@@ -153,7 +163,7 @@ function buildDom() {
 
     <footer class="fa-foot">
       <form class="fa-input" id="faForm" autocomplete="off">
-        <textarea id="faInput" rows="1" maxlength="600" placeholder="Escribe tu consulta o falla técnica…" aria-label="Mensaje para el asistente"></textarea>
+        <textarea id="faInput" rows="1" maxlength="600" placeholder="Message..." aria-label="Mensaje para el asistente"></textarea>
         <button type="submit" class="fa-send" id="faSend" aria-label="Enviar mensaje" title="Enviar mensaje">${ICONS.send}</button>
       </form>
       <div class="fa-foot-bar">
@@ -237,10 +247,21 @@ function renderProgress() {
 function messageHtml(m) {
   if (m.role === 'card') return m.html;
   const who = m.role === 'user' ? 'user' : 'bot';
+  if (who === 'bot') {
+    return `
+      <div class="fa-msg fa-bot">
+        <div class="fa-bubble-wrap">
+          <span class="fa-msg-avatar fa-bot-avatar" aria-hidden="true" title="Fibi - Asistente IA">${ICONS.spark}</span>
+          <div class="fa-bubble">${formatText(m.text)}</div>
+        </div>
+      </div>`;
+  }
   return `
-    <div class="fa-msg fa-${who}">
-      ${who === 'bot' ? `<span class="fa-msg-avatar" aria-hidden="true">${ICONS.spark}</span>` : ''}
-      <div class="fa-bubble">${formatText(m.text)}</div>
+    <div class="fa-msg fa-user">
+      <div class="fa-bubble-wrap">
+        <div class="fa-bubble">${formatText(m.text)}</div>
+        <span class="fa-msg-avatar fa-user-avatar" aria-hidden="true" title="Tú">${ICONS.user}</span>
+      </div>
     </div>`;
 }
 
@@ -398,7 +419,13 @@ function render({ scroll = true } = {}) {
   else if (state.mode !== 'order' && state.action === 'confirm' && !getMissing().length) html += summaryHtml();
   if (state.showQuickForm && !state.ticket) html += quickFormHtml();
   if (state.busy) {
-    html += `<div class="fa-msg fa-bot"><span class="fa-msg-avatar" aria-hidden="true">${ICONS.spark}</span><div class="fa-bubble fa-typing"><i></i><i></i><i></i></div></div>`;
+    html += `
+      <div class="fa-msg fa-bot">
+        <div class="fa-bubble-wrap">
+          <span class="fa-msg-avatar fa-bot-avatar" aria-hidden="true" title="Fibi - Asistente IA">${ICONS.spark}</span>
+          <div class="fa-bubble fa-typing-bubble"><span class="fa-typing"><i></i><i></i><i></i></span></div>
+        </div>
+      </div>`;
   }
   els.body.innerHTML = html;
 
@@ -408,7 +435,7 @@ function render({ scroll = true } = {}) {
   els.input.disabled = state.busy || !!state.ticket;
   els.send.disabled = state.busy || !!state.ticket;
   els.ticketBtn.style.display = state.ticket ? 'none' : '';
-  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'Tu WhatsApp a 10 dígitos…' : 'Escribe tu consulta o falla técnica…');
+  els.input.placeholder = state.ticket ? 'Ticket enviado ✔' : (getMissing()[0] === 'phone' && state.mode !== 'order' ? 'WhatsApp a 10 dígitos…' : 'Message...');
 
   if (scroll) {
     requestAnimationFrame(() => {
