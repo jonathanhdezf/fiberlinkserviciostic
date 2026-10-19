@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+  <meta content="mobile_tab" name="shell-type"/>
+  <title>Mesa Técnica - Levantar Ticket con Folio | Fiberlink Servicios TIC</title>
+  <link rel="icon" type="image/gif" href="/logo.gif"/>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Sora:wght@600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <script>
+    (function() {
+      try {
+        const storedTheme = localStorage.getItem('fiberlink_theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (storedTheme === 'light' || (!storedTheme && prefersLight)) {
+          document.documentElement.classList.add('light');
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'on-background': '#e0e3e7',
+            'status-info': '#00B8D9',
+            'neon-emerald': '#9CC32E',
+            'primary-container': '#9CC32E',
+            'electric-mint': '#9CC32E',
+            'surface-base': '#0B0F12',
+            'surface-card': '#12181F',
+            'surface-container': '#1c2023',
+            'surface-container-low': '#181c1f',
+            'surface-container-high': '#262a2e',
+            'surface-container-highest': '#313539',
+            'surface-container-lowest': '#0b0f12',
+            'surface-overlay': '#18222C',
+            'text-primary': '#F4F7F6',
+            'text-secondary': '#8E9DA8',
+            'text-tertiary': '#556575',
+            'status-warning': '#FFB800',
+            'status-alert': '#FF4842',
+            'border-glass': 'rgba(255, 255, 255, 0.08)'
+          },
+          fontFamily: {
+            'label-mono-sm': ['Space Mono'],
+            'button-text': ['Sora'],
+            'body-sm': ['Outfit'],
+            'body-md': ['Outfit'],
+            'headline-sm': ['Sora'],
+            'headline-md': ['Sora'],
+            'headline-lg': ['Sora'],
+            'label-mono-xs': ['Space Mono']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @layer base {
+      html, body {
+        width: 100vw;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        -webkit-overflow-scrolling: touch;
+      }
+      body {
+        background-color: #0b0f12;
+        touch-action: pan-y pinch-zoom;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem); }
+      .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+    }
+    html.light body {
+      background-color: #f8fafc;
+      color: #0d140a;
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-surface-base text-text-primary font-body-md antialiased flex flex-col min-h-screen selection:bg-primary-container selection:text-surface-base">
+
+  <!-- Fixed Top App Header -->
+  <header class="fixed top-0 inset-x-0 z-50 bg-surface-base/90 backdrop-blur-xl pt-safe shadow-[0_4px_24px_rgba(0,0,0,0.4)] border-b border-glass">
+    <div class="h-16 px-4 flex items-center justify-between gap-2 max-w-lg mx-auto">
+      <a href="/#inicio" class="flex items-center gap-2.5 min-w-0" aria-label="Volver a Fiberlink">
+        <img alt="Fiberlink Logo" class="h-8 w-auto object-contain shrink-0" src="/logo.gif"/>
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="font-headline-sm text-[16px] text-text-primary tracking-tight font-bold truncate">Fiberlink</span>
+            <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase font-bold">TIC</span>
+          </div>
+          <span class="font-label-mono-xs text-[10px] text-text-secondary truncate uppercase">Mesa Técnica // Folios</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-2 shrink-0">
+        <div class="hidden xs:flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-card border border-glass">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-emerald"></span>
+          </span>
+          <span class="font-label-mono-xs text-[9px] text-neon-emerald font-bold tracking-wider uppercase">TEZ // ONLINE</span>
+        </div>
+        <a aria-label="Emergencia Telefónica Guardia" class="flex items-center justify-center min-w-[40px] min-h-[40px] h-10 w-10 rounded-xl bg-surface-card text-neon-emerald active:scale-95 transition-transform border border-glass shadow-sm" href="tel:2311024672">
+          <span class="material-symbols-outlined text-[20px]">call</span>
+        </a>
+        <a aria-label="Ir al inicio" class="flex items-center justify-center min-w-[40px] min-h-[40px] h-10 w-10 rounded-xl bg-surface-overlay text-text-secondary hover:text-text-primary active:scale-95 transition-transform border border-glass" href="/">
+          <span class="material-symbols-outlined text-[20px]">home</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 flex flex-col relative w-full pt-20 pb-24 px-4 max-w-lg mx-auto">
+    <div class="flex flex-col w-full gap-4">
+
+      <!-- Interactive Stepper -->
+      <div class="bg-surface-container rounded-xl p-3 flex flex-col gap-2 shadow-md border border-glass">
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-primary-container text-surface-base font-label-mono-xs text-[11px] font-bold flex items-center justify-center" id="step-badge-1">01</span>
+            <span class="font-label-mono-xs text-[11px] text-text-primary tracking-wide uppercase font-semibold" id="step-title-1">Servicio</span>
+          </div>
+          <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+            <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-1/3" id="stepper-progress-bar"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-[11px] font-bold flex items-center justify-center" id="step-badge-2">02</span>
+            <span class="font-label-mono-xs text-[11px] text-text-secondary tracking-wide uppercase font-semibold" id="step-title-2">Atención</span>
+          </div>
+          <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+            <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-0" id="stepper-progress-bar-2"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-[11px] font-bold flex items-center justify-center" id="step-badge-3">03</span>
+            <span class="font-label-mono-xs text-[11px] text-text-secondary tracking-wide uppercase font-semibold" id="step-title-3">Folio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Live Dispatch Telemetry -->
+      <div class="bg-surface-container-low rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm border border-glass">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="relative flex h-2 w-2 shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-emerald"></span>
+          </span>
+          <span class="font-label-mono-xs text-[11px] text-neon-emerald truncate uppercase font-bold">GUARDIA FIBERLINK TEZIUTLÁN // ACTIVA</span>
+        </div>
+        <span class="font-label-mono-xs text-[11px] text-text-tertiary shrink-0 font-semibold">SLA: &lt;15 MIN</span>
+      </div>
+
+      <!-- Step Panels Container -->
+      <form class="flex flex-col gap-4" id="ticket-workflow-form" onsubmit="event.preventDefault();">
+
+        <!-- STEP 1: Service Selection -->
+        <section class="flex flex-col gap-3 transition-all duration-200" id="step-1">
+          <div class="flex items-center justify-between">
+            <label class="font-headline-sm text-[16px] text-text-primary font-bold">¿Qué equipo requiere atención?</label>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary">SELECCIÓN_TÁCTIL</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <!-- POS Failure Option -->
+            <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'POS_BLOQUEADO')" type="button">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                  <span class="material-symbols-outlined text-[19px]">point_of_sale</span>
+                </span>
+                <span class="font-label-mono-xs text-[9px] text-status-warning bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">URGENCIA</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-button-text text-xs text-text-primary font-bold">Punto de Venta</span>
+                <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Impresora o caja trabada</span>
+              </div>
+            </button>
+            <!-- PC / Laptop Option -->
+            <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'PC_LAPTOP')" type="button">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                  <span class="material-symbols-outlined text-[19px]">laptop_mac</span>
+                </span>
+                <span class="font-label-mono-xs text-[9px] text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TALLER/DOM</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-button-text text-xs text-text-primary font-bold">PC &amp; Laptops</span>
+                <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Lento, no enciende o virus</span>
+              </div>
+            </button>
+            <!-- Redes & Fibra Option -->
+            <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'REDES_WIFI')" type="button">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                  <span class="material-symbols-outlined text-[19px]">wifi_tethering_error</span>
+                </span>
+                <span class="font-label-mono-xs text-[9px] text-status-info bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TELECOM</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-button-text text-xs text-text-primary font-bold">Redes &amp; WiFi</span>
+                <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Sin internet o falla cable</span>
+              </div>
+            </button>
+            <!-- CCTV Cámaras Option -->
+            <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'CCTV_CAMARAS')" type="button">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                  <span class="material-symbols-outlined text-[19px]">videocam</span>
+                </span>
+                <span class="font-label-mono-xs text-[9px] text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">CCTV</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-button-text text-xs text-text-primary font-bold">CCTV &amp; Cámaras</span>
+                <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">DVR sin señal o fuera</span>
+              </div>
+            </button>
+          </div>
+          <!-- Single Wide Other Service Button -->
+          <button class="service-opt group w-full p-3 rounded-xl bg-surface-container flex items-center justify-between text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'OTRO_SERVICIO')" type="button">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors shrink-0">
+                <span class="material-symbols-outlined text-[19px]">terminal</span>
+              </span>
+              <div class="flex flex-col">
+                <span class="font-button-text text-xs text-text-primary font-bold">Otro Requerimiento TIC</span>
+                <span class="font-body-sm text-[11px] text-text-secondary">Servidores, respaldos o consultoría a medida</span>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-text-tertiary text-[18px] group-hover:text-neon-emerald transition-colors">arrow_forward</span>
+          </button>
+          <!-- Next Step Trigger -->
+          <button class="w-full h-11 mt-1 rounded-xl bg-surface-container-high text-text-secondary font-button-text text-xs flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step1" onclick="goToStep(2)" type="button">
+            <span>Continuar a Modalidad y Urgencia</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+          </button>
+        </section>
+
+        <!-- STEP 2: Urgency & Modality -->
+        <section class="flex flex-col gap-3.5 opacity-50 pointer-events-none transition-all duration-200" id="step-2">
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label class="font-headline-sm text-[16px] text-text-primary font-bold">Nivel de Urgencia</label>
+              <span class="font-label-mono-xs text-[10px] text-text-tertiary">CRITERIO_SLA</span>
+            </div>
+            <!-- 3-Way Segmented Urgency -->
+            <div class="grid grid-cols-3 gap-1.5 bg-surface-container rounded-xl p-1 border border-glass">
+              <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'NORMAL')" type="button">
+                <span class="w-2.5 h-2.5 rounded-full bg-neon-emerald"></span>
+                <span class="font-button-text text-xs text-text-primary">Normal</span>
+                <span class="font-label-mono-xs text-[10px] text-text-tertiary">24-48 hrs</span>
+              </button>
+              <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'ALTA')" type="button">
+                <span class="w-2.5 h-2.5 rounded-full bg-status-warning"></span>
+                <span class="font-button-text text-xs text-text-primary">Alta</span>
+                <span class="font-label-mono-xs text-[10px] text-status-warning font-bold">Mismo día</span>
+              </button>
+              <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'CRITICA')" type="button">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-alert opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-status-alert"></span>
+                </span>
+                <span class="font-button-text text-xs text-status-alert font-bold">Crítica</span>
+                <span class="font-label-mono-xs text-[10px] text-status-alert font-bold">&lt;15 min SLA</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modality of Service -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label class="font-headline-sm text-[16px] text-text-primary font-bold">Modalidad de Atención</label>
+              <span class="font-label-mono-xs text-[10px] text-text-tertiary">ZONA_COBERTURA</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button class="modality-opt p-2.5 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'DOMICILIO')" type="button">
+                <span class="material-symbols-outlined text-text-primary text-[20px]">location_on</span>
+                <span class="font-button-text text-xs text-text-primary font-semibold">In Situ</span>
+                <span class="font-label-mono-xs text-[10px] text-text-tertiary">A Domicilio</span>
+              </button>
+              <button class="modality-opt p-2.5 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'REMOTO')" type="button">
+                <span class="material-symbols-outlined text-text-primary text-[20px]">nest_remote</span>
+                <span class="font-button-text text-xs text-text-primary font-semibold">Remoto</span>
+                <span class="font-label-mono-xs text-[10px] text-text-tertiary">AnyDesk / SSH</span>
+              </button>
+              <button class="modality-opt p-2.5 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'TALLER')" type="button">
+                <span class="material-symbols-outlined text-text-primary text-[20px]">store</span>
+                <span class="font-button-text text-xs text-text-primary font-semibold">En Taller</span>
+                <span class="font-label-mono-xs text-[10px] text-text-tertiary">Teziutlán Ctro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Proceed to Step 3 -->
+          <button class="w-full h-11 rounded-xl bg-surface-container-high text-text-secondary font-button-text text-xs flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step2" onclick="goToStep(3)" type="button">
+            <span>Completar Datos de Contacto</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+          </button>
+        </section>
+
+        <!-- STEP 3: Contact and Instant Folio Generation -->
+        <section class="flex flex-col gap-3 opacity-50 pointer-events-none transition-all duration-200" id="step-3">
+          <div class="flex items-center justify-between">
+            <label class="font-headline-sm text-[16px] text-text-primary font-bold">Datos del Reportante</label>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary">CONTACTO_DIRECTO</span>
+          </div>
+          <div class="bg-surface-container rounded-xl p-3.5 flex flex-col gap-3 shadow-md border border-glass">
+            <div class="flex flex-col gap-1">
+              <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-name">Negocio o Titular *</label>
+              <div class="flex items-center bg-surface-container-lowest rounded-lg px-3 h-10 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+                <span class="material-symbols-outlined text-text-tertiary text-[17px]">business</span>
+                <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-body-sm text-xs" id="client-name" placeholder="Ej. Farmacia La Paz / Ing. Morales" required="" type="text"/>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-phone">WhatsApp Directo (10 dígitos) *</label>
+              <div class="flex items-center bg-surface-container-lowest rounded-lg px-3 h-10 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+                <span class="material-symbols-outlined text-text-tertiary text-[17px]">call</span>
+                <span class="font-label-mono-sm text-[11px] text-text-tertiary font-bold">+52</span>
+                <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-label-mono-sm text-xs" id="client-phone" maxlength="10" placeholder="231 100 0000" required="" type="tel"/>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-issue">Descripción Rápida de la Falla *</label>
+              <textarea class="bg-surface-container-lowest rounded-lg p-2.5 text-text-primary placeholder:text-text-tertiary font-body-sm text-xs border border-glass outline-none resize-none focus:ring-1 focus:ring-neon-emerald transition-all" id="client-issue" placeholder="Ej. La impresora térmica de caja no imprime tickets..." required="" rows="2"></textarea>
+            </div>
+            <div class="bg-surface-container-high rounded-lg p-2 flex items-center justify-between border border-glass">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-neon-emerald text-[17px]">verified</span>
+                <span class="font-label-mono-xs text-[10px] text-text-primary">Folio Oficial Guardia</span>
+              </div>
+              <span class="font-label-mono-xs text-[11px] text-neon-emerald font-bold" id="preview-ticket-code">FL-9421</span>
+            </div>
+            <button class="w-full h-12 py-3 rounded-xl bg-primary-container text-surface-base font-button-text text-xs font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(156,195,46,0.35)] active:scale-[0.98] transition-all hover:bg-neon-emerald" onclick="submitTicketAndDispatch()" type="button">
+              <span class="material-symbols-outlined text-[18px] text-surface-base font-bold">send</span>
+              <span>Generar Folio y Enviar WhatsApp</span>
+            </button>
+          </div>
+        </section>
+      </form>
+
+      <!-- Interactive Generated Folio Modal / Success Banner -->
+      <div class="hidden flex-col gap-3 bg-surface-container-high rounded-xl p-4 shadow-xl transition-all border border-neon-emerald/30" id="folio-success-card">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-surface-base">
+              <span class="material-symbols-outlined text-[20px]">check</span>
+            </span>
+            <div>
+              <span class="font-headline-sm text-[15px] text-text-primary block font-bold">Folio Generado con Éxito</span>
+              <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase font-semibold">Despacho Asignado</span>
+            </div>
+          </div>
+          <span class="font-label-mono-sm text-[12px] px-2 py-1 rounded bg-surface-container-lowest text-text-primary font-bold border border-glass" id="display-folio-number">FL-9421</span>
+        </div>
+        <p class="font-body-sm text-xs text-text-secondary">
+          Se ha generado el folio y abierto WhatsApp para confirmar el requerimiento con el técnico de guardia en Teziutlán.
+        </p>
+        <div class="flex items-center gap-2">
+          <button class="flex-1 h-10 rounded-lg bg-surface-container text-text-primary font-button-text text-xs flex items-center justify-center border border-glass hover:bg-surface-container-high transition-colors" onclick="resetForm()" type="button">
+            Crear Otro Ticket
+          </button>
+          <a class="flex-1 h-10 rounded-lg bg-primary-container text-surface-base font-button-text text-xs font-bold flex items-center justify-center gap-1 hover:bg-neon-emerald shadow-sm transition-all" href="#" id="btn-reopen-wa" target="_blank">
+            <span class="material-symbols-outlined text-[16px]">chat</span>
+            <span>Abrir Chat</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Dedicated Status Tracker Module for Existing Folios -->
+      <section class="bg-surface-container rounded-xl p-3.5 flex flex-col gap-2.5 shadow-md border border-glass">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-neon-emerald text-[20px]">manage_search</span>
+            <span class="font-headline-sm text-sm text-text-primary font-bold">Consultar Folio Existente</span>
+          </div>
+          <span class="font-label-mono-xs text-[10px] text-text-tertiary">TRACKING</span>
+        </div>
+        <p class="font-body-sm text-[11px] text-text-secondary">
+          Ingresa tu folio asignado (ej. FL-1005) para revisar diagnóstico y técnico asignado.
+        </p>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 flex items-center bg-surface-container-lowest rounded-lg px-3 h-10 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+            <span class="material-symbols-outlined text-text-tertiary text-[17px]">tag</span>
+            <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-label-mono-sm text-xs uppercase tracking-wider" id="input-search-folio" placeholder="FL-1005" type="text"/>
+          </div>
+          <button class="h-10 px-4 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-button-text text-xs flex items-center justify-center gap-1 transition-colors active:scale-95 border border-glass" onclick="searchExistingFolio()" type="button">
+            <span class="material-symbols-outlined text-[16px]">search</span>
+            <span>Buscar</span>
+          </button>
+        </div>
+        <!-- Live Folio Tracker Result Simulation Area -->
+        <div class="hidden flex-col gap-2 bg-surface-container-low rounded-lg p-2.5 transition-all border border-glass" id="folio-search-result">
+          <div class="flex items-center justify-between">
+            <span class="font-label-mono-xs text-[10px] text-status-warning font-bold" id="result-status-pill">● EN TRAYECTO A DOMICILIO</span>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary font-semibold" id="result-time-pill">ETA: 12 MIN</span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs text-text-primary font-semibold" id="result-tech-name">Téc. Daniel Rivera (Guardia 1)</span>
+              <span class="font-body-sm text-[11px] text-text-secondary" id="result-service-desc">Restablecimiento Red Punto de Venta</span>
+            </div>
+            <a class="w-8 h-8 rounded-full bg-surface-container-high text-neon-emerald flex items-center justify-center shrink-0 border border-glass" href="tel:2311024672">
+              <span class="material-symbols-outlined text-[16px]">call</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Technical Infrastructure Micro-Banner -->
+      <div class="flex items-center justify-between px-1 py-1 text-text-tertiary font-label-mono-xs text-[10px]">
+        <span>NOC TEZIUTLÁN // LATENCIA: 14ms</span>
+        <span>DISPATCH PROTOCOL v4.2</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Tab Navigation -->
+  <nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface-base/95 backdrop-blur-xl border-t border-glass shadow-[0_-4px_24px_rgba(0,0,0,0.5)]">
+    <div class="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+      <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-full text-text-secondary hover:text-text-primary transition-colors" href="/#inicio">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        <span class="font-label-mono-xs text-[9px] mt-0.5 tracking-tight uppercase">Mesa</span>
+      </a>
+      <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-full text-text-secondary hover:text-text-primary transition-colors" href="/#asistencia-expres">
+        <span class="material-symbols-outlined text-[20px]">fmd_bad</span>
+        <span class="font-label-mono-xs text-[9px] mt-0.5 tracking-tight uppercase">SOS</span>
+      </a>
+      <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-full text-text-secondary hover:text-text-primary transition-colors" href="/#seccion-catalogo">
+        <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+        <span class="font-label-mono-xs text-[9px] mt-0.5 tracking-tight uppercase">Catálogo</span>
+      </a>
+      <a aria-current="page" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 h-full transition-colors text-neon-emerald font-semibold" href="/ticket-movil.html">
+        <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+        <span class="font-label-mono-xs text-[9px] mt-0.5 tracking-tight uppercase">Tickets</span>
+      </a>
+    </div>
+  </nav>
+
+  <script>
+    // State Manager for Interactive Ticketing
+    const ticketState = {
+      service: 'POS_BLOQUEADO',
+      urgency: 'ALTA',
+      modality: 'DOMICILIO',
+      folio: 'FL-' + Math.floor(1000 + Math.random() * 9000)
+    };
+
+    const previewEl = document.getElementById('preview-ticket-code');
+    if (previewEl) previewEl.textContent = ticketState.folio;
+
+    function selectService(buttonElement, serviceType) {
+      ticketState.service = serviceType;
+      document.querySelectorAll('.service-opt').forEach(btn => {
+        btn.classList.remove('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+        btn.classList.add('bg-surface-container');
+      });
+      buttonElement.classList.remove('bg-surface-container');
+      buttonElement.classList.add('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+
+      const btnNext1 = document.getElementById('btn-next-step1');
+      if (btnNext1) {
+        btnNext1.classList.remove('bg-surface-container-high', 'text-text-secondary');
+        btnNext1.classList.add('bg-primary-container', 'text-surface-base', 'font-bold');
+      }
+    }
+
+    function selectUrgency(buttonElement, urgencyType) {
+      ticketState.urgency = urgencyType;
+      document.querySelectorAll('.urgency-opt').forEach(btn => {
+        btn.classList.remove('bg-surface-container-highest', 'shadow-inner', 'ring-1', 'ring-neon-emerald');
+        btn.classList.add('bg-surface-container-low');
+      });
+      buttonElement.classList.remove('bg-surface-container-low');
+      buttonElement.classList.add('bg-surface-container-highest', 'ring-1', 'ring-neon-emerald');
+      checkStep2Complete();
+    }
+
+    function selectModality(buttonElement, modalityType) {
+      ticketState.modality = modalityType;
+      document.querySelectorAll('.modality-opt').forEach(btn => {
+        btn.classList.remove('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+        btn.classList.add('bg-surface-container');
+      });
+      buttonElement.classList.remove('bg-surface-container');
+      buttonElement.classList.add('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+      checkStep2Complete();
+    }
+
+    function checkStep2Complete() {
+      const btnNext2 = document.getElementById('btn-next-step2');
+      if (btnNext2) {
+        btnNext2.classList.remove('bg-surface-container-high', 'text-text-secondary');
+        btnNext2.classList.add('bg-primary-container', 'text-surface-base', 'font-bold');
+      }
+    }
+
+    function goToStep(stepNum) {
+      const step2El = document.getElementById('step-2');
+      const step3El = document.getElementById('step-3');
+      const bar1 = document.getElementById('stepper-progress-bar');
+      const bar2 = document.getElementById('stepper-progress-bar-2');
+
+      if (stepNum === 2) {
+        if (step2El) step2El.classList.remove('opacity-50', 'pointer-events-none');
+        if (bar1) {
+          bar1.classList.remove('w-1/3');
+          bar1.classList.add('w-full');
+        }
+        const b2 = document.getElementById('step-badge-2');
+        if (b2) {
+          b2.classList.replace('bg-surface-container-high', 'bg-primary-container');
+          b2.classList.replace('text-text-secondary', 'text-surface-base');
+        }
+        const t2 = document.getElementById('step-title-2');
+        if (t2) t2.classList.replace('text-text-secondary', 'text-text-primary');
+        if (step2El) step2El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else if (stepNum === 3) {
+        if (step3El) step3El.classList.remove('opacity-50', 'pointer-events-none');
+        if (bar2) {
+          bar2.classList.remove('w-0');
+          bar2.classList.add('w-full');
+        }
+        const b3 = document.getElementById('step-badge-3');
+        if (b3) {
+          b3.classList.replace('bg-surface-container-high', 'bg-primary-container');
+          b3.classList.replace('text-text-secondary', 'text-surface-base');
+        }
+        const t3 = document.getElementById('step-title-3');
+        if (t3) t3.classList.replace('text-text-secondary', 'text-text-primary');
+        if (step3El) step3El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    async function submitTicketAndDispatch() {
+      const nameInput = document.getElementById('client-name');
+      const phoneInput = document.getElementById('client-phone');
+      const issueInput = document.getElementById('client-issue');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      const issue = issueInput ? issueInput.value.trim() : '';
+
+      if (!name || !phone || !issue) {
+        alert('Por favor complete su Nombre, Teléfono WhatsApp y Descripción de la falla.');
+        return;
+      }
+
+      const folio = ticketState.folio;
+      const dispFolio = document.getElementById('display-folio-number');
+      if (dispFolio) dispFolio.textContent = folio;
+
+      const serviceLabels = {
+        'POS_BLOQUEADO': 'Punto de Venta POS & Caja',
+        'PC_LAPTOP': 'PC & Laptops (Taller/Domicilio)',
+        'REDES_WIFI': 'Redes & WiFi Telecom',
+        'CCTV_CAMARAS': 'CCTV Cámaras & Vigilancia',
+        'OTRO_SERVICIO': 'Requerimiento TIC / Servidores'
+      };
+
+      const modalityLabels = {
+        'DOMICILIO': 'En Sitio / A Domicilio (Teziutlán y Región)',
+        'REMOTO': 'Soporte Remoto Inmediato (< 15 min)',
+        'TALLER': 'Recepción en Taller Técnico'
+      };
+
+      const priorityLabels = {
+        'CRITICA': 'Crítica (< 15 min SLA)',
+        'ALTA': 'Alta (Mismo Día)',
+        'NORMAL': 'Normal (24-48 hrs)'
+      };
+
+      const ticketData = {
+        folio: folio,
+        name: name,
+        phone: phone,
+        service: serviceLabels[ticketState.service] || ticketState.service,
+        modality: modalityLabels[ticketState.modality] || ticketState.modality,
+        priority: ticketState.urgency === 'CRITICA' ? 'Crítica' : (ticketState.urgency === 'ALTA' ? 'Alta' : 'Normal'),
+        description: issue,
+        source: 'Mesa Técnica Web/Móvil'
+      };
+
+      try {
+        const local = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+        local.unshift({
+          id: Date.now().toString(),
+          estado: 'creación',
+          createdAt: new Date().toISOString(),
+          ...ticketData
+        });
+        localStorage.setItem('fiberlink_tickets', JSON.stringify(local));
+      } catch(err) {
+        console.warn('Storage sync:', err);
+      }
+
+      const message = encodeURIComponent(
+        `*NUEVO REPORTE TICKETING FIBERLINK*\n` +
+        `Folio: ${folio}\n` +
+        `Titular/Negocio: ${name}\n` +
+        `Teléfono: ${phone}\n` +
+        `Requerimiento: ${serviceLabels[ticketState.service] || ticketState.service}\n` +
+        `Urgencia: ${priorityLabels[ticketState.urgency] || ticketState.urgency}\n` +
+        `Modalidad: ${modalityLabels[ticketState.modality] || ticketState.modality}\n` +
+        `Falla reportada: ${issue}\n` +
+        `Zona: Teziutlán, Puebla`
+      );
+
+      const waUrl = `https://wa.me/522311024672?text=${message}`;
+
+      const cardSuccess = document.getElementById('folio-success-card');
+      if (cardSuccess) {
+        cardSuccess.classList.remove('hidden');
+        cardSuccess.classList.add('flex');
+        cardSuccess.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      const btnWa = document.getElementById('btn-reopen-wa');
+      if (btnWa) btnWa.setAttribute('href', waUrl);
+
+      window.open(waUrl, '_blank');
+    }
+
+    function resetForm() {
+      ticketState.folio = 'FL-' + Math.floor(1000 + Math.random() * 9000);
+      const p = document.getElementById('preview-ticket-code');
+      if (p) p.textContent = ticketState.folio;
+      const name = document.getElementById('client-name'); if (name) name.value = '';
+      const phone = document.getElementById('client-phone'); if (phone) phone.value = '';
+      const issue = document.getElementById('client-issue'); if (issue) issue.value = '';
+      const cardSuccess = document.getElementById('folio-success-card');
+      if (cardSuccess) {
+        cardSuccess.classList.add('hidden');
+        cardSuccess.classList.remove('flex');
+      }
+      const step2El = document.getElementById('step-2');
+      if (step2El) step2El.classList.add('opacity-50', 'pointer-events-none');
+      const step3El = document.getElementById('step-3');
+      if (step3El) step3El.classList.add('opacity-50', 'pointer-events-none');
+      const bar1 = document.getElementById('stepper-progress-bar');
+      if (bar1) { bar1.classList.remove('w-full'); bar1.classList.add('w-1/3'); }
+      const bar2 = document.getElementById('stepper-progress-bar-2');
+      if (bar2) { bar2.classList.remove('w-full'); bar2.classList.add('w-0'); }
+      const step1El = document.getElementById('step-1');
+      if (step1El) step1El.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function searchExistingFolio() {
+      const input = document.getElementById('input-search-folio');
+      const val = input ? input.value.trim().toUpperCase() : '';
+      const resultBox = document.getElementById('folio-search-result');
+      if (!val) {
+        alert('Por favor ingresa un folio válido (ej. FL-1005).');
+        return;
+      }
+
+      if (resultBox) {
+        resultBox.classList.remove('hidden');
+        resultBox.classList.add('flex');
+      }
+
+      let found = null;
+      try {
+        const list = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+        found = list.find(t => (t.folio && t.folio.toUpperCase() === val) || (t.id && t.id === val));
+      } catch(e){}
+
+      const statusPill = document.getElementById('result-status-pill');
+      const timePill = document.getElementById('result-time-pill');
+      const techName = document.getElementById('result-tech-name');
+      const serviceDesc = document.getElementById('result-service-desc');
+
+      if (found) {
+        const statusMap = {
+          'creación': '● EN ESPERA // RECIBIDO EN MESA',
+          'asignado': '● EN TRAYECTO // TÉCNICO EN RUTA',
+          'en_proceso': '● EN ATENCIÓN // DIAGNÓSTICO ACTIVO',
+          'resuelto': '● RESUELTO // CONFORMIDAD PENDIENTE',
+          'cerrado': '● CERRADO // GARANTÍA VIGENTE'
+        };
+        if (statusPill) {
+          statusPill.textContent = statusMap[found.estado] || '● REPORTE REGISTRADO';
+          statusPill.className = 'font-label-mono-xs text-[10px] text-neon-emerald font-bold';
+        }
+        if (timePill) timePill.textContent = found.priority === 'Crítica' ? 'SLA: <15 MIN' : 'PRIORIDAD: ' + (found.priority || 'Normal');
+        if (techName) techName.textContent = found.assignedTo && found.assignedTo !== 'Sin asignar' ? found.assignedTo : 'Guardia Asignada Teziutlán';
+        if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || 'Cliente'}`;
+      } else if (val.includes('1005') || val.includes('FL')) {
+        if (statusPill) {
+          statusPill.textContent = '● EN TRAYECTO // TÉCNICO EN RUTA';
+          statusPill.className = 'font-label-mono-xs text-[10px] text-status-warning font-bold';
+        }
+        if (timePill) timePill.textContent = 'LLEGADA EST.: 8 MIN';
+        if (techName) techName.textContent = 'Téc. Daniel Rivera (Guardia Centro)';
+        if (serviceDesc) serviceDesc.textContent = 'Restablecimiento de Sistema & Conexión Red';
+      } else {
+        if (statusPill) {
+          statusPill.textContent = '● EN ESPERA DE DIAGNÓSTICO';
+          statusPill.className = 'font-label-mono-xs text-[10px] text-status-info font-bold';
+        }
+        if (timePill) timePill.textContent = 'COLA: 1 TICKET';
+        if (techName) techName.textContent = 'Mesa de Ayuda NOC Fiberlink';
+        if (serviceDesc) serviceDesc.textContent = 'Asignación programada en Teziutlán';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstService = document.querySelector('.service-opt');
+      if (firstService) selectService(firstService, 'POS_BLOQUEADO');
+      const altaUrgency = document.querySelectorAll('.urgency-opt')[1];
+      if (altaUrgency) selectUrgency(altaUrgency, 'ALTA');
+      const inSituModality = document.querySelectorAll('.modality-opt')[0];
+      if (inSituModality) selectModality(inSituModality, 'DOMICILIO');
+    });
+  </script>
+</body>
+</html>

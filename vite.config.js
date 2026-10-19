@@ -43,7 +43,8 @@ export default defineConfig(({ mode }) => {
         admin: resolve(__dirname, 'admin.html'),
         soluciones: resolve(__dirname, 'soluciones.html'),
         catalogo: resolve(__dirname, 'catalogo.html'),
-        ticket: resolve(__dirname, 'ticket.html')
+        ticket: resolve(__dirname, 'ticket.html'),
+        ticketMovil: resolve(__dirname, 'ticket-movil.html')
       }
     }
   }

@@ -6,6 +6,9 @@ import { ticketService } from './services/ticketService.js';
 import { initAssistant } from './assistant.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Expose ticket service globally for interactive forms
+  window.ticketService = ticketService;
+
   // 0. Initialize Dark / Light Theme Controller
   initThemeController();
 

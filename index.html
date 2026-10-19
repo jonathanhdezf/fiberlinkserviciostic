@@ -1005,8 +1005,325 @@
 </div>
 </div>
 </div>
-<!-- INTERACTIVE TICKET GENERATOR CONSOLE -->
-<div class="lg:col-span-7 bg-surface-container-lowest p-space-lg rounded-xl shadow-xl flex flex-col gap-space-md"><div class="flex items-center justify-between pb-space-xs border-b border-glass pb-2"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-neon-emerald text-[20px]">confirmation_number</span><span class="font-headline-sm text-headline-sm text-text-primary font-bold">Mesa Técnica // Registro de Ticket</span></div><div class="font-label-mono-xs text-label-mono-xs px-2.5 py-1 rounded bg-surface-container-high text-neon-emerald flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-neon-emerald animate-ping"></span><span class="">SLA ACTIVO &lt;15 MIN</span></div></div><div class="grid grid-cols-3 gap-2 py-1"><div class="p-2 rounded-lg bg-surface-overlay border border-neon-emerald/30 flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-primary-container text-surface-base font-label-mono-xs font-bold flex items-center justify-center text-xs flex-shrink-0">1</div><div class="flex flex-col"><span class="font-label-mono-xs text-neon-emerald font-semibold uppercase">Paso 1</span><span class="font-body-sm text-xs text-text-primary truncate">Requerimiento</span></div></div><div class="p-2 rounded-lg bg-surface-container-low border border-glass flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs font-bold flex items-center justify-center text-xs flex-shrink-0">2</div><div class="flex flex-col"><span class="font-label-mono-xs text-text-secondary font-semibold uppercase">Paso 2</span><span class="font-body-sm text-xs text-text-secondary truncate">Modalidad</span></div></div><div class="p-2 rounded-lg bg-surface-container-low border border-glass flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs font-bold flex items-center justify-center text-xs flex-shrink-0">3</div><div class="flex flex-col"><span class="font-label-mono-xs text-text-secondary font-semibold uppercase">Paso 3</span><span class="font-body-sm text-xs text-text-secondary truncate">Contacto</span></div></div></div><form class="flex flex-col gap-space-md" id="ticket-form" onsubmit="event.preventDefault(); generarTicket();"><div class="grid grid-cols-1 md:grid-cols-2 gap-space-md"><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">Área del Requerimiento *</label><select class="px-space-md py-2.5 rounded-lg bg-surface-container-low text-text-primary font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-neon-emerald border border-glass" id="ticket-area"><option value="Soporte Técnico (Cómputo/Laptop)">Soporte Técnico (Cómputo/Laptop)</option><option value="Punto de Venta POS &amp; Caja">Punto de Venta POS &amp; Caja</option><option value="Redes, Wi-Fi &amp; Cableado">Redes, Wi-Fi &amp; Cableado</option><option value="Cámaras de Seguridad CCTV">Cámaras de Seguridad CCTV</option><option value="Fiberlink Labs (Web/SEO)">Fiberlink Labs (Web/SEO)</option></select></div><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">Modalidad de Atención *</label><select class="px-space-md py-2.5 rounded-lg bg-surface-container-low text-text-primary font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-neon-emerald border border-glass" id="ticket-modalidad"><option value="En Sitio / A Domicilio">En Sitio / A Domicilio (Teziutlán y Región)</option><option value="Soporte Remoto Inmediato">Soporte Remoto Inmediato (&lt; 15 min)</option><option value="Recepción en Taller">Recepción en Taller Técnico</option></select></div></div><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">Nivel de Impacto &amp; Urgencia</label><div class="grid grid-cols-3 gap-space-xs"><label class="flex items-center justify-center p-2 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-neon-emerald/20 has-[:checked]:text-neon-emerald border border-glass"><input checked="" class="hidden" name="urgencia" type="radio" value="Normal"><span class="font-button-text text-button-text text-xs">Normal (24 hrs)</span></label><label class="flex items-center justify-center p-2 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-status-warning/20 has-[:checked]:text-status-warning border border-glass"><input class="hidden" name="urgencia" type="radio" value="Alta"><span class="font-button-text text-button-text text-xs">Alta (Mismo Día)</span></label><label class="flex items-center justify-center p-2 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-status-alert/20 has-[:checked]:text-status-alert border border-glass"><input class="hidden" name="urgencia" type="radio" value="Crítica"><span class="font-button-text text-button-text text-xs">Crítica (&lt; 15 min)</span></label></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-space-md"><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">Nombre Completo *</label><input class="px-space-md py-2.5 rounded-lg bg-surface-container-low text-text-primary font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-neon-emerald border border-glass" id="ticket-nombre" placeholder="Ej. Roberto Sánchez" required="" type="text"></div><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">WhatsApp / Teléfono (10 dígitos) *</label><input class="px-space-md py-2.5 rounded-lg bg-surface-container-low text-text-primary font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-neon-emerald border border-glass" id="ticket-telefono" placeholder="231 102 4672" required="" type="tel"></div></div><div class="flex flex-col gap-1"><label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase">Detalles del Fallo o Equipo *</label><textarea class="px-space-md py-2 rounded-lg bg-surface-container-low text-text-primary font-body-sm text-body-sm focus:outline-none focus:ring-1 focus:ring-neon-emerald border border-glass" id="ticket-desc" placeholder="Describe los síntomas del equipo, errores en pantalla o necesidades de instalación..." required="" rows="3"></textarea></div><div class="flex flex-col gap-space-sm pt-space-xs"><button class="w-full py-3 rounded-lg bg-primary-container hover:bg-neon-emerald text-surface-base font-button-text text-button-text transition-all shadow-[0_0_20px_rgba(0,255,136,0.35)] flex items-center justify-center gap-space-xs" type="submit"><span class="material-symbols-outlined text-[20px]">send</span><span class="">Generar Ticket &amp; Enviar por WhatsApp</span></button><div class="hidden p-space-md rounded-lg bg-surface-card shadow-md flex-col gap-space-xs border border-glass" id="ticket-result"><div class="flex items-center justify-between"><span class="font-label-mono-xs text-label-mono-xs text-neon-emerald uppercase">SOLICITUD GENERADA EXITOSAMENTE</span><span class="font-label-mono-sm text-label-mono-sm text-text-primary font-bold bg-surface-base px-2 py-0.5 rounded" id="folio-badge">FOLIO: FL-1005</span></div><p class="font-body-sm text-body-sm text-text-secondary" id="ticket-summary">Tu ticket ha sido registrado en la mesa técnica. Presiona el botón verde de WhatsApp para enrutar el despacho técnico prioritario.</p><a class="mt-2 w-full py-2.5 rounded bg-neon-emerald text-surface-base font-button-text text-button-text text-center flex items-center justify-center gap-1.5 shadow-md" href="#" id="ticket-wa-link" rel="noopener noreferrer" target="_blank"><span class="material-symbols-outlined text-[18px]">chat</span><span class="">Abrir WhatsApp con Folio Generado</span></a></div></div></form></div>
+<!-- INTERACTIVE TICKET GENERATOR CONSOLE (DELUXE MOBILE & DESKTOP) -->
+<div class="lg:col-span-7 bg-surface-container-lowest p-4 sm:p-space-lg rounded-2xl shadow-2xl flex flex-col gap-space-md border border-glass">
+  <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-glass">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-neon-emerald text-[20px]">confirmation_number</span>
+      <span class="font-headline-sm text-sm sm:text-base text-text-primary font-bold">Mesa Técnica // Generador de Folios</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="/ticket-movil.html" class="flex items-center gap-1 px-2.5 py-1 rounded bg-surface-overlay hover:bg-surface-container-high border border-glass text-text-secondary hover:text-neon-emerald font-label-mono-xs text-[10px] transition-all" title="Abrir versión web app para celulares">
+        <span class="material-symbols-outlined text-[14px]">smartphone</span>
+        <span class="hidden sm:inline">Modo Móvil</span> App
+      </a>
+      <span class="font-label-mono-xs text-[10px] px-2 py-0.5 rounded bg-surface-container-high text-neon-emerald font-bold flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-emerald animate-ping"></span>
+        SLA &lt;15 MIN
+      </span>
+    </div>
+  </div>
+  <!-- Interactive Stepper -->
+  <div class="bg-surface-container rounded-xl p-space-sm flex flex-col gap-space-xs shadow-md border border-glass">
+    <div class="flex items-center justify-between px-space-xs">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-primary-container text-surface-base font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-1">01</span>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold" id="step-title-1">Servicio</span>
+      </div>
+      <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+        <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-1/3" id="stepper-progress-bar"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-2">02</span>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold" id="step-title-2">Atención</span>
+      </div>
+      <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+        <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-0" id="stepper-progress-bar-2"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-3">03</span>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold" id="step-title-3">Folio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Live Dispatch Telemetry -->
+  <div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between gap-space-sm shadow-sm border border-glass">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="relative flex h-2 w-2 shrink-0">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-emerald"></span>
+      </span>
+      <span class="font-label-mono-xs text-label-mono-xs text-neon-emerald truncate uppercase font-bold">GUARDIA FIBERLINK TEZIUTLÁN // DISPONIBLE</span>
+    </div>
+    <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary shrink-0 font-semibold">SLA: &lt;15 MIN</span>
+  </div>
+
+  <!-- Step Panels Container -->
+  <form class="flex flex-col gap-space-md" id="ticket-workflow-form" onsubmit="event.preventDefault();">
+    <!-- STEP 1: Service Selection -->
+    <section class="flex flex-col gap-space-sm transition-all duration-200" id="step-1">
+      <div class="flex items-center justify-between">
+        <label class="font-headline-sm text-headline-sm text-text-primary">¿Qué equipo requiere atención?</label>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">SELECCIÓN_TÁCTIL</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+        <!-- POS Failure Option -->
+        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'POS_BLOQUEADO')" type="button">
+          <div class="flex items-center justify-between">
+            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+              <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
+            </span>
+            <span class="font-label-mono-xs text-label-mono-xs text-status-warning bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">ALTA DEMANDA</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary">Punto de Venta</span>
+            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Impresora, congelado o corte</span>
+          </div>
+        </button>
+        <!-- PC / Laptop Option -->
+        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'PC_LAPTOP')" type="button">
+          <div class="flex items-center justify-between">
+            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+              <span class="material-symbols-outlined text-[20px]">laptop_mac</span>
+            </span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TALLER/DOM</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary">PC &amp; Laptops</span>
+            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Lento, no enciende o virus</span>
+          </div>
+        </button>
+        <!-- Redes & Fibra Option -->
+        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'REDES_WIFI')" type="button">
+          <div class="flex items-center justify-between">
+            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+              <span class="material-symbols-outlined text-[20px]">wifi_tethering_error</span>
+            </span>
+            <span class="font-label-mono-xs text-label-mono-xs text-status-info bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TELECOM</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary">Redes &amp; WiFi</span>
+            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Sin internet, switch o cable</span>
+          </div>
+        </button>
+        <!-- CCTV Cámaras Option -->
+        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'CCTV_CAMARAS')" type="button">
+          <div class="flex items-center justify-between">
+            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+              <span class="material-symbols-outlined text-[20px]">videocam</span>
+            </span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">SEGURIDAD</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary">CCTV &amp; Vigilancia</span>
+            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">DVR sin señal o fuera de línea</span>
+          </div>
+        </button>
+      </div>
+      <!-- Single Wide Other Service Button -->
+      <button class="service-opt group w-full p-space-sm rounded-xl bg-surface-container flex items-center justify-between text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'OTRO_SERVICIO')" type="button">
+        <div class="flex items-center gap-space-sm">
+          <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[20px]">terminal</span>
+          </span>
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary">Otro Requerimiento TIC</span>
+            <span class="font-body-sm text-body-sm text-text-secondary">Servidores, respaldos o consultoría a medida</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-text-tertiary text-[20px] group-hover:text-neon-emerald transition-colors">arrow_forward</span>
+      </button>
+      <!-- Next Step Trigger -->
+      <button class="w-full h-12 mt-space-xs rounded-xl bg-surface-container-high text-text-secondary font-button-text text-button-text flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step1" onclick="goToStep(2)" type="button">
+        <span>Continuar a Modalidad y Urgencia</span>
+        <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+      </button>
+    </section>
+
+    <!-- STEP 2: Urgency & Modality -->
+    <section class="flex flex-col gap-space-md opacity-50 pointer-events-none transition-all duration-200" id="step-2">
+      <div class="flex flex-col gap-space-xs">
+        <div class="flex items-center justify-between">
+          <label class="font-headline-sm text-headline-sm text-text-primary">Nivel de Urgencia</label>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">CRITERIO_SLA</span>
+        </div>
+        <!-- 3-Way Segmented Color Coded Urgency -->
+        <div class="grid grid-cols-3 gap-space-xs bg-surface-container rounded-xl p-1 border border-glass">
+          <!-- Normal -->
+          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'NORMAL')" type="button">
+            <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+            <span class="font-button-text text-button-text text-on-surface">Normal</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">24-48 hrs</span>
+          </button>
+          <!-- Alta -->
+          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'ALTA')" type="button">
+            <span class="w-2.5 h-2.5 rounded-full bg-status-warning"></span>
+            <span class="font-button-text text-button-text text-on-surface">Alta</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-status-warning font-bold">Mismo día</span>
+          </button>
+          <!-- Crítica -->
+          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'CRITICA')" type="button">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-alert opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-status-alert"></span>
+            </span>
+            <span class="font-button-text text-button-text text-status-alert font-bold">Crítica</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-status-alert font-bold">&lt;15 min SLA</span>
+          </button>
+        </div>
+      </div>
+      <!-- Modality of Service -->
+      <div class="flex flex-col gap-space-xs">
+        <div class="flex items-center justify-between">
+          <label class="font-headline-sm text-headline-sm text-text-primary">Modalidad de Atención</label>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">ZONA_COBERTURA</span>
+        </div>
+        <div class="grid grid-cols-3 gap-space-xs">
+          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'DOMICILIO')" type="button">
+            <span class="material-symbols-outlined text-text-primary text-[22px]">location_on</span>
+            <span class="font-button-text text-button-text text-text-primary">In Situ</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">A Domicilio</span>
+          </button>
+          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'REMOTO')" type="button">
+            <span class="material-symbols-outlined text-text-primary text-[22px]">nest_remote</span>
+            <span class="font-button-text text-button-text text-text-primary">Remoto</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">AnyDesk / SSH</span>
+          </button>
+          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'TALLER')" type="button">
+            <span class="material-symbols-outlined text-text-primary text-[22px]">store</span>
+            <span class="font-button-text text-button-text text-text-primary">En Taller</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">Teziutlán Ctro</span>
+          </button>
+        </div>
+      </div>
+      <!-- Proceed to Step 3 -->
+      <button class="w-full h-12 rounded-xl bg-surface-container-high text-text-secondary font-button-text text-button-text flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step2" onclick="goToStep(3)" type="button">
+        <span>Completar Datos de Contacto</span>
+        <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+      </button>
+    </section>
+
+    <!-- STEP 3: Contact and Instant Folio Generation -->
+    <section class="flex flex-col gap-space-sm opacity-50 pointer-events-none transition-all duration-200" id="step-3">
+      <div class="flex items-center justify-between">
+        <label class="font-headline-sm text-headline-sm text-text-primary">Datos del Reportante</label>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">CONTACTO_DIRECTO</span>
+      </div>
+      <div class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-sm shadow-md border border-glass">
+        <!-- Client / Business Name -->
+        <div class="flex flex-col gap-1">
+          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-name">Negocio o Titular *</label>
+          <div class="flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+            <span class="material-symbols-outlined text-text-tertiary text-[18px]">business</span>
+            <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-body-md text-body-md" id="client-name" placeholder="Ej. Farmacia La Paz / Ing. Morales" required="" type="text"/>
+          </div>
+        </div>
+        <!-- Phone WhatsApp -->
+        <div class="flex flex-col gap-1">
+          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-phone">WhatsApp Directo (10 dígitos) *</label>
+          <div class="flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+            <span class="material-symbols-outlined text-text-tertiary text-[18px]">call</span>
+            <span class="font-label-mono-sm text-label-mono-sm text-text-tertiary font-bold">+52</span>
+            <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-label-mono-sm text-label-mono-sm" id="client-phone" maxlength="10" placeholder="231 100 0000" required="" type="tel"/>
+          </div>
+        </div>
+        <!-- Problem Description -->
+        <div class="flex flex-col gap-1">
+          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-issue">Descripción Rápida de la Falla *</label>
+          <textarea class="bg-surface-container-lowest rounded-lg p-space-sm text-on-surface placeholder:text-text-tertiary font-body-sm text-body-sm border border-glass outline-none resize-none focus:ring-1 focus:ring-neon-emerald transition-all" id="client-issue" placeholder="Ej. Impresora de tickets no arroja ticket y la caja está detenida..." required="" rows="2"></textarea>
+        </div>
+        <!-- Active SLA Promise Pill -->
+        <div class="bg-surface-container-high rounded-lg p-space-xs flex items-center justify-between border border-glass">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-neon-emerald text-[18px]">verified</span>
+            <span class="font-label-mono-xs text-label-mono-xs text-text-primary">Folio Oficial Enlazado a Guardia</span>
+          </div>
+          <span class="font-label-mono-xs text-label-mono-xs text-neon-emerald font-bold" id="preview-ticket-code">FL-9421</span>
+        </div>
+        <!-- Primary Action CTA -->
+        <button class="w-full h-13 py-3.5 rounded-xl bg-primary-container text-surface-base font-button-text text-button-text font-bold flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(156,195,46,0.35)] active:scale-[0.98] transition-all hover:bg-neon-emerald" onclick="submitTicketAndDispatch()" type="button">
+          <span class="material-symbols-outlined text-[20px] text-surface-base font-bold">send</span>
+          <span>Generar Folio y Enviar WhatsApp</span>
+        </button>
+      </div>
+    </section>
+  </form>
+
+  <!-- Interactive Generated Folio Modal / Success Banner (Initially Hidden) -->
+  <div class="hidden flex-col gap-space-sm bg-surface-container-high rounded-xl p-space-md shadow-xl transition-all border border-neon-emerald/30" id="folio-success-card">
+    <div class="flex items-start justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-surface-base">
+          <span class="material-symbols-outlined text-[20px]">check</span>
+        </span>
+        <div>
+          <span class="font-headline-sm text-headline-sm text-text-primary block font-bold">Folio Generado con Éxito</span>
+          <span class="font-label-mono-xs text-label-mono-xs text-neon-emerald uppercase font-semibold">Despacho Asignado</span>
+        </div>
+      </div>
+      <span class="font-label-mono-sm text-label-mono-sm px-2 py-1 rounded bg-surface-container-lowest text-text-primary font-bold border border-glass" id="display-folio-number">FL-9421</span>
+    </div>
+    <p class="font-body-sm text-body-sm text-text-secondary">
+      Se ha generado el folio y abierto WhatsApp para confirmar el reporte con el técnico de guardia. Puedes rastrear el avance en cualquier momento con este número de folio.
+    </p>
+    <div class="flex items-center gap-space-sm">
+      <button class="flex-1 h-10 rounded-lg bg-surface-container text-text-primary font-button-text text-button-text flex items-center justify-center border border-glass hover:bg-surface-container-high transition-colors" onclick="resetForm()" type="button">
+        Crear Otro Ticket
+      </button>
+      <a class="flex-1 h-10 rounded-lg bg-primary-container text-surface-base font-button-text text-button-text font-bold flex items-center justify-center gap-1 hover:bg-neon-emerald shadow-sm transition-all" href="#" id="btn-reopen-wa" target="_blank">
+        <span class="material-symbols-outlined text-[16px]">chat</span>
+        <span>Abrir Chat</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Dedicated Status Tracker Module for Existing Folios -->
+  <section class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-sm shadow-md mt-space-xs border border-glass">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-neon-emerald text-[22px]">manage_search</span>
+        <span class="font-headline-sm text-headline-sm text-text-primary font-bold">Consultar Folio Existente</span>
+      </div>
+      <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">TRACKING</span>
+    </div>
+    <p class="font-body-sm text-body-sm text-text-secondary">
+      Ingresa tu folio asignado (ej. FL-1005) para revisar diagnóstico, técnico asignado y tiempo estimado de resolución.
+    </p>
+    <div class="flex items-center gap-space-xs">
+      <div class="flex-1 flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+        <span class="material-symbols-outlined text-text-tertiary text-[18px]">tag</span>
+        <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-label-mono-sm text-label-mono-sm uppercase tracking-wider" id="input-search-folio" placeholder="FL-1005" type="text"/>
+      </div>
+      <button class="h-11 px-space-md rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-button-text text-button-text flex items-center justify-center gap-1 transition-colors active:scale-95 border border-glass" onclick="searchExistingFolio()" type="button">
+        <span class="material-symbols-outlined text-[18px]">search</span>
+        <span>Buscar</span>
+      </button>
+    </div>
+    <!-- Live Folio Tracker Result Simulation Area -->
+    <div class="hidden flex-col gap-space-xs bg-surface-container-low rounded-lg p-space-sm transition-all border border-glass" id="folio-search-result">
+      <div class="flex items-center justify-between">
+        <span class="font-label-mono-xs text-label-mono-xs text-status-warning font-bold" id="result-status-pill">● EN TRAYECTO A DOMICILIO</span>
+        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary font-semibold" id="result-time-pill">ETA: 12 MIN</span>
+      </div>
+      <div class="flex items-center justify-between pt-1">
+        <div class="flex flex-col">
+          <span class="font-button-text text-button-text text-text-primary" id="result-tech-name">Téc. Daniel Rivera (Guardia 1)</span>
+          <span class="font-body-sm text-body-sm text-text-secondary" id="result-service-desc">Restablecimiento Red Punto de Venta</span>
+        </div>
+        <a class="w-9 h-9 rounded-full bg-surface-container-high text-neon-emerald flex items-center justify-center shrink-0 border border-glass hover:bg-surface-container-highest transition-colors" href="tel:2311024672">
+          <span class="material-symbols-outlined text-[18px]">call</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Infrastructure Micro-Banner -->
+  <div class="flex items-center justify-between px-space-xs py-space-xs text-text-tertiary font-label-mono-xs text-label-mono-xs">
+    <span>NOC TEZIUTLÁN // LATENCIA: 18ms</span>
+    <span>DISPATCH PROTOCOL v4.2</span>
+  </div>
+</div>
 </div>
 </section>
 <!-- 06. CASOS DE ÉXITO & TESTIMONIOS VERIFICADOS -->
@@ -1122,40 +1439,284 @@
 </section>
 </div>
 <script>
-  function generarTicket() {
-    const nombre = document.getElementById('ticket-nombre').value;
-    const telefono = document.getElementById('ticket-telefono').value;
-    const area = document.getElementById('ticket-area').value;
-    const modalidad = document.getElementById('ticket-modalidad').value;
-    const urgencia = document.querySelector('input[name="urgencia"]:checked').value;
-    const desc = document.getElementById('ticket-desc').value;
+  // State Manager for Interactive Ticketing
+  const ticketState = {
+    service: 'POS_BLOQUEADO',
+    urgency: 'ALTA',
+    modality: 'DOMICILIO',
+    folio: 'FL-' + Math.floor(1000 + Math.random() * 9000)
+  };
 
-    const randomFolio = 'FL-' + Math.floor(1000 + Math.random() * 9000);
+  const previewEl = document.getElementById('preview-ticket-code');
+  if (previewEl) previewEl.textContent = ticketState.folio;
 
-    const resultBox = document.getElementById('ticket-result');
-    const badge = document.getElementById('folio-badge');
-    const summary = document.getElementById('ticket-summary');
-    const waLink = document.getElementById('ticket-wa-link');
+  function selectService(buttonElement, serviceType) {
+    ticketState.service = serviceType;
+    document.querySelectorAll('.service-opt').forEach(btn => {
+      btn.classList.remove('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+      btn.classList.add('bg-surface-container');
+    });
+    buttonElement.classList.remove('bg-surface-container');
+    buttonElement.classList.add('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
 
-    badge.innerText = 'FOLIO REGISTRADO: ' + randomFolio;
-    summary.innerHTML = '<strong>' + nombre + '</strong> (' + telefono + ') &mdash; Solicitud: ' + area + ' [' + modalidad + '] con prioridad <strong>' + urgencia + '</strong>.';
+    const btnNext1 = document.getElementById('btn-next-step1');
+    if (btnNext1) {
+      btnNext1.classList.remove('bg-surface-container-high', 'text-text-secondary');
+      btnNext1.classList.add('bg-primary-container', 'text-surface-base', 'font-bold');
+    }
+  }
+
+  function selectUrgency(buttonElement, urgencyType) {
+    ticketState.urgency = urgencyType;
+    document.querySelectorAll('.urgency-opt').forEach(btn => {
+      btn.classList.remove('bg-surface-container-highest', 'shadow-inner', 'ring-1', 'ring-neon-emerald');
+      btn.classList.add('bg-surface-container-low');
+    });
+    buttonElement.classList.remove('bg-surface-container-low');
+    buttonElement.classList.add('bg-surface-container-highest', 'ring-1', 'ring-neon-emerald');
+    checkStep2Complete();
+  }
+
+  function selectModality(buttonElement, modalityType) {
+    ticketState.modality = modalityType;
+    document.querySelectorAll('.modality-opt').forEach(btn => {
+      btn.classList.remove('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+      btn.classList.add('bg-surface-container');
+    });
+    buttonElement.classList.remove('bg-surface-container');
+    buttonElement.classList.add('bg-surface-container-high', 'border-neon-emerald/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
+    checkStep2Complete();
+  }
+
+  function checkStep2Complete() {
+    const btnNext2 = document.getElementById('btn-next-step2');
+    if (btnNext2) {
+      btnNext2.classList.remove('bg-surface-container-high', 'text-text-secondary');
+      btnNext2.classList.add('bg-primary-container', 'text-surface-base', 'font-bold');
+    }
+  }
+
+  function goToStep(stepNum) {
+    const step2El = document.getElementById('step-2');
+    const step3El = document.getElementById('step-3');
+    const bar1 = document.getElementById('stepper-progress-bar');
+    const bar2 = document.getElementById('stepper-progress-bar-2');
+
+    if (stepNum === 2) {
+      if (step2El) step2El.classList.remove('opacity-50', 'pointer-events-none');
+      if (bar1) {
+        bar1.classList.remove('w-1/3');
+        bar1.classList.add('w-full');
+      }
+      const b2 = document.getElementById('step-badge-2');
+      if (b2) {
+        b2.classList.replace('bg-surface-container-high', 'bg-primary-container');
+        b2.classList.replace('text-text-secondary', 'text-surface-base');
+      }
+      const t2 = document.getElementById('step-title-2');
+      if (t2) t2.classList.replace('text-text-secondary', 'text-text-primary');
+      if (step2El) step2El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if (stepNum === 3) {
+      if (step3El) step3El.classList.remove('opacity-50', 'pointer-events-none');
+      if (bar2) {
+        bar2.classList.remove('w-0');
+        bar2.classList.add('w-full');
+      }
+      const b3 = document.getElementById('step-badge-3');
+      if (b3) {
+        b3.classList.replace('bg-surface-container-high', 'bg-primary-container');
+        b3.classList.replace('text-text-secondary', 'text-surface-base');
+      }
+      const t3 = document.getElementById('step-title-3');
+      if (t3) t3.classList.replace('text-text-secondary', 'text-text-primary');
+      if (step3El) step3El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  async function submitTicketAndDispatch() {
+    const nameInput = document.getElementById('client-name');
+    const phoneInput = document.getElementById('client-phone');
+    const issueInput = document.getElementById('client-issue');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    const issue = issueInput ? issueInput.value.trim() : '';
+
+    if (!name || !phone || !issue) {
+      alert('Por favor complete su Nombre, Teléfono WhatsApp y Descripción de la falla.');
+      return;
+    }
+
+    const folio = ticketState.folio;
+    const dispFolio = document.getElementById('display-folio-number');
+    if (dispFolio) dispFolio.textContent = folio;
+
+    const serviceLabels = {
+      'POS_BLOQUEADO': 'Punto de Venta POS & Caja',
+      'PC_LAPTOP': 'PC & Laptops (Taller/Domicilio)',
+      'REDES_WIFI': 'Redes & WiFi Telecom',
+      'CCTV_CAMARAS': 'CCTV Cámaras & Vigilancia',
+      'OTRO_SERVICIO': 'Requerimiento TIC / Servidores'
+    };
+
+    const modalityLabels = {
+      'DOMICILIO': 'En Sitio / A Domicilio (Teziutlán y Región)',
+      'REMOTO': 'Soporte Remoto Inmediato (< 15 min)',
+      'TALLER': 'Recepción en Taller Técnico'
+    };
+
+    const priorityLabels = {
+      'CRITICA': 'Crítica (< 15 min SLA)',
+      'ALTA': 'Alta (Mismo Día)',
+      'NORMAL': 'Normal (24-48 hrs)'
+    };
+
+    const ticketData = {
+      folio: folio,
+      name: name,
+      phone: phone,
+      service: serviceLabels[ticketState.service] || ticketState.service,
+      modality: modalityLabels[ticketState.modality] || ticketState.modality,
+      priority: ticketState.urgency === 'CRITICA' ? 'Crítica' : (ticketState.urgency === 'ALTA' ? 'Alta' : 'Normal'),
+      description: issue,
+      source: 'Mesa Técnica Web/Móvil'
+    };
+
+    try {
+      if (window.ticketService && typeof window.ticketService.createTicket === 'function') {
+        await window.ticketService.createTicket(ticketData);
+      } else {
+        const local = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+        local.unshift({
+          id: Date.now().toString(),
+          estado: 'creación',
+          createdAt: new Date().toISOString(),
+          ...ticketData
+        });
+        localStorage.setItem('fiberlink_tickets', JSON.stringify(local));
+      }
+    } catch(err) {
+      console.warn('Storage sync:', err);
+    }
 
     const message = encodeURIComponent(
-      'FIBERLINK MESA TÉCNICA:\n' +
-      'Folio: ' + randomFolio + '\n' +
-      'Cliente: ' + nombre + '\n' +
-      'Tel: ' + telefono + '\n' +
-      'Servicio: ' + area + '\n' +
-      'Modalidad: ' + modalidad + '\n' +
-      'Urgencia: ' + urgencia + '\n' +
-      'Detalle: ' + desc
+      `*NUEVO REPORTE TICKETING FIBERLINK*\n` +
+      `Folio: ${folio}\n` +
+      `Titular/Negocio: ${name}\n` +
+      `Teléfono: ${phone}\n` +
+      `Requerimiento: ${serviceLabels[ticketState.service] || ticketState.service}\n` +
+      `Urgencia: ${priorityLabels[ticketState.urgency] || ticketState.urgency}\n` +
+      `Modalidad: ${modalityLabels[ticketState.modality] || ticketState.modality}\n` +
+      `Falla reportada: ${issue}\n` +
+      `Zona: Teziutlán, Puebla`
     );
 
-    waLink.href = 'https://wa.me/522311024672?text=' + message;
-    resultBox.classList.remove('hidden');
-    resultBox.classList.add('flex');
-    resultBox.scrollIntoView({ behavior: 'smooth' });
+    const waUrl = `https://wa.me/522311024672?text=${message}`;
+
+    const cardSuccess = document.getElementById('folio-success-card');
+    if (cardSuccess) {
+      cardSuccess.classList.remove('hidden');
+      cardSuccess.classList.add('flex');
+      cardSuccess.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const btnWa = document.getElementById('btn-reopen-wa');
+    if (btnWa) btnWa.setAttribute('href', waUrl);
+
+    window.open(waUrl, '_blank');
   }
+
+  function resetForm() {
+    ticketState.folio = 'FL-' + Math.floor(1000 + Math.random() * 9000);
+    const p = document.getElementById('preview-ticket-code');
+    if (p) p.textContent = ticketState.folio;
+    const name = document.getElementById('client-name'); if (name) name.value = '';
+    const phone = document.getElementById('client-phone'); if (phone) phone.value = '';
+    const issue = document.getElementById('client-issue'); if (issue) issue.value = '';
+    const cardSuccess = document.getElementById('folio-success-card');
+    if (cardSuccess) {
+      cardSuccess.classList.add('hidden');
+      cardSuccess.classList.remove('flex');
+    }
+    const step2El = document.getElementById('step-2');
+    if (step2El) step2El.classList.add('opacity-50', 'pointer-events-none');
+    const step3El = document.getElementById('step-3');
+    if (step3El) step3El.classList.add('opacity-50', 'pointer-events-none');
+    const bar1 = document.getElementById('stepper-progress-bar');
+    if (bar1) { bar1.classList.remove('w-full'); bar1.classList.add('w-1/3'); }
+    const bar2 = document.getElementById('stepper-progress-bar-2');
+    if (bar2) { bar2.classList.remove('w-full'); bar2.classList.add('w-0'); }
+    const step1El = document.getElementById('step-1');
+    if (step1El) step1El.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function searchExistingFolio() {
+    const input = document.getElementById('input-search-folio');
+    const val = input ? input.value.trim().toUpperCase() : '';
+    const resultBox = document.getElementById('folio-search-result');
+    if (!val) {
+      alert('Por favor ingresa un folio válido (ej. FL-1005).');
+      return;
+    }
+
+    if (resultBox) {
+      resultBox.classList.remove('hidden');
+      resultBox.classList.add('flex');
+    }
+
+    let found = null;
+    try {
+      const list = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+      found = list.find(t => (t.folio && t.folio.toUpperCase() === val) || (t.id && t.id === val));
+    } catch(e){}
+
+    const statusPill = document.getElementById('result-status-pill');
+    const timePill = document.getElementById('result-time-pill');
+    const techName = document.getElementById('result-tech-name');
+    const serviceDesc = document.getElementById('result-service-desc');
+
+    if (found) {
+      const statusMap = {
+        'creación': '● EN ESPERA // RECIBIDO EN MESA',
+        'asignado': '● EN TRAYECTO // TÉCNICO EN RUTA',
+        'en_proceso': '● EN ATENCIÓN // DIAGNÓSTICO ACTIVO',
+        'resuelto': '● RESUELTO // CONFORMIDAD PENDIENTE',
+        'cerrado': '● CERRADO // GARANTÍA VIGENTE'
+      };
+      if (statusPill) {
+        statusPill.textContent = statusMap[found.estado] || '● REPORTE REGISTRADO';
+        statusPill.className = 'font-label-mono-xs text-label-mono-xs text-neon-emerald font-bold';
+      }
+      if (timePill) timePill.textContent = found.priority === 'Crítica' ? 'SLA: <15 MIN' : 'PRIORIDAD: ' + (found.priority || 'Normal');
+      if (techName) techName.textContent = found.assignedTo && found.assignedTo !== 'Sin asignar' ? found.assignedTo : 'Guardia Asignada Teziutlán';
+      if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || 'Cliente'}`;
+    } else if (val.includes('1005') || val.includes('FL')) {
+      if (statusPill) {
+        statusPill.textContent = '● EN TRAYECTO // TÉCNICO EN RUTA';
+        statusPill.className = 'font-label-mono-xs text-label-mono-xs text-status-warning font-bold';
+      }
+      if (timePill) timePill.textContent = 'LLEGADA EST.: 8 MIN';
+      if (techName) techName.textContent = 'Téc. Daniel Rivera (Guardia Centro)';
+      if (serviceDesc) serviceDesc.textContent = 'Restablecimiento de Sistema & Conexión Red';
+    } else {
+      if (statusPill) {
+        statusPill.textContent = '● EN ESPERA DE DIAGNÓSTICO';
+        statusPill.className = 'font-label-mono-xs text-label-mono-xs text-status-info font-bold';
+      }
+      if (timePill) timePill.textContent = 'COLA: 1 TICKET';
+      if (techName) techName.textContent = 'Mesa de Ayuda NOC Fiberlink';
+      if (serviceDesc) serviceDesc.textContent = 'Asignación programada en Teziutlán';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const firstService = document.querySelector('.service-opt');
+    if (firstService) selectService(firstService, 'POS_BLOQUEADO');
+    const altaUrgency = document.querySelectorAll('.urgency-opt')[1];
+    if (altaUrgency) selectUrgency(altaUrgency, 'ALTA');
+    const inSituModality = document.querySelectorAll('.modality-opt')[0];
+    if (inSituModality) selectModality(inSituModality, 'DOMICILIO');
+  });
 </script></main><footer class="w-full bg-surface-card py-space-xl shadow-[0_-1px_12px_rgba(0,0,0,0.5)]"><div class="w-full px-margin"><div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-lg pb-space-lg"><div class="flex flex-col gap-space-xs"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight font-bold">Fiberlink</span><span class="font-label-mono-xs text-label-mono-xs text-neon-emerald uppercase">// Infraestructura &amp; Servicios TIC</span></div><p class="font-body-sm text-body-sm text-text-secondary max-w-xl">Soluciones integrales de hardware para punto de venta, cableado estructurado, fibra óptica, cámaras de seguridad CCTV y soporte técnico prioritario en la región.</p></div><div class="flex flex-wrap items-center gap-space-md"><div class="flex items-center gap-space-xs px-3 py-1.5 rounded bg-surface-overlay"><span class="material-symbols-outlined text-neon-emerald text-[16px]">call</span><span class="font-label-mono-sm text-label-mono-sm text-text-primary">(231) 102 4672</span></div><div class="flex items-center gap-space-xs px-3 py-1.5 rounded bg-surface-overlay"><span class="material-symbols-outlined text-neon-emerald text-[16px]">mail</span><span class="font-label-mono-sm text-label-mono-sm text-text-primary">fiberlinkserviciostic@gmail.com</span></div></div></div><div class="py-space-md flex flex-wrap items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm flex-wrap"><span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase">Ecosistema de Hardware &amp; Redes:</span><div class="flex items-center gap-space-xs flex-wrap"><span class="px-2 py-0.5 rounded bg-surface-base font-label-mono-xs text-label-mono-xs text-text-secondary">Microsoft</span><span class="px-2 py-0.5 rounded bg-surface-base font-label-mono-xs text-label-mono-xs text-text-secondary">Ubiquiti</span><span class="px-2 py-0.5 rounded bg-surface-base font-label-mono-xs text-label-mono-xs text-text-secondary">MikroTik</span><span class="px-2 py-0.5 rounded bg-surface-base font-label-mono-xs text-label-mono-xs text-text-secondary">Cisco</span><span class="px-2 py-0.5 rounded bg-surface-base font-label-mono-xs text-label-mono-xs text-text-secondary">Dahua</span></div></div><div class="flex items-center gap-space-md font-body-sm text-body-sm text-text-secondary"><a class="hover:text-neon-emerald transition-colors" data-path="politicas-de-garantia" href="#">Políticas de Garantía</a><a class="hover:text-neon-emerald transition-colors" data-path="acuerdo-de-servicio-sla" href="#">Acuerdo de Servicio (SLA)</a><a class="hover:text-neon-emerald transition-colors" data-path="privacidad" href="#">Aviso de Privacidad</a></div></div><div class="pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm text-text-tertiary font-label-mono-xs text-label-mono-xs"><span class="">© 2025 Fiberlink Servicios TIC · Centro de Operaciones Teziutlán, Puebla.</span><span class="text-neon-emerald">LATENCIA TELEMETRÍA: 14ms // STATUS: OPERATIONAL</span></div></div></footer>
 
 <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none" id="techchat-container"><div class="pointer-events-auto hidden w-[360px] sm:w-[400px] h-[520px] max-h-[85vh] rounded-2xl bg-surface-card/95 border border-neon-emerald/30 shadow-[0_0_24px_rgba(0,255,136,0.25)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300" id="techchat-window"><div class="p-3.5 bg-surface-overlay/90 border-b border-glass flex items-center justify-between flex-shrink-0"><div class="flex items-center gap-2.5"><div class="relative flex-shrink-0"><div class="w-9 h-9 rounded-xl bg-surface-base border border-neon-emerald/40 flex items-center justify-center"><span class="material-symbols-outlined text-neon-emerald text-[20px]">smart_toy</span></div><span class="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-neon-emerald"></span></span></div><div class="flex flex-col"><div class="flex items-center gap-1.5"><span class="font-headline-sm text-sm text-text-primary font-bold">Guardia Bot // Fiberlink</span><span class="px-1.5 py-0.5 rounded bg-surface-base text-neon-emerald font-label-mono-xs text-[9px] uppercase tracking-wider">v2.4</span></div><span class="font-label-mono-xs text-text-secondary text-[10px] flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-neon-emerald"></span> Mesa de Guardia en Vivo · Teziutlán</span></div></div><div class="flex items-center gap-1"><button class="w-7 h-7 rounded-lg hover:bg-surface-container-high text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors" onclick="toggleTechChat()" title="Minimizar"><span class="material-symbols-outlined text-[18px]">remove</span></button><button class="w-7 h-7 rounded-lg hover:bg-surface-container-high text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors" onclick="toggleTechChat()" title="Cerrar"><span class="material-symbols-outlined text-[18px]">close</span></button></div></div><div class="px-3 py-1.5 bg-surface-base/80 border-b border-glass flex items-center justify-between text-label-mono-xs text-[10px]"><span class="text-neon-emerald flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">speed</span> SLA Respuesta &lt; 15 min</span><a class="text-text-secondary hover:text-primary-fixed flex items-center gap-0.5 transition-colors" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20vengo%20del%20chat%20en%20vivo" rel="noopener noreferrer" target="_blank"><span class="material-symbols-outlined text-[13px] text-neon-emerald">open_in_new</span> Pasar a WhatsApp</a></div><div class="flex-1 p-3.5 overflow-y-auto flex flex-col gap-3 font-body-sm text-xs" id="techchat-messages"><div class="flex items-start gap-2"><div class="w-7 h-7 rounded-lg bg-surface-base border border-glass flex items-center justify-center flex-shrink-0 text-neon-emerald"><span class="material-symbols-outlined text-[16px]">terminal</span></div><div class="flex flex-col gap-1 max-w-[85%]"><div class="p-2.5 rounded-xl rounded-tl-none bg-surface-overlay text-text-primary leading-relaxed border border-glass">¡Hola! Soy el asistente técnico de Fiberlink. ¿Qué servicio o incidencia necesitas resolver hoy en Teziutlán o la región?</div><span class="font-label-mono-xs text-[9px] text-text-tertiary">Guardia Automatizada · Ahora</span></div></div><div class="flex flex-wrap gap-1.5 pt-1 pl-9" id="techchat-quickchips"><button class="px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-primary-container hover:text-surface-base text-neon-emerald text-[11px] font-medium border border-neon-emerald/20 transition-all text-left" onclick="sendChatQuick('Tengo una urgencia con mi Punto de Venta o Caja')">⚡ Urgencia en Caja / POS</button><button class="px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-primary-container hover:text-surface-base text-text-primary text-[11px] font-medium border border-glass transition-all text-left" onclick="sendChatQuick('Quiero cotizar kit de cámaras CCTV o redes')">📹 Cotizar Cámaras / CCTV</button><button class="px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-primary-container hover:text-surface-base text-text-primary text-[11px] font-medium border border-glass transition-all text-left" onclick="sendChatQuick('Mi computadora está muy lenta o tiene virus')">🖥️ Mantenimiento de PC</button><button class="px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-primary-container hover:text-surface-base text-text-primary text-[11px] font-medium border border-glass transition-all text-left" onclick="sendChatQuick('Quiero hablar con un asesor técnico humano')">👤 Hablar con un humano</button></div></div><div class="p-3 bg-surface-overlay/80 border-t border-glass flex flex-col gap-2 flex-shrink-0"><form class="flex items-center gap-1.5" onsubmit="event.preventDefault(); submitChatInput();"><input class="flex-1 px-3 py-2 rounded-xl bg-surface-base border border-glass text-text-primary text-xs focus:outline-none focus:ring-1 focus:ring-neon-emerald placeholder:text-text-tertiary" id="techchat-input" placeholder="Describe tu falla o consulta técnica..." type="text"><button class="w-9 h-9 rounded-xl bg-primary-container hover:bg-neon-emerald text-surface-base flex items-center justify-center transition-all shadow-[0_0_12px_rgba(0,255,136,0.3)] flex-shrink-0" title="Enviar mensaje" type="submit"><span class="material-symbols-outlined text-[18px]">send</span></button></form><div class="flex items-center justify-between text-[10px] text-text-tertiary px-1"><span class="flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-neon-emerald"></span> Conexión encriptada AES-256</span><span class="font-label-mono-xs text-[9px]">Fiberlink TIC 2025</span></div></div></div><button class="pointer-events-auto group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-surface-card hover:bg-surface-overlay border border-neon-emerald/50 shadow-[0_0_20px_rgba(0,255,136,0.35)] hover:shadow-[0_0_28px_rgba(0,255,136,0.5)] transition-all duration-300" id="techchat-fab" onclick="toggleTechChat()"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-neon-emerald"></span></span><span class="material-symbols-outlined text-neon-emerald text-[22px] group-hover:scale-110 transition-transform">support_agent</span><div class="flex flex-col text-left"><span class="font-headline-sm text-xs text-text-primary font-bold group-hover:text-neon-emerald transition-colors">Mesa en Vivo</span><span class="font-label-mono-xs text-[9px] text-text-secondary">&lt; 15 min guardia</span></div><span class="px-1.5 py-0.5 rounded-full bg-neon-emerald/20 text-neon-emerald font-label-mono-xs text-[10px] font-bold">ONLINE</span></button></div><script>function toggleTechChat() { const win = document.getElementById('techchat-window'); if (win.classList.contains('hidden')) { win.classList.remove('hidden'); const input = document.getElementById('techchat-input'); if(input) setTimeout(() => input.focus(), 150); } else { win.classList.add('hidden'); } } function appendUserMsg(text) { const container = document.getElementById('techchat-messages'); const div = document.createElement('div'); div.className = 'flex items-start justify-end gap-2'; div.innerHTML = `<div class="flex flex-col items-end gap-1 max-w-[85%]"><div class="p-2.5 rounded-xl rounded-tr-none bg-primary-container text-surface-base font-medium leading-relaxed shadow-sm">${text}</div><span class="font-label-mono-xs text-[9px] text-text-tertiary">Tú &middot; Justo ahora</span></div>`; container.appendChild(div); container.scrollTop = container.scrollHeight; } function appendBotMsg(text, waLink) { const container = document.getElementById('techchat-messages'); const div = document.createElement('div'); div.className = 'flex items-start gap-2'; let extra = ''; if (waLink) { extra = `<a class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neon-emerald text-surface-base font-button-text text-xs hover:bg-primary-fixed shadow-sm transition-all" href="${waLink}" target="_blank" rel="noopener noreferrer"><span class="material-symbols-outlined text-[15px]">chat</span> Transferir a WhatsApp Ahora</a>`; } div.innerHTML = `<div class="w-7 h-7 rounded-lg bg-surface-base border border-glass flex items-center justify-center flex-shrink-0 text-neon-emerald"><span class="material-symbols-outlined text-[16px]">terminal</span></div><div class="flex flex-col gap-1 max-w-[85%]"><div class="p-2.5 rounded-xl rounded-tl-none bg-surface-overlay text-text-primary leading-relaxed border border-glass">${text}${extra}</div><span class="font-label-mono-xs text-[9px] text-text-tertiary">Mesa Central &middot; Justo ahora</span></div>`; container.appendChild(div); container.scrollTop = container.scrollHeight; } function sendChatQuick(prompt) { appendUserMsg(prompt); const chips = document.getElementById('techchat-quickchips'); if (chips) chips.style.display = 'none'; setTimeout(() => { const waUrl = 'https://wa.me/522311024672?text=' + encodeURIComponent('Hola Fiberlink Guardia en Vivo: ' + prompt); appendBotMsg('Entendido. Hemos priorizado tu solicitud con el equipo de soporte de guardia en Teziutlán. Haz clic abajo para conectarte directamente con nuestro técnico asignado vía WhatsApp con tiempo de respuesta < 15 min.', waUrl); }, 600); } function submitChatInput() { const input = document.getElementById('techchat-input'); const val = input.value.trim(); if (!val) return; appendUserMsg(val); input.value = ''; const chips = document.getElementById('techchat-quickchips'); if (chips) chips.style.display = 'none'; setTimeout(() => { const waUrl = 'https://wa.me/522311024672?text=' + encodeURIComponent('Hola Fiberlink, consulta desde chat web: ' + val); appendBotMsg('Mensaje recibido en Mesa Técnica Fiberlink. Para brindarte atención remota o presencial inmediata en tu negocio o domicilio, conéctate con nosotros en WhatsApp:', waUrl); }, 700); }</script>
