@@ -420,7 +420,7 @@
 <!-- 4 STEPPERS -->
 <div class="flex flex-col gap-space-sm pt-space-xs"><div class="flex items-start gap-space-md p-space-sm rounded-lg bg-panel border border-[rgba(156,195,46,0.18)] hover:border-[rgba(156,195,46,0.35)] transition-all"><div class="px-2.5 py-1 rounded bg-panel-2 border border-[rgba(156,195,46,0.3)] font-label-mono-sm text-label-mono-sm text-neon-emerald font-bold shadow-inner">01</div><div><h4 class="font-headline-sm text-headline-sm text-text-primary text-[16px]">Levantamiento</h4><p class="font-body-sm text-body-sm text-text-secondary">Se recopilan datos del equipo, domicilio, síntomas y evidencia.</p></div></div><div class="flex items-start gap-space-md p-space-sm rounded-lg bg-panel border border-[rgba(156,195,46,0.18)] hover:border-[rgba(156,195,46,0.35)] transition-all"><div class="px-2.5 py-1 rounded bg-panel-2 border border-[rgba(156,195,46,0.3)] font-label-mono-sm text-label-mono-sm text-neon-emerald font-bold shadow-inner">02</div><div><h4 class="font-headline-sm text-headline-sm text-text-primary text-[16px]">Diagnóstico</h4><p class="font-body-sm text-body-sm text-text-secondary">Se revisa la causa probable y se define si es remoto o visita presencial.</p></div></div><div class="flex items-start gap-space-md p-space-sm rounded-lg bg-panel border border-[rgba(156,195,46,0.18)] hover:border-[rgba(156,195,46,0.35)] transition-all"><div class="px-2.5 py-1 rounded bg-panel-2 border border-[rgba(156,195,46,0.3)] font-label-mono-sm text-label-mono-sm text-neon-emerald font-bold shadow-inner">03</div><div><h4 class="font-headline-sm text-headline-sm text-text-primary text-[16px]">Ejecución</h4><p class="font-body-sm text-body-sm text-text-secondary">Instalación, configuración o reparación con comunicación constante.</p></div></div><div class="flex items-start gap-space-md p-space-sm rounded-lg bg-panel border border-[rgba(156,195,46,0.18)] hover:border-[rgba(156,195,46,0.35)] transition-all"><div class="px-2.5 py-1 rounded bg-panel-2 border border-[rgba(156,195,46,0.3)] font-label-mono-sm text-label-mono-sm text-neon-emerald font-bold shadow-inner">04</div><div><h4 class="font-headline-sm text-headline-sm text-text-primary text-[16px]">Cierre y Seguimiento</h4><p class="font-body-sm text-body-sm text-text-secondary">Se confirma el funcionamiento, recomendaciones y póliza de garantía.</p></div></div></div>
 </div>
-<!-- INTERACTIVE TICKET GENERATOR CONSOLE (DELUXE MOBILE & DESKTOP) -->
+<!-- INTERACTIVE TICKET GENERATOR CONSOLE (DELUXE COMPACT MULTI-STEP) -->
 <div class="lg:col-span-7 bg-surface-container-lowest p-4 sm:p-space-lg rounded-2xl shadow-2xl flex flex-col gap-space-md border border-glass">
   <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-glass">
     <div class="flex items-center gap-2">
@@ -439,232 +439,335 @@
     </div>
   </div>
 
-  <!-- Interactive Stepper -->
-  <div class="bg-surface-container rounded-xl p-space-sm flex flex-col gap-space-xs shadow-md border border-glass">
-    <div class="flex items-center justify-between px-space-xs">
+  <!-- CONSOLE MODE SWITCHER TABS (Levantar Ticket vs Rastrear Folio) -->
+  <div class="grid grid-cols-2 p-1 rounded-xl bg-surface-container border border-glass select-none" role="tablist">
+    <button type="button" id="tab-create-ticket" onclick="switchConsoleTab('create')" role="tab" aria-selected="true" class="py-2 px-3 rounded-lg text-xs font-button-text font-semibold flex items-center justify-center gap-1.5 bg-primary-container text-on-brand shadow-sm transition-all">
+      <span class="material-symbols-outlined text-[16px]">add_task</span>
+      <span>Levantar Folio</span>
+    </button>
+    <button type="button" id="tab-track-ticket" onclick="switchConsoleTab('track')" role="tab" aria-selected="false" class="py-2 px-3 rounded-lg text-xs font-button-text font-semibold flex items-center justify-center gap-1.5 text-text-secondary hover:text-text-primary transition-all">
+      <span class="material-symbols-outlined text-[16px]">manage_search</span>
+      <span>Rastrear Folio</span>
+    </button>
+  </div>
+
+  <!-- ==============================================
+       PANEL A: LEVANTAR TICKET (WIZARD POR PASOS)
+       ============================================== -->
+  <div id="panel-create-ticket" class="flex flex-col gap-space-md">
+    <!-- Interactive Stepper Indicator -->
+    <div class="bg-surface-container rounded-xl p-space-sm flex flex-col gap-space-xs shadow-md border border-glass">
+      <div class="flex items-center justify-between px-space-xs">
+        <!-- Step 1 Button -->
+        <button type="button" onclick="goToStep(1)" class="flex items-center gap-2 text-left group focus:outline-none" aria-label="Ir al paso 1: Servicio">
+          <span class="w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center transition-all group-hover:scale-105" id="step-badge-1">01</span>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold group-hover:text-neon-emerald transition-colors" id="step-title-1">Servicio</span>
+        </button>
+        <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+          <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-1/3" id="stepper-progress-bar"></div>
+        </div>
+        <!-- Step 2 Button -->
+        <button type="button" onclick="goToStep(2)" class="flex items-center gap-2 text-left group focus:outline-none" aria-label="Ir al paso 2: Atención">
+          <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center transition-all group-hover:scale-105" id="step-badge-2">02</span>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold group-hover:text-text-primary transition-colors" id="step-title-2">Atención</span>
+        </button>
+        <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
+          <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-0" id="stepper-progress-bar-2"></div>
+        </div>
+        <!-- Step 3 Button -->
+        <button type="button" onclick="goToStep(3)" class="flex items-center gap-2 text-left group focus:outline-none" aria-label="Ir al paso 3: Folio">
+          <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center transition-all group-hover:scale-105" id="step-badge-3">03</span>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold group-hover:text-text-primary transition-colors" id="step-title-3">Folio</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step Panels Form Container -->
+    <form class="flex flex-col gap-space-md" id="ticket-workflow-form" onsubmit="event.preventDefault();">
+      <!-- ==============================================
+           PASO 1: SELECCIÓN DEL SERVICIO / EQUIPO
+           ============================================== -->
+      <section class="flex flex-col gap-space-sm transition-all duration-200" id="step-1">
+        <div class="flex items-center justify-between pb-1 border-b border-glass/40">
+          <div>
+            <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase font-semibold">Paso 1 de 3</span>
+            <h3 class="font-headline-sm text-sm sm:text-base text-text-primary font-bold">¿Qué equipo requiere atención?</h3>
+          </div>
+          <span class="font-label-mono-xs text-[10px] text-text-tertiary hidden sm:inline">SELECCIÓN_RÁPIDA</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- POS Failure Option -->
+          <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'POS_BLOQUEADO')" type="button">
+            <div class="flex items-center justify-between">
+              <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                <span class="material-symbols-outlined text-[18px]">point_of_sale</span>
+              </span>
+              <span class="font-label-mono-xs text-[9px] text-status-warning bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">ALTA DEMANDA</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs sm:text-sm text-text-primary font-semibold">Punto de Venta POS</span>
+              <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Impresora de tickets o caja</span>
+            </div>
+          </button>
+          <!-- PC / Laptop Option -->
+          <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'PC_LAPTOP')" type="button">
+            <div class="flex items-center justify-between">
+              <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                <span class="material-symbols-outlined text-[18px]">laptop_mac</span>
+              </span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TALLER/DOM</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs sm:text-sm text-text-primary font-semibold">PC &amp; Laptops</span>
+              <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Lento, no enciende o virus</span>
+            </div>
+          </button>
+          <!-- Redes & Fibra Option -->
+          <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'REDES_WIFI')" type="button">
+            <div class="flex items-center justify-between">
+              <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                <span class="material-symbols-outlined text-[18px]">wifi_tethering_error</span>
+              </span>
+              <span class="font-label-mono-xs text-[9px] text-status-info bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TELECOM</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs sm:text-sm text-text-primary font-semibold">Redes &amp; Wi-Fi</span>
+              <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">Sin internet, switch o cable</span>
+            </div>
+          </button>
+          <!-- CCTV Cámaras Option -->
+          <button class="service-opt group p-3 rounded-xl bg-surface-container flex flex-col gap-2 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'CCTV_CAMARAS')" type="button">
+            <div class="flex items-center justify-between">
+              <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
+                <span class="material-symbols-outlined text-[18px]">videocam</span>
+              </span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">SEGURIDAD</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs sm:text-sm text-text-primary font-semibold">CCTV &amp; Vigilancia</span>
+              <span class="font-body-sm text-[11px] text-text-secondary line-clamp-1">DVR sin señal o cámaras offline</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Single Wide Other Service Button -->
+        <button class="service-opt group w-full p-2.5 rounded-xl bg-surface-container flex items-center justify-between text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'OTRO_SERVICIO')" type="button">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors shrink-0">
+              <span class="material-symbols-outlined text-[18px]">terminal</span>
+            </span>
+            <div class="flex flex-col">
+              <span class="font-button-text text-xs text-text-primary font-semibold">Otro requerimiento técnico</span>
+              <span class="font-body-sm text-[11px] text-text-secondary">Servidores, respaldos o consultoría a medida</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-text-tertiary text-[18px] group-hover:text-neon-emerald transition-colors">arrow_forward</span>
+        </button>
+
+        <!-- Step 1 Next Trigger -->
+        <button class="w-full h-11 mt-1 rounded-xl bg-primary-container text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_16px_rgba(156,195,46,0.25)] hover:bg-primary-fixed transition-all" id="btn-next-step1" onclick="goToStep(2)" type="button">
+          <span>Continuar a Modalidad y Urgencia</span>
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+      </section>
+
+      <!-- ==============================================
+           PASO 2: MODALIDAD Y URGENCIA (COLAPSADO/DESPLEGADO)
+           ============================================== -->
+      <section class="hidden flex-col gap-space-sm transition-all duration-200" id="step-2">
+        <!-- Selected Service Breadcrumb -->
+        <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low border border-glass">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-5 h-5 rounded-full bg-neon-emerald/20 text-neon-emerald flex items-center justify-center text-[12px] font-bold">✓</span>
+            <span class="font-body-sm text-xs text-text-secondary truncate">Equipo: <strong class="text-text-primary font-semibold" id="pill-selected-service">Punto de Venta POS</strong></span>
+          </div>
+          <button type="button" onclick="goToStep(1)" class="text-[11px] font-label-mono-xs text-neon-emerald hover:underline shrink-0 ml-2">Cambiar</button>
+        </div>
+
+        <div class="flex flex-col gap-space-xs">
+          <div class="flex items-center justify-between">
+            <h3 class="font-headline-sm text-xs sm:text-sm text-text-primary font-bold">Nivel de Urgencia</h3>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary">TIEMPO_RESPUESTA</span>
+          </div>
+          <!-- 3-Way Segmented Color Coded Urgency -->
+          <div class="grid grid-cols-3 gap-1 bg-surface-container rounded-xl p-1 border border-glass">
+            <!-- Normal -->
+            <button class="urgency-opt py-2 px-1.5 rounded-lg flex flex-col items-center justify-center gap-0.5 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'NORMAL')" type="button">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              <span class="font-button-text text-xs text-on-surface">Normal</span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary">24-48 hrs</span>
+            </button>
+            <!-- Alta -->
+            <button class="urgency-opt py-2 px-1.5 rounded-lg flex flex-col items-center justify-center gap-0.5 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'ALTA')" type="button">
+              <span class="w-2 h-2 rounded-full bg-status-warning"></span>
+              <span class="font-button-text text-xs text-on-surface">Alta</span>
+              <span class="font-label-mono-xs text-[9px] text-status-warning font-bold">Mismo día</span>
+            </button>
+            <!-- Crítica -->
+            <button class="urgency-opt py-2 px-1.5 rounded-lg flex flex-col items-center justify-center gap-0.5 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'CRITICA')" type="button">
+              <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-alert opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-status-alert"></span>
+              </span>
+              <span class="font-button-text text-xs text-status-alert font-bold">Crítica</span>
+              <span class="font-label-mono-xs text-[9px] text-status-alert font-bold">&lt;15 min SLA</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modality of Service -->
+        <div class="flex flex-col gap-space-xs">
+          <div class="flex items-center justify-between">
+            <h3 class="font-headline-sm text-xs sm:text-sm text-text-primary font-bold">Modalidad de Atención</h3>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary">UBICACIÓN</span>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button class="modality-opt p-2 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'DOMICILIO')" type="button">
+              <span class="material-symbols-outlined text-text-primary text-[20px]">location_on</span>
+              <span class="font-button-text text-xs text-text-primary">In Situ</span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary">A Domicilio</span>
+            </button>
+            <button class="modality-opt p-2 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'REMOTO')" type="button">
+              <span class="material-symbols-outlined text-text-primary text-[20px]">nest_remote</span>
+              <span class="font-button-text text-xs text-text-primary">Remoto</span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary">AnyDesk / SSH</span>
+            </button>
+            <button class="modality-opt p-2 rounded-xl bg-surface-container flex flex-col items-center text-center gap-1 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'TALLER')" type="button">
+              <span class="material-symbols-outlined text-text-primary text-[20px]">store</span>
+              <span class="font-button-text text-xs text-text-primary">En Taller</span>
+              <span class="font-label-mono-xs text-[9px] text-text-tertiary">Teziutlán Ctro</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2 Navigation Buttons -->
+        <div class="flex items-center gap-2 mt-1">
+          <button type="button" onclick="goToStep(1)" class="h-11 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary font-button-text text-xs transition-colors flex items-center justify-center gap-1 border border-glass">
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span>Atrás</span>
+          </button>
+          <button class="flex-1 h-11 rounded-xl bg-primary-container text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_16px_rgba(156,195,46,0.25)] hover:bg-primary-fixed transition-all" id="btn-next-step2" onclick="goToStep(3)" type="button">
+            <span>Completar Datos de Contacto</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ==============================================
+           PASO 3: DATOS DEL REPORTANTE Y GENERACIÓN
+           ============================================== -->
+      <section class="hidden flex-col gap-space-sm transition-all duration-200" id="step-3">
+        <!-- Summary Strip of Step 1 & 2 -->
+        <div class="p-2.5 rounded-xl bg-surface-container-low border border-neon-emerald/30 flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 flex-wrap min-w-0">
+            <span class="px-2 py-0.5 rounded bg-surface-container text-neon-emerald font-label-mono-xs text-[10px] font-bold" id="summary-tag-service">POS</span>
+            <span class="px-2 py-0.5 rounded bg-surface-container text-status-warning font-label-mono-xs text-[10px] font-bold" id="summary-tag-urgency">ALTA</span>
+            <span class="px-2 py-0.5 rounded bg-surface-container text-text-secondary font-label-mono-xs text-[10px]" id="summary-tag-modality">IN SITU</span>
+          </div>
+          <button type="button" onclick="goToStep(2)" class="text-[11px] font-label-mono-xs text-neon-emerald hover:underline shrink-0">Modificar</button>
+        </div>
+
+        <div class="bg-surface-container rounded-xl p-3 sm:p-space-md flex flex-col gap-2.5 shadow-md border border-glass">
+          <!-- Client / Business Name -->
+          <div class="flex flex-col gap-1">
+            <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-name">Negocio o Titular *</label>
+            <div class="flex items-center bg-surface-container-lowest rounded-lg px-2.5 h-10 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+              <span class="material-symbols-outlined text-text-tertiary text-[16px]">business</span>
+              <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-body-sm text-xs sm:text-sm" id="client-name" placeholder="Ej. Farmacia La Paz / Ing. Morales" required="" type="text" autocomplete="organization"/>
+            </div>
+          </div>
+          <!-- Phone WhatsApp -->
+          <div class="flex flex-col gap-1">
+            <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-phone">WhatsApp Directo (10 dígitos) *</label>
+            <div class="flex items-center bg-surface-container-lowest rounded-lg px-2.5 h-10 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+              <span class="material-symbols-outlined text-text-tertiary text-[16px]">call</span>
+              <span class="font-label-mono-sm text-xs text-text-tertiary font-bold">+52</span>
+              <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-label-mono-sm text-xs sm:text-sm" id="client-phone" maxlength="14" placeholder="231 100 0000" required="" type="tel" inputmode="numeric" autocomplete="tel-national"/>
+            </div>
+          </div>
+          <!-- Problem Description -->
+          <div class="flex flex-col gap-1">
+            <label class="font-label-mono-xs text-[10px] text-text-secondary uppercase" for="client-issue">Descripción Rápida de la Falla *</label>
+            <textarea class="bg-surface-container-lowest rounded-lg p-2 text-on-surface placeholder:text-text-tertiary font-body-sm text-xs border border-glass outline-none resize-none focus:ring-1 focus:ring-neon-emerald transition-all" id="client-issue" placeholder="Ej. Impresora de tickets no arroja ticket y la caja está detenida..." required="" rows="2"></textarea>
+          </div>
+          <!-- Active SLA Promise Pill -->
+          <div class="bg-surface-container-high rounded-lg px-2.5 py-1.5 flex items-center justify-between border border-glass">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-neon-emerald text-[16px]">verified</span>
+              <span class="font-label-mono-xs text-[10px] text-text-primary">Folio oficial asignado en vivo</span>
+            </div>
+            <span class="font-label-mono-xs text-xs text-neon-emerald font-bold" id="preview-ticket-code">FL-····</span>
+          </div>
+
+          <!-- Step 3 Navigation & Submission -->
+          <div class="flex items-center gap-2 mt-1">
+            <button type="button" onclick="goToStep(2)" class="h-11 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary font-button-text text-xs transition-colors flex items-center justify-center gap-1 border border-glass">
+              <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+              <span>Atrás</span>
+            </button>
+            <button id="btn-submit-ticket" class="flex-1 h-11 rounded-xl bg-primary-container text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(156,195,46,0.35)] active:scale-[0.98] transition-all hover:bg-primary-fixed" onclick="submitTicketAndDispatch()" type="button">
+              <span class="material-symbols-outlined text-[18px] text-on-brand font-bold">send</span>
+              <span>Generar Folio y Enviar WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <!-- ==============================================
+       PANEL B: RASTREAR FOLIO EXISTENTE (TAB)
+       ============================================== -->
+  <div id="panel-track-ticket" class="hidden flex-col gap-space-sm">
+    <div class="p-space-sm rounded-xl bg-surface-container border border-glass flex flex-col gap-space-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-neon-emerald text-[20px]">manage_search</span>
+          <h3 class="font-headline-sm text-sm sm:text-base text-text-primary font-bold">Consultar Estado de Folio</h3>
+        </div>
+        <span class="font-label-mono-xs text-[10px] text-text-tertiary">TRACKING_NOC</span>
+      </div>
+      <p class="font-body-sm text-xs text-text-secondary">
+        Ingresa tu folio oficial (ej. FL-1005) para revisar diagnóstico, técnico asignado y tiempo estimado de llegada o solución.
+      </p>
+
       <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-1">01</span>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold" id="step-title-1">Servicio</span>
+        <div class="flex-1 flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
+          <span class="material-symbols-outlined text-text-tertiary text-[18px]">tag</span>
+          <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-label-mono-sm text-xs sm:text-sm uppercase tracking-wider" id="input-search-folio" placeholder="FL-1005" type="text" aria-label="Número de folio" autocomplete="off" enterkeyhint="search"/>
+        </div>
+        <button class="h-11 px-4 rounded-lg bg-primary-container text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center justify-center gap-1 transition-all hover:bg-primary-fixed shadow-sm" onclick="searchExistingFolio()" type="button">
+          <span class="material-symbols-outlined text-[18px]">search</span>
+          <span>Buscar</span>
+        </button>
       </div>
-      <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
-        <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-1/3" id="stepper-progress-bar"></div>
+
+      <!-- Quick Test Chips -->
+      <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+        <span class="font-label-mono-xs text-[10px] text-text-tertiary">Folios ejemplo:</span>
+        <button type="button" onclick="quickFillFolio('FL-1005')" class="px-2 py-0.5 rounded bg-surface-container-low hover:bg-surface-container-high border border-glass font-label-mono-xs text-[10px] text-neon-emerald">FL-1005</button>
+        <button type="button" onclick="quickFillFolio('FL-1008')" class="px-2 py-0.5 rounded bg-surface-container-low hover:bg-surface-container-high border border-glass font-label-mono-xs text-[10px] text-text-secondary">FL-1008</button>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-2">02</span>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold" id="step-title-2">Atención</span>
-      </div>
-      <div class="h-0.5 flex-1 mx-2 bg-surface-container-high relative rounded-full overflow-hidden">
-        <div class="absolute inset-y-0 left-0 bg-primary-container transition-all duration-300 w-0" id="stepper-progress-bar-2"></div>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center" id="step-badge-3">03</span>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold" id="step-title-3">Folio</span>
+
+      <!-- Live Folio Tracker Result Simulation Area -->
+      <div class="hidden flex-col gap-space-xs bg-surface-container-low rounded-lg p-space-sm transition-all border border-neon-emerald/30" id="folio-search-result">
+        <div class="flex items-center justify-between">
+          <span class="font-label-mono-xs text-label-mono-xs text-status-warning font-bold" id="result-status-pill">● EN TRAYECTO A DOMICILIO</span>
+          <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary font-semibold" id="result-time-pill">ETA: 12 MIN</span>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex flex-col">
+            <span class="font-button-text text-button-text text-text-primary" id="result-tech-name">Téc. Daniel Rivera (Guardia 1)</span>
+            <span class="font-body-sm text-body-sm text-text-secondary" id="result-service-desc">Restablecimiento Red Punto de Venta</span>
+          </div>
+          <a class="w-9 h-9 rounded-full bg-surface-container-high text-neon-emerald flex items-center justify-center shrink-0 border border-glass hover:bg-surface-container-highest transition-colors" href="tel:2311024672" title="Llamar a mesa técnica">
+            <span class="material-symbols-outlined text-[18px]">call</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Dynamic Live Dispatch Telemetry -->
-  <div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between gap-space-sm shadow-sm border border-glass">
-    <div class="flex items-center gap-2 min-w-0">
-      <span class="relative flex h-2 w-2 shrink-0">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-emerald opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-emerald"></span>
-      </span>
-      <span class="font-label-mono-xs text-label-mono-xs text-neon-emerald truncate uppercase font-bold">GUARDIA FIBERLINK TEZIUTLÁN // DISPONIBLE</span>
-    </div>
-    <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary shrink-0 font-semibold">SLA: &lt;15 MIN</span>
-  </div>
-
-  <!-- Step Panels Container -->
-  <form class="flex flex-col gap-space-md" id="ticket-workflow-form" onsubmit="event.preventDefault();">
-    <!-- STEP 1: Service Selection -->
-    <section class="flex flex-col gap-space-sm transition-all duration-200" id="step-1">
-      <div class="flex items-center justify-between">
-        <h3 class="font-headline-sm text-headline-sm text-text-primary">¿Qué equipo requiere atención?</h3>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">SELECCIÓN_TÁCTIL</span>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
-        <!-- POS Failure Option -->
-        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'POS_BLOQUEADO')" type="button">
-          <div class="flex items-center justify-between">
-            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
-              <span class="material-symbols-outlined text-[20px]">point_of_sale</span>
-            </span>
-            <span class="font-label-mono-xs text-label-mono-xs text-status-warning bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">ALTA DEMANDA</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-button-text text-button-text text-text-primary">Punto de Venta</span>
-            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Impresora, congelado o corte</span>
-          </div>
-        </button>
-        <!-- PC / Laptop Option -->
-        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'PC_LAPTOP')" type="button">
-          <div class="flex items-center justify-between">
-            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
-              <span class="material-symbols-outlined text-[20px]">laptop_mac</span>
-            </span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TALLER/DOM</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-button-text text-button-text text-text-primary">PC &amp; Laptops</span>
-            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Lento, no enciende o virus</span>
-          </div>
-        </button>
-        <!-- Redes & Fibra Option -->
-        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'REDES_WIFI')" type="button">
-          <div class="flex items-center justify-between">
-            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
-              <span class="material-symbols-outlined text-[20px]">wifi_tethering_error</span>
-            </span>
-            <span class="font-label-mono-xs text-label-mono-xs text-status-info bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">TELECOM</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-button-text text-button-text text-text-primary">Redes &amp; WiFi</span>
-            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">Sin internet, switch o cable</span>
-          </div>
-        </button>
-        <!-- CCTV Cámaras Option -->
-        <button class="service-opt group p-space-sm rounded-xl bg-surface-container flex flex-col gap-2.5 text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'CCTV_CAMARAS')" type="button">
-          <div class="flex items-center justify-between">
-            <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors">
-              <span class="material-symbols-outlined text-[20px]">videocam</span>
-            </span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary bg-surface-container-lowest px-1.5 py-0.5 rounded font-bold">SEGURIDAD</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-button-text text-button-text text-text-primary">CCTV &amp; Vigilancia</span>
-            <span class="font-body-sm text-body-sm text-text-secondary line-clamp-1">DVR sin señal o fuera de línea</span>
-          </div>
-        </button>
-      </div>
-      <!-- Single Wide Other Service Button -->
-      <button class="service-opt group w-full p-space-sm rounded-xl bg-surface-container flex items-center justify-between text-left active:scale-[0.98] transition-all duration-150 border border-transparent hover:border-glass" onclick="selectService(this, 'OTRO_SERVICIO')" type="button">
-        <div class="flex items-center gap-space-sm">
-          <span class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary group-hover:text-neon-emerald transition-colors shrink-0">
-            <span class="material-symbols-outlined text-[20px]">terminal</span>
-          </span>
-          <div class="flex flex-col">
-            <span class="font-button-text text-button-text text-text-primary">Otro Requerimiento TIC</span>
-            <span class="font-body-sm text-body-sm text-text-secondary">Servidores, respaldos o consultoría a medida</span>
-          </div>
-        </div>
-        <span class="material-symbols-outlined text-text-tertiary text-[20px] group-hover:text-neon-emerald transition-colors">arrow_forward</span>
-      </button>
-      <!-- Next Step Trigger -->
-      <button class="w-full h-12 mt-space-xs rounded-xl bg-surface-container-high text-text-secondary font-button-text text-button-text flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step1" onclick="goToStep(2)" type="button">
-        <span>Continuar a Modalidad y Urgencia</span>
-        <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
-      </button>
-    </section>
-
-    <!-- STEP 2: Urgency & Modality -->
-    <section class="flex flex-col gap-space-md opacity-50 pointer-events-none transition-all duration-200" id="step-2">
-      <div class="flex flex-col gap-space-xs">
-        <div class="flex items-center justify-between">
-          <h3 class="font-headline-sm text-headline-sm text-text-primary">Nivel de Urgencia</h3>
-          <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">CRITERIO_SLA</span>
-        </div>
-        <!-- 3-Way Segmented Color Coded Urgency -->
-        <div class="grid grid-cols-3 gap-space-xs bg-surface-container rounded-xl p-1 border border-glass">
-          <!-- Normal -->
-          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'NORMAL')" type="button">
-            <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
-            <span class="font-button-text text-button-text text-on-surface">Normal</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">24-48 hrs</span>
-          </button>
-          <!-- Alta -->
-          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'ALTA')" type="button">
-            <span class="w-2.5 h-2.5 rounded-full bg-status-warning"></span>
-            <span class="font-button-text text-button-text text-on-surface">Alta</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-status-warning font-bold">Mismo día</span>
-          </button>
-          <!-- Crítica -->
-          <button class="urgency-opt py-2.5 px-2 rounded-lg flex flex-col items-center justify-center gap-1 bg-surface-container-low transition-all" onclick="selectUrgency(this, 'CRITICA')" type="button">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-alert opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-status-alert"></span>
-            </span>
-            <span class="font-button-text text-button-text text-status-alert font-bold">Crítica</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-status-alert font-bold">&lt;15 min SLA</span>
-          </button>
-        </div>
-      </div>
-      <!-- Modality of Service -->
-      <div class="flex flex-col gap-space-xs">
-        <div class="flex items-center justify-between">
-          <h3 class="font-headline-sm text-headline-sm text-text-primary">Modalidad de Atención</h3>
-          <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">ZONA_COBERTURA</span>
-        </div>
-        <div class="grid grid-cols-3 gap-space-xs">
-          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'DOMICILIO')" type="button">
-            <span class="material-symbols-outlined text-text-primary text-[22px]">location_on</span>
-            <span class="font-button-text text-button-text text-text-primary">In Situ</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">A Domicilio</span>
-          </button>
-          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'REMOTO')" type="button">
-            <span class="material-symbols-outlined text-text-primary text-[22px]">nest_remote</span>
-            <span class="font-button-text text-button-text text-text-primary">Remoto</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">AnyDesk / SSH</span>
-          </button>
-          <button class="modality-opt p-space-sm rounded-xl bg-surface-container flex flex-col items-center text-center gap-1.5 transition-all border border-transparent hover:border-glass" onclick="selectModality(this, 'TALLER')" type="button">
-            <span class="material-symbols-outlined text-text-primary text-[22px]">store</span>
-            <span class="font-button-text text-button-text text-text-primary">En Taller</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">Teziutlán Ctro</span>
-          </button>
-        </div>
-      </div>
-      <!-- Proceed to Step 3 -->
-      <button class="w-full h-12 rounded-xl bg-surface-container-high text-text-secondary font-button-text text-button-text flex items-center justify-center gap-2 transition-all hover:bg-surface-container-highest" id="btn-next-step2" onclick="goToStep(3)" type="button">
-        <span>Completar Datos de Contacto</span>
-        <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
-      </button>
-    </section>
-
-    <!-- STEP 3: Contact and Instant Folio Generation -->
-    <section class="flex flex-col gap-space-sm opacity-50 pointer-events-none transition-all duration-200" id="step-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-headline-sm text-headline-sm text-text-primary">Datos del Reportante</h3>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">CONTACTO_DIRECTO</span>
-      </div>
-      <div class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-sm shadow-md border border-glass">
-        <!-- Client / Business Name -->
-        <div class="flex flex-col gap-1">
-          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-name">Negocio o Titular *</label>
-          <div class="flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
-            <span class="material-symbols-outlined text-text-tertiary text-[18px]">business</span>
-            <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-body-md text-body-md" id="client-name" placeholder="Ej. Farmacia La Paz / Ing. Morales" required="" type="text" autocomplete="organization"/>
-          </div>
-        </div>
-        <!-- Phone WhatsApp -->
-        <div class="flex flex-col gap-1">
-          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-phone">WhatsApp Directo (10 dígitos) *</label>
-          <div class="flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
-            <span class="material-symbols-outlined text-text-tertiary text-[18px]">call</span>
-            <span class="font-label-mono-sm text-label-mono-sm text-text-tertiary font-bold">+52</span>
-            <input class="bg-transparent border-0 outline-none w-full text-on-surface placeholder:text-text-tertiary font-label-mono-sm text-label-mono-sm" id="client-phone" maxlength="14" placeholder="231 100 0000" required="" type="tel" inputmode="numeric" autocomplete="tel-national"/>
-          </div>
-        </div>
-        <!-- Problem Description -->
-        <div class="flex flex-col gap-1">
-          <label class="font-label-mono-xs text-label-mono-xs text-text-secondary uppercase" for="client-issue">Descripción Rápida de la Falla *</label>
-          <textarea class="bg-surface-container-lowest rounded-lg p-space-sm text-on-surface placeholder:text-text-tertiary font-body-sm text-body-sm border border-glass outline-none resize-none focus:ring-1 focus:ring-neon-emerald transition-all" id="client-issue" placeholder="Ej. Impresora de tickets no arroja ticket y la caja está detenida..." required="" rows="2"></textarea>
-        </div>
-        <!-- Active SLA Promise Pill -->
-        <div class="bg-surface-container-high rounded-lg p-space-xs flex items-center justify-between border border-glass">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-neon-emerald text-[18px]">verified</span>
-            <span class="font-label-mono-xs text-label-mono-xs text-text-primary">Folio oficial (se asigna al enviar)</span>
-          </div>
-          <span class="font-label-mono-xs text-label-mono-xs text-neon-emerald font-bold" id="preview-ticket-code">FL-····</span>
-        </div>
-        <!-- Primary Action CTA -->
-        <button id="btn-submit-ticket" class="w-full min-h-[52px] py-3.5 rounded-xl bg-primary-container text-on-brand font-button-text text-button-text font-bold flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(156,195,46,0.35)] active:scale-[0.98] transition-all hover:bg-primary-fixed" onclick="submitTicketAndDispatch()" type="button">
-          <span class="material-symbols-outlined text-[20px] text-on-brand font-bold">send</span>
-          <span>Generar Folio y Enviar WhatsApp</span>
-        </button>
-      </div>
-    </section>
-  </form>
 
   <!-- Interactive Generated Folio Modal / Success Banner (Initially Hidden) -->
   <div class="hidden flex-col gap-space-sm bg-surface-container-high rounded-xl p-space-md shadow-xl transition-all border border-neon-emerald/30" id="folio-success-card">
@@ -692,52 +795,6 @@
         <span>Abrir Chat</span>
       </a>
     </div>
-  </div>
-
-  <!-- Dedicated Status Tracker Module for Existing Folios -->
-  <section class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-sm shadow-md mt-space-xs border border-glass">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-neon-emerald text-[22px]">manage_search</span>
-        <span class="font-headline-sm text-headline-sm text-text-primary font-bold">Consultar Folio Existente</span>
-      </div>
-      <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary">TRACKING</span>
-    </div>
-    <p class="font-body-sm text-body-sm text-text-secondary">
-      Ingresa tu folio asignado (ej. FL-1005) para revisar diagnóstico, técnico asignado y tiempo estimado de resolución.
-    </p>
-    <div class="flex items-center gap-space-xs">
-      <div class="flex-1 flex items-center bg-surface-container-lowest rounded-lg px-space-sm h-11 gap-2 focus-within:ring-1 focus-within:ring-neon-emerald transition-all border border-glass">
-        <span class="material-symbols-outlined text-text-tertiary text-[18px]">tag</span>
-        <input class="bg-transparent border-0 outline-none w-full text-text-primary placeholder:text-text-tertiary font-label-mono-sm text-label-mono-sm uppercase tracking-wider" id="input-search-folio" placeholder="FL-1005" type="text" aria-label="Número de folio" autocomplete="off" enterkeyhint="search"/>
-      </div>
-      <button class="h-11 px-space-md rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-button-text text-button-text flex items-center justify-center gap-1 transition-colors active:scale-95 border border-glass" onclick="searchExistingFolio()" type="button">
-        <span class="material-symbols-outlined text-[18px]">search</span>
-        <span>Buscar</span>
-      </button>
-    </div>
-    <!-- Live Folio Tracker Result Simulation Area -->
-    <div class="hidden flex-col gap-space-xs bg-surface-container-low rounded-lg p-space-sm transition-all border border-glass" id="folio-search-result">
-      <div class="flex items-center justify-between">
-        <span class="font-label-mono-xs text-label-mono-xs text-status-warning font-bold" id="result-status-pill">● EN TRAYECTO A DOMICILIO</span>
-        <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary font-semibold" id="result-time-pill">ETA: 12 MIN</span>
-      </div>
-      <div class="flex items-center justify-between pt-1">
-        <div class="flex flex-col">
-          <span class="font-button-text text-button-text text-text-primary" id="result-tech-name">Téc. Daniel Rivera (Guardia 1)</span>
-          <span class="font-body-sm text-body-sm text-text-secondary" id="result-service-desc">Restablecimiento Red Punto de Venta</span>
-        </div>
-        <a class="w-9 h-9 rounded-full bg-surface-container-high text-neon-emerald flex items-center justify-center shrink-0 border border-glass hover:bg-surface-container-highest transition-colors" href="tel:2311024672">
-          <span class="material-symbols-outlined text-[18px]">call</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Technical Infrastructure Micro-Banner -->
-  <div class="flex items-center justify-between px-space-xs py-space-xs text-text-tertiary font-label-mono-xs text-label-mono-xs">
-    <span>MESA TÉCNICA TEZIUTLÁN</span>
-    <span>PROTOCOLO DE ATENCIÓN v4.2</span>
   </div>
 </div>
 </div>
@@ -1007,12 +1064,75 @@ window.showToast = showToast;
   }
 })();
 
-// 3. INTERACTIVE TICKETING WORKFLOW
+// 3. INTERACTIVE TICKETING WORKFLOW (MULTI-STEP WIZARD & TABS)
 const ticketState = {
   service: 'POS_BLOQUEADO',
   urgency: 'ALTA',
   modality: 'DOMICILIO'
 };
+
+const serviceLabels = {
+  'POS_BLOQUEADO': 'Punto de Venta POS & Caja',
+  'PC_LAPTOP': 'PC & Laptops (Taller/Domicilio)',
+  'REDES_WIFI': 'Redes & WiFi Telecom',
+  'CCTV_CAMARAS': 'CCTV Cámaras & Vigilancia',
+  'OTRO_SERVICIO': 'Requerimiento TIC / Servidores'
+};
+
+const modalityLabels = {
+  'DOMICILIO': 'En Sitio / A Domicilio',
+  'REMOTO': 'Soporte Remoto Inmediato',
+  'TALLER': 'Recepción en Taller'
+};
+
+const priorityLabels = {
+  'CRITICA': 'Crítica (<15 min SLA)',
+  'ALTA': 'Alta (Mismo Día)',
+  'NORMAL': 'Normal (24-48 hrs)'
+};
+
+function switchConsoleTab(tab) {
+  const panelCreate = document.getElementById('panel-create-ticket');
+  const panelTrack = document.getElementById('panel-track-ticket');
+  const tabCreate = document.getElementById('tab-create-ticket');
+  const tabTrack = document.getElementById('tab-track-ticket');
+
+  if (tab === 'track') {
+    if (panelCreate) panelCreate.classList.add('hidden');
+    if (panelTrack) {
+      panelTrack.classList.remove('hidden');
+      panelTrack.classList.add('flex');
+    }
+    if (tabCreate) {
+      tabCreate.classList.remove('bg-primary-container', 'text-on-brand', 'shadow-sm');
+      tabCreate.classList.add('text-text-secondary');
+      tabCreate.setAttribute('aria-selected', 'false');
+    }
+    if (tabTrack) {
+      tabTrack.classList.add('bg-primary-container', 'text-on-brand', 'shadow-sm');
+      tabTrack.classList.remove('text-text-secondary');
+      tabTrack.setAttribute('aria-selected', 'true');
+    }
+    const inp = document.getElementById('input-search-folio');
+    if (inp) setTimeout(() => inp.focus(), 80);
+  } else {
+    if (panelTrack) {
+      panelTrack.classList.add('hidden');
+      panelTrack.classList.remove('flex');
+    }
+    if (panelCreate) panelCreate.classList.remove('hidden');
+    if (tabTrack) {
+      tabTrack.classList.remove('bg-primary-container', 'text-on-brand', 'shadow-sm');
+      tabTrack.classList.add('text-text-secondary');
+      tabTrack.setAttribute('aria-selected', 'false');
+    }
+    if (tabCreate) {
+      tabCreate.classList.add('bg-primary-container', 'text-on-brand', 'shadow-sm');
+      tabCreate.classList.remove('text-text-secondary');
+      tabCreate.setAttribute('aria-selected', 'true');
+    }
+  }
+}
 
 function selectService(buttonElement, serviceType) {
   ticketState.service = serviceType;
@@ -1023,11 +1143,12 @@ function selectService(buttonElement, serviceType) {
   buttonElement.classList.remove('bg-surface-container');
   buttonElement.classList.add('bg-surface-container-high', 'border-primary-container/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
 
-  const btnNext1 = document.getElementById('btn-next-step1');
-  if (btnNext1) {
-    btnNext1.classList.remove('bg-surface-container-high', 'text-text-secondary');
-    btnNext1.classList.add('bg-primary-container', 'text-on-brand', 'font-bold');
-  }
+  updateStep2Pill();
+}
+
+function updateStep2Pill() {
+  const p = document.getElementById('pill-selected-service');
+  if (p) p.textContent = serviceLabels[ticketState.service] || ticketState.service;
 }
 
 function selectUrgency(buttonElement, urgencyType) {
@@ -1038,7 +1159,7 @@ function selectUrgency(buttonElement, urgencyType) {
   });
   buttonElement.classList.remove('bg-surface-container-low');
   buttonElement.classList.add('bg-surface-container-highest', 'ring-1', 'ring-primary-container');
-  checkStep2Complete();
+  updateStep3Summary();
 }
 
 function selectModality(buttonElement, modalityType) {
@@ -1049,52 +1170,82 @@ function selectModality(buttonElement, modalityType) {
   });
   buttonElement.classList.remove('bg-surface-container');
   buttonElement.classList.add('bg-surface-container-high', 'border-primary-container/50', 'shadow-[0_0_12px_rgba(156,195,46,0.2)]');
-  checkStep2Complete();
+  updateStep3Summary();
 }
 
-function checkStep2Complete() {
-  const btnNext2 = document.getElementById('btn-next-step2');
-  if (btnNext2) {
-    btnNext2.classList.remove('bg-surface-container-high', 'text-text-secondary');
-    btnNext2.classList.add('bg-primary-container', 'text-on-brand', 'font-bold');
-  }
+function updateStep3Summary() {
+  const sTag = document.getElementById('summary-tag-service');
+  const uTag = document.getElementById('summary-tag-urgency');
+  const mTag = document.getElementById('summary-tag-modality');
+
+  if (sTag) sTag.textContent = serviceLabels[ticketState.service] ? serviceLabels[ticketState.service].split(' ')[0] : 'TIC';
+  if (uTag) uTag.textContent = priorityLabels[ticketState.urgency] ? priorityLabels[ticketState.urgency].split(' ')[0].toUpperCase() : 'ALTA';
+  if (mTag) mTag.textContent = modalityLabels[ticketState.modality] ? modalityLabels[ticketState.modality].toUpperCase() : 'IN SITU';
 }
 
 function goToStep(stepNum) {
-  const step2El = document.getElementById('step-2');
-  const step3El = document.getElementById('step-3');
+  const s1 = document.getElementById('step-1');
+  const s2 = document.getElementById('step-2');
+  const s3 = document.getElementById('step-3');
+
   const bar1 = document.getElementById('stepper-progress-bar');
   const bar2 = document.getElementById('stepper-progress-bar-2');
 
-  if (stepNum === 2) {
-    if (step2El) step2El.classList.remove('opacity-50', 'pointer-events-none');
-    if (bar1) {
-      bar1.classList.remove('w-1/3');
-      bar1.classList.add('w-full');
-    }
-    const b2 = document.getElementById('step-badge-2');
-    if (b2) {
-      b2.classList.replace('bg-surface-container-high', 'bg-primary-container');
-      b2.classList.replace('text-text-secondary', 'text-on-brand');
-    }
-    const t2 = document.getElementById('step-title-2');
-    if (t2) t2.classList.replace('text-text-secondary', 'text-text-primary');
-    if (step2El) step2El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const b1 = document.getElementById('step-badge-1');
+  const b2 = document.getElementById('step-badge-2');
+  const b3 = document.getElementById('step-badge-3');
+
+  const t1 = document.getElementById('step-title-1');
+  const t2 = document.getElementById('step-title-2');
+  const t3 = document.getElementById('step-title-3');
+
+  // Switch visible section
+  if (s1) s1.classList.add('hidden');
+  if (s2) s2.classList.add('hidden');
+  if (s3) s3.classList.add('hidden');
+
+  if (stepNum === 1) {
+    if (s1) s1.classList.remove('hidden');
+    if (bar1) { bar1.classList.remove('w-full'); bar1.classList.add('w-1/3'); }
+    if (bar2) { bar2.classList.remove('w-full'); bar2.classList.add('w-0'); }
+
+    if (b1) { b1.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b1.textContent = '01'; }
+    if (b2) { b2.className = 'w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b2.textContent = '02'; }
+    if (b3) { b3.className = 'w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b3.textContent = '03'; }
+
+    if (t1) t1.className = 'font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold';
+    if (t2) t2.className = 'font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold';
+    if (t3) t3.className = 'font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold';
+  } else if (stepNum === 2) {
+    if (s2) s2.classList.remove('hidden');
+    if (bar1) { bar1.classList.remove('w-1/3'); bar1.classList.add('w-full'); }
+    if (bar2) { bar2.classList.remove('w-full'); bar2.classList.add('w-0'); }
+
+    if (b1) { b1.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b1.textContent = '✓'; }
+    if (b2) { b2.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center ring-2 ring-primary-container/40'; b2.textContent = '02'; }
+    if (b3) { b3.className = 'w-6 h-6 rounded-full bg-surface-container-high text-text-secondary font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b3.textContent = '03'; }
+
+    if (t1) t1.className = 'font-label-mono-xs text-label-mono-xs text-neon-emerald tracking-wide uppercase font-semibold';
+    if (t2) t2.className = 'font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold';
+    if (t3) t3.className = 'font-label-mono-xs text-label-mono-xs text-text-secondary tracking-wide uppercase font-semibold';
+    updateStep2Pill();
   } else if (stepNum === 3) {
-    if (step3El) step3El.classList.remove('opacity-50', 'pointer-events-none');
-    if (bar2) {
-      bar2.classList.remove('w-0');
-      bar2.classList.add('w-full');
-    }
-    const b3 = document.getElementById('step-badge-3');
-    if (b3) {
-      b3.classList.replace('bg-surface-container-high', 'bg-primary-container');
-      b3.classList.replace('text-text-secondary', 'text-on-brand');
-    }
-    const t3 = document.getElementById('step-title-3');
-    if (t3) t3.classList.replace('text-text-secondary', 'text-text-primary');
-    if (step3El) step3El.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (s3) s3.classList.remove('hidden');
+    if (bar1) { bar1.classList.remove('w-1/3'); bar1.classList.add('w-full'); }
+    if (bar2) { bar2.classList.remove('w-0'); bar2.classList.add('w-full'); }
+
+    if (b1) { b1.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b1.textContent = '✓'; }
+    if (b2) { b2.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center'; b2.textContent = '✓'; }
+    if (b3) { b3.className = 'w-6 h-6 rounded-full bg-primary-container text-on-brand font-label-mono-xs text-label-mono-xs font-bold flex items-center justify-center ring-2 ring-primary-container/40'; b3.textContent = '03'; }
+
+    if (t1) t1.className = 'font-label-mono-xs text-label-mono-xs text-neon-emerald tracking-wide uppercase font-semibold';
+    if (t2) t2.className = 'font-label-mono-xs text-label-mono-xs text-neon-emerald tracking-wide uppercase font-semibold';
+    if (t3) t3.className = 'font-label-mono-xs text-label-mono-xs text-text-primary tracking-wide uppercase font-semibold';
+    updateStep3Summary();
   }
+
+  const formWrap = document.getElementById('ticket-workflow-form');
+  if (formWrap) formWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 async function submitTicketAndDispatch() {
@@ -1122,26 +1273,6 @@ async function submitTicketAndDispatch() {
     if (issueInput) issueInput.focus();
     return;
   }
-
-  const serviceLabels = {
-    'POS_BLOQUEADO': 'Punto de Venta POS & Caja',
-    'PC_LAPTOP': 'PC & Laptops (Taller/Domicilio)',
-    'REDES_WIFI': 'Redes & WiFi Telecom',
-    'CCTV_CAMARAS': 'CCTV Cámaras & Vigilancia',
-    'OTRO_SERVICIO': 'Requerimiento TIC / Servidores'
-  };
-
-  const modalityLabels = {
-    'DOMICILIO': 'En Sitio / A Domicilio (Teziutlán y Región)',
-    'REMOTO': 'Soporte Remoto Inmediato (< 15 min)',
-    'TALLER': 'Recepción en Taller Técnico'
-  };
-
-  const priorityLabels = {
-    'CRITICA': 'Crítica (< 15 min SLA)',
-    'ALTA': 'Alta (Mismo Día)',
-    'NORMAL': 'Normal (24-48 hrs)'
-  };
 
   if (submitBtn) {
     submitBtn.classList.add('is-loading');
@@ -1237,23 +1368,15 @@ function resetForm() {
     cardSuccess.classList.remove('flex');
   }
 
-  const step2El = document.getElementById('step-2');
-  if (step2El) step2El.classList.add('opacity-50', 'pointer-events-none');
-  const step3El = document.getElementById('step-3');
-  if (step3El) step3El.classList.add('opacity-50', 'pointer-events-none');
+  goToStep(1);
+}
 
-  const bar1 = document.getElementById('stepper-progress-bar');
-  if (bar1) { bar1.classList.remove('w-full'); bar1.classList.add('w-1/3'); }
-  const bar2 = document.getElementById('stepper-progress-bar-2');
-  if (bar2) { bar2.classList.remove('w-full'); bar2.classList.add('w-0'); }
-
-  const b2 = document.getElementById('step-badge-2');
-  if (b2) { b2.classList.replace('bg-primary-container', 'bg-surface-container-high'); b2.classList.replace('text-on-brand', 'text-text-secondary'); }
-  const b3 = document.getElementById('step-badge-3');
-  if (b3) { b3.classList.replace('bg-primary-container', 'bg-surface-container-high'); b3.classList.replace('text-on-brand', 'text-text-secondary'); }
-
-  const step1El = document.getElementById('step-1');
-  if (step1El) step1El.scrollIntoView({ behavior: 'smooth' });
+function quickFillFolio(val) {
+  const input = document.getElementById('input-search-folio');
+  if (input) {
+    input.value = val;
+    searchExistingFolio();
+  }
 }
 
 async function searchExistingFolio() {
@@ -1327,6 +1450,9 @@ async function searchExistingFolio() {
     showToast(`No se encontró el folio ${val}. Puedes escribirnos por WhatsApp.`, 'error');
   }
 }
+
+window.switchConsoleTab = switchConsoleTab;
+window.quickFillFolio = quickFillFolio;
 
 // 4. UTILITIES: COPY LINK & CURRENT YEAR
 document.addEventListener('DOMContentLoaded', () => {
