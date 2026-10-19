@@ -1,0 +1,137 @@
+/* ==========================================================
+   FIBERLINK — Tailwind (build-time) + tokens temáticos del index
+   Las utilidades de color usan canales RGB en variables para que
+   bg-*, text-*, border-* respondan al modo claro / oscuro.
+   ========================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --tw-surface-base: 11 15 18;
+    --tw-surface-card: 18 24 31;
+    --tw-surface-overlay: 24 34 44;
+    --tw-surface-container-lowest: 8 11 14;
+    --tw-surface-container-low: 24 28 31;
+    --tw-surface-container: 28 32 35;
+    --tw-surface-container-high: 38 42 46;
+    --tw-surface-container-highest: 49 53 57;
+    --tw-deep: 7 11 14;
+    --tw-panel: 10 15 20;
+    --tw-panel-2: 14 21 30;
+
+    --tw-text-primary: 244 247 246;
+    --tw-text-secondary: 150 165 176;
+    --tw-text-tertiary: 112 128 143;
+
+    --tw-brand: 156 195 46;      /* #9CC32E */
+    --tw-brand-2: 184 220 62;    /* #B8DC3E */
+    --tw-brand-ink: 156 195 46;  /* texto de acento */
+    --tw-on-brand: 11 15 18;     /* texto sobre botones verdes */
+
+    --tw-info: 0 184 217;
+    --tw-warning: 255 193 7;
+    --tw-alert: 255 72 66;
+
+    --fl-glass: rgba(255, 255, 255, 0.08);
+  }
+
+  html.light,
+  [data-theme='light'] {
+    --tw-surface-base: 245 248 242;
+    --tw-surface-card: 255 255 255;
+    --tw-surface-overlay: 238 243 230;
+    --tw-surface-container-lowest: 255 255 255;
+    --tw-surface-container-low: 241 245 236;
+    --tw-surface-container: 230 237 217;
+    --tw-surface-container-high: 219 228 204;
+    --tw-surface-container-highest: 207 218 190;
+    --tw-deep: 241 245 236;
+    --tw-panel: 255 255 255;
+    --tw-panel-2: 238 243 230;
+
+    --tw-text-primary: 13 20 10;
+    --tw-text-secondary: 72 88 68;
+    --tw-text-tertiary: 98 112 94;
+
+    --tw-brand: 156 195 46;
+    --tw-brand-2: 108 148 18;
+    --tw-brand-ink: 86 120 8;    /* contraste AA sobre blanco */
+    --tw-on-brand: 11 15 18;
+
+    --tw-info: 2 132 199;
+    --tw-warning: 180 120 0;
+    --tw-alert: 220 38 38;
+
+    --fl-glass: rgba(13, 20, 10, 0.1);
+  }
+
+  /* Tailwind preflight resetea <img> a display:block; mantenemos el logo animado intacto */
+  html { scroll-padding-top: 5rem; }
+  :focus-visible { outline: 2px solid rgb(var(--tw-brand)); outline-offset: 2px; border-radius: 4px; }
+}
+
+@layer components {
+  /* Ancho máximo legible para todas las secciones del index (sin afectar fondos absolutos) */
+  .fl-main > section > :not(.absolute):not(.hero-video-backdrop) {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Capa ambiental temática (antes cubría el globo 3D al 94%) */
+  .fl-ambient {
+    background: radial-gradient(circle at 50% 15%, rgba(156, 195, 46, 0.07) 0%, rgba(11, 15, 18, 0.5) 65%, rgba(8, 11, 13, 0.72) 100%);
+  }
+  html.light .fl-ambient {
+    background: radial-gradient(circle at 50% 15%, rgba(156, 195, 46, 0.1) 0%, rgba(245, 248, 242, 0.45) 65%, rgba(245, 248, 242, 0.7) 100%);
+  }
+  html.light .fl-ambient-code { opacity: 0.05 !important; text-shadow: none !important; }
+
+  /* Franja de telemetría: transform GPU + contenido duplicado exacto => loop sin saltos */
+  .fl-marquee { contain: paint; }
+  .fl-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: fl-marquee 38s linear infinite;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+  }
+  .fl-marquee:hover .fl-marquee-track { animation-play-state: paused; }
+  .fl-marquee-group { display: flex; align-items: center; gap: 1.5rem; padding-right: 1.5rem; flex-shrink: 0; }
+
+  /* Toast accesible (reemplaza alert()) */
+  .fl-toast-wrap {
+    position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column; gap: .5rem; pointer-events: none;
+    width: min(92vw, 420px);
+  }
+  .fl-toast {
+    pointer-events: auto; padding: .75rem 1rem; border-radius: .75rem;
+    background: rgb(var(--tw-surface-card)); color: rgb(var(--tw-text-primary));
+    border: 1px solid rgba(156, 195, 46, .45); box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    font: 500 13px/1.4 'Outfit', sans-serif; display: flex; gap: .5rem; align-items: flex-start;
+    animation: fl-toast-in .25s ease-out;
+  }
+  .fl-toast[data-type='error'] { border-color: rgba(255, 72, 66, .6); }
+  .fl-toast .material-symbols-outlined { font-size: 18px; color: rgb(var(--tw-brand-ink)); }
+  .fl-toast[data-type='error'] .material-symbols-outlined { color: rgb(var(--tw-alert)); }
+
+  /* Producto sin imagen disponible */
+  .fl-img-fallback { object-fit: contain !important; padding: 2.5rem; opacity: .55; }
+
+  /* Estado de carga del botón de envío del ticket */
+  .is-loading { opacity: .7; pointer-events: none; }
+}
+
+@keyframes fl-marquee { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes fl-toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Accesibilidad + rendimiento: respetar "reducir movimiento" */
+@media (prefers-reduced-motion: reduce) {
+  .fl-marquee-track,
+  .animate-ping,
+  .animate-pulse { animation: none !important; }
+  .hero-video-backdrop video { display: none !important; }
+}
