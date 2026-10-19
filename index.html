@@ -25,11 +25,20 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&amp;family=Sora:wght@600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>
     @layer base {
-      html, body { margin:0; padding:0; }
-      body { overscroll-behavior:none; background: transparent !important; }
-      main { background: transparent !important; }
-      main > :first-child { margin-top:0 !important; }
-      main > :last-child { margin-bottom:0 !important; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        -webkit-overflow-scrolling: touch;
+      }
+      body {
+        background: transparent !important;
+        touch-action: pan-y pinch-zoom;
+      }
+      main {
+        background: transparent !important;
+      }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
     }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #0b0f12; }
@@ -369,11 +378,13 @@
     </div>
   </aside>
 </div>
-<main class="w-full pt-20 bg-surface-base min-h-screen"><div class="flex flex-col w-full">
-<!-- AMBIENT COMMAND CENTER GLOWS -->
-<div class="relative w-full overflow-hidden">
-<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[850px] h-[360px] bg-primary-container/10 blur-[140px] pointer-events-none rounded-full"></div>
-<div class="absolute top-[480px] -right-32 w-[500px] h-[400px] bg-neon-emerald/5 blur-[120px] pointer-events-none rounded-full"></div>
+<main class="w-full pt-20 bg-surface-base min-h-screen relative">
+<!-- AMBIENT COMMAND CENTER GLOWS (isolated to prevent trapping mobile touch scrolling) -->
+<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+  <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[850px] h-[360px] bg-primary-container/10 blur-[140px] rounded-full"></div>
+  <div class="absolute top-[480px] -right-32 w-[500px] h-[400px] bg-neon-emerald/5 blur-[120px] rounded-full"></div>
+</div>
+<div class="flex flex-col w-full relative z-10">
 <!-- 01. HERO / TELEMETRY COMMAND CONSOLE -->
 <section class="w-full px-margin pt-space-lg pb-space-xxl relative z-10" id="inicio">
 <!-- SYSTEM STATUS STRIP -->
@@ -1109,7 +1120,6 @@
 </div>
 </div>
 </section>
-</div>
 </div>
 <script>
   function generarTicket() {

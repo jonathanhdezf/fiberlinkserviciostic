@@ -5,25 +5,28 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 
 export function initAnimations() {
-  // 1. Lenis Smooth Scroll
-  const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    orientation: 'vertical',
-    gestureOrientation: 'vertical',
-    smoothWheel: true,
-    wheelMultiplier: 1,
-    touchMultiplier: 2,
-  });
+  // 1. Lenis Smooth Scroll (only on desktop pointer devices to preserve native 120Hz kinetic touch scrolling on mobile)
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth < 1024);
 
-  lenis.on('scroll', ScrollTrigger.update);
+  if (!isTouchDevice) {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+    });
 
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-  gsap.ticker.lagSmoothing(0);
+    lenis.on('scroll', ScrollTrigger.update);
 
-  window.lenis = lenis;
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+    gsap.ticker.lagSmoothing(0);
+
+    window.lenis = lenis;
+  }
 
   // 2. Reveal Animations (Staggered fade up)
   const revealElements = document.querySelectorAll('.reveal');
