@@ -1,6 +1,7 @@
 ﻿node_modules/
 dist/
 index_backup.html
+index_pre_stitch.html
 
 # Secretos (API keys)
 .env

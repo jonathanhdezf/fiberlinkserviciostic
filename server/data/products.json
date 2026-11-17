@@ -264,5 +264,161 @@
       "Bonificable en reparación mayor",
       "Reporte técnico incluido"
     ]
+  },
+  {
+    "id": "prod-115",
+    "sku": "CCTV-TAPO-C310",
+    "barcode": "7501045000115",
+    "name": "Cámara Exterior TP-Link Tapo C310 2K 3MP WiFi / Ethernet IP66",
+    "category": "cctv",
+    "cost": 590,
+    "price": 890,
+    "stock": 8,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara exterior de seguridad con resolución 2K Ultra HD (3MP), visión nocturna de 30m, resistencia a lluvia extrema y polvo IP66, detección de personas por IA y sirena disuasoria.",
+    "specs": [
+      "Resolución 2K (2304 × 1296) 3MP",
+      "Protección a intemperie IP66",
+      "Visión nocturna infrarroja 30m (98 ft)",
+      "Audio bidireccional y sirena integrada",
+      "Ranura MicroSD hasta 512GB + Ethernet/WiFi"
+    ],
+    "imageUrl": "/images/products/tapo-c310.webp",
+    "images": [
+      "/images/products/tapo-c310.webp"
+    ]
+  },
+  {
+    "id": "prod-116",
+    "sku": "CCTV-TAPO-C240D",
+    "barcode": "7501045000116",
+    "name": "Cámara TP-Link Tapo C240D Doble Lente 2K+2K Pan/Tilt Smart AI",
+    "category": "cctv",
+    "cost": 1050,
+    "price": 1590,
+    "stock": 4,
+    "minStock": 1,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara de seguridad de doble lente Dual-Lens (2K+2K). Combina lente fijo panorámico para vista general con lente telefoto motorizado Pan/Tilt 360° con zoom y seguimiento inteligente sincronizado.",
+    "specs": [
+      "Doble Lente 2K + 2K (Dos vistas a la vez)",
+      "Lente Telefoto con 3x más claridad",
+      "Seguimiento inteligente sincronizado por IA",
+      "Detección gratuita de personas, mascotas y vehículos",
+      "Almacenamiento MicroSD hasta 512GB"
+    ],
+    "imageUrl": "/images/products/tapo-c240d.webp",
+    "images": [
+      "/images/products/tapo-c240d.webp"
+    ]
+  },
+  {
+    "id": "prod-117",
+    "sku": "CCTV-TAPO-C201",
+    "barcode": "7501045000117",
+    "name": "Cámara TP-Link Tapo C201 Pan/Tilt 1080p Edición Negra Mate",
+    "category": "cctv",
+    "cost": 380,
+    "price": 590,
+    "stock": 6,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara de seguridad interior con elegante carcasa negra mate para integración estética discreta. Cobertura panorámica 360°, visión nocturna, detección de movimiento y llanto de bebé con audio dos vías.",
+    "specs": [
+      "Acabado exclusivo Negro Mate",
+      "Resolución Full HD 1080p con giro 360°",
+      "Detección de personas y llanto de bebé",
+      "Visión nocturna infrarroja 9m (30 ft)",
+      "Audio bidireccional y ranura MicroSD hasta 512GB"
+    ],
+    "imageUrl": "/images/products/tapo-c201.webp",
+    "images": [
+      "/images/products/tapo-c201.webp"
+    ]
+  },
+  {
+    "id": "prod-118",
+    "sku": "CCTV-TAPO-C200",
+    "barcode": "7501045000118",
+    "name": "Cámara TP-Link Tapo C200 Pan/Tilt 1080p Wi-Fi 360° Blanca",
+    "category": "cctv",
+    "cost": 350,
+    "price": 540,
+    "stock": 10,
+    "minStock": 3,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "La cámara de seguridad interior más confiable y vendida. Monitorea tu casa, mostrador u oficina con rotación 360°, audio bidireccional, visión nocturna y alertas directas al celular sin cuotas mensuales.",
+    "specs": [
+      "Resolución 1080p Full HD",
+      "Movimiento horizontal 360° y vertical 114°",
+      "Visión nocturna 9m y modo privacidad",
+      "Detección de movimiento y notificaciones instantáneas",
+      "Soporta MicroSD de hasta 512GB"
+    ],
+    "imageUrl": "/images/products/tapo-c200.webp",
+    "images": [
+      "/images/products/tapo-c200.webp"
+    ]
+  },
+  {
+    "id": "prod-119",
+    "sku": "CCTV-TAPO-C500",
+    "barcode": "7501045000119",
+    "name": "Cámara Exterior TP-Link Tapo C500 360° Pan/Tilt Wi-Fi IP65",
+    "category": "cctv",
+    "cost": 590,
+    "price": 890,
+    "stock": 5,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara exterior con movimiento robótico 360° Pan/Tilt y protección climática IP65. Seguimiento automático de intrusos, visión nocturna hasta 30m, alarma sonora con voz grabable y luz estroboscópica.",
+    "specs": [
+      "Cobertura visual completa 360° en exterior",
+      "Certificación impermeable y antipolvo IP65",
+      "Seguimiento inteligente Smart Motion Tracking",
+      "Visión nocturna 30m y alarma personalizable",
+      "Almacenamiento MicroSD hasta 512GB"
+    ],
+    "imageUrl": "/images/products/tapo-c500.webp",
+    "images": [
+      "/images/products/tapo-c500.webp"
+    ]
+  },
+  {
+    "id": "prod-120",
+    "sku": "CCTV-TAPO-C210",
+    "barcode": "7501045000120",
+    "name": "Cámara TP-Link Tapo C210 2K 3MP Pan/Tilt Ultra HD 360°",
+    "category": "cctv",
+    "cost": 460,
+    "price": 690,
+    "stock": 7,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cámara para interior de alta nitidez con resolución 2K (3 Megapíxeles). Visualiza detalles finos con giro 360°, visión nocturna avanzada, detección de llanto de bebé, comunicación de dos vías y sirena disuasoria.",
+    "specs": [
+      "Resolución Ultra HD 2K (3MP) superior a 1080p",
+      "Rotación panorámica 360° y vertical 114°",
+      "Visión nocturna infrarroja 9m",
+      "Detección inteligente de personas y llanto",
+      "Audio bidireccional y MicroSD hasta 512GB"
+    ],
+    "imageUrl": "/images/products/tapo-c210.webp",
+    "images": [
+      "/images/products/tapo-c210.webp"
+    ]
   }
 ]
