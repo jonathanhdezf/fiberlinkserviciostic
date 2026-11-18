@@ -420,5 +420,35 @@
     "images": [
       "/images/products/tapo-c210.webp"
     ]
+  },
+  {
+    "id": "prod-121",
+    "sku": "POS-IMP-VOLTECK-80",
+    "barcode": "7506610225558",
+    "name": "Impresora Térmica de Tickets 58/80 mm USB + Bluetooth con Autocorte Volteck PDV-80I",
+    "category": "pos",
+    "cost": 890,
+    "price": 1290,
+    "stock": 8,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Impresora térmica de recibos y tickets de alta velocidad (150 mm/s) con guillotina de autocorte y corte manual. Soporta rollos de 58 mm y 80 mm. Conectividad dual por cable USB y Bluetooth inalámbrico para PC, laptops, tablets y celulares. Puerto RJ11 para apertura automática de cajón de dinero.",
+    "specs": [
+      "Doble ancho: compatible con rollos de 58 mm y 80 mm",
+      "Conectividad dual: USB tipo B + Bluetooth inalámbrico",
+      "Doble sistema de corte: Guillotina automática y manual",
+      "Velocidad de impresión 150 mm/s · Resolución 203 DPI",
+      "Puerto RJ11 para apertura automática de cajón de dinero",
+      "Diseño compacto: 9.5 x 12.5 x 11.5 cm · Carga fácil de papel"
+    ],
+    "imageUrl": "/images/products/volteck-pdv-80i.webp",
+    "images": [
+      "/images/products/volteck-pdv-80i.webp",
+      "/images/products/volteck-pdv-80i-dimensiones.webp",
+      "/images/products/volteck-pdv-80i-puertos.webp",
+      "/images/products/volteck-pdv-80i-caja.webp"
+    ]
   }
 ]
