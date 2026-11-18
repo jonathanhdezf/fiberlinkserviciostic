@@ -500,5 +500,32 @@
     "images": [
       "/images/products/office-2024.svg"
     ]
+  },
+  {
+    "id": "prod-124",
+    "sku": "POS-CAJ-VOLTECK-58C",
+    "barcode": "7506610225954",
+    "name": "Cajón de Dinero Volteck PDV-58C (5 Billetes y 8 Monedas) RJ11",
+    "category": "pos",
+    "cost": 550,
+    "price": 890,
+    "stock": 10,
+    "minStock": 2,
+    "unit": "pza",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Cajón de dinero para punto de venta con 5 compartimentos para billetes y 8 para monedas. Apertura automática vía interfaz RJ11 compatible con impresoras térmicas. Apertura manual con llave incluida. Fabricado en acero. Marca Volteck (Grupo Truper).",
+    "specs": [
+      "5 divisiones para billetes con pisa-billetes metálicos incluidos",
+      "8 compartimentos organizadores para monedas (bandeja desmontable)",
+      "Interfaz RJ11 para apertura automática con impresora térmica",
+      "Apertura manual con llave: cerradura de 3 posiciones (bloqueado, automático, manual)",
+      "Fabricado en acero pintado (color negro) resistente a uso continuo",
+      "Compatible con impresoras Volteck PDV-80I y otras marcas estándar"
+    ],
+    "imageUrl": "/images/products/volteck-pdv-58c.webp",
+    "images": [
+      "/images/products/volteck-pdv-58c.webp"
+    ]
   }
 ]
