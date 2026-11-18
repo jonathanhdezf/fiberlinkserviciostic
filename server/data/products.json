@@ -450,5 +450,55 @@
       "/images/products/volteck-pdv-80i-puertos.webp",
       "/images/products/volteck-pdv-80i-caja.webp"
     ]
+  },
+  {
+    "id": "prod-122",
+    "sku": "SW-M365-ANUAL",
+    "name": "Microsoft 365 Personal / Familia (Suscripción Anual Oficial)",
+    "category": "software",
+    "cost": 650,
+    "price": 990,
+    "stock": 30,
+    "minStock": 5,
+    "unit": "licencia",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Suscripción digital oficial de Microsoft 365. Incluye las aplicaciones premium Word, Excel, PowerPoint, Outlook y OneNote siempre actualizadas con funciones de IA, 1 TB de almacenamiento seguro en la nube OneDrive con protección anti-ransomware y uso simultáneo en hasta 5 dispositivos (PC, Mac, iPhone, iPad, Android).",
+    "specs": [
+      "Word, Excel, PowerPoint, Outlook y OneNote con IA y actualizaciones continuas",
+      "1 TB (1,000 GB) de almacenamiento en la nube de OneDrive por usuario",
+      "Multiplataforma: úsalo en hasta 5 dispositivos a la vez (PC, Mac, iOS, Android)",
+      "Protección avanzada contra ransomware y respaldo automático de archivos",
+      "Activación 100% oficial ligada a tu cuenta Microsoft personal o familiar"
+    ],
+    "imageUrl": "/images/products/microsoft-365.svg",
+    "images": [
+      "/images/products/microsoft-365.svg"
+    ]
+  },
+  {
+    "id": "prod-123",
+    "sku": "SW-OFFICE-2024",
+    "name": "Microsoft Office Hogar 2024 para PC o Mac (Licencia Perpetua)",
+    "category": "software",
+    "cost": 1350,
+    "price": 1890,
+    "stock": 20,
+    "minStock": 3,
+    "unit": "licencia",
+    "isService": false,
+    "publicVisible": true,
+    "description": "Licencia permanente de compra única para toda la vida. Versiones clásicas 2024 de Word, Excel, PowerPoint y OneNote instaladas en 1 equipo PC o Mac. Sin rentas mensuales ni cobros periódicos; funciona 100% offline sin necesidad de almacenamiento en la nube obligatorio.",
+    "specs": [
+      "Compra única definitiva: te pertenece de por vida sin mensualidades",
+      "Para 1 PC o Mac (compatible con Windows 11, Windows 10 y macOS)",
+      "Versiones clásicas 2024 de Word, Excel, PowerPoint y OneNote",
+      "Soporte oficial de Microsoft con actualizaciones de seguridad permanentes",
+      "Clave legal validada directamente en setup.office.com con tu cuenta Microsoft"
+    ],
+    "imageUrl": "/images/products/office-2024.svg",
+    "images": [
+      "/images/products/office-2024.svg"
+    ]
   }
 ]

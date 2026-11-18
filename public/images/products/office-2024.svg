@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad2024" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#2a1b12"/>
+      <stop offset="60%" stop-color="#120c08"/>
+      <stop offset="100%" stop-color="#05070a"/>
+    </radialGradient>
+
+    <!-- Office 2024 Warm Gradient -->
+    <linearGradient id="office2024Front" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d83b01"/>
+      <stop offset="40%" stop-color="#ea3e2e"/>
+      <stop offset="80%" stop-color="#b41c00"/>
+      <stop offset="100%" stop-color="#801000"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="neonGlow2024" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <filter id="softShadow2024" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#d83b01" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient Backdrop -->
+  <rect width="600" height="600" rx="24" fill="url(#bgGrad2024)"/>
+  
+  <!-- Subtle Grid Lines -->
+  <g stroke="rgba(216,59,1,0.08)" stroke-width="1">
+    <line x1="50" y1="0" x2="50" y2="600"/>
+    <line x1="150" y1="0" x2="150" y2="600"/>
+    <line x1="250" y1="0" x2="250" y2="600"/>
+    <line x1="350" y1="0" x2="350" y2="600"/>
+    <line x1="450" y1="0" x2="450" y2="600"/>
+    <line x1="550" y1="0" x2="550" y2="600"/>
+    <line x1="0" y1="100" x2="600" y2="100"/>
+    <line x1="0" y1="200" x2="600" y2="200"/>
+    <line x1="0" y1="300" x2="600" y2="300"/>
+    <line x1="0" y1="400" x2="600" y2="400"/>
+    <line x1="0" y1="500" x2="600" y2="500"/>
+  </g>
+
+  <!-- Ground Pedestal Glow -->
+  <ellipse cx="300" cy="510" rx="190" ry="32" fill="#d83b01" opacity="0.25" filter="url(#neonGlow2024)"/>
+  <ellipse cx="300" cy="510" rx="140" ry="18" fill="#ffb900" opacity="0.15"/>
+
+  <!-- 3D Perspective Box Package -->
+  <g filter="url(#softShadow2024)" transform="translate(140, 85)">
+    <!-- Box Left Spine -->
+    <polygon points="0,55 70,0 70,360 0,405" fill="#1b120c" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <!-- Spine Text / Logo -->
+    <g transform="translate(35, 230) rotate(-90)">
+      <text fill="#ffffff" font-family="system-ui, sans-serif" font-size="20" font-weight="700" letter-spacing="3" text-anchor="middle">OFFICE HOGAR 2024</text>
+    </g>
+
+    <!-- Box Front Face -->
+    <polygon points="70,0 320,35 320,395 70,360" fill="#20150e" stroke="rgba(216,59,1,0.5)" stroke-width="2"/>
+
+    <!-- Front Face Gradient Accent Overlay -->
+    <path d="M70,0 L320,35 L320,180 L70,220 Z" fill="url(#office2024Front)" opacity="0.95"/>
+
+    <!-- Microsoft 4-Color Grid Icon -->
+    <g transform="translate(100, 30)">
+      <rect x="0" y="0" width="16" height="16" fill="#f25022"/>
+      <rect x="19" y="0" width="16" height="16" fill="#7fba00"/>
+      <rect x="0" y="19" width="16" height="16" fill="#00a4ef"/>
+      <rect x="19" y="19" width="16" height="16" fill="#ffb900"/>
+      <text x="46" y="26" fill="#ffffff" font-family="system-ui, sans-serif" font-size="18" font-weight="600" letter-spacing="0.5">Microsoft</text>
+    </g>
+
+    <!-- Product Title -->
+    <text x="100" y="105" fill="#ffffff" font-family="system-ui, sans-serif" font-size="28" font-weight="800" letter-spacing="-0.5">Office Hogar</text>
+    <text x="100" y="138" fill="#ffcf00" font-family="system-ui, sans-serif" font-size="34" font-weight="900" letter-spacing="0.5">2024</text>
+
+    <!-- Badges Row -->
+    <g transform="translate(100, 160)">
+      <rect x="0" y="0" width="105" height="22" rx="4" fill="rgba(0,0,0,0.45)"/>
+      <text x="52" y="15" fill="#9ec32e" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">PAGO ÚNICO</text>
+
+      <rect x="112" y="0" width="85" height="22" rx="4" fill="rgba(0,0,0,0.45)"/>
+      <text x="154" y="15" fill="#ffffff" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">1 PC / MAC</text>
+    </g>
+
+    <!-- App Badges on Front Face (Word, Excel, PowerPoint, OneNote 2024) -->
+    <g transform="translate(100, 255)">
+      <!-- Word -->
+      <g transform="translate(0, 0)">
+        <rect width="40" height="40" rx="8" fill="#185abd"/>
+        <text x="20" y="26" fill="#ffffff" font-family="system-ui, sans-serif" font-size="19" font-weight="700" text-anchor="middle">W</text>
+      </g>
+      <!-- Excel -->
+      <g transform="translate(50, 0)">
+        <rect width="40" height="40" rx="8" fill="#107c41"/>
+        <text x="20" y="26" fill="#ffffff" font-family="system-ui, sans-serif" font-size="19" font-weight="700" text-anchor="middle">X</text>
+      </g>
+      <!-- PowerPoint -->
+      <g transform="translate(100, 0)">
+        <rect width="40" height="40" rx="8" fill="#c43e1c"/>
+        <text x="20" y="26" fill="#ffffff" font-family="system-ui, sans-serif" font-size="19" font-weight="700" text-anchor="middle">P</text>
+      </g>
+      <!-- OneNote -->
+      <g transform="translate(150, 0)">
+        <rect width="40" height="40" rx="8" fill="#7719aa"/>
+        <text x="20" y="26" fill="#ffffff" font-family="system-ui, sans-serif" font-size="19" font-weight="700" text-anchor="middle">N</text>
+      </g>
+    </g>
+
+    <!-- Bottom Feature Line -->
+    <text x="100" y="325" fill="#ffb900" font-family="monospace" font-size="12" font-weight="700">// LICENCIA CLÁSICA PERPETUA</text>
+    <text x="100" y="348" fill="rgba(255,255,255,0.7)" font-family="system-ui, sans-serif" font-size="11">Sin suscripciones · Funciona offline</text>
+
+    <!-- Top Rim Highlight -->
+    <polygon points="0,55 70,0 320,35 250,90" fill="#3a2517" opacity="0.6"/>
+  </g>
+
+  <!-- Official Genuine Badge -->
+  <g transform="translate(420, 80)">
+    <circle cx="28" cy="28" r="26" fill="#1b1008" stroke="#d83b01" stroke-width="2"/>
+    <text x="28" y="24" fill="#9ec32e" font-family="monospace" font-size="9" font-weight="800" text-anchor="middle">PERPETUO</text>
+    <text x="28" y="38" fill="#ffffff" font-family="system-ui, sans-serif" font-size="10" font-weight="700" text-anchor="middle">100%</text>
+  </g>
+</svg>
