@@ -1,0 +1,8 @@
+{
+  "name": "Fiberlink Servicios TIC",
+  "description": "Soporte técnico, redes, videovigilancia CCTV, puntos de venta POS y soluciones digitales en Teziutlán y la región.",
+  "request": "Soporte técnico, redes, videovigilancia CCTV, puntos de venta POS y soluciones digitales.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
