@@ -6473,7 +6473,7 @@ html.light .stile-info span {
   color: #475569;
 }
 html.light .site-footer {
-  background: rgba(255, 255, 255, 0.98);
+  background: #ffffff;
   border-top: 1px solid rgba(13, 20, 10, 0.1);
   color: #485844;
   z-index: 10;
