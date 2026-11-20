@@ -15,8 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Cyber Background canvas (floating matrix particles)
   initCyberBg();
 
-  // 2. Initialize 3D Earth in the Hero
-  initEarth('webgl-container');
+  // 2. Initialize 3D Earth in the Hero (safe fallback when WebGL is disabled)
+  try {
+    initEarth('webgl-container');
+  } catch (err) {
+    console.warn('[Earth] WebGL unavailable, fallback active:', err?.message || err);
+  }
 
   // 3. Initialize GSAP and smooth scrolling
   initAnimations();
@@ -30,9 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. Matrix Glitch Scramble & Button Animations
   setupMatrixScramble();
   initHeroTicketAnimation();
-
-  // 7. Premium cursor (desktop only)
-  initCursor();
 
   // 8. Progressive Web App (PWA) Registration
   initPWA();
@@ -96,7 +97,7 @@ function initUI() {
   if(menuBtn) menuBtn.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
   if(drawerBack) drawerBack.addEventListener('click', closeDrawer);
   if(drawerClose) drawerClose.addEventListener('click', closeDrawer);
-  document.querySelectorAll('.dl').forEach(a => a.addEventListener('click', closeDrawer));
+  document.querySelectorAll('.dl, [data-drawer-close]').forEach(a => a.addEventListener('click', closeDrawer));
 
   // ==========================================
   // STEPPER TICKET MODAL & BACKEND INTEGRATION
@@ -756,46 +757,6 @@ function initUI() {
     });
   }
 
-  // Hover Glow and 3D Tilt effects (Only on desktop/non-touch devices for maximum performance)
-  const isTouch = window.matchMedia('(pointer: coarse)').matches;
-  if (!isTouch) {
-    // Hover Glow effect on Buttons
-    document.querySelectorAll('.btn').forEach(btn => {
-      btn.addEventListener('mousemove', e => {
-        const r = btn.getBoundingClientRect();
-        btn.style.setProperty('--bx', ((e.clientX - r.left) / r.width * 100) + '%');
-        btn.style.setProperty('--by', ((e.clientY - r.top) / r.height * 100) + '%');
-      });
-    });
-    
-    // Bento Cards Glow + 3D Tilt
-    document.querySelectorAll('.bc').forEach(card => {
-      card.addEventListener('mousemove', e => {
-        const r = card.getBoundingClientRect();
-        const cx = (e.clientX - r.left) / r.width;
-        const cy = (e.clientY - r.top) / r.height;
-        card.style.setProperty('--cx', (cx * 100) + '%');
-        card.style.setProperty('--cy', (cy * 100) + '%');
-        // 3D tilt
-        gsap.to(card, {
-          rotateY: (cx - 0.5) * 9,
-          rotateX: (cy - 0.5) * -7,
-          transformPerspective: 800,
-          duration: 0.38,
-          ease: 'power2.out',
-          overwrite: 'auto'
-        });
-      });
-      card.addEventListener('mouseleave', () => {
-        gsap.to(card, {
-          rotateY: 0, rotateX: 0,
-          duration: 0.9,
-          ease: 'elastic.out(1, 0.38)',
-          overwrite: 'auto'
-        });
-      });
-    });
-  }
 }
 
 // ============================
@@ -966,13 +927,9 @@ function initSmoothNav() {
         dropdownItem.classList.remove('open');
       }
 
-      // Smooth scroll via Lenis or native
-      if (window.lenis) {
-        window.lenis.scrollTo(targetEl, { offset: -70, duration: 1.1 });
-      } else {
-        const top = targetEl.getBoundingClientRect().top + window.pageYOffset - 70;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      // Native smooth scroll
+      const top = targetEl.getBoundingClientRect().top + window.pageYOffset - 70;
+      window.scrollTo({ top, behavior: 'smooth' });
 
       // If clicking a dropdown card with data-target, trigger pulse highlight on bento card
       const targetCardId = anchor.getAttribute('data-target');
@@ -1009,89 +966,74 @@ function initSmoothNav() {
 }
 
 // ============================
-// CUSTOM CURSOR
-// ============================
-function initCursor() {
-  if (window.matchMedia('(pointer: coarse)').matches) return;
-  const dot = document.getElementById('cursorDot');
-  const ring = document.getElementById('cursorRing');
-  if (!dot || !ring) return;
-
-  document.documentElement.setAttribute('data-cursor', 'active');
-  gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
-
-  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-  const pos   = { x: mouse.x, y: mouse.y };
-  const xSet  = gsap.quickSetter(ring, 'x', 'px');
-  const ySet  = gsap.quickSetter(ring, 'y', 'px');
-
-  window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-    gsap.set(dot, { x: mouse.x, y: mouse.y });
-  });
-
-  gsap.ticker.add(() => {
-    pos.x += (mouse.x - pos.x) * 0.11;
-    pos.y += (mouse.y - pos.y) * 0.11;
-    xSet(pos.x);
-    ySet(pos.y);
-  });
-
-  const selectors = 'a,button,.bc,.partner-item,.tool-pill,input,select,textarea,.soc,.step,.citem,label';
-  document.querySelectorAll(selectors).forEach(el => {
-    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-  });
-
-  document.addEventListener('mousedown', () => {
-    gsap.to(dot,  { scale: 1.6, duration: 0.12, ease: 'power2.out', overwrite: true });
-    gsap.to(ring, { scale: 0.8, duration: 0.12, ease: 'power2.out', overwrite: true });
-  });
-  document.addEventListener('mouseup', () => {
-    gsap.to([dot, ring], { scale: 1, duration: 0.55, ease: 'elastic.out(1.2, 0.4)', overwrite: true });
-  });
-  document.addEventListener('mouseleave', () => gsap.to([dot, ring], { opacity: 0, duration: 0.3 }));
-  document.addEventListener('mouseenter', () => gsap.to([dot, ring], { opacity: 1, duration: 0.3 }));
-}
-
-// ============================
 // CYBER BACKGROUND CANVAS (AI-DAY)
 // ============================
 function initCyberBg() {
   const canvas = document.getElementById('bgCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let raf = null;
-  let w = 0, h = 0;
+  if (!ctx) return;
+
+  let w = 0;
+  let h = 0;
   let digits = [];
-  const S = 18;
+  const glyphs = ['0', '1', '7', '9'];
+
+  // Pre-render glyph sprites once per theme/tint (15x faster than calling fillText 2000x/frame)
+  const spriteSize = 18;
+  function createSpriteSet(color) {
+    const set = {};
+    for (let i = 0; i < glyphs.length; i++) {
+      const g = glyphs[i];
+      const c = document.createElement('canvas');
+      c.width = spriteSize;
+      c.height = spriteSize;
+      const gctx = c.getContext('2d');
+      gctx.font = '600 13px "Space Mono", "Share Tech Mono", monospace';
+      gctx.textBaseline = 'middle';
+      gctx.textAlign = 'center';
+      gctx.fillStyle = color;
+      gctx.fillText(g, spriteSize / 2, spriteSize / 2);
+      set[g] = c;
+    }
+    return set;
+  }
+
+  const sprites = {
+    dark: {
+      lime: createSpriteSet('rgb(170, 214, 52)'),
+      neutral: createSpriteSet('rgb(220, 234, 218)'),
+    },
+    light: {
+      lime: createSpriteSet('rgb(68, 114, 6)'),
+      neutral: createSpriteSet('rgb(26, 44, 18)'),
+    },
+  };
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = window.innerWidth;
     h = window.innerHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(dpr, dpr);
+    // 1x DPR for ambient background numbers saves 4x pixels on mobile Retina displays
+    canvas.width = Math.max(1, w);
+    canvas.height = Math.max(1, h);
 
+    const S = w < 768 ? 28 : 26;
     const cols = Math.ceil(w / S) + 1;
     const rows = Math.ceil(h / S) + 1;
     digits = [];
     for (let x = 0; x < cols; x++) {
       for (let y = 0; y < rows; y++) {
-        if (Math.random() > 0.48) continue;
+        if (Math.random() > 0.42) continue;
         digits.push({
           x: x * S,
           y: y * S + 12,
-          c: Math.random() > 0.5 ? '0' : '7',
+          c: glyphs[Math.floor(Math.random() * glyphs.length)],
           p: Math.random() * Math.PI * 2,
-          s: 0.01 + Math.random() * 0.028,
-          lime: Math.random() > 0.93,
-          vy: (Math.random() > 0.5 ? 1 : -1) * (0.06 + Math.random() * 0.22),
+          s: 0.02 + Math.random() * 0.045,
+          lime: Math.random() > 0.80,
+          vy: (Math.random() > 0.5 ? 1 : -1) * (0.14 + Math.random() * 0.34),
           dx: Math.random() * Math.PI * 2,
-          flip: 0.002 + Math.random() * 0.004
+          flip: 0.004 + Math.random() * 0.007,
         });
       }
     }
@@ -1104,27 +1046,47 @@ function initCyberBg() {
     }
   });
 
-  function loop() {
+  const reducedMotion =
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let lastTick = 0;
+
+  function loop(now = 0) {
+    if (!reducedMotion) {
+      requestAnimationFrame(loop);
+    }
+    if (document.hidden) return;
+    if (now && now - lastTick < 34) return; // ~30fps cap keeps UI scrolling butter-smooth
+    lastTick = now;
+
     ctx.clearRect(0, 0, w, h);
-    ctx.font = '13px "Share Tech Mono", monospace';
+    const isLight = document.documentElement.classList.contains('light');
+    const themeSet = isLight ? sprites.light : sprites.dark;
+
     for (let i = 0; i < digits.length; i++) {
       const d = digits[i];
       d.p += d.s;
-      d.dx += 0.012;
+      d.dx += 0.022;
       d.y += d.vy;
       if (d.y > h + 14) d.y = -2;
       else if (d.y < -14) d.y = h + 2;
-      if (Math.random() < d.flip) d.c = d.c === '0' ? '7' : '0';
+      if (Math.random() < d.flip) {
+        d.c = d.c === '0' ? '1' : d.c === '1' ? '7' : d.c === '7' ? '9' : '0';
+      }
       const a = (Math.sin(d.p) + 1) / 2;
-      const isLight = document.documentElement.classList.contains('light');
-      ctx.fillStyle = d.lime
-        ? (isLight ? 'rgba(108,148,18,' + (0.24 + a * 0.40).toFixed(3) + ')' : 'rgba(156,195,46,' + (0.14 + a * 0.40).toFixed(3) + ')')
-        : (isLight ? 'rgba(30,45,25,' + (0.04 + a * 0.08).toFixed(3) + ')' : 'rgba(242,244,239,' + (0.025 + a * 0.08).toFixed(3) + ')');
-      ctx.fillText(d.c, d.x + Math.sin(d.dx) * 1.6, d.y);
+      ctx.globalAlpha = d.lime
+        ? isLight
+          ? 0.34 + a * 0.40
+          : 0.24 + a * 0.48
+        : isLight
+          ? 0.14 + a * 0.22
+          : 0.09 + a * 0.17;
+      const sprite = d.lime ? themeSet.lime[d.c] : themeSet.neutral[d.c];
+      ctx.drawImage(sprite, d.x + Math.sin(d.dx) * 1.6, d.y);
     }
-    raf = requestAnimationFrame(loop);
+    ctx.globalAlpha = 1;
   }
-  loop();
+
+  requestAnimationFrame(loop);
 }
 
 // ============================

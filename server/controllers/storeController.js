@@ -330,7 +330,7 @@ export function handleDeleteProduct(id, currentUser) {
     return { status: 404, data: { error: 'Producto no encontrado' } };
   }
 
-  products = products.filter(p => p.id !== id && p.sku !== id);
+  products = products.filter(p => p.id !== target.id && p.sku !== target.sku);
   writeCollection('products', products);
 
   logActivity({
@@ -340,5 +340,5 @@ export function handleDeleteProduct(id, currentUser) {
     action: `Eliminó producto [${target.sku}] ${target.name}`
   });
 
-  return { status: 200, data: { success: true } };
+  return { status: 200, data: { success: true, deletedId: target.id } };
 }

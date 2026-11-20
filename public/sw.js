@@ -1,9 +1,9 @@
 // ============================
 // FIBERLINK PWA SERVICE WORKER
-// Cache Version: fiberlink-v1.0.7
+// Cache Version: fiberlink-v1.0.8
 // ============================
 
-const CACHE_NAME = 'fiberlink-v1.0.7';
+const CACHE_NAME = 'fiberlink-v1.0.8';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -54,6 +54,12 @@ self.addEventListener('fetch', (event) => {
   // Ignore non-GET requests or unsupported schemes
   if (request.method !== 'GET') return;
   if (!request.url.startsWith('http')) return;
+
+  // Never cache dynamic API requests (products, inventory, tickets, POS)
+  try {
+    const reqUrl = new URL(request.url);
+    if (reqUrl.pathname.startsWith('/api/')) return;
+  } catch (_) {}
 
   // 1. Navigation requests (HTML document): Network-first with cache fallback
   if (request.mode === 'navigate') {

@@ -676,6 +676,20 @@ function initRealtimeSync() {
   }
 }
 
+function notifyPublicCatalogChanged(action = 'update', productId = '') {
+  const payload = { type: 'inventory-updated', action, productId, ts: Date.now() };
+  try {
+    if ('BroadcastChannel' in window) {
+      const ch = new BroadcastChannel('fiberlink-inventory');
+      ch.postMessage(payload);
+      ch.close();
+    }
+  } catch (_) {}
+  try {
+    localStorage.setItem('fiberlink_inventory_updated', JSON.stringify(payload));
+  } catch (_) {}
+}
+
 function updateNavBadges() {
   const activeTickets = allTickets.filter(t => t.estado !== 'resuelto').length;
   const urgentTicketsCount = allTickets.filter(t => t.priority === 'Urgente' && t.estado !== 'resuelto').length;
@@ -2631,6 +2645,7 @@ function initPosModule() {
       renderPosCart();
       renderPosCatalog();
       await syncAllData();
+      notifyPublicCatalogChanged('sale');
       showToast(`Venta ${res.sale.folio} procesada con éxito (${paymentMethod})`);
 
       const autoPrint = systemSettings?.enabledOptions?.autoPrintTicketOnSale !== false;
@@ -2924,10 +2939,29 @@ function renderPosSalesHistory() {
 
   tbody.querySelectorAll('.btn-cancel-sale').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('¿Cancelar esta venta y devolver los productos al inventario?')) return;
-      await erpService.cancelSale(btn.dataset.id);
-      await syncAllData();
-      showToast('Venta cancelada y stock restaurado');
+      if (btn.dataset.armed !== 'true') {
+        btn.dataset.armed = 'true';
+        btn.textContent = '¿Confirmar?';
+        clearTimeout(btn._armTimer);
+        btn._armTimer = setTimeout(() => {
+          btn.dataset.armed = '';
+          btn.textContent = 'Cancelar';
+        }, 4000);
+        return;
+      }
+      clearTimeout(btn._armTimer);
+      btn.disabled = true;
+      try {
+        await erpService.cancelSale(btn.dataset.id);
+        await syncAllData();
+        notifyPublicCatalogChanged('sale-cancel');
+        showToast('Venta cancelada y stock restaurado');
+      } catch (err) {
+        btn.disabled = false;
+        btn.dataset.armed = '';
+        btn.textContent = 'Cancelar';
+        showToast(err.message || 'Error al cancelar venta');
+      }
     });
   });
 }
@@ -3101,11 +3135,49 @@ function initStoreModule() {
     document.getElementById('prodId').value = '';
     currentProductPhotos = [];
     renderProductPhotosPreview();
+    const delModalBtn = document.getElementById('btnDeleteProdInModal');
+    if (delModalBtn) {
+      delModalBtn.classList.add('hidden');
+      delModalBtn.dataset.armed = '';
+      delModalBtn.textContent = 'Eliminar del Inventario';
+    }
     const bcEl = document.getElementById('prodBarcode');
     if (bcEl) bcEl.value = '';
     const titleEl = document.getElementById('productModalTitle') || document.getElementById('prodModalTitle');
     if (titleEl) titleEl.textContent = 'Registrar Nuevo Producto / Servicio';
     openModal('productModal');
+  });
+
+  document.getElementById('btnDeleteProdInModal')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const id = document.getElementById('prodId')?.value;
+    if (!id) return;
+    if (btn.dataset.armed !== 'true') {
+      btn.dataset.armed = 'true';
+      btn.textContent = 'Confirmar eliminación';
+      clearTimeout(btn._armTimer);
+      btn._armTimer = setTimeout(() => {
+        btn.dataset.armed = '';
+        btn.textContent = 'Eliminar del Inventario';
+      }, 4000);
+      return;
+    }
+    clearTimeout(btn._armTimer);
+    btn.disabled = true;
+    btn.textContent = 'Eliminando...';
+    try {
+      await erpService.deleteProduct(id);
+      closeModal('productModal');
+      await syncAllData();
+      notifyPublicCatalogChanged('delete', id);
+      showToast('Artículo eliminado del inventario y del catálogo web');
+    } catch (err) {
+      showToast(err.message || 'No se pudo eliminar el artículo');
+    } finally {
+      btn.disabled = false;
+      btn.dataset.armed = '';
+      btn.textContent = 'Eliminar del Inventario';
+    }
   });
 
   const prodForm = document.getElementById('productForm');
@@ -3139,6 +3211,7 @@ function initStoreModule() {
       }
       closeModal('productModal');
       await syncAllData();
+      notifyPublicCatalogChanged(id ? 'update' : 'create', id);
     } catch (err) {
       showToast(err.message);
     }
@@ -3203,6 +3276,7 @@ function initStoreModule() {
       });
       closeModal('addInventoryModal');
       await syncAllData();
+      notifyPublicCatalogChanged('stock-add', prodId);
       showToast(`Entrada de +${qty} unidades registrada en el Kardex`);
     } catch (err) {
       showToast(err.message);
@@ -3281,6 +3355,7 @@ function initStoreModule() {
       });
       closeModal('adjustInventoryModal');
       await syncAllData();
+      notifyPublicCatalogChanged('stock-adjust', prodId);
       showToast(`Ajuste de inventario aplicado (${prod.sku}: ${sysStock} ➔ ${finalStock})`);
     } catch (err) {
       showToast(err.message);
@@ -3489,7 +3564,7 @@ function renderStoreTable() {
               <button class="btn btn-secondary btn-sm btn-inv-kardex" data-id="${p.id}" title="Ver Tarjeta Kardex del Producto">Kardex</button>
             ` : ''}
             <button class="btn btn-ghost btn-sm btn-edit-prod" data-id="${p.id}">Editar</button>
-            ${currentUser?.permissions?.canDelete ? `<button class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}">✕</button>` : ''}
+            ${(currentUser?.permissions?.canDelete || currentUser?.permissions?.canEditInventory) ? `<button type="button" class="btn btn-danger btn-sm btn-del-prod" data-id="${p.id}" title="Eliminar artículo del inventario">Eliminar</button>` : ''}
           </div>
         </td>
       </tr>
@@ -3529,10 +3604,31 @@ function renderStoreTable() {
 
   tbody.querySelectorAll('.btn-del-prod').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('¿Eliminar este producto del catálogo?')) return;
-      await erpService.deleteProduct(btn.dataset.id);
-      await syncAllData();
-      showToast('Producto eliminado');
+      if (btn.dataset.armed !== 'true') {
+        btn.dataset.armed = 'true';
+        btn.textContent = '¿Confirmar?';
+        clearTimeout(btn._armTimer);
+        btn._armTimer = setTimeout(() => {
+          btn.dataset.armed = '';
+          btn.textContent = 'Eliminar';
+        }, 4000);
+        return;
+      }
+      clearTimeout(btn._armTimer);
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        await erpService.deleteProduct(id);
+        await syncAllData();
+        notifyPublicCatalogChanged('delete', id);
+        showToast('Artículo eliminado del inventario y del catálogo web');
+      } catch (err) {
+        btn.disabled = false;
+        btn.dataset.armed = '';
+        btn.textContent = 'Eliminar';
+        showToast(err.message || 'No se pudo eliminar el artículo');
+      }
     });
   });
 }
@@ -3540,6 +3636,14 @@ function renderStoreTable() {
 function openEditProductModal(productId) {
   const p = allProducts.find(x => x.id === productId);
   if (!p) return;
+  const delModalBtn = document.getElementById('btnDeleteProdInModal');
+  if (delModalBtn) {
+    const canDel = Boolean(currentUser?.permissions?.canDelete || currentUser?.permissions?.canEditInventory);
+    delModalBtn.classList.toggle('hidden', !canDel);
+    delModalBtn.dataset.armed = '';
+    delModalBtn.disabled = false;
+    delModalBtn.textContent = 'Eliminar del Inventario';
+  }
   document.getElementById('prodId').value = p.id;
   document.getElementById('prodSku').value = p.sku;
   const bcEl = document.getElementById('prodBarcode');

@@ -1248,3 +1248,55 @@
   box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
 }
 
+/* ---------- Light Mode Polish for Fibi Assistant ---------- */
+html.light .fa-launcher-badge {
+  background: #ffffff;
+  color: #446804;
+  border-color: rgba(68, 104, 4, 0.45);
+  box-shadow: 0 4px 12px rgba(15, 26, 10, 0.14);
+}
+html.light .fa-launcher-tip {
+  background: rgba(255, 255, 255, 0.96);
+  color: #0d140a;
+  border-color: rgba(68, 104, 4, 0.35);
+  box-shadow: 0 16px 36px rgba(15, 26, 10, 0.14);
+}
+html.light .fa-launcher-tip::after {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(68, 104, 4, 0.35);
+}
+html.light .fa-launcher-tip strong {
+  color: #446804;
+}
+html.light .fa-launcher-tip-text {
+  color: #364732;
+}
+html.light .fa-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9f0 100%);
+  color: #0d140a;
+  border-color: rgba(15, 26, 10, 0.12);
+  box-shadow: 0 28px 70px rgba(15, 26, 10, 0.18), 0 0 0 1px rgba(68, 104, 4, 0.12);
+}
+html.light .fa-head {
+  background: rgba(243, 247, 238, 0.85);
+  border-bottom-color: rgba(15, 26, 10, 0.08);
+}
+html.light .fa-head-title-row h3 {
+  color: #0d140a;
+}
+html.light .fa-head-subtitle {
+  color: #485844;
+}
+html.light .fa-icon-btn {
+  color: #485844;
+  background: #ffffff;
+  border-color: rgba(15, 26, 10, 0.1);
+}
+html.light .fa-progress {
+  background: rgba(236, 242, 227, 0.6);
+  border-bottom-color: rgba(15, 26, 10, 0.08);
+}
+html.light .fa-step {
+  color: #485844;
+  border-color: rgba(15, 26, 10, 0.15);
+}

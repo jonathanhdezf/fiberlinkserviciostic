@@ -22,49 +22,49 @@
     --tw-panel-2: 14 21 30;
 
     --tw-text-primary: 244 247 246;
-    --tw-text-secondary: 150 165 176;
-    --tw-text-tertiary: 112 128 143;
+    --tw-text-secondary: 165 180 190;
+    --tw-text-tertiary: 125 142 157;
 
     --tw-brand: 156 195 46;      /* #9CC32E */
     --tw-brand-2: 184 220 62;    /* #B8DC3E */
-    --tw-brand-ink: 156 195 46;  /* texto de acento */
+    --tw-brand-ink: 170 212 52;  /* texto de acento legible AA+ */
     --tw-on-brand: 11 15 18;     /* texto sobre botones verdes */
 
     --tw-info: 0 184 217;
     --tw-warning: 255 193 7;
     --tw-alert: 255 72 66;
 
-    --fl-glass: rgba(255, 255, 255, 0.08);
+    --fl-glass: rgba(255, 255, 255, 0.11);
   }
 
   html.light,
   [data-theme='light'] {
-    --tw-surface-base: 245 248 242;
+    --tw-surface-base: 243 247 238;
     --tw-surface-card: 255 255 255;
-    --tw-surface-overlay: 238 243 230;
+    --tw-surface-overlay: 236 242 227;
     --tw-surface-container-lowest: 255 255 255;
-    --tw-surface-container-low: 241 245 236;
-    --tw-surface-container: 230 237 217;
-    --tw-surface-container-high: 219 228 204;
-    --tw-surface-container-highest: 207 218 190;
-    --tw-deep: 241 245 236;
+    --tw-surface-container-low: 246 249 242;
+    --tw-surface-container: 237 243 229;
+    --tw-surface-container-high: 226 234 214;
+    --tw-surface-container-highest: 213 224 198;
+    --tw-deep: 238 244 231;
     --tw-panel: 255 255 255;
-    --tw-panel-2: 238 243 230;
+    --tw-panel-2: 245 249 240;
 
     --tw-text-primary: 13 20 10;
-    --tw-text-secondary: 72 88 68;
-    --tw-text-tertiary: 98 112 94;
+    --tw-text-secondary: 66 82 62;
+    --tw-text-tertiary: 94 109 90;
 
     --tw-brand: 156 195 46;
-    --tw-brand-2: 108 148 18;
-    --tw-brand-ink: 86 120 8;    /* contraste AA sobre blanco */
+    --tw-brand-2: 176 214 58;    /* Hover brillante manteniendo contraste oscuro en botones */
+    --tw-brand-ink: 68 104 4;    /* Contraste >6.5:1 AA/AAA sobre blanco */
     --tw-on-brand: 11 15 18;
 
     --tw-info: 2 132 199;
-    --tw-warning: 180 120 0;
+    --tw-warning: 180 110 0;
     --tw-alert: 220 38 38;
 
-    --fl-glass: rgba(13, 20, 10, 0.1);
+    --fl-glass: rgba(15, 26, 10, 0.11);
   }
 
   /* Tailwind preflight resetea <img> a display:block; mantenemos el logo animado intacto */
@@ -80,14 +80,177 @@
     margin-right: auto;
   }
 
-  /* Capa ambiental temática (antes cubría el globo 3D al 94%) */
+  /* Capa ambiental temática */
   .fl-ambient {
-    background: radial-gradient(circle at 50% 15%, rgba(156, 195, 46, 0.07) 0%, rgba(11, 15, 18, 0.5) 65%, rgba(8, 11, 13, 0.72) 100%);
+    background: radial-gradient(circle at 50% 18%, rgba(156, 195, 46, 0.09) 0%, rgba(11, 15, 18, 0.14) 58%, rgba(7, 10, 13, 0.34) 100%);
+  }
+  html:not(.light) .fl-ambient-code {
+    opacity: 0.17 !important;
+    color: rgba(170, 212, 52, 0.92) !important;
+    text-shadow: 0 0 8px rgba(156, 195, 46, 0.32) !important;
+    mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 46%, rgba(0, 0, 0, 0.24) 94%) !important;
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 46%, rgba(0, 0, 0, 0.24) 94%) !important;
   }
   html.light .fl-ambient {
-    background: radial-gradient(circle at 50% 15%, rgba(156, 195, 46, 0.1) 0%, rgba(245, 248, 242, 0.45) 65%, rgba(245, 248, 242, 0.7) 100%);
+    background: radial-gradient(circle at 50% 18%, rgba(156, 195, 46, 0.11) 0%, rgba(243, 247, 238, 0.10) 60%, rgba(226, 236, 214, 0.28) 100%);
   }
-  html.light .fl-ambient-code { opacity: 0.05 !important; text-shadow: none !important; }
+  html.light .fl-ambient-code {
+    opacity: 0.28 !important;
+    color: #3d5f04 !important;
+    font-weight: 700;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) !important;
+    mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 52%, rgba(0, 0, 0, 0.35) 95%) !important;
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 52%, rgba(0, 0, 0, 0.35) 95%) !important;
+  }
+
+  /* Secciones translúcidas en Modo Oscuro para dejar ver fondo animado, dígitos y globo 3D */
+  html:not(.light) #inicio,
+  html:not(.light) #seccion-catalogo {
+    background-color: rgba(7, 11, 14, 0.14) !important;
+    border-color: rgba(156, 195, 46, 0.14) !important;
+  }
+  html:not(.light) #asistencia-expres,
+  html:not(.light) #compartir {
+    background-color: rgba(7, 11, 14, 0.22) !important;
+    border-color: rgba(156, 195, 46, 0.14) !important;
+  }
+  html:not(.light) #modulo-ticket {
+    background-color: rgba(11, 16, 22, 0.26) !important;
+  }
+  html:not(.light) .hero-video-backdrop video {
+    opacity: 0.14 !important;
+    mix-blend-mode: screen;
+  }
+  html:not(.light) .catalog-store-backdrop video {
+    opacity: 0.10 !important;
+    mix-blend-mode: screen;
+  }
+  html:not(.light) .hero-video-backdrop > div:nth-child(2) {
+    background: linear-gradient(180deg, rgba(7, 11, 14, 0.10) 0%, rgba(7, 11, 14, 0.20) 58%, rgba(7, 11, 14, 0.36) 100%) !important;
+  }
+  html:not(.light) .catalog-store-backdrop > div:nth-child(3) {
+    background: linear-gradient(180deg, rgba(7, 11, 14, 0.24) 0%, rgba(7, 11, 14, 0.16) 55%, rgba(7, 11, 14, 0.34) 100%) !important;
+  }
+
+  /* Refinamientos Modo Oscuro — profundidad, cristal esmerilado y contraste AA+ sobre fondo vivo */
+  html:not(.light) header {
+    background-color: rgba(11, 15, 20, 0.94) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(255, 255, 255, 0.11);
+    box-shadow: inset 0 -1px 0 rgba(156, 195, 46, 0.16), 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+  html:not(.light) footer {
+    background-color: rgba(7, 10, 14, 0.96);
+    box-shadow: inset 0 1px 0 rgba(156, 195, 46, 0.22), 0 -10px 32px rgba(0, 0, 0, 0.55);
+  }
+  html:not(.light) .catalog-command-bar,
+  html:not(.light) .section-command-bar,
+  html:not(.light) #modulo-ticket .lg\:col-span-7.rounded-2xl,
+  html:not(.light) #compartir > .rounded-2xl {
+    background-color: rgba(11, 16, 22, 0.90) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 38px -12px rgba(0, 0, 0, 0.72);
+  }
+  html:not(.light) article[data-product],
+  html:not(.light) #asistencia-expres article.rounded-xl,
+  html:not(.light) #asistencia-expres > div.rounded-xl,
+  html:not(.light) #opiniones-clientes article.rounded-xl,
+  html:not(.light) #inicio .lg\:col-span-5 > .rounded-xl,
+  html:not(.light) #inicio .relative.z-10 > .rounded-xl,
+  html:not(.light) #seccion-catalogo .grid > .rounded-xl,
+  html:not(.light) #modulo-ticket .lg\:col-span-5 .rounded-xl {
+    background-color: rgba(11, 16, 22, 0.89) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 14px 32px -12px rgba(0, 0, 0, 0.7);
+  }
+  html:not(.light) article[data-product]:hover,
+  html:not(.light) #opiniones-clientes article.rounded-xl:hover,
+  html:not(.light) #asistencia-expres article.rounded-xl:hover {
+    background-color: rgba(15, 22, 30, 0.95) !important;
+    border-color: rgba(156, 195, 46, 0.48) !important;
+    box-shadow: inset 0 1px 0 rgba(184, 220, 62, 0.18), 0 16px 36px -10px rgba(0, 0, 0, 0.78), 0 0 24px -6px rgba(156, 195, 46, 0.16);
+  }
+  html:not(.light) .fl-hero-accent {
+    background-image: linear-gradient(90deg, #b8dc3e, #dff978);
+  }
+  html:not(.light) #catalog-search,
+  html:not(.light) #catalog-sort {
+    background-color: #090d11;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  html:not(.light) .fl-marquee {
+    background-color: rgba(8, 12, 17, 0.88) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(156, 195, 46, 0.24);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Secciones translúcidas en Modo Claro para observar fondo, matriz de números y globo 3D */
+  html.light #inicio,
+  html.light #seccion-catalogo,
+  html.light #asistencia-expres,
+  html.light #compartir {
+    background-color: rgba(243, 247, 238, 0.10) !important;
+    border-color: rgba(68, 104, 4, 0.14) !important;
+  }
+  html.light #modulo-ticket {
+    background-color: rgba(238, 244, 231, 0.22) !important;
+  }
+  html.light .hero-video-backdrop video,
+  html.light .catalog-store-backdrop video {
+    opacity: 0.04 !important;
+    filter: saturate(0.75) brightness(1.15) !important;
+  }
+  html.light .hero-video-backdrop > div:nth-child(2),
+  html.light .catalog-store-backdrop > div:nth-child(3) {
+    background: linear-gradient(180deg, rgba(243, 247, 238, 0.06) 0%, rgba(243, 247, 238, 0.20) 60%, rgba(243, 247, 238, 0.40) 100%) !important;
+  }
+
+  /* Elevación limpia, header/footer y contraste de tarjetas en Modo Claro (sin backdrop-blur pesado sobre WebGL) */
+  html.light header {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(15, 26, 10, 0.09) !important;
+    box-shadow: 0 4px 20px rgba(15, 26, 10, 0.06) !important;
+  }
+  html.light footer {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    border-color: rgba(15, 26, 10, 0.1) !important;
+    box-shadow: 0 -4px 24px rgba(15, 26, 10, 0.05) !important;
+  }
+  html.light .fl-marquee {
+    background-color: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: rgba(68, 104, 4, 0.18) !important;
+  }
+  html.light article[data-product],
+  html.light .catalog-command-bar,
+  html.light .section-command-bar,
+  html.light #asistencia-expres .rounded-xl,
+  html.light #opiniones-clientes .rounded-xl,
+  html.light #inicio .rounded-xl,
+  html.light #modulo-ticket .rounded-2xl,
+  html.light #compartir .rounded-2xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 4px 18px -2px rgba(15, 26, 10, 0.06), 0 1px 3px rgba(15, 26, 10, 0.04);
+  }
+  html.light article[data-product]:hover {
+    border-color: rgba(68, 104, 4, 0.45) !important;
+    box-shadow: 0 12px 28px -4px rgba(15, 26, 10, 0.10), 0 0 0 1px rgba(156, 195, 46, 0.25);
+  }
+  html.light [class*="border-[rgba(255,255,255"] {
+    border-color: rgba(15, 26, 10, 0.09) !important;
+  }
+  html.light .fl-hero-accent {
+    background-image: linear-gradient(90deg, #3f6204, #6c9412) !important;
+  }
 
   /* Franja de telemetría: transform GPU + contenido duplicado exacto => loop sin saltos */
   .fl-marquee { contain: paint; }
@@ -117,6 +280,15 @@
   .fl-toast[data-type='error'] { border-color: rgba(255, 72, 66, .6); }
   .fl-toast .material-symbols-outlined { font-size: 18px; color: rgb(var(--tw-brand-ink)); }
   .fl-toast[data-type='error'] .material-symbols-outlined { color: rgb(var(--tw-alert)); }
+
+  /* Ocultar scrollbar horizontal en carruseles táctiles móviles */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 
   /* Producto sin imagen disponible */
   .fl-img-fallback { object-fit: contain !important; padding: 2.5rem; opacity: .55; }

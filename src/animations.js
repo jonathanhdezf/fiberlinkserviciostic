@@ -1,32 +1,9 @@
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function initAnimations() {
-  // 1. Lenis Smooth Scroll (only on desktop pointer devices to preserve native 120Hz kinetic touch scrolling on mobile)
-  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth < 1024);
-
-  if (!isTouchDevice) {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-    });
-
-    lenis.on('scroll', ScrollTrigger.update);
-
-    gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
-    });
-    gsap.ticker.lagSmoothing(0);
-
-    window.lenis = lenis;
-  }
 
   // 2. Reveal Animations (Staggered fade up)
   const revealElements = document.querySelectorAll('.reveal');
@@ -123,32 +100,7 @@ export function initAnimations() {
     }, { passive: true });
   }
 
-  // 6. Magnetic Buttons
-  const magneticEls = document.querySelectorAll('.magnetic');
-  magneticEls.forEach(btn => {
-    btn.addEventListener('mousemove', (e) => {
-      const rect = btn.getBoundingClientRect();
-      const h = rect.width / 2;
-      const x = e.clientX - rect.left - h;
-      const y = e.clientY - rect.top - (rect.height / 2);
-      
-      gsap.to(btn, {
-        x: x * 0.3,
-        y: y * 0.3,
-        duration: 0.4,
-        ease: "power2.out"
-      });
-    });
 
-    btn.addEventListener('mouseleave', () => {
-      gsap.to(btn, {
-        x: 0,
-        y: 0,
-        duration: 0.7,
-        ease: "elastic.out(1, 0.3)"
-      });
-    });
-  });
 
   // 7. Hero stat counter animation ("4" animates from 0)
   const numStat = document.querySelector('.hstat-num[style*="color:var(--c)"]');

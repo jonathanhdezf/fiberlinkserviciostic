@@ -90,6 +90,8 @@ export function writeTickets(tickets) {
 
 function sendJSON(res, statusCode, data) {
   if (typeof res.status === 'function' && typeof res.json === 'function') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -97,6 +99,8 @@ function sendJSON(res, statusCode, data) {
   }
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
@@ -289,21 +293,21 @@ export async function handleApiRequest(req, res, next) {
       return sendJSON(res, result.status, result.data);
     }
 
-    const prodStockMatch = pathname.match(/^\/api\/products\/([a-zA-Z0-9_-]+)\/stock$/);
+    const prodStockMatch = pathname.match(/^\/api\/products\/([^/]+)\/stock$/);
     if (prodStockMatch && method === 'POST') {
       const body = await parseBody(req);
-      const result = handleAdjustStock(prodStockMatch[1], body, currentUser);
+      const result = handleAdjustStock(decodeURIComponent(prodStockMatch[1]), body, currentUser);
       return sendJSON(res, result.status, result.data);
     }
 
-    const prodIdMatch = pathname.match(/^\/api\/products\/([a-zA-Z0-9_-]+)$/);
+    const prodIdMatch = pathname.match(/^\/api\/products\/([^/]+)$/);
     if (prodIdMatch && method === 'PATCH') {
       const body = await parseBody(req);
-      const result = handleUpdateProduct(prodIdMatch[1], body, currentUser);
+      const result = handleUpdateProduct(decodeURIComponent(prodIdMatch[1]), body, currentUser);
       return sendJSON(res, result.status, result.data);
     }
     if (prodIdMatch && method === 'DELETE') {
-      const result = handleDeleteProduct(prodIdMatch[1], currentUser);
+      const result = handleDeleteProduct(decodeURIComponent(prodIdMatch[1]), currentUser);
       return sendJSON(res, result.status, result.data);
     }
 

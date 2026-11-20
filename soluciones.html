@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es-MX">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Soluciones Inmediatas y Artículos de Ayuda TIC por Fiberlink. Respuestas sencillas y asistencia rápida para dueños de negocios y PyMEs.">
-  <title>Soluciones Inmediatas & Blog de Ayuda TIC | Fiberlink</title>
+  <title>Soluciones Inmediatas &amp; Blog de Ayuda TIC | Fiberlink</title>
 
   <!-- PWA Manifest & Web App Config -->
   <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#0a0b08">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b0f12" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f8f2" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="light dark">
 
   <!-- Favicons & App Icons -->
   <link rel="icon" type="image/gif" href="/logo.gif">
@@ -18,7 +19,7 @@
   <!-- Typography Preconnect & Styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="/src/style.css" />
 
@@ -44,8 +45,14 @@
 <!-- Progress indicator -->
 <div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
 
-<!-- Background matrix canvas -->
-<canvas id="bgCanvas" aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35;"></canvas>
+<!-- Background canvas & layers (aligned with index) -->
+<div class="bg bg--base" aria-hidden="true"></div>
+<div class="bg bg--wash" aria-hidden="true"></div>
+<div class="bg bg--glow" aria-hidden="true"></div>
+<div class="bg--scan" aria-hidden="true"></div>
+<canvas id="bgCanvas" class="bg--canvas" aria-hidden="true"></canvas>
+<div class="bg bg--lines" aria-hidden="true"></div>
+<div class="bg bg--vignette" aria-hidden="true"></div>
 
 <!-- ============================
      HEADER
@@ -61,38 +68,29 @@
         <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
       </div>
       <div class="brand-text">
-        <strong data-glitch="Fiberlink"><span class="glitch-txt">Fiberlink</span></strong>
+        <strong>Fiberlink</strong>
         <span>Servicios TIC</span>
       </div>
     </a>
 
     <!-- Nav buttons -->
     <nav class="nav-desktop gamer-nav" aria-label="Navegación secundaria">
-      <a class="nav-link hud-link" href="/" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        <span>VOLVER AL INICIO</span>
+      <a class="nav-link hud-link" href="/">
+        <span>Inicio</span>
       </a>
       <a class="nav-link hud-link nav-active" href="/soluciones.html">
-        <span class="hud-num">02</span>
-        <span>SOLUCIONES & BLOG</span>
+        <span>Soluciones &amp; Blog</span>
       </a>
       <a class="nav-link hud-link" href="/catalogo.html">
-        <span class="hud-num">03</span>
-        <span>CATÁLOGO</span>
+        <span>Catálogo</span>
       </a>
-      <a class="nav-link hud-link" href="/#contacto">
-        <span class="hud-num">05</span>
-        <span>CONTACTO</span>
+      <a class="nav-link hud-link" href="/#modulo-ticket">
+        <span>Ticket</span>
       </a>
     </nav>
 
     <!-- Header Actions -->
     <div class="nav-actions">
-      <div class="live-pill hud-status" title="Soporte técnico activo">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span class="hud-status-code">SYS.READY</span>
-      </div>
-
       <!-- Theme Switcher (Dark / Light) -->
       <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Cambiar a Modo Claro" title="Modo Claro / Oscuro">
         <span class="theme-toggle-icon icon-sun" aria-hidden="true">
@@ -115,9 +113,9 @@
         </span>
       </button>
 
-      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
-        <span class="glitch-txt">[ TICKET ]</span>
+      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
+        <span>Crear Ticket</span>
       </button>
 
       <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20necesito%20asistencia%20inmediata" target="_blank" rel="noopener" style="min-height:36px; padding:0 14px; font-size:.84rem;">
@@ -133,71 +131,418 @@
   ============================ -->
   <section class="sol-page-hero">
     <div class="wrap sol-page-hero-inner">
-      <!-- Breadcrumbs / Migas de Pan para volver a Portada -->
-      <nav class="cyber-breadcrumbs" aria-label="Migas de pan">
-        <ol class="breadcrumbs-list">
-          <li class="breadcrumb-item">
-            <a href="/" class="breadcrumb-link" title="Regresar a la Portada">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <span>Portada</span>
-            </a>
-          </li>
-          <li class="breadcrumb-sep" aria-hidden="true">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </li>
-          <li class="breadcrumb-item breadcrumb-current" aria-current="page">
-            <span>Soluciones & Blog TIC</span>
-          </li>
-        </ol>
-        <a href="/" class="breadcrumb-back-btn" title="Volver a la página principal">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          <span>Regresar a Inicio</span>
-        </a>
-      </nav>
+      <div class="sol-hero-card">
+        <!-- Breadcrumbs -->
+        <nav class="cyber-breadcrumbs" aria-label="Migas de pan">
+          <ol class="breadcrumbs-list">
+            <li class="breadcrumb-item">
+              <a href="/" class="breadcrumb-link" title="Regresar a la Portada">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Portada</span>
+              </a>
+            </li>
+            <li class="breadcrumb-sep" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </li>
+            <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+              <span>Soluciones y Blog TIC</span>
+            </li>
+          </ol>
+          <a href="/" class="breadcrumb-back-btn" title="Volver a la página principal">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>Regresar a Inicio</span>
+          </a>
+        </nav>
 
-      <div class="lbl">// ASISTENCIA TÉCNICA EXPRÉS & GUÍAS TIC</div>
-      <h1>Respuestas claras y soluciones que te sacan del apuro <span class="accent-text">hoy mismo.</span></h1>
-      <p>Artículos prácticos escritos para dueños de negocios, emprendedores y usuarios cotidianos. Aprende a evitar fallas costosas y conoce cómo resolvemos tus emergencias sin tecnicismos.</p>
+        <div class="sol-hero-kicker">
+          <span>Blog técnico</span>
+          <span aria-hidden="true">·</span>
+          <span>Guías prácticas TIC</span>
+        </div>
+        <h1>Guías prácticas de soporte, punto de venta y <span class="accent-text">seguridad TIC.</span></h1>
+        <p>Artículos breves y objetivos para diagnosticar fallas frecuentes, elegir equipos adecuados para tu negocio y proteger tu información paso a paso.</p>
 
-      <!-- Category Filter Tabs -->
-      <div class="sol-filter-tabs" id="filterTabs">
-        <button class="sol-tab-btn active" data-category="all" type="button">Todos los Artículos (5)</button>
-        <button class="sol-tab-btn" data-category="cctv" type="button">Cámaras & Seguridad</button>
-        <button class="sol-tab-btn" data-category="soporte" type="button">Soporte Técnico</button>
-        <button class="sol-tab-btn" data-category="software" type="button">Software & Ciberseguridad</button>
-        <button class="sol-tab-btn" data-category="pos" type="button">Puntos de Venta (POS)</button>
-        <button class="sol-tab-btn" data-category="inmediato" type="button">Servicios Inmediatos</button>
+        <!-- Search + Counter + Single-Row Category Strip -->
+        <div class="sol-controls-bar">
+          <div class="sol-search-row">
+            <div class="sol-search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="solSearchInput" class="sol-search-input" type="search" placeholder="Buscar guía, app o producto (SSD, CCTV cruzado, Pluto TV, POS, Office)..." aria-label="Buscar artículos del blog">
+            </div>
+            <span id="solCountBadge" class="sol-count-badge">8 artículos</span>
+          </div>
+
+          <div class="sol-filter-tabs" id="filterTabs" role="tablist" aria-label="Categorías del blog">
+            <button class="sol-tab-btn active" data-category="all" type="button">Todos (8)</button>
+            <button class="sol-tab-btn" data-category="entretenimiento" type="button">TV &amp; Apps Gratis</button>
+            <button class="sol-tab-btn" data-category="soporte" type="button">Soporte Técnico</button>
+            <button class="sol-tab-btn" data-category="pos" type="button">Punto de Venta</button>
+            <button class="sol-tab-btn" data-category="cctv" type="button">Cámaras CCTV</button>
+            <button class="sol-tab-btn" data-category="software" type="button">Software Legal</button>
+            <button class="sol-tab-btn" data-category="inmediato" type="button">Servicios Inmediatos</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ============================
-       ARTICLES LIST
+       WORDPRESS BLOG CARDS GRID
   ============================ -->
-  <section class="wrap">
-    <div class="sol-articles-grid" id="articlesContainer">
+  <section class="wrap" aria-label="Listado de artículos del blog">
+    <div class="wp-blog-grid" id="wpBlogGrid"></div>
+
+    <div id="solEmptyState" class="sol-empty-state" style="display:none; max-width:960px; margin:0 auto 48px;">
+      <h3>No encontramos artículos con ese criterio</h3>
+      <p style="margin-bottom:16px;">Prueba con otra palabra clave o restaura todos los artículos disponibles.</p>
+      <button id="solResetFiltersBtn" class="btn btn-primary" type="button">Ver todos los artículos</button>
+    </div>
+
+    <!-- Semantic Content Store for Single-Post Reader -->
+    <div id="articlesContainer" hidden aria-hidden="true">
+
+      <!-- ARTÍCULO NUEVO: Discos SSD en Computadoras Antiguas o Lentas -->
+      <article class="article-card" data-category="soporte" data-slug="discos-ssd-mejorar-rendimiento-pc-antigua" data-excerpt="Cómo una unidad SSD acelera computadoras antiguas o lentas, y la aclaración honesta sobre la diferencia entre velocidad de lectura/escritura y la capacidad real de tu procesador.">
+        <div class="article-meta">
+          <span class="cat-badge">Soporte Técnico</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            4 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink Mesa Técnica</span>
+        </div>
+
+        <h2>Discos SSD en computadoras antiguas o lentas: qué sí mejoran de inmediato y qué sigue dependiendo del procesador</h2>
+
+        <!-- Imagen Temática -->
+        <div class="article-banner-wrap">
+          <div class="article-theme-overlay" aria-hidden="true"></div>
+          <div class="article-hud-crosshairs" aria-hidden="true"></div>
+          <img class="article-banner-img" src="/src/assets/images/ssd_upgrade_computadora_1795021689640.jpg" alt="Actualización de laptop con unidad de estado sólido SSD en mesa técnica Fiberlink" referrerpolicy="no-referrer" loading="lazy">
+          <div class="article-img-caption">
+            <span>Actualización de Hardware · Unidad SSD en PC y Laptops Antiguas</span>
+          </div>
+        </div>
+
+        <div class="article-body">
+          <p><strong>¿Tienes una laptop o computadora de escritorio con algunos años encima que tarda tres minutos en encender, se congela al abrir el navegador y te hace pensar que ya no sirve?</strong> Antes de gastar miles de pesos en un equipo nuevo, en nuestro taller aplicamos una mejora que cambia la experiencia por completo: reemplazar el disco duro mecánico tradicional (HDD) por una <strong>unidad de estado sólido (SSD)</strong>.</p>
+
+          <p>Por experiencia práctica en decenas de equipos de oficina, mostrador y estudiantes que recibimos cada semana en Teziutlán, <strong>instalar un SSD es la actualización con mejor relación costo-beneficio que podemos recomendar</strong>. Pero para que tomes una decisión informada y sin falsas expectativas, es importante explicarte con total claridad cómo funciona.</p>
+
+          <h3>Aclaración técnica clave: el SSD optimiza lectura y escritura, pero no cambia tu procesador</h3>
+          <p>Es fundamental entender que <strong>el trabajo del procesador (CPU) es independiente a la velocidad de lectura y escritura del disco</strong>, especialmente en computadoras antiguas o de gama básica:</p>
+          <ul>
+            <li><strong>Lo que hace el procesador:</strong> Se encarga de realizar cálculos pesados, procesar gráficos complejos, renderizar videos, ejecutar videojuegos exigentes o manejar múltiples programas pesados al mismo tiempo. Un SSD no multiplica la potencia matemática de un procesador antiguo (por ejemplo, un Celeron o Core i3 de hace varios años).</li>
+            <li><strong>Lo que hace el SSD:</strong> Elimina el cuello de botella más grande de las PC antiguas. Un disco mecánico viejo lee y escribe mediante un plato giratorio y una aguja física que se satura al 100% con Windows 10 o Windows 11. Un SSD opera con memoria flash electrónica —entre <strong>5 y 10 veces más rápida</strong>— entregando los archivos al procesador al instante, sin tiempos muertos ni trabas mecánicas.</li>
+          </ul>
+
+          <div class="article-highlight-box">
+            <strong>En palabras sencillas (nuestra recomendación por experiencia):</strong><br>
+            Aunque el procesador sigue haciendo su propio trabajo de cálculo de forma independiente, en el 85% de las tareas cotidianas —encender Windows, abrir Word o Excel, facturar, usar tu punto de venta o navegar en internet— el equipo no estaba lento por culpa exclusiva del procesador, sino esperando a que el disco duro antiguo terminara de leer o escribir datos. Al poner un SSD, tu computadora vieja vuelve a sentirse ágil y lista para trabajar años más.
+          </div>
+
+          <h3>Comparativa real: disco mecánico tradicional vs. unidad SSD</h3>
+          <div class="article-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aspecto de Uso Diario</th>
+                  <th>Disco Duro Tradicional (HDD)</th>
+                  <th>Unidad de Estado Sólido (SSD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Tiempo de encendido de Windows</strong></td>
+                  <td>1.5 a 4 minutos esperando carga</td>
+                  <td><strong>12 a 25 segundos listo para usar</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Apertura de Word, Excel, Chrome o POS</strong></td>
+                  <td>Lenta y con congelamientos frecuentes</td>
+                  <td><strong>Prácticamente instantánea</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Uso de disco al 100% en Windows</strong></td>
+                  <td>Muy común al actualizar o iniciar</td>
+                  <td><strong>Fluido y sin bloqueos</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Resistencia física (en laptops)</strong></td>
+                  <td>Frágil ante golpes o vibraciones</td>
+                  <td><strong>Sin partes móviles, mucho más segura</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>¿Qué ganas de inmediato vs. qué sigue dependiendo del procesador y la RAM?</h3>
+          <ul>
+            <li><strong>Mejora drásticamente con SSD:</strong> Arranque del sistema, velocidad para abrir/guardar archivos, agilidad de programas administrativos y de punto de venta, copias de carpetas y respuesta general sin tirones.</li>
+            <li><strong>Sigue dependiendo del procesador (y RAM):</strong> Edición de video en alta resolución, diseño 3D avanzado, compilación pesada o videojuegos modernos, donde además del SSD conviene evaluar ampliación de memoria RAM o renovación de equipo.</li>
+          </ul>
+
+          <p>En <strong>Fiberlink</strong> revisamos previamente el estado de tu procesador, memoria RAM y conectores (SATA o M.2 NVMe) para decirte con honestidad cuánto va a mejorar tu computadora con el cambio a SSD, respaldamos tu información intacta y dejamos tu sistema limpio y optimizado.</p>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Quieres darle una segunda vida a tu computadora o laptop lenta con un SSD?</strong>
+            <p>Evaluamos tu equipo, te cotizamos la unidad SSD adecuada con respaldo de archivos y te la entregamos trabajando al máximo.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Soporte Técnico - Actualización a Disco SSD">
+              <span>Cotizar Mejora a SSD &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20leí%20su%20artículo%20sobre%20discos%20SSD%20y%20quiero%20cotizar%20uno%20para%20mi%20computadora" target="_blank" rel="noopener">
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ARTÍCULO NUEVO: Instalación Cruzada de Cámaras CCTV en Exterior -->
+      <article class="article-card" data-category="cctv" data-slug="camaras-de-seguridad-cruzadas-exterior-negocio" data-excerpt="Por qué instalar dos cámaras en ángulos cruzados protege tus accesos y fachada sin puntos ciegos, evitando que dañen o roben los equipos en la zona exterior.">
+        <div class="article-meta">
+          <span class="cat-badge">Cámaras &amp; Seguridad</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            4 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink Mesa Técnica</span>
+        </div>
+
+        <h2>Por qué recomendamos instalar cámaras de forma cruzada en el exterior de tu negocio</h2>
+
+        <!-- Imagen Temática -->
+        <div class="article-banner-wrap">
+          <div class="article-theme-overlay" aria-hidden="true"></div>
+          <div class="article-hud-crosshairs" aria-hidden="true"></div>
+          <img class="article-banner-img" src="/src/assets/images/camaras_cruzadas_negocio_1795021382025.jpg" alt="Cámaras CCTV instaladas en ángulos cruzados cubriendo fachada y banqueta sin puntos ciegos" referrerpolicy="no-referrer" loading="lazy">
+          <div class="article-img-caption">
+            <span>Ingeniería CCTV · Cobertura Cruzada Anti-Vandalismo y Cero Puntos Ciegos</span>
+          </div>
+        </div>
+
+        <div class="article-body">
+          <p><strong>Uno de los errores más comunes al colocar videovigilancia en la fachada de un local es instalar una sola cámara apuntando hacia la calle o pegar los equipos justo encima de la cortina mirando al frente.</strong> A simple vista parece que todo quedó cubierto, pero en la práctica cualquier persona puede pegarse a la pared, quedar justo en el ángulo muerto debajo del lente o acercarse por un costado para tapar, girar o arrancar la cámara sin quedar grabada.</p>
+
+          <p>En <strong>Fiberlink Servicios TIC</strong> siempre diseñamos las zonas exteriores con <strong>cobertura cruzada (traslape de campo visual)</strong>. Colocar dos cámaras en extremos opuestos de la fachada apuntando en diagonal una hacia la otra transforma por completo la seguridad de tu negocio.</p>
+
+          <h3>1. Protección mutua contra vandalismo, sabotaje y robo del equipo</h3>
+          <p>El principio es simple y altamente efectivo: <strong>la cámara izquierda vigila a la cámara derecha, y la cámara derecha vigila a la cámara izquierda</strong>. Si alguien intenta vandalizar, pintar con aerosol, cortar cables o golpear una cámara desde abajo o por un lateral, queda captado de frente y en primer plano por la cámara del extremo contrario.</p>
+          <ul>
+            <li><strong>Cero accesos impunes a la carcasa:</strong> Nadie puede acercarse por la espalda o pegado al muro para sabotear un equipo sin aparecer en el video de respaldo.</li>
+            <li><strong>Efecto disuasivo inmediato:</strong> Al notar que ambos extremos de la fachada están cruzados y sin ángulos muertos, los delincuentes evitan intentar manipular la instalación.</li>
+          </ul>
+
+          <h3>2. Eliminación total de puntos ciegos en cortinas, accesos y banqueta</h3>
+          <p>Toda cámara tiene un cono ciego justo debajo de su base. Cuando montas equipos en ángulo cruzado desde dos esquinas:</p>
+          <ul>
+            <li><strong>Cobertura de la pared completa:</strong> El área muerta debajo de la Cámara A queda exactamente dentro del centro de enfoque de la Cámara B, cubriendo cerraduras, chapas, ventanas y cortinas metálicas de piso a techo.</li>
+            <li><strong>Captura de rostros desde dos ángulos:</strong> Aunque una persona camine con gorra, capucha o mire hacia abajo al entrar, la toma diagonal desde ambos lados multiplica las probabilidades de obtener una identificación nítida del rostro, vestimenta y ruta de llegada o escape.</li>
+            <li><strong>Dominio completo de la banqueta y estacionamiento:</strong> Cubres tanto a quienes se aproximan por izquierda o derecha de la calle como a vehículos detenidos frente al local.</li>
+          </ul>
+
+          <h3>Comparativa práctica: cámara frontal única vs. instalación cruzada</h3>
+          <div class="article-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Criterio de Seguridad</th>
+                  <th>1 Cámara Frontal Tradicional</th>
+                  <th>2 Cámaras en Instalación Cruzada</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Zona bajo el muro / cortina</strong></td>
+                  <td>Punto ciego total debajo del lente</td>
+                  <td><strong>100% cubierta por el equipo opuesto</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Resistencia a vandalismo</strong></td>
+                  <td>Vulnerable por los costados o por debajo</td>
+                  <td><strong>Vigilancia mutua ante cualquier intento de daño</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Captura de rostros en banqueta</strong></td>
+                  <td>Solo vista superior o de espaldas al salir</td>
+                  <td><strong>Toma frontal y lateral de ida y vuelta</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Cobertura de fachada completa</strong></td>
+                  <td>Limitada al centro de la puerta</td>
+                  <td><strong>Cubre puerta, vitrinas, banqueta y accesos</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Recomendaciones técnicas clave para tu fachada</h3>
+          <ul>
+            <li><strong>Altura ideal entre 2.8 y 3.4 metros:</strong> Suficientemente alta para impedir que la alcancen de un salto, pero lo bastante baja para distinguir rostros con nitidez y no ver solo coronillas.</li>
+            <li><strong>Canalización protegida (tubo conduit o poliducto oculto):</strong> El cableado UTP o de energía jamás debe quedar expuesto al alcance de la mano ni vulnerable al sol o lluvia.</li>
+            <li><strong>Separación correcta del muro:</strong> Ajustar el ángulo para evitar que la luz infrarroja (IR) nocturna rebote contra la pared blanca o un letrero cercano y encandile la imagen de noche.</li>
+          </ul>
+
+          <div class="article-highlight-box">
+            <strong>Consejo profesional de Fiberlink:</strong><br>
+            Antes de perforar tu fachada, hacemos un levantamiento rápido de luz nocturna, obstáculos (árboles, toldos, anuncios) y ángulos cruzados para garantizar que cada cámara proteja tu acceso, tu mercancía y a su cámara compañera.
+          </div>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Quieres blindar el exterior de tu negocio sin puntos ciegos?</strong>
+            <p>Te asesoramos en sitio o por WhatsApp para ubicar tus cámaras cruzadas con instalación limpia, canalización oculta y monitoreo desde tu celular.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Videovigilancia - Instalación Cruzada CCTV Exterior">
+              <span>Cotizar Instalación CCTV &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20leí%20su%20guía%20sobre%20cámaras%20cruzadas%20en%20exterior%20y%20quiero%20cotizar%20para%20mi%20negocio" target="_blank" rel="noopener">
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ARTÍCULO NUEVO: TV Gratis en Internet (Pluto TV & Tubi) -->
+      <article class="article-card" data-category="entretenimiento software" data-slug="tv-gratis-en-internet-pluto-tv-y-tubi" data-excerpt="Descubre cómo ver cientos de canales en vivo, películas y series sin pagar mensualidades ni registrar tarjetas usando Pluto TV y Tubi directo desde Google Play Store.">
+        <div class="article-meta">
+          <span class="cat-badge">TV &amp; Apps Gratis</span>
+          <span class="read-time">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            4 min de lectura
+          </span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink</span>
+        </div>
+
+        <h2>TV gratis por internet sin pagar mensualidades: conoce Pluto TV y Tubi desde la Play Store</h2>
+
+        <!-- Imagen Temática -->
+        <div class="article-banner-wrap">
+          <div class="article-theme-overlay" aria-hidden="true"></div>
+          <div class="article-hud-crosshairs" aria-hidden="true"></div>
+          <img class="article-banner-img" src="/src/assets/images/tv_gratis_streaming_1795021118405.jpg" alt="Smart TV y tablet reproduciendo canales en vivo y películas gratis con Pluto TV y Tubi" referrerpolicy="no-referrer" loading="lazy">
+          <div class="article-img-caption">
+            <span>Streaming Legal y Gratuito · Pluto TV y Tubi en Google Play Store</span>
+          </div>
+        </div>
+
+        <div class="article-body">
+          <p><strong>¿Te imaginas encender tu Smart TV, tablet o celular y tener cientos de canales en vivo, películas de estreno pasado, series completas, caricaturas y documentales sin pagar un solo peso al mes?</strong> Muchas personas creen que para ver entretenimiento por internet es obligatorio pagar varias suscripciones cada mes o arriesgarse descargando aplicaciones piratas llenas de virus. La realidad es mucho mejor: hoy existen plataformas 100% legales y gratuitas respaldadas por grandes estudios de televisión y cine.</p>
+
+          <p>Las dos opciones favoritas en México y Latinoamérica son <strong>Pluto TV</strong> y <strong>Tubi</strong>. Ambas funcionan bajo el modelo <em>FAST</em> (televisión gratuita financiada con comerciales breves), exactamente igual que la televisión abierta de toda la vida, pero con el control y la calidad de imagen del streaming moderno. Lo mejor: <strong>no te piden tarjeta bancaria ni suscripciones ocultas</strong>, y las descargas directo desde la tienda oficial <strong>Google Play Store</strong>.</p>
+
+          <h3>1. Pluto TV: cientos de canales en vivo las 24 horas (sin ni siquiera registrarte)</h3>
+          <p><strong>Pluto TV</strong> (propiedad de Paramount) replica la experiencia clásica de hacer <em>zapping</em> en una guía de canales por cable, combinada con una sección bajo demanda para elegir lo que quieras ver al momento:</p>
+          <ul>
+            <li><strong>Guía de canales en vivo:</strong> Encuentras canales temáticos dedicados 24/7 a cine de acción, suspenso, comedia, novelas, noticias internacionales, deportes, música, cocina, naturaleza y anime.</li>
+            <li><strong>Cero registro obligatorio:</strong> En cuanto terminas de instalarla desde Google Play Store, la abres y empiezas a ver contenido en segundos, sin formularios largos ni contraseñas.</li>
+            <li><strong>Contenido familiar y clásico:</strong> Incluye canales con caricaturas, series icónicas de televisión y programación infantil segura para sala de espera o casa.</li>
+          </ul>
+
+          <h3>2. Tubi: un catálogo gigante de películas y series completas bajo demanda</h3>
+          <p><strong>Tubi</strong> (respaldada por Fox Corporation) funciona de forma similar a las plataformas de catálogo donde tú eliges qué película o episodio reproducir y a qué hora pausarlo:</p>
+          <ul>
+            <li><strong>Miles de películas y series en español:</strong> Accedes a acción, terror, drama, comedia romántica, documentales y cine mexicano sin límites de horas.</li>
+            <li><strong>Ideal para ver a tu ritmo:</strong> Si te quedaste a la mitad de una película, puedes retomar exactamente donde la dejaste creando una cuenta gratuita opcional con tu correo.</li>
+            <li><strong>Ligera y estable en conexiones promedio:</strong> Se adapta automáticamente a la velocidad de tu Wi-Fi para evitar cortes molestos mientras navegas o atiendes tu negocio.</li>
+          </ul>
+
+          <h3>Comparativa rápida: ¿Pluto TV o Tubi?</h3>
+          <div class="article-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Característica</th>
+                  <th>Pluto TV</th>
+                  <th>Tubi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Costo y suscripción</strong></td>
+                  <td><strong>$0 MXN (100% gratis)</strong></td>
+                  <td><strong>$0 MXN (100% gratis)</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>¿Pide tarjeta bancaria?</strong></td>
+                  <td>No, nunca</td>
+                  <td>No, nunca</td>
+                </tr>
+                <tr>
+                  <td><strong>Formato principal</strong></td>
+                  <td>Canales en vivo 24/7 + On Demand</td>
+                  <td>Películas y series completas On Demand</td>
+                </tr>
+                <tr>
+                  <td><strong>¿Necesita crear cuenta?</strong></td>
+                  <td>No es obligatorio</td>
+                  <td>Opcional (para guardar historial y favoritos)</td>
+                </tr>
+                <tr>
+                  <td><strong>Disponibilidad oficial</strong></td>
+                  <td><strong>Google Play Store</strong>, Smart TVs y Web</td>
+                  <td><strong>Google Play Store</strong>, Smart TVs y Web</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Cómo descargarlas gratis y de forma segura desde Google Play Store</h3>
+          <p>Ya sea en tu teléfono Android, tablet, televisor con Android TV / Google TV o TV Box certificado, instalarlas toma menos de dos minutos:</p>
+          <ol>
+            <li>Abre la aplicación oficial <strong>Google Play Store</strong> en tu dispositivo.</li>
+            <li>En la barra de búsqueda escribe <strong>«Pluto TV»</strong> o <strong>«Tubi»</strong>.</li>
+            <li>Verifica que sea la app oficial gratuita y presiona el botón <strong>Instalar</strong>.</li>
+            <li>Una vez descargada, ábrela con tu conexión Wi-Fi activa y disfruta al instante sin ingresar datos bancarios.</li>
+          </ol>
+
+          <div class="article-highlight-box">
+            <strong>Recomendación técnica de Fiberlink:</strong><br>
+            Evita instalar archivos <code>.apk</code> externos o supuestas «apps con todo desbloqueado» de sitios desconocidos. Suelen robar contraseñas de tu red, llenar la TV de publicidad maliciosa o saturar tu módem. Con <strong>Pluto TV</strong> y <strong>Tubi</strong> desde <strong>Google Play Store</strong> disfrutas televisión gratuita legal, estable y segura tanto en casa como en pantallas de salas de espera o negocios.
+          </div>
+        </div>
+
+        <div class="article-cta-box">
+          <div class="article-cta-box-text">
+            <strong>¿Quieres configurar tu Smart TV, mejorar el Wi-Fi o instalar pantallas para tu negocio?</strong>
+            <p>Optimizamos tu red, configuramos tus dispositivos Android TV / Google TV y mejoramos la cobertura inalámbrica en tu hogar o local.</p>
+          </div>
+          <div class="article-cta-box-btns">
+            <button class="btn btn-primary open-ticket" type="button" data-service="Redes Wi-Fi y Configuración Smart TV">
+              <span>Solicitar Soporte Wi-Fi &rarr;</span>
+            </button>
+            <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20leí%20su%20guía%20sobre%20Pluto%20TV%20y%20Tubi%20y%20quiero%20optimizar%20mi%20Wi-Fi%20o%20Smart%20TV" target="_blank" rel="noopener">
+              Consultar por WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
 
       <!-- ARTÍCULO 1: Soporte Técnico -->
-      <article class="article-card" data-category="soporte">
+      <article class="article-card" data-category="soporte" data-slug="computadora-lenta-mantenimiento" data-excerpt="Señales tempranas de saturación, polvo interno y fallas de rendimiento en tu equipo, y cómo optimizarlo antes de que deje de encender.">
         <div class="article-meta">
-          <span class="cat-badge">// SOPORTE TÉCNICO</span>
+          <span class="cat-badge">Soporte Técnico</span>
           <span class="read-time">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             3 min de lectura
           </span>
-          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink</span>
         </div>
 
         <h2>¿Tu computadora se volvió lenta de la noche a la mañana? Señales de que te está pidiendo auxilio</h2>
 
-        <!-- Imagen Temática con Filtro Cyberpunk / Fiberlink -->
+        <!-- Imagen Temática -->
         <div class="article-banner-wrap">
           <div class="article-theme-overlay" aria-hidden="true"></div>
           <div class="article-hud-crosshairs" aria-hidden="true"></div>
           <img class="article-banner-img" src="/images/blog/guia-mantenimiento-computo.jpg" alt="Diagnóstico y Mantenimiento Preventivo de Hardware por Fiberlink" loading="lazy">
           <div class="article-img-caption">
-            <span class="hud-dot"></span>
-            <span>DIAGNÓSTICO TÉCNICO // HARDWARE & OPTIMIZACIÓN EN LABORATORIO</span>
+            <span>Diagnóstico Técnico · Hardware y Optimización</span>
           </div>
         </div>
 
@@ -241,26 +586,25 @@
       </article>
 
       <!-- ARTÍCULO 2: Punto de Venta -->
-      <article class="article-card" data-category="pos">
+      <article class="article-card" data-category="pos" data-slug="control-caja-punto-de-venta-pos" data-excerpt="Deja atrás libretas y errores en el corte de caja. Aprende cómo controlar inventario, cambios y ventas diarias en segundos desde mostrador.">
         <div class="article-meta">
-          <span class="cat-badge">// CONTROL & PUNTOS DE VENTA (POS)</span>
+          <span class="cat-badge">Punto de Venta POS</span>
           <span class="read-time">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             4 min de lectura
           </span>
-          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink</span>
         </div>
 
         <h2>¿El dinero no cuadra al final del día? Cómo dejar atrás las libretas y recuperar la tranquilidad en tu negocio</h2>
 
-        <!-- Imagen Temática con Filtro Cyberpunk / Fiberlink -->
+        <!-- Imagen Temática -->
         <div class="article-banner-wrap">
           <div class="article-theme-overlay" aria-hidden="true"></div>
           <div class="article-hud-crosshairs" aria-hidden="true"></div>
           <img class="article-banner-img" src="/images/blog/guia-punto-de-venta-pos.jpg" alt="Sistemas de Punto de Venta y Terminales Comerciales por Fiberlink" loading="lazy">
           <div class="article-img-caption">
-            <span class="hud-dot"></span>
-            <span>TERMINAL POS // CONTROL DE VENTAS, CÓDIGO DE BARRAS & CAJA</span>
+            <span>Terminal POS · Control de Ventas, Código de Barras y Caja</span>
           </div>
         </div>
 
@@ -303,26 +647,25 @@
       </article>
 
       <!-- ARTÍCULO 3: Servicios Inmediatos -->
-      <article class="article-card" data-category="inmediato">
+      <article class="article-card" data-category="inmediato" data-slug="soluciones-soporte-remoto-inmediato" data-excerpt="Impresoras desconectadas, bloqueos de sistema, ventanas emergentes o fallas de red: 5 emergencias cotidianas que resolvemos en minutos.">
         <div class="article-meta">
-          <span class="cat-badge">// SERVICIOS INMEDIATOS & EMERGENCIAS</span>
+          <span class="cat-badge">Servicios Inmediatos</span>
           <span class="read-time">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             3 min de lectura
           </span>
-          <span class="read-time" style="color:var(--verde);">• Por Fiberlink</span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink</span>
         </div>
 
         <h2>¿Atorado con la tecnología hoy? 5 problemas comunes que te resolvemos de inmediato (sin moverte de tu lugar)</h2>
 
-        <!-- Imagen Temática con Filtro Cyberpunk / Fiberlink -->
+        <!-- Imagen Temática -->
         <div class="article-banner-wrap">
           <div class="article-theme-overlay" aria-hidden="true"></div>
           <div class="article-hud-crosshairs" aria-hidden="true"></div>
           <img class="article-banner-img" src="/images/blog/guia-soporte-remoto-emergencias.jpg" alt="Asistencia y Soporte Remoto Inmediato por Fiberlink" loading="lazy">
           <div class="article-img-caption">
-            <span class="hud-dot"></span>
-            <span>CENTRO DE SOPORTE // TELEMETRÍA, ASISTENCIA REMOTA & EMERGENCIAS</span>
+            <span>Centro de Soporte · Asistencia Remota y Emergencias</span>
           </div>
         </div>
 
@@ -366,26 +709,25 @@
       </article>
 
       <!-- ARTÍCULO 4: Almacenamiento MicroSD vs Tapo Care -->
-      <article class="article-card" data-category="cctv">
+      <article class="article-card" data-category="cctv" data-slug="microsd-vs-tapo-care-nube-mexico" data-excerpt="Comparativa real de costos en México entre tarjetas MicroSD High Endurance y suscripción Tapo Care en la nube, con estrategia híbrida recomendada.">
         <div class="article-meta">
-          <span class="cat-badge">// SEGURIDAD & CÁMARAS IP</span>
+          <span class="cat-badge">Cámaras &amp; Seguridad</span>
           <span class="read-time">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             4 min de lectura
           </span>
-          <span class="read-time" style="color:var(--verde);">• Por Fiberlink Mesa Técnica</span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink Mesa Técnica</span>
         </div>
 
         <h2>Memoria MicroSD vs. Suscripción Tapo Care en la Nube: ¿Cuál te conviene para tus cámaras y cuánto cuesta en México?</h2>
 
-        <!-- Imagen Temática con Filtro Cyberpunk / Fiberlink -->
+        <!-- Imagen Temática -->
         <div class="article-banner-wrap">
           <div class="article-theme-overlay" aria-hidden="true"></div>
           <div class="article-hud-crosshairs" aria-hidden="true"></div>
           <img class="article-banner-img" src="/images/blog/guia-memoria-sd-vs-tapo-care.jpg" alt="Comparativa Memoria MicroSD vs Tapo Care en la Nube para Cámaras IP de Seguridad" loading="lazy">
           <div class="article-img-caption">
-            <span class="hud-dot"></span>
-            <span>ALMACENAMIENTO CCTV // MICROSD LOCAL VS CLOUD TAPO CARE (COMPARATIVA MÉXICO)</span>
+            <span>Almacenamiento CCTV · MicroSD Local vs Cloud Tapo Care</span>
           </div>
         </div>
 
@@ -550,14 +892,14 @@
       </article>
 
       <!-- ARTÍCULO 5: Microsoft 365 vs Office 2024 & Peligros del Software Pirata -->
-      <article class="article-card" data-category="software soporte">
+      <article class="article-card" data-category="software soporte" data-slug="microsoft-365-vs-office-2024-riesgos-pirateria" data-excerpt="Diferencias de precio, respaldo en la nube y riesgos reales de robo de contraseñas al usar activadores piratas (KMS) frente a licencias originales.">
         <div class="article-meta">
-          <span class="cat-badge">// CIBERSEGURIDAD & SOFTWARE LEGAL</span>
+          <span class="cat-badge">Ciberseguridad &amp; Software Legal</span>
           <span class="read-time">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             5 min de lectura
           </span>
-          <span class="read-time" style="color:var(--verde);">• Por Fiberlink Mesa Técnica</span>
+          <span class="read-time" style="color:var(--c); font-weight:600;">· Por Fiberlink Mesa Técnica</span>
         </div>
 
         <h2>Microsoft 365 vs. Office Hogar 2024: ¿Cuál te conviene comprar y por qué los activadores piratas son una trampa mortal?</h2>
@@ -568,8 +910,7 @@
           <div class="article-hud-crosshairs" aria-hidden="true"></div>
           <img class="article-banner-img" src="/images/blog/m365-vs-office-2024-peligros-pirateria.jpg" alt="Comparativa Microsoft 365 vs Office 2024 y los riesgos de activadores piratas" loading="lazy">
           <div class="article-img-caption">
-            <span class="hud-dot"></span>
-            <span>CIBERSEGURIDAD // MICROSOFT 365 VS OFFICE HOGAR 2024 &amp; EL PELIGRO DE ACTIVADORES KMS</span>
+            <span>Ciberseguridad · Microsoft 365 vs Office Hogar 2024</span>
           </div>
         </div>
 
@@ -655,8 +996,8 @@
           </div>
 
           <!-- Sección de Alerta: Software Pirata -->
-          <div class="article-highlight-box" style="border-left-color: #ff3b30; background: rgba(255,59,48,0.06);">
-            <strong style="color: #ff5252; font-size:1.05rem;">⚠️ La Trampa Mortal: ¿Qué pasa cuando activas Office con un programa "gratis"?</strong><br>
+          <div class="article-highlight-box alert-box">
+            <strong class="alert-title">La Trampa Mortal: ¿Qué pasa cuando activas Office con un programa "gratis"?</strong><br>
             Nadie en internet regala servidores, programación y tiempo libre por pura bondad. Si un activador como KMSAuto, KMSPico, parches .exe o scripts sospechosos te promete Office gratis, <strong>la moneda de pago eres tú, tu información personal y los recursos de tu computadora</strong>.
           </div>
 
@@ -743,11 +1084,44 @@
 </main>
 
 <!-- ============================
+     WORDPRESS SINGLE-POST READER OVERLAY
+============================ -->
+<div id="wpReaderOverlay" class="wp-reader-overlay" role="dialog" aria-modal="true" aria-labelledby="wpReaderTitle" aria-hidden="true">
+  <div class="wp-reader-shell">
+    <div class="wp-reader-topbar">
+      <button id="wpReaderBackBtn" class="wp-reader-back" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Volver al blog</span>
+      </button>
+      <div class="wp-reader-topbar-actions">
+        <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20tengo%20dudas%20sobre%20una%20guía%20del%20blog" target="_blank" rel="noopener" style="min-height:36px; padding:0 12px; font-size:0.8rem;">
+          WhatsApp
+        </a>
+        <button id="wpReaderCloseBtn" class="wp-reader-close" type="button" aria-label="Cerrar artículo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="wp-reader-content">
+      <div id="wpReaderMeta" class="article-meta"></div>
+      <h1 id="wpReaderTitle" class="wp-reader-title"></h1>
+      <div id="wpReaderBody"></div>
+
+      <div class="wp-reader-nav">
+        <button id="wpPrevPostBtn" class="btn btn-ghost" type="button">&larr; Artículo anterior</button>
+        <button id="wpNextPostBtn" class="btn btn-primary" type="button">Siguiente artículo &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
      FOOTER
 ============================ -->
 <footer class="site-footer">
-  <div class="wrap">
-    <div class="footer-grid">
+  <div class="wrap" style="max-width:960px;">
+    <div class="footer-grid sol-footer-grid" style="margin-bottom:28px;">
       <div class="footer-brand">
         <a class="brand" href="/" aria-label="Fiberlink Inicio">
           <div class="brand-mark">
@@ -758,64 +1132,238 @@
             <span>Servicios TIC</span>
           </div>
         </a>
-        <p style="font-size:0.88rem; color:var(--muted); max-width:320px; line-height:1.5;">
-          Soporte técnico, redes, videovigilancia y soluciones digitales para negocios en Teziutlán y la región.
+        <p style="font-size:0.88rem; color:var(--text-secondary); max-width:340px; line-height:1.55;">
+          Soporte técnico, redes, videovigilancia CCTV y puntos de venta para hogares y negocios en Teziutlán y la Sierra Nororiental.
         </p>
       </div>
+
       <div>
-        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ENLACES RÁPIDOS</div>
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
-          <a href="/" style="color:var(--muted); text-decoration:none;">Inicio</a>
-          <a href="/#servicios" style="color:var(--muted); text-decoration:none;">Servicios</a>
-          <a href="/#proceso" style="color:var(--muted); text-decoration:none;">Método de Trabajo</a>
-          <a href="/soluciones.html" style="color:var(--verde); text-decoration:none;">Soluciones & Blog</a>
-          <a href="/catalogo.html" style="color:var(--muted); text-decoration:none;">Catálogo de Productos</a>
-          <a href="/#contacto" style="color:var(--muted); text-decoration:none;">Contacto</a>
+        <div style="font-family:var(--mono); color:var(--c); font-weight:700; font-size:0.78rem; letter-spacing:0.06em; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border-glass);">NAVEGACIÓN</div>
+        <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px 14px; font-size:0.86rem;">
+          <a href="/" style="text-decoration:none;">Inicio</a>
+          <a href="/soluciones.html" style="color:var(--c); font-weight:700; text-decoration:none;">Blog TIC</a>
+          <a href="/#asistencia-expres" style="text-decoration:none;">Atención Exprés</a>
+          <a href="/catalogo.html" style="text-decoration:none;">Catálogo</a>
+          <a href="/#seccion-catalogo" style="text-decoration:none;">Tienda Inicio</a>
+          <a href="/#modulo-ticket" style="text-decoration:none;">Crear Ticket</a>
         </div>
       </div>
+
       <div>
-        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ATENCIÓN DIRECTA</div>
-        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Teléfono: 231 102 4672</p>
-        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Email: fiberlinkserviciostic@gmail.com</p>
-        <p style="font-size:0.88rem; color:var(--muted);">Teziutlán, Puebla</p>
+        <div style="font-family:var(--mono); color:var(--c); font-weight:700; font-size:0.78rem; letter-spacing:0.06em; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border-glass);">CENTRO OPERATIVO</div>
+        <div style="padding:12px 14px; border-radius:12px; background:var(--surface-overlay); border:1px solid var(--border-glass); font-size:0.84rem; display:flex; flex-direction:column; gap:6px;">
+          <span style="color:var(--text-secondary);">Av. Cuauhtémoc 1010, Col. Centro, Teziutlán, Pue.</span>
+          <a href="tel:2311024672" style="font-weight:700; text-decoration:none;">Tel: (231) 102 4672</a>
+          <a href="mailto:fiberlinkserviciostic@gmail.com" style="text-decoration:none; word-break:break-word;">fiberlinkserviciostic@gmail.com</a>
+        </div>
       </div>
     </div>
 
-    <div style="border-top:1px solid rgba(156,195,46,0.15); padding-top:20px; text-align:center; font-size:0.8rem; color:var(--muted);">
-      © 2026 Fiberlink Servicios TIC. Todos los derechos reservados.
+    <div style="border-top:1px solid var(--border-glass); padding-top:18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:0.78rem; color:var(--text-secondary);">
+      <span>© 2026 Fiberlink Servicios TIC · Teziutlán, Puebla.</span>
+      <span>Atención directa · Facturación CFDI 4.0</span>
     </div>
   </div>
 </footer>
 
-<!-- Filter Tabs Script -->
+<!-- WordPress Blog Cards, Reader & Filter Script -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const sourceArticles = Array.from(document.querySelectorAll('#articlesContainer .article-card'));
+    const grid = document.getElementById('wpBlogGrid');
     const tabs = document.querySelectorAll('#filterTabs .sol-tab-btn');
-    const articles = document.querySelectorAll('#articlesContainer .article-card');
+    const searchInput = document.getElementById('solSearchInput');
+    const countBadge = document.getElementById('solCountBadge');
+    const emptyState = document.getElementById('solEmptyState');
+    const resetBtn = document.getElementById('solResetFiltersBtn');
+
+    // Reader DOM
+    const readerOverlay = document.getElementById('wpReaderOverlay');
+    const readerMeta = document.getElementById('wpReaderMeta');
+    const readerTitle = document.getElementById('wpReaderTitle');
+    const readerBody = document.getElementById('wpReaderBody');
+    const readerBackBtn = document.getElementById('wpReaderBackBtn');
+    const readerCloseBtn = document.getElementById('wpReaderCloseBtn');
+    const prevPostBtn = document.getElementById('wpPrevPostBtn');
+    const nextPostBtn = document.getElementById('wpNextPostBtn');
+
+    let activeCat = 'all';
+    let currentIndex = -1;
+
+    const posts = sourceArticles.map((art, index) => {
+      const catBadgeEl = art.querySelector('.cat-badge');
+      const readTimeEl = art.querySelector('.read-time');
+      const authorEl = art.querySelectorAll('.read-time')[1];
+      const titleEl = art.querySelector('h2');
+      const imgEl = art.querySelector('.article-banner-img');
+      const bannerEl = art.querySelector('.article-banner-wrap');
+      const bodyEl = art.querySelector('.article-body');
+      const ctaEl = art.querySelector('.article-cta-box');
+
+      return {
+        index,
+        slug: art.getAttribute('data-slug') || `articulo-${index + 1}`,
+        categories: (art.getAttribute('data-category') || '').split(' '),
+        categoryLabel: catBadgeEl ? catBadgeEl.textContent.trim() : 'Guía TIC',
+        readTime: readTimeEl ? readTimeEl.textContent.trim() : '3 min de lectura',
+        author: authorEl ? authorEl.textContent.replace('·', '').trim() : 'Por Fiberlink',
+        title: titleEl ? titleEl.textContent.trim() : '',
+        excerpt: art.getAttribute('data-excerpt') || '',
+        imgSrc: imgEl ? imgEl.getAttribute('src') : '',
+        imgAlt: imgEl ? imgEl.getAttribute('alt') : '',
+        metaHtml: art.querySelector('.article-meta')?.innerHTML || '',
+        bannerHtml: bannerEl ? bannerEl.outerHTML : '',
+        bodyHtml: bodyEl ? bodyEl.outerHTML : '',
+        ctaHtml: ctaEl ? ctaEl.outerHTML : '',
+        fullText: (art.textContent || '').toLowerCase()
+      };
+    });
+
+    function bindTicketButtons(scope) {
+      scope.querySelectorAll('.open-ticket').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const srv = btn.getAttribute('data-service') || 'Soporte Técnico';
+          window.location.href = `/?ticket=${encodeURIComponent(srv)}#modulo-ticket`;
+        });
+      });
+    }
+
+    function openPost(idx) {
+      const post = posts[idx];
+      if (!post || !readerOverlay) return;
+      currentIndex = idx;
+
+      readerMeta.innerHTML = post.metaHtml;
+      readerTitle.textContent = post.title;
+      readerBody.innerHTML = `${post.bannerHtml}${post.bodyHtml}${post.ctaHtml}`;
+      bindTicketButtons(readerBody);
+
+      if (prevPostBtn) {
+        const prevIdx = (idx - 1 + posts.length) % posts.length;
+        prevPostBtn.onclick = () => openPost(prevIdx);
+      }
+      if (nextPostBtn) {
+        const nextIdx = (idx + 1) % posts.length;
+        nextPostBtn.onclick = () => openPost(nextIdx);
+      }
+
+      readerOverlay.classList.add('open');
+      readerOverlay.setAttribute('aria-hidden', 'false');
+      readerOverlay.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', `#${post.slug}`);
+      }
+    }
+
+    function closeReader() {
+      if (!readerOverlay) return;
+      readerOverlay.classList.remove('open');
+      readerOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+
+    function renderGrid() {
+      const q = (searchInput ? searchInput.value : '').trim().toLowerCase();
+      const filtered = posts.filter(p => {
+        const matchesCat = activeCat === 'all' || p.categories.includes(activeCat);
+        const matchesText = !q || p.fullText.includes(q) || p.excerpt.toLowerCase().includes(q);
+        return matchesCat && matchesText;
+      });
+
+      grid.innerHTML = '';
+      filtered.forEach(post => {
+        const card = document.createElement('article');
+        card.className = 'wp-post-card';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Leer artículo: ${post.title}`);
+
+        card.innerHTML = `
+          <div class="wp-post-thumb">
+            <img src="${post.imgSrc}" alt="${post.imgAlt}" loading="lazy">
+            <span class="wp-post-thumb-cat">${post.categoryLabel}</span>
+          </div>
+          <div class="wp-post-body">
+            <div class="wp-post-meta">
+              <span>${post.readTime}</span>
+              <span class="wp-post-meta-dot" aria-hidden="true">·</span>
+              <span class="wp-post-author">${post.author}</span>
+            </div>
+            <h2 class="wp-post-title">${post.title}</h2>
+            <p class="wp-post-excerpt">${post.excerpt}</p>
+            <div class="wp-post-footer">
+              <span class="wp-post-format">Guía práctica</span>
+              <span class="wp-read-btn">Leer artículo &rarr;</span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => openPost(post.index));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openPost(post.index);
+          }
+        });
+        grid.appendChild(card);
+      });
+
+      if (countBadge) {
+        countBadge.textContent = `${filtered.length} ${filtered.length === 1 ? 'artículo' : 'artículos'}`;
+      }
+      if (emptyState) {
+        emptyState.style.display = filtered.length === 0 ? 'block' : 'none';
+      }
+    }
 
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-
-        const cat = tab.getAttribute('data-category');
-        articles.forEach(art => {
-          const artCats = (art.getAttribute('data-category') || '').split(' '); if (cat === 'all' || artCats.includes(cat)) {
-            art.style.display = 'block';
-          } else {
-            art.style.display = 'none';
-          }
-        });
+        activeCat = tab.getAttribute('data-category') || 'all';
+        renderGrid();
       });
     });
 
-    // Handle ticket buttons on this page
-    document.querySelectorAll('.open-ticket').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const srv = btn.getAttribute('data-service') || 'Soporte Técnico';
-        window.location.href = `/?ticket=${encodeURIComponent(srv)}#inicio`;
+    if (searchInput) searchInput.addEventListener('input', renderGrid);
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        activeCat = 'all';
+        if (searchInput) searchInput.value = '';
+        tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-category') === 'all'));
+        renderGrid();
       });
+    }
+
+    if (readerBackBtn) readerBackBtn.addEventListener('click', closeReader);
+    if (readerCloseBtn) readerCloseBtn.addEventListener('click', closeReader);
+    if (readerOverlay) {
+      readerOverlay.addEventListener('click', (e) => {
+        if (e.target === readerOverlay) closeReader();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && readerOverlay?.classList.contains('open')) {
+        closeReader();
+      }
     });
+
+    bindTicketButtons(document);
+    renderGrid();
+
+    // Open specific post if deep-linked via #slug
+    const initialSlug = (window.location.hash || '').replace(/^#/, '');
+    if (initialSlug) {
+      const foundIdx = posts.findIndex(p => p.slug === initialSlug);
+      if (foundIdx >= 0) openPost(foundIdx);
+    }
   });
 </script>
 
