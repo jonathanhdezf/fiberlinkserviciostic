@@ -193,11 +193,11 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
   display: flex;
   align-items: center;
   padding: 0 24px;
-  background: rgba(8, 12, 6, 0.88);
+  background: #080c06;
   border: 1px solid rgba(156, 195, 46, 0.32);
   border-radius: 16px;
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     0 20px 48px -12px rgba(0, 0, 0, 0.92),
     0 0 0 1px rgba(156, 195, 46, 0.12),
@@ -225,7 +225,7 @@ img,svg{display:block;max-width:100%;flex-shrink:0}
 
 .site-header.gamer-hud.scrolled {
   top: 10px;
-  background: rgba(6, 9, 5, 0.96);
+  background: #060905;
   border-color: rgba(156, 195, 46, 0.58);
   box-shadow:
     0 24px 52px -10px rgba(0, 0, 0, 0.98),
@@ -6349,8 +6349,9 @@ html.light body {
   background-color: var(--bg);
   color: var(--text);
 }
-html.light .site-header.gamer-hud {
-  background: rgba(255, 255, 255, 0.92);
+html.light .site-header.gamer-hud,
+html.light .site-header.gamer-hud.scrolled {
+  background: #ffffff;
   border-color: rgba(156, 195, 46, 0.4);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), 0 0 20px rgba(156, 195, 46, 0.12);
 }

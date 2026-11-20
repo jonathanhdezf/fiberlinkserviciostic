@@ -92,15 +92,15 @@
     -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 46%, rgba(0, 0, 0, 0.24) 94%) !important;
   }
   html.light .fl-ambient {
-    background: radial-gradient(circle at 50% 18%, rgba(156, 195, 46, 0.11) 0%, rgba(243, 247, 238, 0.10) 60%, rgba(226, 236, 214, 0.28) 100%);
+    background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.34) 0%, rgba(243, 247, 238, 0.18) 60%, rgba(226, 236, 214, 0.32) 100%);
   }
   html.light .fl-ambient-code {
-    opacity: 0.28 !important;
+    opacity: 0.19 !important;
     color: #3d5f04 !important;
     font-weight: 700;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) !important;
-    mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 52%, rgba(0, 0, 0, 0.35) 95%) !important;
-    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 52%, rgba(0, 0, 0, 0.35) 95%) !important;
+    mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0.28) 95%) !important;
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0.28) 95%) !important;
   }
 
   /* Secciones translúcidas en Modo Oscuro para dejar ver fondo animado, dígitos y globo 3D */
@@ -134,10 +134,10 @@
 
   /* Refinamientos Modo Oscuro — profundidad, cristal esmerilado y contraste AA+ sobre fondo vivo */
   html:not(.light) header {
-    background-color: rgba(11, 15, 20, 0.94) !important;
+    background-color: #0b0f14 !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    border-color: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.12);
     box-shadow: inset 0 -1px 0 rgba(156, 195, 46, 0.16), 0 10px 30px rgba(0, 0, 0, 0.55);
   }
   html:not(.light) footer {
@@ -194,33 +194,49 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Secciones translúcidas en Modo Claro para observar fondo, matriz de números y globo 3D */
-  html.light #inicio,
-  html.light #seccion-catalogo,
-  html.light #asistencia-expres,
-  html.light #compartir {
-    background-color: rgba(243, 247, 238, 0.10) !important;
-    border-color: rgba(68, 104, 4, 0.14) !important;
+  /* Filtros claros por sección en Modo Claro: mantienen visibilidad del globo 3D y mejoran lectura y ritmo visual */
+  html.light #inicio {
+    background-color: transparent !important;
+    background-image: radial-gradient(ellipse at 24% 40%, rgba(255, 255, 255, 0.56) 0%, rgba(244, 248, 239, 0.30) 56%, rgba(235, 243, 225, 0.24) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.15) !important;
+  }
+  html.light #seccion-catalogo {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(248, 251, 244, 0.52) 0%, rgba(241, 247, 234, 0.40) 52%, rgba(247, 250, 243, 0.56) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.15) !important;
+  }
+  html.light #asistencia-expres {
+    background-color: transparent !important;
+    background-image: linear-gradient(135deg, rgba(235, 244, 222, 0.58) 0%, rgba(249, 252, 246, 0.48) 54%, rgba(232, 242, 219, 0.58) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.15) !important;
   }
   html.light #modulo-ticket {
-    background-color: rgba(238, 244, 231, 0.22) !important;
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(243, 248, 237, 0.50) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.14) !important;
   }
-  html.light .hero-video-backdrop video,
-  html.light .catalog-store-backdrop video {
-    opacity: 0.04 !important;
-    filter: saturate(0.75) brightness(1.15) !important;
+  html.light #opiniones-clientes {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(241, 247, 234, 0.48) 0%, rgba(255, 255, 255, 0.54) 55%, rgba(237, 244, 228, 0.56) 100%) !important;
   }
-  html.light .hero-video-backdrop > div:nth-child(2),
-  html.light .catalog-store-backdrop > div:nth-child(3) {
-    background: linear-gradient(180deg, rgba(243, 247, 238, 0.06) 0%, rgba(243, 247, 238, 0.20) 60%, rgba(243, 247, 238, 0.40) 100%) !important;
+  html.light #compartir {
+    background-color: transparent !important;
+    background-image: radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.62) 0%, rgba(237, 245, 226, 0.52) 70%, rgba(229, 239, 216, 0.58) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.15) !important;
+  }
+  html.light .hero-video-backdrop > div:first-child {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(243, 247, 238, 0.14) 58%, rgba(238, 244, 231, 0.34) 100%) !important;
+  }
+  html.light .catalog-store-backdrop > div:nth-child(2) {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(243, 247, 238, 0.22) 55%, rgba(238, 244, 231, 0.42) 100%) !important;
   }
 
   /* Elevación limpia, header/footer y contraste de tarjetas en Modo Claro (sin backdrop-blur pesado sobre WebGL) */
   html.light header {
-    background-color: rgba(255, 255, 255, 0.94) !important;
+    background-color: #ffffff !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    border-color: rgba(15, 26, 10, 0.09) !important;
+    border-color: rgba(15, 26, 10, 0.10) !important;
     box-shadow: 0 4px 20px rgba(15, 26, 10, 0.06) !important;
   }
   html.light footer {
