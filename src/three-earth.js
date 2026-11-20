@@ -165,6 +165,81 @@ function createWebGLRendererSafe() {
   }
 }
 
+function createNetworkArcData() {
+  // 12 key digital hub coordinates (latDeg, lonDeg) distributed across hemispheres
+  const hubCoords = [
+    [19.8, -97.3],   // Teziutlán / Puebla node
+    [37.7, -122.4],  // North America West
+    [40.7, -74.0],   // North America East
+    [-23.5, -46.6],  // South America
+    [51.5, -0.1],    // Europe West
+    [50.1, 14.4],    // Europe Central
+    [35.6, 139.7],   // East Asia
+    [1.35, 103.8],   // Southeast Asia
+    [-33.8, 151.2],  // Oceania
+    [25.2, 55.3],    // Middle East
+    [-1.29, 36.8],   // East Africa
+    [60.1, 24.9],    // Nordic
+  ];
+
+  const hubs = hubCoords.map(([latDeg, lonDeg]) => {
+    const lat = (latDeg * Math.PI) / 180;
+    const lon = (lonDeg * Math.PI) / 180;
+    const cosLat = Math.cos(lat);
+    return {
+      x: cosLat * Math.cos(lon),
+      y: Math.sin(lat),
+      z: cosLat * Math.sin(lon),
+    };
+  });
+
+  const pairs = [
+    [0, 1], [0, 2], [0, 3], [0, 4],
+    [1, 6], [2, 4], [2, 5], [3, 4],
+    [4, 5], [4, 11], [5, 9], [9, 7],
+    [7, 6], [7, 8], [9, 10], [10, 4],
+  ];
+
+  const ARC_STEPS = 24;
+  const arcs = pairs.map(([aIdx, bIdx], idx) => {
+    const a = hubs[aIdx];
+    const b = hubs[bIdx];
+    const dot = Math.max(-0.999, Math.min(0.999, a.x * b.x + a.y * b.y + a.z * b.z));
+    const omega = Math.acos(dot);
+    const sinOmega = Math.sin(omega) || 1;
+    const points = [];
+    for (let s = 0; s <= ARC_STEPS; s++) {
+      const u = s / ARC_STEPS;
+      const k1 = Math.sin((1 - u) * omega) / sinOmega;
+      const k2 = Math.sin(u * omega) / sinOmega;
+      const px = a.x * k1 + b.x * k2;
+      const py = a.y * k1 + b.y * k2;
+      const pz = a.z * k1 + b.z * k2;
+      const invLen = 1 / (Math.hypot(px, py, pz) || 1);
+      const lift = 1.015 + Math.sin(Math.PI * u) * (0.11 + (omega / Math.PI) * 0.14);
+      points.push({
+        x: px * invLen * lift,
+        y: py * invLen * lift,
+        z: pz * invLen * lift,
+      });
+    }
+    return {
+      points,
+      speed: 0.24 + (idx % 5) * 0.045,
+      phase: (idx * 0.37) % 1,
+    };
+  });
+
+  // Two staggered packets per arc for continuous living traffic
+  const packets = [];
+  for (let i = 0; i < arcs.length; i++) {
+    packets.push({ arcIdx: i, offset: 0 });
+    packets.push({ arcIdx: i, offset: 0.5 });
+  }
+
+  return { hubs, arcs, packets, arcSteps: ARC_STEPS };
+}
+
 function initEarth2DFallback(container) {
   const canvas = document.createElement('canvas');
   canvas.style.width = '100%';
@@ -236,6 +311,7 @@ function initEarth2DFallback(container) {
   let t = 0;
   let lastFrameTime = 0;
   const gyro = createGyroTiltController();
+  const network = createNetworkArcData();
 
   function project(x, y, z, radius, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ) {
     const x1 = x * cosY - z * sinY;
@@ -411,6 +487,84 @@ function initEarth2DFallback(container) {
     }
     ctx.fill();
 
+    // Living digital network: curved great-circle fiber arcs (front hemisphere emphasized)
+    ctx.lineWidth = 1.05;
+    ctx.strokeStyle = isLight ? 'rgba(2, 132, 199, 0.34)' : 'rgba(124, 231, 255, 0.28)';
+    ctx.beginPath();
+    for (let a = 0; a < network.arcs.length; a++) {
+      const pts = network.arcs[a].points;
+      let started = false;
+      for (let s = 0; s < pts.length; s++) {
+        const p = pts[s];
+        const pt = project(p.x, p.y, p.z, radius, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+        if (pt.depth > -0.15) {
+          if (!started) {
+            ctx.moveTo(pt.sx, pt.sy);
+            started = true;
+          } else {
+            ctx.lineTo(pt.sx, pt.sy);
+          }
+        } else {
+          started = false;
+        }
+      }
+    }
+    ctx.stroke();
+
+    // Active hub beacons + pulsing concentric ripples
+    ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.92)' : 'rgba(216, 252, 108, 0.95)';
+    ctx.beginPath();
+    for (let i = 0; i < network.hubs.length; i++) {
+      const hNode = network.hubs[i];
+      const pt = project(hNode.x, hNode.y, hNode.z, radius * 1.022, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      if (pt.depth > 0.05) {
+        const pulseR = (2.6 + Math.sin(t * 2.5 + i) * 0.6) * pt.scale;
+        ctx.moveTo(pt.sx + pulseR, pt.sy);
+        ctx.arc(pt.sx, pt.sy, pulseR, 0, Math.PI * 2);
+      }
+    }
+    ctx.fill();
+
+    for (let i = 0; i < 6; i++) {
+      const hNode = network.hubs[i * 2];
+      const pt = project(hNode.x, hNode.y, hNode.z, radius * 1.024, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      if (pt.depth > 0.15) {
+        const wave = (t * 0.48 + i * 0.21) % 1;
+        ctx.lineWidth = 1.0;
+        ctx.strokeStyle = isLight
+          ? `rgba(68, 104, 4, ${(1 - wave) * 0.45})`
+          : `rgba(184, 220, 62, ${(1 - wave) * 0.52})`;
+        ctx.beginPath();
+        ctx.arc(pt.sx, pt.sy, (3 + wave * 11) * pt.scale, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    // Traveling glowing data packets along fiber arcs
+    ctx.fillStyle = isLight ? 'rgba(2, 132, 199, 0.94)' : 'rgba(130, 240, 255, 0.96)';
+    ctx.beginPath();
+    for (let p = 0; p < network.packets.length; p++) {
+      const pkt = network.packets[p];
+      const arc = network.arcs[pkt.arcIdx];
+      const u = (t * arc.speed * 0.45 + arc.phase + pkt.offset) % 1;
+      const fIdx = u * network.arcSteps;
+      const i0 = Math.floor(fIdx);
+      const i1 = Math.min(network.arcSteps, i0 + 1);
+      const frac = fIdx - i0;
+      const p0 = arc.points[i0];
+      const p1 = arc.points[i1];
+      const px = p0.x + (p1.x - p0.x) * frac;
+      const py = p0.y + (p1.y - p0.y) * frac;
+      const pz = p0.z + (p1.z - p0.z) * frac;
+      const pt = project(px, py, pz, radius, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      if (pt.depth > 0) {
+        const pr = 2.4 * pt.scale;
+        ctx.moveTo(pt.sx + pr, pt.sy);
+        ctx.arc(pt.sx, pt.sy, pr, 0, Math.PI * 2);
+      }
+    }
+    ctx.fill();
+
     // Ambient orbital star particles
     ctx.fillStyle = isLight ? 'rgba(68, 104, 4, 0.42)' : 'rgba(156, 195, 46, 0.45)';
     ctx.beginPath();
@@ -543,6 +697,97 @@ export function initEarth(containerId) {
   const particlesMesh = new THREE.Points(particlesGeometry, particleMaterial);
   earthGroup.add(particlesMesh);
 
+  // 3b. Living Digital Network: Fiber Arcs + Active Hubs + Surface Pulse Rings + Streaming Packets
+  const network = createNetworkArcData();
+  const GLOBE_RADIUS = 5.0;
+
+  // Merged LineSegments for all great-circle interconnection arcs (1 draw call)
+  const arcVertices = [];
+  for (let a = 0; a < network.arcs.length; a++) {
+    const pts = network.arcs[a].points;
+    for (let s = 0; s < pts.length - 1; s++) {
+      const p0 = pts[s];
+      const p1 = pts[s + 1];
+      arcVertices.push(
+        p0.x * GLOBE_RADIUS, p0.y * GLOBE_RADIUS, p0.z * GLOBE_RADIUS,
+        p1.x * GLOBE_RADIUS, p1.y * GLOBE_RADIUS, p1.z * GLOBE_RADIUS
+      );
+    }
+  }
+  const arcGeo = new THREE.BufferGeometry();
+  arcGeo.setAttribute('position', new THREE.Float32BufferAttribute(arcVertices, 3));
+  const arcMat = new THREE.LineBasicMaterial({
+    color: 0x7ce7ff,
+    transparent: true,
+    opacity: 0.34,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const arcLines = new THREE.LineSegments(arcGeo, arcMat);
+  earthGroup.add(arcLines);
+
+  // Glowing Hub Beacons (1 draw call)
+  const hubGeo = new THREE.BufferGeometry();
+  const hubPosArr = new Float32Array(network.hubs.length * 3);
+  for (let i = 0; i < network.hubs.length; i++) {
+    const hNode = network.hubs[i];
+    hubPosArr[i * 3] = hNode.x * 5.08;
+    hubPosArr[i * 3 + 1] = hNode.y * 5.08;
+    hubPosArr[i * 3 + 2] = hNode.z * 5.08;
+  }
+  hubGeo.setAttribute('position', new THREE.BufferAttribute(hubPosArr, 3));
+  const hubMat = new THREE.PointsMaterial({
+    size: isMobile ? 0.36 : 0.32,
+    map: circleSprite,
+    color: 0xd8fc6c,
+    transparent: true,
+    opacity: 0.96,
+    alphaTest: 0.01,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const hubBeacons = new THREE.Points(hubGeo, hubMat);
+  earthGroup.add(hubBeacons);
+
+  // Expanding concentric pulse rings tangent to 6 major hubs
+  const rippleGeo = new THREE.RingGeometry(0.11, 0.16, 24);
+  const rippleItems = [];
+  const _rippleTarget = new THREE.Vector3();
+  for (let i = 0; i < 6; i++) {
+    const hNode = network.hubs[i * 2];
+    const rMat = new THREE.MeshBasicMaterial({
+      color: 0xb8dc3e,
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const rMesh = new THREE.Mesh(rippleGeo, rMat);
+    rMesh.position.set(hNode.x * 5.09, hNode.y * 5.09, hNode.z * 5.09);
+    _rippleTarget.set(hNode.x * 8, hNode.y * 8, hNode.z * 8);
+    rMesh.lookAt(_rippleTarget);
+    earthGroup.add(rMesh);
+    rippleItems.push({ mesh: rMesh, mat: rMat, phaseOffset: i * 0.17 });
+  }
+
+  // Streaming Data Packets along the great-circle fiber arcs (zero-GC preallocated buffer)
+  const packetGeo = new THREE.BufferGeometry();
+  const packetPosArr = new Float32Array(network.packets.length * 3);
+  packetGeo.setAttribute('position', new THREE.BufferAttribute(packetPosArr, 3));
+  const packetMat = new THREE.PointsMaterial({
+    size: isMobile ? 0.28 : 0.25,
+    map: circleSprite,
+    color: 0x82f0ff,
+    transparent: true,
+    opacity: 0.98,
+    alphaTest: 0.01,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const packetPoints = new THREE.Points(packetGeo, packetMat);
+  earthGroup.add(packetPoints);
+
   // 4. Atmosphere Glow
   const atmosGeometry = new THREE.SphereGeometry(5.22, coreSegments, coreSegments);
   const atmosMaterial = new THREE.MeshPhongMaterial({
@@ -621,6 +866,25 @@ export function initEarth(containerId) {
       bgParticleMat.color.setHex(0x3f6204);
       bgParticleMat.opacity = 0.58;
       bgParticleMat.size = isMobile ? 0.17 : 0.15;
+
+      arcMat.color.setHex(0x0284c7);
+      arcMat.opacity = 0.36;
+      arcMat.blending = THREE.NormalBlending;
+      arcMat.needsUpdate = true;
+
+      hubMat.color.setHex(0x2a4602);
+      hubMat.blending = THREE.NormalBlending;
+      hubMat.needsUpdate = true;
+
+      packetMat.color.setHex(0x0284c7);
+      packetMat.blending = THREE.NormalBlending;
+      packetMat.needsUpdate = true;
+
+      for (let i = 0; i < rippleItems.length; i++) {
+        rippleItems[i].mat.color.setHex(0x3f6204);
+        rippleItems[i].mat.blending = THREE.NormalBlending;
+        rippleItems[i].mat.needsUpdate = true;
+      }
     } else {
       coreMaterial.color.setHex(0x070803);
       coreMaterial.emissive.setHex(0x050603);
@@ -651,6 +915,25 @@ export function initEarth(containerId) {
       bgParticleMat.color.setHex(0x9cc32e);
       bgParticleMat.opacity = 0.55;
       bgParticleMat.size = isMobile ? 0.15 : 0.13;
+
+      arcMat.color.setHex(0x7ce7ff);
+      arcMat.opacity = 0.34;
+      arcMat.blending = THREE.AdditiveBlending;
+      arcMat.needsUpdate = true;
+
+      hubMat.color.setHex(0xd8fc6c);
+      hubMat.blending = THREE.AdditiveBlending;
+      hubMat.needsUpdate = true;
+
+      packetMat.color.setHex(0x82f0ff);
+      packetMat.blending = THREE.AdditiveBlending;
+      packetMat.needsUpdate = true;
+
+      for (let i = 0; i < rippleItems.length; i++) {
+        rippleItems[i].mat.color.setHex(0xb8dc3e);
+        rippleItems[i].mat.blending = THREE.AdditiveBlending;
+        rippleItems[i].mat.needsUpdate = true;
+      }
     }
   }
 
@@ -659,12 +942,44 @@ export function initEarth(containerId) {
     applyThemeColors(Boolean(e.detail?.isLight));
   });
 
-  // Animation Loop (smooth autonomous rotation + mobile gyroscope tilt, zero mousemove listeners)
+  // Animation Loop (smooth autonomous rotation + mobile gyroscope tilt + living data arcs)
   const clock = new THREE.Clock();
   const gyro = createGyroTiltController();
   const reducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lastRenderTime = 0;
+  const packetPosAttr = packetGeo.getAttribute('position');
+
+  function updateLivingNetwork(elapsedTime) {
+    // 1. Pulse expanding hub ripples
+    for (let i = 0; i < rippleItems.length; i++) {
+      const item = rippleItems[i];
+      const wave = (elapsedTime * 0.45 + item.phaseOffset) % 1;
+      const scale = 1 + wave * 2.5;
+      item.mesh.scale.set(scale, scale, 1);
+      item.mat.opacity = (1 - wave) * 0.7;
+    }
+
+    // 2. Stream data packets along great-circle arcs (zero GC allocations)
+    for (let p = 0; p < network.packets.length; p++) {
+      const pkt = network.packets[p];
+      const arc = network.arcs[pkt.arcIdx];
+      const u = (elapsedTime * arc.speed + arc.phase + pkt.offset) % 1;
+      const fIdx = u * network.arcSteps;
+      const i0 = Math.floor(fIdx);
+      const i1 = Math.min(network.arcSteps, i0 + 1);
+      const frac = fIdx - i0;
+      const p0 = arc.points[i0];
+      const p1 = arc.points[i1];
+      packetPosArr[p * 3] = (p0.x + (p1.x - p0.x) * frac) * GLOBE_RADIUS;
+      packetPosArr[p * 3 + 1] = (p0.y + (p1.y - p0.y) * frac) * GLOBE_RADIUS;
+      packetPosArr[p * 3 + 2] = (p0.z + (p1.z - p0.z) * frac) * GLOBE_RADIUS;
+    }
+    packetPosAttr.needsUpdate = true;
+  }
+
+  // Initialize packet positions immediately for reduced-motion / first frame
+  updateLivingNetwork(0.25);
 
   function animate(now = 0) {
     if (!reducedMotion) {
@@ -687,6 +1002,10 @@ export function initEarth(containerId) {
     orbitRing.rotation.z = elapsedTime * 0.08 + g.currentX * 0.25;
     bgParticles.rotation.y = elapsedTime * 0.02 + g.currentX * 0.12;
     bgParticles.rotation.x = g.currentY * 0.08;
+
+    if (!reducedMotion) {
+      updateLivingNetwork(elapsedTime);
+    }
 
     renderer.render(scene, camera);
   }
