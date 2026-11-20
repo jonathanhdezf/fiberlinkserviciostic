@@ -1,5 +1,99 @@
 import * as THREE from 'three';
 
+function createGyroTiltController() {
+  const state = {
+    targetX: 0,
+    targetY: 0,
+    currentX: 0,
+    currentY: 0,
+    spinBoostY: 0,
+  };
+
+  const isTouchMobile =
+    typeof window !== 'undefined' &&
+    (window.matchMedia?.('(pointer: coarse)')?.matches ||
+      'ontouchstart' in window ||
+      (navigator.maxTouchPoints || 0) > 0);
+
+  if (!isTouchMobile || typeof window.DeviceOrientationEvent === 'undefined') {
+    return {
+      update() {
+        return state;
+      },
+    };
+  }
+
+  let baseBeta = null;
+  let baseGamma = null;
+  let lastBeta = null;
+  let lastGamma = null;
+  let listening = false;
+
+  function clamp(v, min, max) {
+    return v < min ? min : v > max ? max : v;
+  }
+
+  function handleOrientation(event) {
+    const beta = event.beta;
+    const gamma = event.gamma;
+    if (typeof beta !== 'number' || typeof gamma !== 'number') return;
+
+    if (baseBeta === null || baseGamma === null) {
+      baseBeta = beta;
+      baseGamma = gamma;
+      lastBeta = beta;
+      lastGamma = gamma;
+      return;
+    }
+
+    // Gentle baseline adaptation so any comfortable holding posture stays centered
+    baseBeta += (beta - baseBeta) * 0.008;
+    baseGamma += (gamma - baseGamma) * 0.008;
+
+    const deltaGamma = clamp(gamma - baseGamma, -28, 28) / 28;
+    const deltaBeta = clamp(beta - baseBeta, -28, 28) / 28;
+
+    state.targetX = deltaGamma;
+    state.targetY = deltaBeta;
+
+    const velGamma = clamp(gamma - lastGamma, -8, 8);
+    state.spinBoostY = clamp(state.spinBoostY + velGamma * 0.0018, -0.028, 0.028);
+
+    lastBeta = beta;
+    lastGamma = gamma;
+  }
+
+  function attachListener() {
+    if (listening) return;
+    listening = true;
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+  }
+
+  if (typeof window.DeviceOrientationEvent.requestPermission === 'function') {
+    const requestOnGesture = () => {
+      window.DeviceOrientationEvent.requestPermission()
+        .then((res) => {
+          if (res === 'granted') attachListener();
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('touchstart', requestOnGesture, { once: true, passive: true });
+  } else {
+    attachListener();
+  }
+
+  return {
+    update(dt = 0.033) {
+      const safeDt = Math.min(Math.max(dt, 0.008), 0.1);
+      const alpha = 1 - Math.exp(-7 * safeDt);
+      state.currentX += (state.targetX - state.currentX) * alpha;
+      state.currentY += (state.targetY - state.currentY) * alpha;
+      state.spinBoostY *= Math.exp(-4.5 * safeDt);
+      return state;
+    },
+  };
+}
+
 function createCircleSpriteTexture() {
   const size = 64;
   const canvas = document.createElement('canvas');
@@ -141,8 +235,9 @@ function initEarth2DFallback(container) {
   let rotZ = 0;
   let t = 0;
   let lastFrameTime = 0;
+  const gyro = createGyroTiltController();
 
-  function project(x, y, z, radius, cy, cosY, sinY, cosX, sinX, cosZ, sinZ) {
+  function project(x, y, z, radius, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ) {
     const x1 = x * cosY - z * sinY;
     const z1 = x * sinY + z * cosY;
 
@@ -154,7 +249,7 @@ function initEarth2DFallback(container) {
 
     const perspective = 3.2 / (3.2 - z2 * 0.82);
     return {
-      sx: w * 0.5 + x3 * radius * perspective,
+      sx: cx + x3 * radius * perspective,
       sy: cy + y3 * radius * perspective,
       depth: z2,
       scale: perspective,
@@ -170,15 +265,18 @@ function initEarth2DFallback(container) {
     }
     if (document.hidden) return;
     if (now && now - lastFrameTime < 32) return; // Smooth ~30fps cap for battery & UI responsiveness
+    const dt = lastFrameTime ? (now - lastFrameTime) / 1000 : 0.033;
     lastFrameTime = now;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
+    const g = reducedMotion ? { currentX: 0, currentY: 0, spinBoostY: 0 } : gyro.update(dt);
+
     t += 0.032;
-    rotY += 0.0045;
-    rotX = 0.24;
-    rotZ = 0;
+    rotY += 0.0045 + g.spinBoostY + g.currentX * 0.006;
+    rotX = 0.24 + g.currentY * 0.34;
+    rotZ = -g.currentX * 0.22;
 
     const cosY = Math.cos(rotY);
     const sinY = Math.sin(rotY);
@@ -189,10 +287,11 @@ function initEarth2DFallback(container) {
 
     const radius = Math.min(w, h) * (w < 480 ? 0.33 : w < 768 ? 0.34 : 0.34);
     const floatY = reducedMotion ? 0 : Math.sin(t * 0.85) * 8;
-    const cy = h * 0.48 + floatY;
+    const cx = w * 0.5 + g.currentX * 18;
+    const cy = h * 0.48 + floatY + g.currentY * 14;
 
     // Volumetric core + atmosphere halo
-    const halo = ctx.createRadialGradient(w * 0.5, cy, radius * 0.22, w * 0.5, cy, radius * 1.34);
+    const halo = ctx.createRadialGradient(cx, cy, radius * 0.22, cx, cy, radius * 1.34);
     if (isLight) {
       halo.addColorStop(0, 'rgba(156, 195, 46, 0.22)');
       halo.addColorStop(0.65, 'rgba(108, 148, 18, 0.09)');
@@ -204,23 +303,23 @@ function initEarth2DFallback(container) {
     }
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(w * 0.5, cy, radius * 1.34, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius * 1.34, 0, Math.PI * 2);
     ctx.fill();
 
     // Crisp outer silhouette & subtle tilted orbital ring
     ctx.lineWidth = 0.9;
     ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.22)' : 'rgba(156, 195, 46, 0.18)';
     ctx.beginPath();
-    ctx.arc(w * 0.5, cy, radius * 1.01, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius * 1.01, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.save();
-    ctx.translate(w * 0.5, cy);
-    ctx.rotate(-0.34);
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.34 + g.currentX * 0.18);
     ctx.lineWidth = 0.85;
     ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.20)' : 'rgba(184, 220, 62, 0.20)';
     ctx.beginPath();
-    ctx.ellipse(0, 0, radius * 1.24, radius * 0.34, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, radius * 1.24, radius * (0.34 + g.currentY * 0.08), 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -243,6 +342,7 @@ function initEarth2DFallback(container) {
           Math.sin(lat),
           cosLat * sinLon,
           radius,
+          cx,
           cy,
           cosY,
           sinY,
@@ -269,6 +369,7 @@ function initEarth2DFallback(container) {
           py,
           Math.sin(ang) * rRing,
           radius,
+          cx,
           cy,
           cosY,
           sinY,
@@ -288,7 +389,7 @@ function initEarth2DFallback(container) {
     ctx.beginPath();
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
-      const pt = project(n.x, n.y, n.z, radius * 1.018, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      const pt = project(n.x, n.y, n.z, radius * 1.018, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
       if (pt.depth <= 0) {
         const r = 1.15 * pt.scale;
         ctx.moveTo(pt.sx + r, pt.sy);
@@ -301,7 +402,7 @@ function initEarth2DFallback(container) {
     ctx.beginPath();
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
-      const pt = project(n.x, n.y, n.z, radius * 1.018, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      const pt = project(n.x, n.y, n.z, radius * 1.018, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
       if (pt.depth > 0) {
         const r = 1.75 * pt.scale;
         ctx.moveTo(pt.sx + r, pt.sy);
@@ -315,7 +416,7 @@ function initEarth2DFallback(container) {
     ctx.beginPath();
     for (let i = 0; i < stars.length; i++) {
       const st = stars[i];
-      const sx = w * 0.5 + (st.x * Math.cos(t * 0.12) - st.y * Math.sin(t * 0.12)) * w * 0.42;
+      const sx = w * 0.5 + g.currentX * 10 + (st.x * Math.cos(t * 0.12) - st.y * Math.sin(t * 0.12)) * w * 0.42;
       const sy = cy + st.y * h * 0.42 + Math.sin(t + st.p) * 6;
       ctx.moveTo(sx + st.r, sy);
       ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
@@ -558,8 +659,9 @@ export function initEarth(containerId) {
     applyThemeColors(Boolean(e.detail?.isLight));
   });
 
-  // Animation Loop (smooth autonomous rotation, zero mousemove listeners)
+  // Animation Loop (smooth autonomous rotation + mobile gyroscope tilt, zero mousemove listeners)
   const clock = new THREE.Clock();
+  const gyro = createGyroTiltController();
   const reducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lastRenderTime = 0;
@@ -571,15 +673,20 @@ export function initEarth(containerId) {
     if (document.hidden) return;
     // Pace WebGL at ~30fps on both desktop and mobile so UI scrolling stays instant
     if (now && now - lastRenderTime < 32) return;
+    const dt = lastRenderTime ? (now - lastRenderTime) / 1000 : 0.033;
     lastRenderTime = now;
 
     const elapsedTime = clock.getElapsedTime();
+    const g = reducedMotion ? { currentX: 0, currentY: 0, spinBoostY: 0 } : gyro.update(dt);
 
-    earthGroup.rotation.y += 0.003;
-    earthGroup.rotation.x = 0.18;
-    earthGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.5;
-    orbitRing.rotation.z = elapsedTime * 0.08;
-    bgParticles.rotation.y = elapsedTime * 0.02;
+    earthGroup.rotation.y += 0.003 + g.spinBoostY + g.currentX * 0.006;
+    earthGroup.rotation.x = 0.18 + g.currentY * 0.34;
+    earthGroup.rotation.z = -g.currentX * 0.22;
+    earthGroup.position.x = g.currentX * 0.75;
+    earthGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.5 - g.currentY * 0.55;
+    orbitRing.rotation.z = elapsedTime * 0.08 + g.currentX * 0.25;
+    bgParticles.rotation.y = elapsedTime * 0.02 + g.currentX * 0.12;
+    bgParticles.rotation.x = g.currentY * 0.08;
 
     renderer.render(scene, camera);
   }
