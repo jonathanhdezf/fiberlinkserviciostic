@@ -1,14 +1,36 @@
 import * as THREE from 'three';
 
-function createWebGLRendererSafe(isMobile) {
+function createCircleSpriteTexture() {
+  const size = 64;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const center = size / 2;
+    const grad = ctx.createRadialGradient(center, center, 0, center, center, center);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grad.addColorStop(0.38, 'rgba(255, 255, 255, 0.92)');
+    grad.addColorStop(0.72, 'rgba(255, 255, 255, 0.28)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createWebGLRendererSafe() {
   try {
     const glCanvas = document.createElement('canvas');
     const ctxAttrs = {
       alpha: true,
-      antialias: false,
+      antialias: true,
       depth: true,
       stencil: false,
-      powerPreference: 'default',
+      powerPreference: 'high-performance',
     };
 
     const gl =
@@ -34,10 +56,14 @@ function createWebGLRendererSafe(isMobile) {
     const renderer = new THREE.WebGLRenderer({
       canvas: glCanvas,
       context: gl,
-      antialias: !isMobile && !isSoftwareGl,
+      antialias: !isSoftwareGl,
       alpha: true,
       powerPreference: isSoftwareGl ? 'default' : 'high-performance',
     });
+
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
 
     return { renderer, isSoftwareGl };
   } catch {
@@ -58,14 +84,17 @@ function initEarth2DFallback(container) {
 
   let w = 0;
   let h = 0;
+  let dpr = 1;
   let isLight = document.documentElement.classList.contains('light');
 
   function resize() {
     w = window.innerWidth;
     h = window.innerHeight;
-    // 1x pixel ratio on 2D ambient globe keeps frame time < 1ms on mobile
-    canvas.width = Math.max(1, w);
-    canvas.height = Math.max(1, h);
+    // Scale canvas buffer to native DPR (up to 2x) so curves & nodes stay crisp on mobile Retina displays
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.round(w * dpr));
+    canvas.height = Math.max(1, Math.round(h * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resize();
 
@@ -82,7 +111,7 @@ function initEarth2DFallback(container) {
 
   // Fibonacci sphere nodes
   const isMobile = w < 768;
-  const nodeCount = isMobile ? 150 : 240;
+  const nodeCount = isMobile ? 160 : 240;
   const nodes = [];
   const goldenRatio = (1 + Math.sqrt(5)) / 2;
   for (let i = 0; i < nodeCount; i++) {
@@ -96,13 +125,13 @@ function initEarth2DFallback(container) {
   }
 
   // Ambient drifting stars around the globe
-  const starCount = isMobile ? 32 : 64;
+  const starCount = isMobile ? 36 : 64;
   const stars = [];
   for (let i = 0; i < starCount; i++) {
     stars.push({
       x: (Math.random() - 0.5) * 2.4,
       y: (Math.random() - 0.5) * 2.0,
-      r: 1.1 + Math.random() * 1.4,
+      r: 1.0 + Math.random() * 1.2,
       p: Math.random() * Math.PI * 2,
     });
   }
@@ -143,10 +172,11 @@ function initEarth2DFallback(container) {
     if (now && now - lastFrameTime < 32) return; // Smooth ~30fps cap for battery & UI responsiveness
     lastFrameTime = now;
 
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
     t += 0.032;
-    rotY += 0.005;
+    rotY += 0.0045;
     rotX = 0.24;
     rotZ = 0;
 
@@ -157,15 +187,15 @@ function initEarth2DFallback(container) {
     const cosZ = Math.cos(rotZ);
     const sinZ = Math.sin(rotZ);
 
-    const radius = Math.min(w, h) * (w < 480 ? 0.30 : w < 768 ? 0.33 : 0.34);
-    const floatY = reducedMotion ? 0 : Math.sin(t * 0.9) * 9;
+    const radius = Math.min(w, h) * (w < 480 ? 0.33 : w < 768 ? 0.34 : 0.34);
+    const floatY = reducedMotion ? 0 : Math.sin(t * 0.85) * 8;
     const cy = h * 0.48 + floatY;
 
     // Volumetric core + atmosphere halo
-    const halo = ctx.createRadialGradient(w * 0.5, cy, radius * 0.25, w * 0.5, cy, radius * 1.32);
+    const halo = ctx.createRadialGradient(w * 0.5, cy, radius * 0.22, w * 0.5, cy, radius * 1.34);
     if (isLight) {
-      halo.addColorStop(0, 'rgba(156, 195, 46, 0.20)');
-      halo.addColorStop(0.65, 'rgba(108, 148, 18, 0.10)');
+      halo.addColorStop(0, 'rgba(156, 195, 46, 0.22)');
+      halo.addColorStop(0.65, 'rgba(108, 148, 18, 0.09)');
       halo.addColorStop(1, 'rgba(77, 115, 6, 0)');
     } else {
       halo.addColorStop(0, 'rgba(156, 195, 46, 0.16)');
@@ -174,22 +204,32 @@ function initEarth2DFallback(container) {
     }
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(w * 0.5, cy, radius * 1.32, 0, Math.PI * 2);
+    ctx.arc(w * 0.5, cy, radius * 1.34, 0, Math.PI * 2);
     ctx.fill();
 
-    // Subtle outer sphere silhouette rim
-    ctx.lineWidth = 1.1;
-    ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.24)' : 'rgba(156, 195, 46, 0.20)';
+    // Crisp outer silhouette & subtle tilted orbital ring
+    ctx.lineWidth = 0.9;
+    ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.22)' : 'rgba(156, 195, 46, 0.18)';
     ctx.beginPath();
     ctx.arc(w * 0.5, cy, radius * 1.01, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Wireframe meridians & parallels
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = isLight ? 'rgba(58, 94, 4, 0.34)' : 'rgba(156, 195, 46, 0.24)';
+    ctx.save();
+    ctx.translate(w * 0.5, cy);
+    ctx.rotate(-0.34);
+    ctx.lineWidth = 0.85;
+    ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.20)' : 'rgba(184, 220, 62, 0.20)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, radius * 1.24, radius * 0.34, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
 
-    const meridians = 9;
-    const steps = 28;
+    // High-resolution wireframe meridians & parallels (56 steps = silky curves on mobile)
+    ctx.lineWidth = 0.85;
+    ctx.strokeStyle = isLight ? 'rgba(58, 94, 4, 0.28)' : 'rgba(156, 195, 46, 0.21)';
+
+    const meridians = 10;
+    const steps = 56;
     for (let m = 0; m < meridians; m++) {
       const lon = (m / meridians) * Math.PI;
       const cosLon = Math.cos(lon);
@@ -217,7 +257,7 @@ function initEarth2DFallback(container) {
       ctx.stroke();
     }
 
-    const parallels = [-0.65, -0.35, 0, 0.35, 0.65];
+    const parallels = [-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75];
     for (let p = 0; p < parallels.length; p++) {
       const py = parallels[p];
       const rRing = Math.sqrt(Math.max(0, 1 - py * py));
@@ -243,26 +283,27 @@ function initEarth2DFallback(container) {
       ctx.stroke();
     }
 
-    // Batch front & back sphere particle nodes for high speed (2 draw calls instead of 240)
-    ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.34)' : 'rgba(156, 195, 46, 0.32)';
+    // Batch front & back sphere particle nodes for high speed
+    ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.28)' : 'rgba(156, 195, 46, 0.26)';
     ctx.beginPath();
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
-      const pt = project(n.x, n.y, n.z, radius * 1.02, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      const pt = project(n.x, n.y, n.z, radius * 1.018, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
       if (pt.depth <= 0) {
-        ctx.moveTo(pt.sx + 1.3, pt.sy);
-        ctx.arc(pt.sx, pt.sy, 1.3 * pt.scale, 0, Math.PI * 2);
+        const r = 1.15 * pt.scale;
+        ctx.moveTo(pt.sx + r, pt.sy);
+        ctx.arc(pt.sx, pt.sy, r, 0, Math.PI * 2);
       }
     }
     ctx.fill();
 
-    ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.88)' : 'rgba(184, 220, 62, 0.88)';
+    ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.85)' : 'rgba(184, 220, 62, 0.88)';
     ctx.beginPath();
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
-      const pt = project(n.x, n.y, n.z, radius * 1.02, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      const pt = project(n.x, n.y, n.z, radius * 1.018, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
       if (pt.depth > 0) {
-        const r = 2.05 * pt.scale;
+        const r = 1.75 * pt.scale;
         ctx.moveTo(pt.sx + r, pt.sy);
         ctx.arc(pt.sx, pt.sy, r, 0, Math.PI * 2);
       }
@@ -270,7 +311,7 @@ function initEarth2DFallback(container) {
     ctx.fill();
 
     // Ambient orbital star particles
-    ctx.fillStyle = isLight ? 'rgba(68, 104, 4, 0.45)' : 'rgba(156, 195, 46, 0.48)';
+    ctx.fillStyle = isLight ? 'rgba(68, 104, 4, 0.42)' : 'rgba(156, 195, 46, 0.45)';
     ctx.beginPath();
     for (let i = 0; i < stars.length; i++) {
       const st = stars[i];
@@ -291,7 +332,7 @@ export function initEarth(containerId) {
   if (!container) return null;
 
   const isMobile = window.innerWidth < 768;
-  const { renderer, isSoftwareGl } = createWebGLRendererSafe(isMobile);
+  const { renderer, isSoftwareGl } = createWebGLRendererSafe();
 
   if (!renderer) {
     return initEarth2DFallback(container);
@@ -304,8 +345,9 @@ export function initEarth(containerId) {
   camera.position.y = isMobile ? 1.2 : 2;
   camera.lookAt(0, 0, 0);
 
+  const getTargetDpr = () => (isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(getTargetDpr());
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(isMobile || isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 1.5));
   container.appendChild(renderer.domElement);
 
   const earthGroup = new THREE.Group();
@@ -314,11 +356,11 @@ export function initEarth(containerId) {
   function adjustScale() {
     const width = window.innerWidth;
     if (width < 480) {
-      earthGroup.scale.set(0.55, 0.55, 0.55);
+      earthGroup.scale.set(0.58, 0.58, 0.58);
       camera.position.z = 17;
       camera.position.y = 1.2;
     } else if (width < 768) {
-      earthGroup.scale.set(0.75, 0.75, 0.75);
+      earthGroup.scale.set(0.76, 0.76, 0.76);
       camera.position.z = 15;
       camera.position.y = 1.5;
     } else {
@@ -330,38 +372,53 @@ export function initEarth(containerId) {
   }
   adjustScale();
 
-  // 1. Core Sphere
-  const coreSegments = isMobile ? 20 : 48;
+  // Soft circular sprite texture prevents square pixel blocks on PointsMaterial
+  const circleSprite = createCircleSpriteTexture();
+
+  // 1. Core Sphere (high segment smoothness on mobile too)
+  const coreSegments = isMobile ? 36 : 48;
   const coreGeometry = new THREE.SphereGeometry(4.8, coreSegments, coreSegments);
   const coreMaterial = new THREE.MeshPhongMaterial({
     color: 0x070803,
     emissive: 0x050603,
     specular: 0x1a220a,
-    shininess: 12,
+    shininess: 14,
     transparent: true,
     opacity: 0.95,
   });
   const core = new THREE.Mesh(coreGeometry, coreMaterial);
   earthGroup.add(core);
 
-  // 2. Wireframe / Tech Grid
-  const wireGeometry = new THREE.SphereGeometry(5, isMobile ? 18 : 28, isMobile ? 18 : 28);
+  // 2. Wireframe / Tech Grid (smoother segments to eliminate mobile faceting)
+  const wireSegments = isMobile ? 28 : 34;
+  const wireGeometry = new THREE.SphereGeometry(5, wireSegments, wireSegments);
   const wireMaterial = new THREE.MeshBasicMaterial({
     color: 0x9cc32e,
     wireframe: true,
     transparent: true,
-    opacity: 0.24,
+    opacity: 0.22,
   });
   const wireframe = new THREE.Mesh(wireGeometry, wireMaterial);
   earthGroup.add(wireframe);
 
-  // 3. Particles / Data nodes
+  // 2b. Refined Equatorial Orbital Ring
+  const orbitGeometry = new THREE.TorusGeometry(6.05, 0.015, 12, 96);
+  const orbitMaterial = new THREE.MeshBasicMaterial({
+    color: 0xb8dc3e,
+    transparent: true,
+    opacity: 0.28,
+  });
+  const orbitRing = new THREE.Mesh(orbitGeometry, orbitMaterial);
+  orbitRing.rotation.set(Math.PI * 0.41, 0.25, 0);
+  earthGroup.add(orbitRing);
+
+  // 3. Particles / Data nodes (round glowing orbs via sprite map, never hard squares)
   const particlesGeometry = new THREE.BufferGeometry();
-  const particleCount = isMobile ? 500 : 1400;
+  const particleCount = isMobile ? 540 : 1400;
   const posArray = new Float32Array(particleCount * 3);
 
   for (let i = 0; i < particleCount * 3; i += 3) {
-    const r = 5.05;
+    const r = 5.06;
     const theta = 2 * Math.PI * Math.random();
     const phi = Math.acos(2 * Math.random() - 1);
 
@@ -372,10 +429,13 @@ export function initEarth(containerId) {
 
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   const particleMaterial = new THREE.PointsMaterial({
-    size: isMobile ? 0.06 : 0.052,
+    size: isMobile ? 0.14 : 0.125,
+    map: circleSprite,
     color: 0xb8dc3e,
     transparent: true,
-    opacity: 0.95,
+    opacity: 0.96,
+    alphaTest: 0.01,
+    depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
 
@@ -383,7 +443,7 @@ export function initEarth(containerId) {
   earthGroup.add(particlesMesh);
 
   // 4. Atmosphere Glow
-  const atmosGeometry = new THREE.SphereGeometry(5.2, coreSegments, coreSegments);
+  const atmosGeometry = new THREE.SphereGeometry(5.22, coreSegments, coreSegments);
   const atmosMaterial = new THREE.MeshPhongMaterial({
     color: 0x9cc32e,
     transparent: true,
@@ -407,9 +467,9 @@ export function initEarth(containerId) {
   pointLight2.position.set(-10, -10, 10);
   scene.add(pointLight2);
 
-  // Floating Particles Background
+  // Floating Particles Background (also crisp circular sprites)
   const bgParticlesGeo = new THREE.BufferGeometry();
-  const bgCount = isMobile ? 180 : 650;
+  const bgCount = isMobile ? 200 : 650;
   const bgPos = new Float32Array(bgCount * 3);
   for (let i = 0; i < bgCount * 3; i += 3) {
     bgPos[i] = (Math.random() - 0.5) * 50;
@@ -418,10 +478,13 @@ export function initEarth(containerId) {
   }
   bgParticlesGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
   const bgParticleMat = new THREE.PointsMaterial({
-    size: 0.06,
+    size: isMobile ? 0.15 : 0.13,
+    map: circleSprite,
     color: 0x9cc32e,
     transparent: true,
-    opacity: 0.48,
+    opacity: 0.55,
+    alphaTest: 0.01,
+    depthWrite: false,
   });
   const bgParticles = new THREE.Points(bgParticlesGeo, bgParticleMat);
   scene.add(bgParticles);
@@ -434,10 +497,13 @@ export function initEarth(containerId) {
       coreMaterial.opacity = 0.40;
 
       wireMaterial.color.setHex(0x3b6004);
-      wireMaterial.opacity = 0.42;
+      wireMaterial.opacity = 0.36;
+
+      orbitMaterial.color.setHex(0x3f6204);
+      orbitMaterial.opacity = 0.28;
 
       particleMaterial.color.setHex(0x2a4602);
-      particleMaterial.size = isMobile ? 0.088 : 0.075;
+      particleMaterial.size = isMobile ? 0.175 : 0.15;
       particleMaterial.opacity = 0.94;
       particleMaterial.blending = THREE.NormalBlending;
       particleMaterial.needsUpdate = true;
@@ -452,8 +518,8 @@ export function initEarth(containerId) {
       pointLight.intensity = 1.8;
 
       bgParticleMat.color.setHex(0x3f6204);
-      bgParticleMat.opacity = 0.55;
-      bgParticleMat.size = 0.08;
+      bgParticleMat.opacity = 0.58;
+      bgParticleMat.size = isMobile ? 0.17 : 0.15;
     } else {
       coreMaterial.color.setHex(0x070803);
       coreMaterial.emissive.setHex(0x050603);
@@ -461,11 +527,14 @@ export function initEarth(containerId) {
       coreMaterial.opacity = 0.95;
 
       wireMaterial.color.setHex(0x9cc32e);
-      wireMaterial.opacity = 0.24;
+      wireMaterial.opacity = 0.22;
+
+      orbitMaterial.color.setHex(0xb8dc3e);
+      orbitMaterial.opacity = 0.28;
 
       particleMaterial.color.setHex(0xb8dc3e);
-      particleMaterial.size = isMobile ? 0.058 : 0.052;
-      particleMaterial.opacity = 0.95;
+      particleMaterial.size = isMobile ? 0.145 : 0.13;
+      particleMaterial.opacity = 0.96;
       particleMaterial.blending = THREE.AdditiveBlending;
       particleMaterial.needsUpdate = true;
 
@@ -479,8 +548,8 @@ export function initEarth(containerId) {
       pointLight.intensity = 2.8;
 
       bgParticleMat.color.setHex(0x9cc32e);
-      bgParticleMat.opacity = 0.48;
-      bgParticleMat.size = 0.06;
+      bgParticleMat.opacity = 0.55;
+      bgParticleMat.size = isMobile ? 0.15 : 0.13;
     }
   }
 
@@ -509,6 +578,7 @@ export function initEarth(containerId) {
     earthGroup.rotation.y += 0.003;
     earthGroup.rotation.x = 0.18;
     earthGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.5;
+    orbitRing.rotation.z = elapsedTime * 0.08;
     bgParticles.rotation.y = elapsedTime * 0.02;
 
     renderer.render(scene, camera);
@@ -524,6 +594,7 @@ export function initEarth(containerId) {
 
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(getTargetDpr());
     renderer.setSize(window.innerWidth, window.innerHeight);
     adjustScale();
   });

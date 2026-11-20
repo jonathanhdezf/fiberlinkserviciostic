@@ -250,7 +250,7 @@
   <!-- HERO FOREGROUND CONTENT WRAPPER -->
   <div class="relative z-10 flex flex-col gap-space-xl py-space-lg w-full max-w-7xl mx-auto">
     <!-- MAIN HEADLINE & HERO TELEMETRY GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center pt-space-xs">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg xl:gap-space-xl items-center pt-space-xs">
       <div class="lg:col-span-7 flex flex-col gap-space-md">
         <div class="inline-flex items-center gap-2 text-neon-emerald font-label-mono-xs text-label-mono-xs uppercase tracking-wider font-semibold">
           <span class="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
@@ -275,50 +275,53 @@
         </div>
       </div>
 
-      <!-- TELEMETRY METRIC HUD (BENTO CONSOLE) -->
+      <!-- BENTO TELEMETRY GRID -->
       <div class="lg:col-span-5 grid grid-cols-2 gap-space-sm">
-        <div class="p-space-md rounded-xl bg-surface-card/90 border border-[rgba(156,195,46,0.22)] backdrop-blur-md shadow-lg flex flex-col justify-between relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all min-h-[142px]">
-          <div class="flex items-center justify-between pb-space-xs">
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase">Respuesta Crítica</span>
-            <span class="material-symbols-outlined text-neon-emerald text-[20px]">bolt</span>
+        <div class="p-space-md rounded-xl bg-surface-card/95 border border-[rgba(156,195,46,0.22)] shadow-lg flex flex-col justify-between min-h-[142px] relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase tracking-wider font-semibold">Atención al momento</span>
+            <span class="material-symbols-outlined text-neon-emerald text-[20px]" aria-hidden="true">bolt</span>
           </div>
           <div>
-            <div class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-text-primary font-bold tracking-tight tabular-nums">&lt; 15 min</div>
-            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold">Soporte Inmediato</div>
-            <p class="font-body-sm text-body-sm text-text-secondary pt-1">Asistencia remota al instante o despacho en sitio.</p>
+            <div class="font-headline-lg text-[26px] sm:text-[28px] text-text-primary font-bold tracking-tight tabular-nums leading-tight">&lt; 15 min</div>
+            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold mt-0.5">Respuesta y solución hoy</div>
+            <p class="font-body-sm text-body-sm text-text-secondary mt-1 leading-snug">Te atendemos en línea al instante o vamos directo a tu local u hogar cuando falla tu caja, computadora o internet.</p>
           </div>
         </div>
-        <div class="p-space-md rounded-xl bg-surface-card/90 border border-[rgba(156,195,46,0.22)] backdrop-blur-md shadow-lg flex flex-col justify-between relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all min-h-[142px]">
-          <div class="flex items-center justify-between pb-space-xs">
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase">Satisfacción</span>
-            <span class="material-symbols-outlined text-status-warning text-[20px]">stars</span>
+
+        <div class="p-space-md rounded-xl bg-surface-card/95 border border-[rgba(156,195,46,0.22)] shadow-lg flex flex-col justify-between min-h-[142px] relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase tracking-wider font-semibold">Clientes satisfechos</span>
+            <span class="material-symbols-outlined text-status-warning text-[20px]" aria-hidden="true">stars</span>
           </div>
           <div>
-            <div class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-text-primary font-bold tracking-tight tabular-nums">4.9<span class="font-body-sm text-body-sm text-text-tertiary">/5.0</span></div>
-            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold">+150 Clientes</div>
-            <p class="font-body-sm text-body-sm text-text-secondary pt-1">Comercios, clínicas, despachos y hogares activos.</p>
+            <div class="font-headline-lg text-[26px] sm:text-[28px] text-text-primary font-bold tracking-tight tabular-nums leading-tight">4.9<span class="font-body-sm text-sm text-text-tertiary font-semibold">/5.0</span></div>
+            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold mt-0.5">+150 negocios y hogares</div>
+            <p class="font-body-sm text-body-sm text-text-secondary mt-1 leading-snug">Tiendas, farmacias, clínicas, oficinas y familias nos recomiendan por nuestro trato honesto, precios claros y cero rodeos.</p>
           </div>
         </div>
-        <div class="p-space-md rounded-xl bg-surface-card/90 border border-[rgba(156,195,46,0.22)] backdrop-blur-md shadow-lg flex flex-col justify-between relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all min-h-[142px]">
-          <div class="flex items-center justify-between pb-space-xs">
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase">Especialidades</span>
-            <span class="material-symbols-outlined text-status-info text-[20px]">grid_view</span>
+
+        <div class="p-space-md rounded-xl bg-surface-card/95 border border-[rgba(156,195,46,0.22)] shadow-lg flex flex-col justify-between min-h-[142px] relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase tracking-wider font-semibold">¿En qué te ayudamos?</span>
+            <span class="material-symbols-outlined text-status-info text-[20px]" aria-hidden="true">grid_view</span>
           </div>
           <div>
-            <div class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-text-primary font-bold tracking-tight tabular-nums">4 Áreas</div>
-            <div class="font-headline-sm text-headline-sm text-status-info font-semibold">Soluciones TIC</div>
-            <p class="font-body-sm text-body-sm text-text-secondary pt-1">Cómputo, POS comercial, Redes/CCTV y Web.</p>
+            <div class="font-headline-lg text-[26px] sm:text-[28px] text-text-primary font-bold tracking-tight tabular-nums leading-tight">4 Soluciones</div>
+            <div class="font-headline-sm text-headline-sm text-status-info font-semibold mt-0.5">Cómputo, Ventas, Cámaras y Red</div>
+            <p class="font-body-sm text-body-sm text-text-secondary mt-1 leading-snug">Reparación y discos rápidos SSD, puntos de venta con impresora de tickets, cámaras visibles en tu celular y Wi-Fi estable.</p>
           </div>
         </div>
-        <div class="p-space-md rounded-xl bg-surface-card/90 border border-[rgba(156,195,46,0.22)] backdrop-blur-md shadow-lg flex flex-col justify-between relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all min-h-[142px]">
-          <div class="flex items-center justify-between pb-space-xs">
-            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase">Cobertura Regional</span>
-            <span class="material-symbols-outlined text-neon-emerald text-[20px]">near_me</span>
+
+        <div class="p-space-md rounded-xl bg-surface-card/95 border border-[rgba(156,195,46,0.22)] shadow-lg flex flex-col justify-between min-h-[142px] relative overflow-hidden group hover:bg-surface-overlay hover:border-[rgba(156,195,46,0.45)] transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-label-mono-xs text-label-mono-xs text-text-tertiary uppercase tracking-wider font-semibold">Garantía local</span>
+            <span class="material-symbols-outlined text-neon-emerald text-[20px]" aria-hidden="true">near_me</span>
           </div>
           <div>
-            <div class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-text-primary font-bold tracking-tight">Local</div>
-            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold">Teziutlán &amp; Zona</div>
-            <p class="font-body-sm text-body-sm text-text-secondary pt-1">Garantía directa en Chignautla, Xiutetelco y sierra.</p>
+            <div class="font-headline-lg text-[26px] sm:text-[28px] text-text-primary font-bold tracking-tight leading-tight">En Sitio</div>
+            <div class="font-headline-sm text-headline-sm text-neon-emerald font-semibold mt-0.5">Teziutlán y Sierra Nororiental</div>
+            <p class="font-body-sm text-body-sm text-text-secondary mt-1 leading-snug">Visitas técnicas en Chignautla, Xiutetelco y alrededores. Entregamos factura CFDI 4.0 el mismo día y garantía por escrito.</p>
           </div>
         </div>
       </div>
