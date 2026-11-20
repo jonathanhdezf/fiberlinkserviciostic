@@ -3,11 +3,18 @@ import gsap from 'gsap';
 import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
 import { ticketService } from './services/ticketService.js';
+import { storeService, STARTER_PRODUCTS } from './services/storeService.js';
 import { initAssistant } from './assistant.js';
 
+window.ticketService = ticketService;
+window.storeService = storeService;
+window.STARTER_PRODUCTS = STARTER_PRODUCTS;
+window.dispatchEvent(new CustomEvent('fiberlink:store-ready'));
+
 document.addEventListener('DOMContentLoaded', () => {
-  // 0. Expose ticket service globally for interactive forms
+  // 0. Expose ticket & store services globally for interactive forms
   window.ticketService = ticketService;
+  window.storeService = storeService;
 
   // 0. Initialize Dark / Light Theme Controller
   initThemeController();

@@ -590,21 +590,29 @@
       };
 
       try {
-        const local = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
-        local.unshift({
-          id: Date.now().toString(),
-          estado: 'creación',
-          createdAt: new Date().toISOString(),
-          ...ticketData
-        });
-        localStorage.setItem('fiberlink_tickets', JSON.stringify(local));
+        if (window.ticketService && typeof window.ticketService.createTicket === 'function') {
+          const created = await window.ticketService.createTicket(ticketData);
+          if (created && created.folio) {
+            ticketState.folio = created.folio;
+            if (dispFolio) dispFolio.textContent = created.folio;
+          }
+        } else {
+          const local = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+          local.unshift({
+            id: Date.now().toString(),
+            estado: 'creación',
+            createdAt: new Date().toISOString(),
+            ...ticketData
+          });
+          localStorage.setItem('fiberlink_tickets', JSON.stringify(local));
+        }
       } catch(err) {
-        console.warn('Storage sync:', err);
+        console.warn('Firestore ticket sync:', err);
       }
 
       const message = encodeURIComponent(
         `*NUEVO REPORTE TICKETING FIBERLINK*\n` +
-        `Folio: ${folio}\n` +
+        `Folio: ${ticketState.folio}\n` +
         `Titular/Negocio: ${name}\n` +
         `Teléfono: ${phone}\n` +
         `Requerimiento: ${serviceLabels[ticketState.service] || ticketState.service}\n` +
@@ -653,7 +661,7 @@
       if (step1El) step1El.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function searchExistingFolio() {
+    async function searchExistingFolio() {
       const input = document.getElementById('input-search-folio');
       const val = input ? input.value.trim().toUpperCase() : '';
       const resultBox = document.getElementById('folio-search-result');
@@ -669,8 +677,13 @@
 
       let found = null;
       try {
-        const list = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
-        found = list.find(t => (t.folio && t.folio.toUpperCase() === val) || (t.id && t.id === val));
+        if (window.ticketService && typeof window.ticketService.getTicketById === 'function') {
+          found = await window.ticketService.getTicketById(val);
+        }
+        if (!found) {
+          const list = JSON.parse(localStorage.getItem('fiberlink_tickets') || '[]');
+          found = list.find(t => (t.folio && t.folio.toUpperCase() === val) || (t.id && t.id === val));
+        }
       } catch(e){}
 
       const statusPill = document.getElementById('result-status-pill');
@@ -681,6 +694,8 @@
       if (found) {
         const statusMap = {
           'creación': '● EN ESPERA // RECIBIDO EN MESA',
+          'diagnostico': '● EN DIAGNÓSTICO // REVISIÓN TÉCNICA',
+          'proceso': '● EN PROCESO // ATENCIÓN ACTIVA',
           'asignado': '● EN TRAYECTO // TÉCNICO EN RUTA',
           'en_proceso': '● EN ATENCIÓN // DIAGNÓSTICO ACTIVO',
           'resuelto': '● RESUELTO // CONFORMIDAD PENDIENTE',
@@ -692,7 +707,7 @@
         }
         if (timePill) timePill.textContent = found.priority === 'Crítica' ? 'SLA: <15 MIN' : 'PRIORIDAD: ' + (found.priority || 'Normal');
         if (techName) techName.textContent = found.assignedTo && found.assignedTo !== 'Sin asignar' ? found.assignedTo : 'Guardia Asignada Teziutlán';
-        if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || 'Cliente'}`;
+        if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || ('Folio ' + (found.folio || val))}`;
       } else if (val.includes('1005') || val.includes('FL')) {
         if (statusPill) {
           statusPill.textContent = '● EN TRAYECTO // TÉCNICO EN RUTA';
@@ -721,5 +736,6 @@
       if (inSituModality) selectModality(inSituModality, 'DOMICILIO');
     });
   </script>
+  <script type="module" src="/src/ticketMovil.js"></script>
 </body>
 </html>

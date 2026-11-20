@@ -1181,13 +1181,15 @@ function showToast(message, type = 'success') {
 // Expose toast globally
 window.showToast = showToast;
 
-// 2. HARDWARE STORE, LIVE INVENTORY SYNC & MOBILE CAROUSEL
+// 2. HARDWARE STORE, LIVE FIRESTORE SYNC, PHOTO GALLERY & MOBILE CAROUSEL
 (function initHardwareStore() {
   const store = {
     cart: {}, // { [id]: { id, title, price, qty } }
-    items: [], // raw products from /api/products?public=true
+    items: [], // live public products from Cloud Firestore
     filtered: []
   };
+  let catalogUnsubscribe = null;
+  let lastAppliedStarter = false;
 
   const catalogSection = document.getElementById('seccion-catalogo');
   if (!catalogSection) return;
@@ -1404,7 +1406,10 @@ window.showToast = showToast;
       const priceVal = Math.round(parseFloat(p.price) || 0);
       const priceFormatted = priceVal.toLocaleString('es-MX');
       const unitSuffix = p.unit === 'metro' ? ' / metro' : '';
-      const coverPhoto = (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : p.imageUrl) || '';
+      const photos = (Array.isArray(p.images) && p.images.length > 0)
+        ? p.images.filter(Boolean)
+        : (p.imageUrl ? [p.imageUrl] : []);
+      const coverPhoto = photos[0] || '';
       const specsList = Array.isArray(p.specs) ? p.specs.slice(0, 3).map(s => escapeHtml(s)).join(' · ') : '';
       const currentQty = store.cart[p.id]?.qty || 0;
 
@@ -1426,8 +1431,12 @@ window.showToast = showToast;
       const waTotal = (priceVal * waQty).toLocaleString('es-MX');
       const waUrl = `https://wa.me/522311024672?text=${encodeURIComponent(`Hola Fiberlink, deseo comprar ${waQty}x ${p.name} ($${waTotal} MXN).`)}`;
 
+      const photoBadgeHtml = photos.length > 1
+        ? `<span class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-deep/85 border border-primary-container/40 text-neon-emerald font-label-mono-xs text-[10px] font-semibold flex items-center gap-1 shadow-sm pointer-events-none"><span class="material-symbols-outlined text-[13px]" aria-hidden="true">photo_library</span>1/${photos.length}</span>`
+        : (photos.length === 1 ? `<span class="opacity-0 group-hover/media:opacity-100 transition-opacity absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-deep/85 border border-glass text-text-primary font-label-mono-xs text-[10px] flex items-center gap-1 pointer-events-none"><span class="material-symbols-outlined text-[13px]" aria-hidden="true">zoom_in</span>Ver</span>` : '');
+
       const mediaHtml = coverPhoto
-        ? `<img loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${escapeHtml(p.name)}" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" src="${escapeHtml(coverPhoto)}" data-product-img>`
+        ? `<img loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${escapeHtml(p.name)}" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105" src="${escapeHtml(coverPhoto)}" data-product-img>${photoBadgeHtml}`
         : buildFallbackVisualHtml(catMeta, p.sku);
 
       return `
@@ -1437,7 +1446,7 @@ window.showToast = showToast;
               <span class="font-label-mono-xs text-[11px] ${catMeta.tone} uppercase tracking-wider font-semibold truncate">${escapeHtml(catMeta.label)}${p.sku ? ` · ${escapeHtml(p.sku)}` : ''}</span>
               <span class="font-label-mono-xs text-[11px] ${stockClass} tabular-nums whitespace-nowrap">${escapeHtml(stockLabel)}</span>
             </div>
-            <div class="w-full h-40 md:h-48 rounded-xl bg-surface-container-low border border-glass p-3 md:p-4 flex items-center justify-center overflow-hidden mb-space-sm transition-all" data-media-box>
+            <div class="relative w-full h-40 md:h-48 rounded-xl bg-surface-container-low border border-glass p-3 md:p-4 flex items-center justify-center overflow-hidden mb-space-sm transition-all ${photos.length > 0 ? 'cursor-pointer group/media hover:border-primary-container/50' : ''}" data-media-box ${photos.length > 0 ? 'role="button" tabindex="0" aria-label="Ver galería de fotografías"' : ''}>
               ${mediaHtml}
             </div>
             <h3 class="font-headline-sm text-headline-sm text-text-primary group-hover:text-neon-emerald transition-colors line-clamp-2">${escapeHtml(p.name)}</h3>
@@ -1468,11 +1477,15 @@ window.showToast = showToast;
       `;
     }).join('');
 
-    // Wire image error fallback + quantity buttons for each rendered card
+    // Wire image error fallback, photo gallery lightbox & quantity buttons for each rendered card
     grid.querySelectorAll('article[data-product]').forEach((card) => {
       const id = card.dataset.id;
       const prod = store.items.find(x => x.id === id);
       if (!prod) return;
+
+      const prodPhotos = (Array.isArray(prod.images) && prod.images.length > 0)
+        ? prod.images.filter(Boolean)
+        : (prod.imageUrl ? [prod.imageUrl] : []);
 
       const img = card.querySelector('img[data-product-img]');
       const mediaBox = card.querySelector('[data-media-box]');
@@ -1481,6 +1494,16 @@ window.showToast = showToast;
           const catMeta = CATEGORY_META[prod.category || 'pos'] || CATEGORY_META.pos;
           mediaBox.innerHTML = buildFallbackVisualHtml(catMeta, prod.sku);
         }, { once: true });
+      }
+      if (mediaBox && prodPhotos.length > 0) {
+        const openGallery = () => openHomeProductGalleryModal(prod);
+        mediaBox.addEventListener('click', openGallery);
+        mediaBox.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            openGallery();
+          }
+        });
       }
 
       const minusBtn = card.querySelector('[data-qty="minus"]');
@@ -1532,45 +1555,197 @@ window.showToast = showToast;
     requestAnimationFrame(updateCarouselControls);
   }
 
+  function ensureHomeGalleryModal() {
+    let modal = document.getElementById('homeProductGalleryModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'homeProductGalleryModal';
+    modal.className = 'fixed inset-0 z-[1200] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="relative w-full max-w-2xl rounded-2xl bg-panel border border-glass shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-glass bg-panel-2">
+          <div class="min-w-0">
+            <span id="hpgSku" class="font-label-mono-xs text-[11px] text-neon-emerald uppercase tracking-wider block">SKU</span>
+            <h3 id="hpgTitle" class="font-headline-sm text-base sm:text-lg text-text-primary font-bold truncate">Producto</h3>
+          </div>
+          <button type="button" id="hpgCloseBtn" aria-label="Cerrar galería" class="w-9 h-9 rounded-lg bg-surface-container-low border border-glass text-text-secondary hover:text-text-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <div class="p-4 sm:p-5 flex flex-col gap-3 overflow-y-auto">
+          <div class="w-full h-64 sm:h-80 rounded-xl bg-surface-container-low border border-glass p-4 flex items-center justify-center overflow-hidden">
+            <img id="hpgMainImg" src="" alt="" class="max-w-full max-h-full object-contain">
+          </div>
+          <div id="hpgThumbs" class="flex items-center gap-2 overflow-x-auto pb-1"></div>
+          <p id="hpgDesc" class="font-body-sm text-xs sm:text-sm text-text-secondary leading-relaxed"></p>
+          <div class="flex items-center justify-between gap-3 pt-3 border-t border-glass">
+            <div id="hpgPrice" class="font-headline-md text-lg font-bold text-text-primary tabular-nums"></div>
+            <a id="hpgWaBtn" href="#" target="_blank" rel="noopener noreferrer" class="py-2.5 px-4 rounded-lg bg-primary-container text-on-brand font-button-text text-xs font-bold hover:bg-primary-fixed transition-all flex items-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-[17px]">chat</span>
+              <span>Pedir por WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const closeGallery = () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      modal.setAttribute('aria-hidden', 'true');
+    };
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeGallery();
+    });
+    modal.querySelector('#hpgCloseBtn')?.addEventListener('click', closeGallery);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('flex')) closeGallery();
+    });
+
+    return modal;
+  }
+
+  function openHomeProductGalleryModal(prod) {
+    const modal = ensureHomeGalleryModal();
+    const photos = (Array.isArray(prod.images) && prod.images.length > 0)
+      ? prod.images.filter(Boolean)
+      : (prod.imageUrl ? [prod.imageUrl] : []);
+    if (photos.length === 0) return;
+
+    const skuEl = modal.querySelector('#hpgSku');
+    const titleEl = modal.querySelector('#hpgTitle');
+    const mainImg = modal.querySelector('#hpgMainImg');
+    const thumbsWrap = modal.querySelector('#hpgThumbs');
+    const descEl = modal.querySelector('#hpgDesc');
+    const priceEl = modal.querySelector('#hpgPrice');
+    const waBtn = modal.querySelector('#hpgWaBtn');
+
+    if (skuEl) skuEl.textContent = `${(CATEGORY_META[prod.category || 'pos']?.label || 'Catálogo')}${prod.sku ? ` · ${prod.sku}` : ''}`;
+    if (titleEl) titleEl.textContent = prod.name;
+    if (mainImg) {
+      mainImg.src = photos[0];
+      mainImg.alt = prod.name;
+    }
+    if (descEl) descEl.textContent = prod.description || 'Equipamiento homologado con garantía directa en Teziutlán.';
+    const priceVal = Math.round(parseFloat(prod.price) || 0);
+    if (priceEl) priceEl.textContent = `$${priceVal.toLocaleString('es-MX')} MXN`;
+    if (waBtn) {
+      waBtn.href = `https://wa.me/522311024672?text=${encodeURIComponent(`Hola Fiberlink, me interesa el producto: ${prod.name} ($${priceVal.toLocaleString('es-MX')} MXN).`)}`;
+    }
+
+    if (thumbsWrap) {
+      thumbsWrap.innerHTML = photos.map((src, i) => `
+        <button type="button" data-thumb-idx="${i}" class="w-16 h-16 shrink-0 rounded-lg border ${i === 0 ? 'border-primary-container ring-2 ring-primary-container/40' : 'border-glass'} bg-surface-container-low p-1 overflow-hidden transition-all">
+          <img src="${escapeHtml(src)}" alt="Vista ${i + 1}" class="w-full h-full object-contain">
+        </button>
+      `).join('');
+      thumbsWrap.querySelectorAll('button[data-thumb-idx]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.dataset.thumbIdx);
+          if (mainImg) mainImg.src = photos[i];
+          thumbsWrap.querySelectorAll('button[data-thumb-idx]').forEach((b) => {
+            b.classList.remove('border-primary-container', 'ring-2', 'ring-primary-container/40');
+            b.classList.add('border-glass');
+          });
+          btn.classList.remove('border-glass');
+          btn.classList.add('border-primary-container', 'ring-2', 'ring-primary-container/40');
+        });
+      });
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function applyCatalogProducts(data) {
+    store.items = Array.isArray(data) ? data.filter(p => p && p.publicVisible !== false) : [];
+
+    // Prune cart entries for products deleted or hidden from inventory
+    const liveById = new Map(store.items.map(p => [p.id, p]));
+    Object.keys(store.cart).forEach((id) => {
+      const live = liveById.get(id);
+      if (!live || (!live.isService && (Number(live.stock) || 0) <= 0)) {
+        delete store.cart[id];
+      } else {
+        store.cart[id].title = live.name;
+        store.cart[id].price = Math.round(parseFloat(live.price) || 0);
+        if (!live.isService) {
+          store.cart[id].qty = Math.min(store.cart[id].qty, Number(live.stock) || 0);
+        }
+      }
+    });
+
+    updateGlobalCart();
+    syncCategoryButtonsVisibility();
+    renderCatalogCards();
+  }
+
   async function loadCatalogFromApi(force = false) {
     const now = Date.now();
     if (!force && now - lastFetchAt < 500) return;
     lastFetchAt = now;
 
-    try {
-      const res = await fetch(`/api/products?public=true&_ts=${now}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      store.items = Array.isArray(data) ? data : [];
-
-      // Prune cart entries for products deleted or hidden from inventory
-      const liveById = new Map(store.items.map(p => [p.id, p]));
-      Object.keys(store.cart).forEach((id) => {
-        const live = liveById.get(id);
-        if (!live || (!live.isService && (Number(live.stock) || 0) <= 0)) {
-          delete store.cart[id];
-        } else {
-          store.cart[id].title = live.name;
-          store.cart[id].price = Math.round(parseFloat(live.price) || 0);
-          if (!live.isService) {
-            store.cart[id].qty = Math.min(store.cart[id].qty, Number(live.stock) || 0);
-          }
+    if (window.storeService) {
+      try {
+        const list = await window.storeService.getProducts({ public: true });
+        if (list.length > 0) {
+          lastAppliedStarter = false;
+          applyCatalogProducts(list);
+          return;
+        } else if (Array.isArray(window.STARTER_PRODUCTS) && !lastAppliedStarter) {
+          lastAppliedStarter = true;
+          applyCatalogProducts(window.STARTER_PRODUCTS);
+          return;
         }
-      });
-
-      updateGlobalCart();
-      syncCategoryButtonsVisibility();
-      renderCatalogCards();
-    } catch (err) {
-      console.error('[Catálogo Web Sync Error]:', err);
-      if (store.items.length === 0 && grid && emptyStateEl) {
-        grid.innerHTML = '';
-        grid.classList.add('hidden');
-        emptyStateEl.classList.remove('hidden');
-        emptyStateEl.classList.add('flex');
-        if (emptyMsgEl) emptyMsgEl.textContent = 'No se pudo cargar el inventario actualizado en este momento.';
-        if (resetBtn) resetBtn.textContent = 'Reintentar carga';
+      } catch (err) {
+        console.warn('[Catálogo Firestore Read Error]:', err);
       }
+    }
+
+    if (Array.isArray(window.STARTER_PRODUCTS) && store.items.length === 0) {
+      lastAppliedStarter = true;
+      applyCatalogProducts(window.STARTER_PRODUCTS);
+      return;
+    }
+
+    if (store.items.length === 0 && grid && emptyStateEl) {
+      grid.innerHTML = '';
+      grid.classList.add('hidden');
+      emptyStateEl.classList.remove('hidden');
+      emptyStateEl.classList.add('flex');
+      if (emptyMsgEl) emptyMsgEl.textContent = 'No se pudo cargar el inventario actualizado en este momento.';
+      if (resetBtn) resetBtn.textContent = 'Reintentar carga';
+    }
+  }
+
+  function startFirestoreCatalogSubscription() {
+    if (catalogUnsubscribe || !window.storeService) return;
+    try {
+      catalogUnsubscribe = window.storeService.subscribePublicProducts(
+        (list) => {
+          if (list.length > 0) {
+            lastAppliedStarter = false;
+            applyCatalogProducts(list);
+          } else if (Array.isArray(window.STARTER_PRODUCTS)) {
+            lastAppliedStarter = true;
+            applyCatalogProducts(window.STARTER_PRODUCTS);
+          } else {
+            applyCatalogProducts([]);
+          }
+        },
+        (err) => {
+          console.error('[Catálogo Firestore Realtime Error]:', err);
+          loadCatalogFromApi(true);
+        }
+      );
+    } catch (err) {
+      console.error('[Catálogo Firestore Init Error]:', err);
+      loadCatalogFromApi(true);
     }
   }
 
@@ -1635,7 +1810,7 @@ window.showToast = showToast;
     }, { passive: true });
   }
 
-  // Real-time sync when Admin modifies or deletes inventory
+  // Real-time sync when Admin modifies inventory locally in same browser
   try {
     if ('BroadcastChannel' in window) {
       const invChannel = new BroadcastChannel('fiberlink-inventory');
@@ -1654,15 +1829,15 @@ window.showToast = showToast;
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) loadCatalogFromApi();
+    if (!document.hidden && !catalogUnsubscribe) startFirestoreCatalogSubscription();
   });
 
-  window.addEventListener('focus', () => {
-    loadCatalogFromApi();
-  });
-
-  // Initial load
-  loadCatalogFromApi(true);
+  if (window.storeService) {
+    startFirestoreCatalogSubscription();
+  } else {
+    window.addEventListener('fiberlink:store-ready', startFirestoreCatalogSubscription, { once: true });
+    document.addEventListener('DOMContentLoaded', startFirestoreCatalogSubscription, { once: true });
+  }
 })();
 
 // 3. INTERACTIVE TICKETING WORKFLOW (MULTI-STEP WIZARD & TABS)
@@ -2018,6 +2193,8 @@ async function searchExistingFolio() {
   if (found) {
     const statusMap = {
       'creación': '● EN ESPERA // RECIBIDO EN MESA',
+      'diagnostico': '● EN DIAGNÓSTICO // REVISIÓN TÉCNICA',
+      'proceso': '● EN PROCESO // ATENCIÓN ACTIVA',
       'asignado': '● EN TRAYECTO // TÉCNICO EN RUTA',
       'en_proceso': '● EN ATENCIÓN // DIAGNÓSTICO ACTIVO',
       'resuelto': '● RESUELTO // CONFORMIDAD PENDIENTE',
@@ -2029,7 +2206,7 @@ async function searchExistingFolio() {
     }
     if (timePill) timePill.textContent = found.priority === 'Crítica' ? 'SLA: <15 MIN' : `PRIORIDAD: ${found.priority || 'Normal'}`;
     if (techName) techName.textContent = found.assignedTo && found.assignedTo !== 'Sin asignar' ? found.assignedTo : 'Guardia Asignada Teziutlán';
-    if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || 'Cliente'}`;
+    if (serviceDesc) serviceDesc.textContent = `${found.service || 'Servicio TIC'} · ${found.name || ('Folio ' + (found.folio || val))}`;
     showToast(`Folio ${found.folio || val} encontrado.`, 'success');
   } else if (val.includes('1005') || val.includes('FL')) {
     if (statusPill) {

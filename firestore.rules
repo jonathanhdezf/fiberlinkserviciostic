@@ -1,0 +1,500 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // GLOBAL HARDENED PRIMITIVES
+    // ==========================================
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidFolio(folio) {
+      return folio is string && folio.size() >= 4 && folio.size() <= 20 && folio.matches('^FL-[0-9]{4,10}$');
+    }
+
+    function isValidKardexFolio(folio) {
+      return folio is string && folio.size() >= 5 && folio.size() <= 20 && folio.matches('^KDX-[0-9]{4,10}$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function authEmailLower() {
+      return request.auth.token.email.lower();
+    }
+
+    function emailToKey(emailStr) {
+      return emailStr.lower().replace('@', '__AT__').replace('\\.', '__DOT__').replace('[^a-z0-9_-]', '_');
+    }
+
+    function myInvitePath() {
+      return /databases/$(database)/documents/staff_invites/$(emailToKey(authEmailLower()));
+    }
+
+    function myStaffPath() {
+      return /databases/$(database)/documents/staff/$(request.auth.uid);
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && authEmailLower() == 'jonathanhdezf@gmail.com';
+    }
+
+    function hasActiveStaffDoc() {
+      return isSignedIn()
+        && exists(myStaffPath())
+        && get(myStaffPath()).data.active == true;
+    }
+
+    function hasActiveInvite() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && exists(myInvitePath())
+        && get(myInvitePath()).data.active == true;
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin()
+        || (hasActiveStaffDoc() && get(myStaffPath()).data.role == 'admin')
+        || (hasActiveInvite() && get(myInvitePath()).data.role == 'admin');
+    }
+
+    function isStoreManager() {
+      return isAdmin()
+        || (hasActiveStaffDoc() && get(myStaffPath()).data.role == 'ventas')
+        || (hasActiveInvite() && get(myInvitePath()).data.role == 'ventas');
+    }
+
+    function isStaff() {
+      return isBootstrapAdmin() || hasActiveStaffDoc() || hasActiveInvite();
+    }
+
+    // ==========================================
+    // VALIDATION BLUEPRINTS
+    // ==========================================
+    function isValidRole(role) {
+      return role in ['admin', 'tecnico', 'ventas', 'recepcion'];
+    }
+
+    function isValidTicketState(estado) {
+      return estado in ['creación', 'diagnostico', 'proceso', 'resuelto'];
+    }
+
+    function isValidPriority(priority) {
+      return priority in ['Normal', 'Alta', 'Urgente', 'Crítica'];
+    }
+
+    function isValidStoreCategory(cat) {
+      return cat in ['pos', 'cctv', 'redes', 'software', 'refacciones', 'servicios'];
+    }
+
+    function isValidMovementType(mtype) {
+      return mtype in ['entrada', 'salida_venta', 'ajuste_conteo', 'ajuste_salida', 'merma', 'taller'];
+    }
+
+    function isValidStaffMember(data, uidParam) {
+      return data.keys().hasAll(['uid', 'email', 'name', 'role', 'active', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'name', 'role', 'specialty', 'phone', 'photoURL', 'active', 'createdAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == uidParam
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 180
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && isValidRole(data.role)
+        && data.active is bool
+        && (!('specialty' in data) || (data.specialty is string && data.specialty.size() <= 140))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 32))
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStaffInvite(data, keyParam) {
+      return data.keys().hasAll(['email', 'name', 'role', 'active', 'invitedBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['email', 'name', 'role', 'specialty', 'phone', 'active', 'invitedBy', 'createdAt', 'updatedAt'])
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 180
+        && emailToKey(data.email) == keyParam
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && isValidRole(data.role)
+        && data.active is bool
+        && isValidId(data.invitedBy)
+        && (!('specialty' in data) || (data.specialty is string && data.specialty.size() <= 140))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 32))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTicketBitacora(notesList) {
+      return notesList is list
+        && notesList.size() <= 50
+        && (notesList.size() == 0 || (
+          notesList[0] is map
+          && notesList[0].keys().hasAll(['id', 'date', 'author', 'note'])
+          && notesList[0].keys().hasOnly(['id', 'date', 'author', 'note'])
+          && notesList[0].id is string && notesList[0].id.size() <= 64
+          && notesList[0].date is string && notesList[0].date.size() <= 64
+          && notesList[0].author is string && notesList[0].author.size() <= 120
+          && notesList[0].note is string && notesList[0].note.size() <= 1000
+        ));
+    }
+
+    function isValidTicketPos(pos) {
+      return pos is map
+        && pos.keys().hasAll(['items', 'total', 'paid'])
+        && pos.keys().hasOnly(['items', 'total', 'paid'])
+        && pos.items is list
+        && pos.items.size() <= 50
+        && (pos.items.size() == 0 || (
+          pos.items[0] is map
+          && pos.items[0].keys().hasAll(['concept', 'price'])
+          && pos.items[0].keys().hasOnly(['id', 'productId', 'concept', 'qty', 'price'])
+          && pos.items[0].concept is string && pos.items[0].concept.size() <= 200
+          && pos.items[0].price is number && pos.items[0].price >= 0 && pos.items[0].price <= 10000000
+        ))
+        && pos.total is number && pos.total >= 0 && pos.total <= 10000000
+        && pos.paid is bool;
+    }
+
+    function isValidSupportTicket(data, ticketIdParam) {
+      return data.keys().hasAll([
+          'id', 'folio', 'estado', 'name', 'phone', 'service',
+          'modality', 'priority', 'assignedTo', 'description',
+          'source', 'bitacora', 'pos', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'folio', 'estado', 'name', 'phone', 'email', 'company',
+          'address', 'service', 'modality', 'priority', 'assignedTo',
+          'description', 'source', 'bitacora', 'pos', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == ticketIdParam
+        && isValidFolio(data.folio)
+        && isValidTicketState(data.estado)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 140
+        && data.phone is string && data.phone.size() <= 32
+        && (!('email' in data) || (data.email is string && data.email.size() <= 180))
+        && (!('company' in data) || (data.company is string && data.company.size() <= 140))
+        && (!('address' in data) || (data.address is string && data.address.size() <= 260))
+        && data['service'] is string && data['service'].size() >= 1 && data['service'].size() <= 100
+        && data.modality is string && data.modality.size() <= 80
+        && isValidPriority(data.priority)
+        && data.assignedTo is string && data.assignedTo.size() <= 120
+        && data.description is string && data.description.size() <= 2000
+        && data.source is string && data.source.size() <= 80
+        && isValidTicketBitacora(data.bitacora)
+        && isValidTicketPos(data.pos)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTicketTracking(data, folioParam) {
+      return data.keys().hasAll(['folio', 'ticketId', 'estado', 'priority', 'service', 'assignedTo', 'updatedAt'])
+        && data.keys().hasOnly(['folio', 'ticketId', 'estado', 'priority', 'service', 'assignedTo', 'updatedAt'])
+        && isValidFolio(data.folio)
+        && data.folio == folioParam
+        && isValidId(data.ticketId)
+        && isValidTicketState(data.estado)
+        && isValidPriority(data.priority)
+        && data['service'] is string && data['service'].size() >= 1 && data['service'].size() <= 100
+        && data.assignedTo is string && data.assignedTo.size() <= 120
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSpecsList(specsList) {
+      return specsList is list
+        && specsList.size() <= 20
+        && (specsList.size() == 0 || (specsList[0] is string && specsList[0].size() <= 140));
+    }
+
+    function isValidImageItem(imgVal) {
+      return imgVal is string && imgVal.size() >= 1 && imgVal.size() <= 150000;
+    }
+
+    function isValidImageList(imgList) {
+      return imgList is list
+        && imgList.size() <= 6
+        && (imgList.size() < 1 || isValidImageItem(imgList[0]))
+        && (imgList.size() < 2 || isValidImageItem(imgList[1]))
+        && (imgList.size() < 3 || isValidImageItem(imgList[2]))
+        && (imgList.size() < 4 || isValidImageItem(imgList[3]))
+        && (imgList.size() < 5 || isValidImageItem(imgList[4]))
+        && (imgList.size() < 6 || isValidImageItem(imgList[5]));
+    }
+
+    function isValidStoreProduct(data, productIdParam) {
+      return data.keys().hasAll([
+          'id', 'sku', 'name', 'category', 'cost', 'price', 'stock',
+          'minStock', 'unit', 'isService', 'publicVisible', 'description',
+          'specs', 'images', 'imageUrl', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'sku', 'barcode', 'name', 'category', 'cost', 'price', 'stock',
+          'minStock', 'unit', 'isService', 'publicVisible', 'description',
+          'specs', 'images', 'imageUrl', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == productIdParam
+        && data.sku is string && data.sku.size() >= 1 && data.sku.size() <= 64
+        && (!('barcode' in data) || (data.barcode is string && data.barcode.size() <= 64))
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 180
+        && isValidStoreCategory(data.category)
+        && data.cost is number && data.cost >= 0 && data.cost <= 10000000
+        && data.price is number && data.price >= 0 && data.price <= 10000000
+        && data.stock is number && data.stock >= 0 && data.stock <= 1000000
+        && data.minStock is number && data.minStock >= 0 && data.minStock <= 1000000
+        && data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 32
+        && data.isService is bool
+        && data.publicVisible is bool
+        && data.description is string && data.description.size() <= 2000
+        && isValidSpecsList(data.specs)
+        && isValidImageList(data.images)
+        && data.imageUrl is string && data.imageUrl.size() <= 150000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidInventoryMovement(data, movIdParam) {
+      return data.keys().hasAll([
+          'id', 'folio', 'date', 'productId', 'sku', 'productName', 'category',
+          'type', 'reason', 'reference', 'stockBefore', 'quantity', 'delta',
+          'stockAfter', 'unitCost', 'totalCost', 'user', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'folio', 'date', 'productId', 'sku', 'productName', 'category',
+          'type', 'reason', 'reference', 'stockBefore', 'quantity', 'delta',
+          'stockAfter', 'unitCost', 'totalCost', 'user', 'createdAt'
+        ])
+        && isValidId(data.id)
+        && data.id == movIdParam
+        && isValidKardexFolio(data.folio)
+        && data.date is string && data.date.size() <= 64
+        && isValidId(data.productId)
+        && data.sku is string && data.sku.size() >= 1 && data.sku.size() <= 64
+        && data.productName is string && data.productName.size() >= 1 && data.productName.size() <= 180
+        && isValidStoreCategory(data.category)
+        && isValidMovementType(data.type)
+        && data.reason is string && data.reason.size() <= 300
+        && data.reference is string && data.reference.size() <= 80
+        && data.stockBefore is number && data.stockBefore >= 0 && data.stockBefore <= 1000000
+        && data.quantity is number && data.quantity >= 0 && data.quantity <= 1000000
+        && data.delta is number && data.delta >= -1000000 && data.delta <= 1000000
+        && data.stockAfter is number && data.stockAfter >= 0 && data.stockAfter <= 1000000
+        && data.unitCost is number && data.unitCost >= 0 && data.unitCost <= 10000000
+        && data.totalCost is number && data.totalCost >= 0 && data.totalCost <= 100000000
+        && data.user is string && data.user.size() >= 1 && data.user.size() <= 120
+        && data.createdAt is timestamp;
+    }
+
+    // ==========================================
+    // COLLECTION 1: /staff/{uid}
+    // ==========================================
+    match /staff/{uid} {
+      allow get: if isValidId(uid) && ((isSignedIn() && request.auth.uid == uid) || isStaff());
+      allow list: if isStaff();
+
+      allow create: if isValidId(uid)
+        && isSignedIn()
+        && isValidStaffMember(incoming(), uid)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && (
+          isAdmin()
+          || (
+            request.auth.uid == uid
+            && incoming().email.lower() == authEmailLower()
+            && (
+              (isBootstrapAdmin() && incoming().role == 'admin' && incoming().active == true)
+              || (
+                hasActiveInvite()
+                && incoming().role == get(myInvitePath()).data.role
+                && incoming().active == get(myInvitePath()).data.active
+              )
+            )
+          )
+        );
+
+      allow update: if isValidId(uid)
+        && isSignedIn()
+        && isValidStaffMember(incoming(), uid)
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          isAdmin()
+          || (
+            request.auth.uid == uid
+            && hasActiveStaffDoc()
+            && incoming().role == existing().role
+            && incoming().active == existing().active
+            && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'specialty', 'phone', 'photoURL', 'updatedAt'])
+          )
+        );
+
+      allow delete: if isValidId(uid) && isAdmin() && uid != request.auth.uid;
+    }
+
+    // ==========================================
+    // COLLECTION 2: /staff_invites/{emailKey}
+    // ==========================================
+    match /staff_invites/{emailKey} {
+      allow get: if isValidId(emailKey)
+        && isSignedIn()
+        && (isAdmin() || emailKey == emailToKey(authEmailLower()));
+      allow list: if isAdmin();
+
+      allow create: if isValidId(emailKey)
+        && isAdmin()
+        && isValidStaffInvite(incoming(), emailKey)
+        && incoming().invitedBy == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(emailKey)
+        && isAdmin()
+        && isValidStaffInvite(incoming(), emailKey)
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'role', 'specialty', 'phone', 'active', 'invitedBy', 'updatedAt']);
+
+      allow delete: if isValidId(emailKey) && isAdmin();
+    }
+
+    // ==========================================
+    // COLLECTION 3: /tickets/{ticketId} (PII Protected)
+    // ==========================================
+    match /tickets/{ticketId} {
+      allow get: if isValidId(ticketId) && isStaff();
+      allow list: if isStaff();
+
+      allow create: if isValidId(ticketId)
+        && isValidSupportTicket(incoming(), ticketId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && existsAfter(/databases/$(database)/documents/ticket_tracking/$(incoming().folio))
+        && (
+          isStaff()
+          || (
+            incoming().estado == 'creación'
+            && incoming().assignedTo == 'Sin asignar'
+            && incoming().pos.total == 0
+            && incoming().pos.paid == false
+            && incoming().bitacora.size() <= 1
+          )
+        );
+
+      allow update: if isValidId(ticketId)
+        && isStaff()
+        && isValidSupportTicket(incoming(), ticketId)
+        && incoming().id == existing().id
+        && incoming().folio == existing().folio
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (existing().estado != 'resuelto' || isAdmin())
+        && (
+          isAdmin()
+          || incoming().diff(existing()).affectedKeys().hasOnly(['estado', 'priority', 'assignedTo', 'bitacora', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['bitacora', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['pos', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'email', 'company', 'address', 'service', 'modality', 'description', 'updatedAt'])
+        );
+
+      allow delete: if isValidId(ticketId) && isAdmin();
+    }
+
+    // ==========================================
+    // COLLECTION 4: /ticket_tracking/{folio} (Public Status Lookup, No PII)
+    // ==========================================
+    match /ticket_tracking/{folio} {
+      allow get: if isValidFolio(folio);
+      allow list: if isStaff();
+
+      allow create: if isValidFolio(folio)
+        && isValidTicketTracking(incoming(), folio)
+        && incoming().updatedAt == request.time
+        && existsAfter(/databases/$(database)/documents/tickets/$(incoming().ticketId))
+        && (
+          isStaff()
+          || (
+            incoming().estado == 'creación'
+            && incoming().assignedTo == 'Sin asignar'
+          )
+        );
+
+      allow update: if isValidFolio(folio)
+        && isStaff()
+        && isValidTicketTracking(incoming(), folio)
+        && incoming().folio == existing().folio
+        && incoming().ticketId == existing().ticketId
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['estado', 'priority', 'service', 'assignedTo', 'updatedAt']);
+
+      allow delete: if isValidFolio(folio) && isAdmin();
+    }
+
+    // ==========================================
+    // COLLECTION 5: /products/{productId} (Store Catalog & Inventory)
+    // ==========================================
+    match /products/{productId} {
+      allow get: if isValidId(productId) && (existing().publicVisible == true || isStaff());
+      allow list: if resource.data.publicVisible == true || isStaff();
+
+      allow create: if isValidId(productId)
+        && isStoreManager()
+        && isValidStoreProduct(incoming(), productId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(productId)
+        && isStaff()
+        && isValidStoreProduct(incoming(), productId)
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (isStoreManager() && incoming().diff(existing()).affectedKeys().hasOnly([
+            'sku', 'barcode', 'name', 'category', 'cost', 'price', 'stock',
+            'minStock', 'unit', 'isService', 'publicVisible', 'description',
+            'specs', 'images', 'imageUrl', 'updatedAt'
+          ]))
+          || incoming().diff(existing()).affectedKeys().hasOnly(['stock', 'updatedAt'])
+        );
+
+      allow delete: if isValidId(productId) && isStoreManager();
+    }
+
+    // ==========================================
+    // COLLECTION 6: /inventory_movements/{movementId} (Immutable Kardex)
+    // ==========================================
+    match /inventory_movements/{movementId} {
+      allow get: if isValidId(movementId) && isStaff();
+      allow list: if isStaff();
+
+      allow create: if isValidId(movementId)
+        && isStaff()
+        && isValidInventoryMovement(incoming(), movementId)
+        && incoming().createdAt == request.time
+        && existsAfter(/databases/$(database)/documents/products/$(incoming().productId));
+
+      allow update: if false;
+      allow delete: if isValidId(movementId) && isAdmin();
+    }
+  }
+}

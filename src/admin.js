@@ -1,10 +1,17 @@
 import { ticketService } from './services/ticketService.js';
 import { erpService } from './services/erpService.js';
+import { staffAuthService } from './services/staffAuthService.js';
+import { storeService } from './services/storeService.js';
 
 // ==========================================
 // GLOBAL ERP STATE
 // ==========================================
 let currentUser = null;
+let ticketsUnsubscribe = null;
+let productsUnsubscribe = null;
+let movementsUnsubscribe = null;
+let lastKnownTicketIds = new Set();
+let isFirstTicketSnapshot = true;
 let currentView = 'overview';
 let allTickets = [];
 let allProducts = [];
@@ -226,58 +233,93 @@ function applyTheme(theme) {
 }
 
 // ==========================================
-// 2. AUTHENTICATION & ROLES (RBAC)
+// 2. AUTHENTICATION & ROLES (FIREBASE AUTH + RBAC)
 // ==========================================
 function initAuth() {
   const loginOverlay = document.getElementById('loginOverlay');
   const dashboard = document.getElementById('dashboard');
-  const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
+  const loginStatusText = document.getElementById('loginStatusText');
+  const googleBtn = document.getElementById('firebaseGoogleLoginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  document.querySelectorAll('.qr-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('loginUser').value = btn.dataset.user;
-      document.getElementById('loginPass').value = btn.dataset.pass;
-      loginForm.requestSubmit();
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+      loginError.textContent = '';
+      googleBtn.disabled = true;
+      if (loginStatusText) loginStatusText.textContent = 'Conectando con Google Auth...';
+      try {
+        const staffUser = await staffAuthService.signInWithGoogle();
+        if (staffUser) {
+          currentUser = staffUser;
+          sessionStorage.setItem('fiberlink_user', JSON.stringify(staffUser));
+          sessionStorage.setItem('fiberlink_admin_logged_in', 'true');
+        }
+      } catch (err) {
+        loginError.textContent = err.message || 'No se pudo iniciar sesión con Google.';
+        if (loginStatusText) loginStatusText.textContent = 'Autenticación requerida (Firebase Staff)';
+      } finally {
+        googleBtn.disabled = false;
+      }
     });
-  });
-
-  const savedUser = sessionStorage.getItem('fiberlink_user');
-  if (savedUser && sessionStorage.getItem('fiberlink_admin_logged_in') === 'true') {
-    try {
-      currentUser = JSON.parse(savedUser);
-      enterDashboard();
-    } catch (e) {
-      sessionStorage.clear();
-    }
   }
 
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loginError.textContent = '';
-    const username = document.getElementById('loginUser').value.trim();
-    const password = document.getElementById('loginPass').value.trim();
-
-    try {
-      const res = await erpService.login(username, password);
-      currentUser = res.user;
-      sessionStorage.setItem('fiberlink_token', res.token);
-      sessionStorage.setItem('fiberlink_user', JSON.stringify(res.user));
+  staffAuthService.subscribeAuth(async ({ status, user, error }) => {
+    if (status === 'authenticated' && user) {
+      loginError.textContent = '';
+      currentUser = user;
+      sessionStorage.setItem('fiberlink_user', JSON.stringify(user));
       sessionStorage.setItem('fiberlink_admin_logged_in', 'true');
-      enterDashboard();
-      showToast(`Sesión iniciada: ${currentUser.name} (${currentUser.permissions?.label || currentUser.role})`);
-    } catch (err) {
-      loginError.textContent = err.message || 'Credenciales no válidas.';
+      await enterDashboard();
+      showToast(`Sesión Firebase activa: ${currentUser.name} (${currentUser.permissions?.label || currentUser.role})`);
+    } else {
+      if (ticketsUnsubscribe) {
+        ticketsUnsubscribe();
+        ticketsUnsubscribe = null;
+      }
+      if (productsUnsubscribe) {
+        productsUnsubscribe();
+        productsUnsubscribe = null;
+      }
+      if (movementsUnsubscribe) {
+        movementsUnsubscribe();
+        movementsUnsubscribe = null;
+      }
+      isFirstTicketSnapshot = true;
+      lastKnownTicketIds = new Set();
+      sessionStorage.clear();
+      currentUser = null;
+      loginOverlay?.classList.remove('hidden');
+      dashboard?.classList.add('hidden');
+      if (loginStatusText) {
+        loginStatusText.textContent = status === 'unauthorized'
+          ? 'Acceso denegado para esta cuenta'
+          : 'Listo para autenticar con Google (Firebase)';
+      }
+      if (error) {
+        loginError.textContent = error;
+      }
     }
   });
 
-  logoutBtn?.addEventListener('click', () => {
+  logoutBtn?.addEventListener('click', async () => {
+    if (ticketsUnsubscribe) {
+      ticketsUnsubscribe();
+      ticketsUnsubscribe = null;
+    }
+    if (productsUnsubscribe) {
+      productsUnsubscribe();
+      productsUnsubscribe = null;
+    }
+    if (movementsUnsubscribe) {
+      movementsUnsubscribe();
+      movementsUnsubscribe = null;
+    }
     sessionStorage.clear();
     currentUser = null;
-    loginOverlay.classList.remove('hidden');
-    dashboard.classList.add('hidden');
-    loginForm.reset();
+    await staffAuthService.logout();
+    loginOverlay?.classList.remove('hidden');
+    dashboard?.classList.add('hidden');
   });
 }
 
@@ -296,16 +338,82 @@ async function enterDashboard() {
   document.getElementById('ucName').textContent = currentUser?.name || 'Usuario';
   document.getElementById('ucRole').textContent = currentUser?.permissions?.label || currentUser?.role || 'Personal';
 
-  const allowedModules = ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users', 'settings'];
+  const allowedModules = currentUser?.permissions?.modules || ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports'];
   document.querySelectorAll('#sidebarNav .nav-btn').forEach(btn => {
-    btn.style.display = 'flex';
+    const view = btn.dataset.view;
+    btn.style.display = (!view || allowedModules.includes(view)) ? 'flex' : 'none';
   });
 
   document.querySelectorAll('#mobileBottomBar .mnav-item[data-view]').forEach(btn => {
-    btn.style.display = 'flex';
+    const view = btn.dataset.view;
+    btn.style.display = (!view || allowedModules.includes(view)) ? 'flex' : 'none';
   });
 
+  if (currentUser?.role === 'admin') {
+    await ticketService.seedInitialTicketsIfEmpty();
+    await storeService.seedInitialProductsIfEmpty(currentUser.name);
+  }
+
   await syncAllData();
+
+  if (ticketsUnsubscribe) {
+    ticketsUnsubscribe();
+  }
+  isFirstTicketSnapshot = true;
+  ticketsUnsubscribe = ticketService.subscribeTickets(
+    (liveTickets) => {
+      const incomingIds = new Set(liveTickets.map(t => t.id));
+      if (!isFirstTicketSnapshot) {
+        const added = liveTickets.filter(t => !lastKnownTicketIds.has(t.id));
+        if (added.length > 0) {
+          playErpNotificationBeep();
+          showToast(`🚨 Nuevo ticket en Firestore: ${added[0].folio} (${added[0].service})`);
+        }
+      }
+      isFirstTicketSnapshot = false;
+      lastKnownTicketIds = incomingIds;
+      allTickets = liveTickets;
+      updateNavBadges();
+      renderOverview();
+      renderTicketsKanban();
+      renderPosFolioOptions();
+    },
+    (err) => {
+      console.error('[Firestore Tickets Listener Error]:', err);
+      showToast('Error de permisos o conexión en Firestore Tickets');
+    }
+  );
+
+  if (productsUnsubscribe) {
+    productsUnsubscribe();
+  }
+  productsUnsubscribe = storeService.subscribeAllProducts(
+    (liveProducts) => {
+      allProducts = liveProducts;
+      updateNavBadges();
+      populateCatalogPickers();
+      renderPosCatalog();
+      renderInventoryModule();
+      renderOverview();
+    },
+    (err) => {
+      console.error('[Firestore Products Listener Error]:', err);
+    }
+  );
+
+  if (movementsUnsubscribe) {
+    movementsUnsubscribe();
+  }
+  movementsUnsubscribe = storeService.subscribeInventoryMovements(
+    (liveMovements) => {
+      allInventoryMovements = liveMovements;
+      renderInventoryModule();
+    },
+    (err) => {
+      console.error('[Firestore Movements Listener Error]:', err);
+    }
+  );
+
   if (!allowedModules.includes(currentView)) {
     switchView('overview');
   } else {
@@ -608,12 +716,12 @@ function highlightCmdSelection() {
 async function syncAllData() {
   try {
     const [tickets, products, movements, workshop, sales, users, clients, shifts, cashCuts, settings, reports, chatLeads] = await Promise.all([
-      ticketService.getTickets(),
-      erpService.getProducts().catch(() => []),
-      erpService.getInventoryMovements().catch(() => []),
+      ticketService.getTickets().catch(() => []),
+      storeService.getProducts().catch(() => []),
+      storeService.getInventoryMovements().catch(() => []),
       erpService.getWorkshopOrders().catch(() => []),
       erpService.getSales().catch(() => []),
-      erpService.getUsers().catch(() => []),
+      staffAuthService.listStaffDirectory(currentUser?.role === 'admin').catch(() => []),
       erpService.getClients().catch(() => []),
       erpService.getShifts().catch(() => []),
       erpService.getCashCuts().catch(() => []),
@@ -1611,6 +1719,15 @@ function initTicketsModule() {
     openModal('newTicketModal');
   });
 
+  const handleTicketRuleError = (err, fallbackMsg) => {
+    const raw = String(err?.message || '');
+    if (raw.includes('permission-denied') || raw.includes('Missing or insufficient permissions')) {
+      showToast('Acción bloqueada por reglas de seguridad (ej. ticket resuelto solo editable por Admin).');
+    } else {
+      showToast(fallbackMsg || 'Error al sincronizar el ticket con Firestore.');
+    }
+  };
+
   const newTicketForm = document.getElementById('newTicketForm');
   newTicketForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1619,11 +1736,15 @@ function initTicketsModule() {
     payload.author = currentUser?.name || 'Recepción';
     payload.source = 'Mesa de Control';
 
-    await ticketService.createTicket(payload);
-    newTicketForm.reset();
-    closeModal('newTicketModal');
-    await syncAllData();
-    showToast('Ticket registrado exitosamente');
+    try {
+      await ticketService.createTicket(payload);
+      newTicketForm.reset();
+      closeModal('newTicketModal');
+      await syncAllData();
+      showToast('Ticket registrado exitosamente en Firestore');
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo registrar el ticket en Firestore.');
+    }
   });
 
   document.querySelectorAll('#ticketDetailModal .tab-btn').forEach(btn => {
@@ -1637,23 +1758,41 @@ function initTicketsModule() {
 
   document.getElementById('tdEstado')?.addEventListener('change', async (e) => {
     if (!currentTicketId) return;
-    await ticketService.updateTicket(currentTicketId, { estado: e.target.value, author: currentUser?.name });
-    await syncAllData();
-    showToast('Estado del ticket actualizado');
+    const prev = allTickets.find(t => t.id === currentTicketId)?.estado || 'creación';
+    try {
+      await ticketService.updateTicket(currentTicketId, { estado: e.target.value, author: currentUser?.name });
+      await syncAllData();
+      showToast('Estado del ticket actualizado');
+    } catch (err) {
+      e.target.value = prev;
+      handleTicketRuleError(err, 'No se pudo actualizar el estado del ticket.');
+    }
   });
 
   document.getElementById('tdPrioritySelect')?.addEventListener('change', async (e) => {
     if (!currentTicketId) return;
-    await ticketService.updateTicket(currentTicketId, { priority: e.target.value, author: currentUser?.name });
-    await syncAllData();
-    showToast('Prioridad actualizada');
+    const prev = allTickets.find(t => t.id === currentTicketId)?.priority || 'Normal';
+    try {
+      await ticketService.updateTicket(currentTicketId, { priority: e.target.value, author: currentUser?.name });
+      await syncAllData();
+      showToast('Prioridad actualizada');
+    } catch (err) {
+      e.target.value = prev;
+      handleTicketRuleError(err, 'No se pudo actualizar la prioridad.');
+    }
   });
 
   document.getElementById('tdAssignedSelect')?.addEventListener('change', async (e) => {
     if (!currentTicketId) return;
-    await ticketService.updateTicket(currentTicketId, { assignedTo: e.target.value, author: currentUser?.name });
-    await syncAllData();
-    showToast(`Ticket asignado a ${e.target.value}`);
+    const prev = allTickets.find(t => t.id === currentTicketId)?.assignedTo || 'Sin asignar';
+    try {
+      await ticketService.updateTicket(currentTicketId, { assignedTo: e.target.value, author: currentUser?.name });
+      await syncAllData();
+      showToast(`Ticket asignado a ${e.target.value}`);
+    } catch (err) {
+      e.target.value = prev;
+      handleTicketRuleError(err, 'No se pudo reasignar el ticket.');
+    }
   });
 
   const bitacoraForm = document.getElementById('bitacoraForm');
@@ -1663,11 +1802,15 @@ function initTicketsModule() {
     const note = document.getElementById('bitacoraNote').value.trim();
     if (!note) return;
 
-    const updated = await ticketService.addBitacoraNote(currentTicketId, note, currentUser?.name || 'Técnico');
-    bitacoraForm.reset();
-    if (updated) renderTicketBitacora(updated.bitacora || []);
-    await syncAllData();
-    showToast('Nota agregada a la bitácora');
+    try {
+      const updated = await ticketService.addBitacoraNote(currentTicketId, note, currentUser?.name || 'Técnico');
+      bitacoraForm.reset();
+      if (updated) renderTicketBitacora(updated.bitacora || []);
+      await syncAllData();
+      showToast('Nota agregada a la bitácora');
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo agregar la nota a la bitácora.');
+    }
   });
 
   document.getElementById('tdAddCatalogItemBtn')?.addEventListener('click', async () => {
@@ -1676,20 +1819,24 @@ function initTicketsModule() {
     const prod = allProducts.find(p => p.id === prodId);
     if (!prod) return;
 
-    const ticket = await ticketService.getTicketById(currentTicketId);
-    const items = Array.isArray(ticket?.pos?.items) ? [...ticket.pos.items] : [];
-    items.push({
-      id: `pos-${Date.now()}`,
-      productId: prod.id,
-      concept: prod.name,
-      qty: 1,
-      price: prod.price
-    });
-    const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
-    await ticketService.savePos(currentTicketId, items, total);
-    renderTicketPOS({ items, total });
-    await syncAllData();
-    showToast(`Agregado: ${prod.name}`);
+    try {
+      const ticket = await ticketService.getTicketById(currentTicketId);
+      const items = Array.isArray(ticket?.pos?.items) ? [...ticket.pos.items] : [];
+      items.push({
+        id: `pos-${Date.now()}`,
+        productId: prod.id,
+        concept: prod.name,
+        qty: 1,
+        price: prod.price
+      });
+      const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
+      await ticketService.savePos(currentTicketId, items, total);
+      renderTicketPOS({ items, total });
+      await syncAllData();
+      showToast(`Agregado: ${prod.name}`);
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo agregar el producto al ticket.');
+    }
   });
 
   const posForm = document.getElementById('posForm');
@@ -1700,14 +1847,18 @@ function initTicketsModule() {
     const price = parseFloat(document.getElementById('posPrice').value);
     if (!concept || isNaN(price)) return;
 
-    const ticket = await ticketService.getTicketById(currentTicketId);
-    const items = Array.isArray(ticket?.pos?.items) ? [...ticket.pos.items] : [];
-    items.push({ id: `pos-${Date.now()}`, concept, qty: 1, price });
-    const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
-    await ticketService.savePos(currentTicketId, items, total);
-    renderTicketPOS({ items, total });
-    posForm.reset();
-    await syncAllData();
+    try {
+      const ticket = await ticketService.getTicketById(currentTicketId);
+      const items = Array.isArray(ticket?.pos?.items) ? [...ticket.pos.items] : [];
+      items.push({ id: `pos-${Date.now()}`, concept, qty: 1, price });
+      const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
+      await ticketService.savePos(currentTicketId, items, total);
+      renderTicketPOS({ items, total });
+      posForm.reset();
+      await syncAllData();
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo guardar el cargo en el ticket.');
+    }
   });
 
   document.getElementById('tdSendToPosBtn')?.addEventListener('click', async () => {
@@ -1721,10 +1872,14 @@ function initTicketsModule() {
   document.getElementById('tdDeleteTicketBtn')?.addEventListener('click', async () => {
     if (!currentTicketId) return;
     if (!confirm('¿Estás seguro de eliminar este ticket permanentemente?')) return;
-    await ticketService.deleteTicket(currentTicketId);
-    closeModal('ticketDetailModal');
-    await syncAllData();
-    showToast('Ticket eliminado');
+    try {
+      await ticketService.deleteTicket(currentTicketId);
+      closeModal('ticketDetailModal');
+      await syncAllData();
+      showToast('Ticket eliminado');
+    } catch (err) {
+      handleTicketRuleError(err, 'Solo un administrador puede eliminar tickets.');
+    }
   });
 
   document.getElementById('tdPrintOrderBtn')?.addEventListener('click', () => {
@@ -1925,9 +2080,16 @@ function renderTicketPOS(posData) {
     btn.addEventListener('click', async () => {
       const nextItems = items.filter(i => i.id !== btn.dataset.id);
       const nextTotal = nextItems.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
-      await ticketService.savePos(currentTicketId, nextItems, nextTotal);
-      renderTicketPOS({ items: nextItems, total: nextTotal });
-      await syncAllData();
+      try {
+        await ticketService.savePos(currentTicketId, nextItems, nextTotal);
+        renderTicketPOS({ items: nextItems, total: nextTotal });
+        await syncAllData();
+      } catch (err) {
+        const raw = String(err?.message || '');
+        showToast(raw.includes('permission-denied')
+          ? 'No tienes permisos para modificar este ticket.'
+          : 'Error al quitar el concepto del ticket.');
+      }
     });
   });
 }
@@ -1993,7 +2155,34 @@ function initWorkshopModule() {
 
     try {
       if (id) {
+        const prevQtyByProd = new Map();
+        (currentWorkshopOrder?.parts || []).forEach(p => {
+          if (p?.productId) {
+            prevQtyByProd.set(p.productId, (prevQtyByProd.get(p.productId) || 0) + (Number(p.qty) || 1));
+          }
+        });
+        const nextQtyByProd = new Map();
+        currentWorkshopParts.forEach(p => {
+          if (p?.productId) {
+            nextQtyByProd.set(p.productId, (nextQtyByProd.get(p.productId) || 0) + (Number(p.qty) || 1));
+          }
+        });
+        const newlyAddedParts = [];
+        for (const [prodId, nextQ] of nextQtyByProd.entries()) {
+          const delta = nextQ - (prevQtyByProd.get(prodId) || 0);
+          if (delta > 0) newlyAddedParts.push({ productId: prodId, qty: delta });
+        }
+
         await erpService.updateWorkshopOrder(id, payload);
+        if (newlyAddedParts.length > 0) {
+          await storeService.deductStockForSale(
+            newlyAddedParts,
+            currentWorkshopOrder?.folio || 'TALLER',
+            'taller',
+            currentUser?.name || 'Taller Técnico'
+          );
+          notifyPublicCatalogChanged('workshop-part');
+        }
         showToast('Orden de taller actualizada');
       } else {
         const created = await erpService.createWorkshopOrder(payload);
@@ -2003,6 +2192,13 @@ function initWorkshopModule() {
             laborCost: payload.laborCost,
             advancePayment: payload.advancePayment
           });
+          await storeService.deductStockForSale(
+            currentWorkshopParts,
+            created.order.folio || 'TALLER',
+            'taller',
+            currentUser?.name || 'Taller Técnico'
+          );
+          notifyPublicCatalogChanged('workshop-part');
         }
         showToast(`Orden ${created.order.folio} registrada en taller`);
       }
@@ -2627,6 +2823,7 @@ function initPosModule() {
     }
 
     try {
+      const soldItemsSnapshot = [...posCart];
       const res = await erpService.createSale({
         clientId: selectedClientId,
         clientName: document.getElementById('posClientName').value.trim(),
@@ -2635,8 +2832,15 @@ function initPosModule() {
         discount,
         amountReceived,
         cashier: currentUser?.name || 'Cajero POS',
-        items: posCart
+        items: soldItemsSnapshot
       });
+
+      await storeService.deductStockForSale(
+        soldItemsSnapshot,
+        res?.sale?.folio || 'POS',
+        'salida_venta',
+        currentUser?.name || 'Cajero POS'
+      );
 
       posCart = [];
       posLinkedFolio = '';
@@ -3018,123 +3222,117 @@ function initStoreModule() {
     openAdjustInventoryModal();
   });
 
-  // --- FOTOGRAFÍAS DEL PRODUCTO (Upload, Compresión y Galería) ---
+  // --- FOTOGRAFÍAS DEL PRODUCTO (Upload Firestore, Drag & Drop, Compresión y Galería) ---
+  const photosSection = document.getElementById('prodPhotosSection');
   const fileInput = document.getElementById('prodPhotosFileInput');
   const addUrlBtn = document.getElementById('btnAddProdPhotoUrl');
   const urlInput = document.getElementById('prodPhotoUrlInput');
+  const uploadStatusEl = document.getElementById('prodPhotoUploadStatus');
+  const prodSaveBtn = document.querySelector('#productForm button[type="submit"]');
 
-  const compressImageFile = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const maxDim = 900;
-          let w = img.width;
-          let h = img.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) {
-              h = Math.round((h * maxDim) / w);
-              w = maxDim;
-            } else {
-              w = Math.round((w * maxDim) / h);
-              h = maxDim;
-            }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.82));
-        };
-        img.onerror = () => resolve(e.target.result);
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+  const setPhotoUploadStatus = (text, tone = '') => {
+    if (!uploadStatusEl) return;
+    uploadStatusEl.textContent = text;
+    uploadStatusEl.style.color = tone === 'warn'
+      ? 'var(--amber)'
+      : tone === 'ok'
+        ? 'var(--secondary)'
+        : 'var(--text-muted)';
   };
 
-  const renderProductPhotosPreview = () => {
-    const container = document.getElementById('prodPhotosGalleryPreview');
-    const badge = document.getElementById('prodPhotosCountBadge');
-    if (badge) badge.textContent = `${currentProductPhotos.length} / 6 fotos`;
-    if (!container) return;
-
-    if (currentProductPhotos.length === 0) {
-      container.innerHTML = `
-        <div style="grid-column:1/-1; padding:12px; text-align:center; color:var(--text-muted); font-size:0.75rem; border:1px dashed var(--border-subtle); border-radius:8px;">
-          Sin fotografías agregadas. Haz clic en "Subir / Tomar Fotografías" o pega un enlace de imagen.
-        </div>
-      `;
+  const handleProductPhotoFiles = async (rawFiles) => {
+    const files = Array.from(rawFiles || []).filter(f => f && f.type?.startsWith('image/'));
+    if (files.length === 0) {
+      showToast('Selecciona archivos de imagen válidos (JPG, PNG, WEBP)');
       return;
     }
 
-    container.innerHTML = currentProductPhotos.map((photoUrl, idx) => `
-      <div class="prod-photo-item ${idx === 0 ? 'is-cover' : ''}" data-idx="${idx}">
-        <img src="${photoUrl}" alt="Foto ${idx + 1}" onerror="this.src='/logo.gif'">
-        ${idx === 0 ? '<span class="prod-photo-cover-tag">Principal</span>' : ''}
-        <div class="prod-photo-controls">
-          ${idx > 0 ? `<button type="button" class="prod-photo-btn btn-make-cover" data-idx="${idx}" title="Fijar como foto principal">⭐</button>` : '<span></span>'}
-          <button type="button" class="prod-photo-btn btn-del btn-del-photo" data-idx="${idx}" title="Eliminar fotografía">✕</button>
-        </div>
-      </div>
-    `).join('');
+    if (prodSaveBtn) prodSaveBtn.disabled = true;
+    let addedCount = 0;
 
-    container.querySelectorAll('.btn-make-cover').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const i = Number(btn.dataset.idx);
-        const [target] = currentProductPhotos.splice(i, 1);
-        currentProductPhotos.unshift(target);
-        renderProductPhotosPreview();
-      });
-    });
-
-    container.querySelectorAll('.btn-del-photo').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const i = Number(btn.dataset.idx);
-        currentProductPhotos.splice(i, 1);
-        renderProductPhotosPreview();
-      });
-    });
+    try {
+      for (const f of files) {
+        if (currentProductPhotos.length >= 6) {
+          showToast('Límite de 6 fotografías por producto alcanzado');
+          break;
+        }
+        setPhotoUploadStatus(`Optimizando fotografía (${f.name})...`);
+        try {
+          const compressed = await storeService.compressProductImage(f);
+          currentProductPhotos.push(compressed);
+          addedCount++;
+          renderProductPhotosEditor();
+        } catch (err) {
+          console.error('Error comprimiendo imagen:', err);
+          showToast(err.message || `No se pudo procesar ${f.name}`);
+        }
+      }
+      if (addedCount > 0) {
+        setPhotoUploadStatus(`✓ ${addedCount} fotografía(s) lista(s) para sincronizar en Firestore`, 'ok');
+      } else {
+        setPhotoUploadStatus('Arrastra imágenes aquí o usa los botones · Compresión WebP/JPEG automática');
+      }
+    } finally {
+      if (prodSaveBtn) prodSaveBtn.disabled = false;
+      if (fileInput) fileInput.value = '';
+    }
   };
 
-  fileInput?.addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-    for (const f of files) {
-      if (currentProductPhotos.length >= 6) {
-        showToast('Límite de 6 fotografías por producto alcanzado');
-        break;
-      }
-      try {
-        const compressed = await compressImageFile(f);
-        currentProductPhotos.push(compressed);
-      } catch (err) {
-        console.error('Error procesando imagen', err);
-      }
-    }
-    fileInput.value = '';
-    renderProductPhotosPreview();
+  fileInput?.addEventListener('change', (e) => {
+    handleProductPhotoFiles(e.target.files);
   });
 
-  addUrlBtn?.addEventListener('click', () => {
-    const url = (urlInput?.value || '').trim();
-    if (!url) return;
+  if (photosSection) {
+    photosSection.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      photosSection.classList.add('drag-over');
+    });
+    photosSection.addEventListener('dragleave', (e) => {
+      if (!photosSection.contains(e.relatedTarget)) {
+        photosSection.classList.remove('drag-over');
+      }
+    });
+    photosSection.addEventListener('drop', (e) => {
+      e.preventDefault();
+      photosSection.classList.remove('drag-over');
+      if (e.dataTransfer?.files?.length) {
+        handleProductPhotoFiles(e.dataTransfer.files);
+      }
+    });
+  }
+
+  const addPhotoFromUrlInput = () => {
+    const raw = (urlInput?.value || '').trim();
+    if (!raw) return;
     if (currentProductPhotos.length >= 6) {
       showToast('Límite de 6 fotografías por producto alcanzado');
       return;
     }
-    currentProductPhotos.push(url);
-    if (urlInput) urlInput.value = '';
-    renderProductPhotosPreview();
+    try {
+      const validUrl = storeService.validatePhotoUrl(raw);
+      currentProductPhotos.push(validUrl);
+      if (urlInput) urlInput.value = '';
+      renderProductPhotosEditor();
+      setPhotoUploadStatus('✓ Enlace de fotografía agregado', 'ok');
+    } catch (err) {
+      showToast(err.message || 'URL de imagen inválida');
+    }
+  };
+
+  addUrlBtn?.addEventListener('click', addPhotoFromUrlInput);
+  urlInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addPhotoFromUrlInput();
+    }
   });
 
   document.getElementById('btnOpenNewProductModal')?.addEventListener('click', () => {
     document.getElementById('productForm').reset();
     document.getElementById('prodId').value = '';
     currentProductPhotos = [];
-    renderProductPhotosPreview();
+    renderProductPhotosEditor();
+    setPhotoUploadStatus('Arrastra imágenes aquí o usa los botones · Compresión WebP/JPEG automática');
     const delModalBtn = document.getElementById('btnDeleteProdInModal');
     if (delModalBtn) {
       delModalBtn.classList.add('hidden');
@@ -3166,13 +3364,16 @@ function initStoreModule() {
     btn.disabled = true;
     btn.textContent = 'Eliminando...';
     try {
-      await erpService.deleteProduct(id);
+      await storeService.deleteProduct(id);
       closeModal('productModal');
       await syncAllData();
       notifyPublicCatalogChanged('delete', id);
-      showToast('Artículo eliminado del inventario y del catálogo web');
+      showToast('Artículo eliminado de Firestore y del catálogo web');
     } catch (err) {
-      showToast(err.message || 'No se pudo eliminar el artículo');
+      const raw = String(err?.message || '');
+      showToast(raw.includes('permission-denied')
+        ? 'Solo roles Admin o Ventas pueden eliminar productos del catálogo.'
+        : (err.message || 'No se pudo eliminar el artículo'));
     } finally {
       btn.disabled = false;
       btn.dataset.armed = '';
@@ -3201,19 +3402,27 @@ function initStoreModule() {
       imageUrl: currentProductPhotos[0] || ''
     };
 
+    const submitBtn = prodForm.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
     try {
       if (id) {
-        await erpService.updateProduct(id, payload);
-        showToast('Producto actualizado');
+        await storeService.updateProduct(id, payload, currentUser?.name);
+        showToast('Producto sincronizado en Firestore y tienda web');
       } else {
-        await erpService.createProduct(payload);
-        showToast('Producto agregado al catálogo e inventario');
+        await storeService.createProduct(payload, currentUser?.name);
+        showToast('Producto agregado a Firestore y tienda web');
       }
       closeModal('productModal');
       await syncAllData();
       notifyPublicCatalogChanged(id ? 'update' : 'create', id);
     } catch (err) {
-      showToast(err.message);
+      const raw = String(err?.message || '');
+      showToast(raw.includes('permission-denied')
+        ? 'No tienes permisos para crear o editar productos (solo Admin / Ventas).'
+        : (err.message || 'No se pudo guardar el producto en Firestore'));
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 
@@ -3267,19 +3476,22 @@ function initStoreModule() {
 
     if (!prodId) return;
     try {
-      await erpService.adjustStock(prodId, {
+      await storeService.adjustStock(prodId, {
         delta: qty,
         type: 'entrada',
         unitCost,
         reference,
         reason
-      });
+      }, currentUser?.name);
       closeModal('addInventoryModal');
       await syncAllData();
       notifyPublicCatalogChanged('stock-add', prodId);
       showToast(`Entrada de +${qty} unidades registrada en el Kardex`);
     } catch (err) {
-      showToast(err.message);
+      const raw = String(err?.message || '');
+      showToast(raw.includes('permission-denied')
+        ? 'No tienes permisos para registrar entradas de almacén.'
+        : (err.message || 'Error al registrar entrada de stock'));
     }
   });
 
@@ -3347,18 +3559,21 @@ function initStoreModule() {
     const reason = document.getElementById('adjInvReason')?.value.trim() || 'Ajuste de inventario en almacén';
 
     try {
-      await erpService.adjustStock(prodId, {
+      await storeService.adjustStock(prodId, {
         newStock: finalStock,
         type,
         reference,
         reason
-      });
+      }, currentUser?.name);
       closeModal('adjustInventoryModal');
       await syncAllData();
       notifyPublicCatalogChanged('stock-adjust', prodId);
       showToast(`Ajuste de inventario aplicado (${prod.sku}: ${sysStock} ➔ ${finalStock})`);
     } catch (err) {
-      showToast(err.message);
+      const raw = String(err?.message || '');
+      showToast(raw.includes('permission-denied')
+        ? 'No tienes permisos para ajustar existencias.'
+        : (err.message || 'Error al ajustar existencias'));
     }
   });
 
@@ -3619,16 +3834,63 @@ function renderStoreTable() {
       btn.disabled = true;
       btn.textContent = '...';
       try {
-        await erpService.deleteProduct(id);
+        await storeService.deleteProduct(id);
         await syncAllData();
         notifyPublicCatalogChanged('delete', id);
-        showToast('Artículo eliminado del inventario y del catálogo web');
+        showToast('Artículo eliminado de Firestore y del catálogo web');
       } catch (err) {
         btn.disabled = false;
         btn.dataset.armed = '';
         btn.textContent = 'Eliminar';
-        showToast(err.message || 'No se pudo eliminar el artículo');
+        const raw = String(err?.message || '');
+        showToast(raw.includes('permission-denied')
+          ? 'Solo roles Admin o Ventas pueden eliminar artículos.'
+          : (err.message || 'No se pudo eliminar el artículo'));
       }
+    });
+  });
+}
+
+function renderProductPhotosEditor() {
+  const container = document.getElementById('prodPhotosGalleryPreview');
+  const badge = document.getElementById('prodPhotosCountBadge');
+  if (badge) badge.textContent = `${currentProductPhotos.length} / 6 fotos`;
+  if (!container) return;
+
+  if (currentProductPhotos.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1; padding:12px; text-align:center; color:var(--text-muted); font-size:0.75rem; border:1px dashed var(--border-subtle); border-radius:8px;">
+        Sin fotografías agregadas. Haz clic en "Subir / Tomar Fotografías", arrastra imágenes aquí o pega un enlace.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = currentProductPhotos.map((photoUrl, idx) => `
+    <div class="prod-photo-item ${idx === 0 ? 'is-cover' : ''}" data-idx="${idx}">
+      <img src="${photoUrl}" alt="Foto ${idx + 1}" onerror="this.src='/logo.gif'">
+      ${idx === 0 ? '<span class="prod-photo-cover-tag">Principal</span>' : ''}
+      <div class="prod-photo-controls">
+        ${idx > 0 ? `<button type="button" class="prod-photo-btn btn-make-cover" data-idx="${idx}" title="Fijar como foto principal">⭐</button>` : '<span></span>'}
+        <button type="button" class="prod-photo-btn btn-del btn-del-photo" data-idx="${idx}" title="Eliminar fotografía">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.btn-make-cover').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.idx);
+      const [target] = currentProductPhotos.splice(i, 1);
+      currentProductPhotos.unshift(target);
+      renderProductPhotosEditor();
+    });
+  });
+
+  container.querySelectorAll('.btn-del-photo').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.idx);
+      currentProductPhotos.splice(i, 1);
+      renderProductPhotosEditor();
     });
   });
 }
@@ -3659,50 +3921,16 @@ function openEditProductModal(productId) {
   document.getElementById('prodPublicVisible').checked = p.publicVisible !== false;
   document.getElementById('prodIsService').checked = Boolean(p.isService);
 
-  // Load photos into editor
+  // Load photos into editor without resetting unsaved form fields on subsequent cover/delete clicks
   currentProductPhotos = Array.isArray(p.images) && p.images.length > 0
     ? [...p.images]
     : (p.imageUrl ? [p.imageUrl] : []);
+  renderProductPhotosEditor();
 
-  const galleryEl = document.getElementById('prodPhotosGalleryPreview');
-  const countBadge = document.getElementById('prodPhotosCountBadge');
-  if (countBadge) countBadge.textContent = `${currentProductPhotos.length} / 6 fotos`;
-  if (galleryEl) {
-    if (currentProductPhotos.length === 0) {
-      galleryEl.innerHTML = `
-        <div style="grid-column:1/-1; padding:12px; text-align:center; color:var(--text-muted); font-size:0.75rem; border:1px dashed var(--border-subtle); border-radius:8px;">
-          Sin fotografías agregadas. Haz clic en "Subir / Tomar Fotografías" o pega un enlace de imagen.
-        </div>
-      `;
-    } else {
-      galleryEl.innerHTML = currentProductPhotos.map((photoUrl, idx) => `
-        <div class="prod-photo-item ${idx === 0 ? 'is-cover' : ''}" data-idx="${idx}">
-          <img src="${photoUrl}" alt="Foto ${idx + 1}" onerror="this.src='/logo.gif'">
-          ${idx === 0 ? '<span class="prod-photo-cover-tag">Principal</span>' : ''}
-          <div class="prod-photo-controls">
-            ${idx > 0 ? `<button type="button" class="prod-photo-btn btn-make-cover" data-idx="${idx}" title="Fijar como foto principal">⭐</button>` : '<span></span>'}
-            <button type="button" class="prod-photo-btn btn-del btn-del-photo" data-idx="${idx}" title="Eliminar fotografía">✕</button>
-          </div>
-        </div>
-      `).join('');
-
-      galleryEl.querySelectorAll('.btn-make-cover').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const i = Number(btn.dataset.idx);
-          const [target] = currentProductPhotos.splice(i, 1);
-          currentProductPhotos.unshift(target);
-          openEditProductModal(p.id);
-        });
-      });
-
-      galleryEl.querySelectorAll('.btn-del-photo').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const i = Number(btn.dataset.idx);
-          currentProductPhotos.splice(i, 1);
-          openEditProductModal(p.id);
-        });
-      });
-    }
+  const uploadStatusEl = document.getElementById('prodPhotoUploadStatus');
+  if (uploadStatusEl) {
+    uploadStatusEl.style.color = 'var(--text-muted)';
+    uploadStatusEl.textContent = 'Arrastra imágenes aquí o usa los botones · Compresión WebP/JPEG automática';
   }
 
   const titleEl = document.getElementById('productModalTitle') || document.getElementById('prodModalTitle');
@@ -4368,38 +4596,45 @@ function exportSalesToCSV() {
 // ==========================================
 function initUsersModule() {
   document.getElementById('btnOpenNewUserModal')?.addEventListener('click', () => {
+    if (!currentUser?.permissions?.canManageUsers) {
+      showToast('Solo los administradores pueden autorizar cuentas de staff.');
+      return;
+    }
     document.getElementById('userForm').reset();
     document.getElementById('usrId').value = '';
-    document.getElementById('usrUsername').disabled = false;
-    document.getElementById('userModalTitle').textContent = 'Registrar Nuevo Usuario';
+    const emailEl = document.getElementById('usrEmail');
+    if (emailEl) emailEl.disabled = false;
+    const activeEl = document.getElementById('usrActive');
+    if (activeEl) activeEl.value = 'true';
+    document.getElementById('userModalTitle').textContent = 'Autorizar Staff en Firebase';
     openModal('userModal');
   });
 
   const userForm = document.getElementById('userForm');
   userForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!currentUser?.permissions?.canManageUsers) {
+      showToast('No tienes permisos para administrar staff.');
+      return;
+    }
     const id = document.getElementById('usrId').value;
     const payload = {
+      uid: id && !id.startsWith('invite:') ? id : undefined,
       name: document.getElementById('usrName').value.trim(),
-      username: document.getElementById('usrUsername').value.trim(),
-      password: document.getElementById('usrPassword').value.trim(),
+      email: document.getElementById('usrEmail').value.trim().toLowerCase(),
       role: document.getElementById('usrRole').value,
+      active: document.getElementById('usrActive')?.value !== 'false',
       phone: document.getElementById('usrPhone').value.trim(),
       specialty: document.getElementById('usrSpecialty').value.trim()
     };
 
     try {
-      if (id) {
-        await erpService.updateUser(id, payload);
-        showToast('Perfil de usuario actualizado');
-      } else {
-        await erpService.createUser(payload);
-        showToast('Usuario creado exitosamente');
-      }
+      await staffAuthService.inviteOrUpdateStaff(payload, currentUser.uid);
+      showToast(id ? 'Perfil de staff actualizado en Firebase' : 'Correo de staff autorizado en Firebase');
       closeModal('userModal');
       await syncAllData();
     } catch (err) {
-      showToast(err.message);
+      showToast(err.message || 'Error al guardar autorización de staff');
     }
   });
 }
@@ -4408,22 +4643,39 @@ function renderUsersTable() {
   const tbody = document.getElementById('usersTableBody');
   if (!tbody) return;
 
-  tbody.innerHTML = allUsers.map(u => `
-    <tr>
-      <td data-label="Nombre"><strong>${u.name}</strong></td>
-      <td data-label="Usuario" class="mono">@${u.username}</td>
-      <td data-label="Rol"><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
-      <td data-label="Especialidad">${u.specialty || '-'}</td>
-      <td data-label="Contacto" class="tabular">${u.phone || u.email || '-'}</td>
-      <td data-label="Estado"><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}"><span class="status-dot ${u.active !== false ? 'dot-lime' : 'dot-red'}"></span>${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
-      <td data-label="Acciones" style="text-align:right;">
-        <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
-          <button class="btn btn-ghost btn-sm btn-edit-usr" data-id="${u.id}">Editar</button>
-          ${u.username !== 'admin' ? `<button class="btn btn-danger btn-sm btn-del-usr" data-id="${u.id}">✕</button>` : ''}
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const canManage = Boolean(currentUser?.permissions?.canManageUsers);
+  const addBtn = document.getElementById('btnOpenNewUserModal');
+  if (addBtn) addBtn.style.display = canManage ? 'inline-flex' : 'none';
+
+  if (allUsers.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7">${renderEmptyState('Sin staff registrado', 'Autoriza cuentas de Google para tu equipo técnico y administrativo.')}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allUsers.map(u => {
+    const isBootstrap = (u.email || '').toLowerCase() === 'jonathanhdezf@gmail.com';
+    const verifyBadge = u.verifiedGoogle
+      ? `<span class="badge badge-green" style="font-size:0.65rem; margin-left:6px;">Google Verificado</span>`
+      : `<span class="badge badge-amber" style="font-size:0.65rem; margin-left:6px;">Invitado</span>`;
+    return `
+      <tr>
+        <td data-label="Nombre"><strong>${u.name}</strong>${verifyBadge}</td>
+        <td data-label="Correo Google" class="mono">${u.email || '-'}</td>
+        <td data-label="Rol"><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
+        <td data-label="Especialidad">${u.specialty || '-'}</td>
+        <td data-label="Teléfono" class="tabular">${u.phone || '-'}</td>
+        <td data-label="Estado"><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}"><span class="status-dot ${u.active !== false ? 'dot-lime' : 'dot-red'}"></span>${u.active !== false ? 'Activo' : 'Inactivo'}</span></td>
+        <td data-label="Acciones" style="text-align:right;">
+          ${canManage ? `
+            <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
+              <button class="btn btn-ghost btn-sm btn-edit-usr" data-id="${u.id}">Editar</button>
+              ${!isBootstrap && u.id !== currentUser?.uid ? `<button class="btn btn-danger btn-sm btn-del-usr" data-id="${u.id}" data-email="${u.email || ''}">✕</button>` : ''}
+            </div>
+          ` : '<span style="font-size:0.74rem; color:var(--text-muted);">Solo lectura</span>'}
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   tbody.querySelectorAll('.btn-edit-usr').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -4431,23 +4683,31 @@ function renderUsersTable() {
       if (!u) return;
       document.getElementById('usrId').value = u.id;
       document.getElementById('usrName').value = u.name;
-      document.getElementById('usrUsername').value = u.username;
-      document.getElementById('usrUsername').disabled = true;
-      document.getElementById('usrPassword').value = '';
+      const emailEl = document.getElementById('usrEmail');
+      if (emailEl) {
+        emailEl.value = u.email || '';
+        emailEl.disabled = true;
+      }
       document.getElementById('usrRole').value = u.role;
+      const activeEl = document.getElementById('usrActive');
+      if (activeEl) activeEl.value = u.active !== false ? 'true' : 'false';
       document.getElementById('usrPhone').value = u.phone || '';
       document.getElementById('usrSpecialty').value = u.specialty || '';
-      document.getElementById('userModalTitle').textContent = `Editar Usuario: ${u.name}`;
+      document.getElementById('userModalTitle').textContent = `Editar Staff: ${u.name}`;
       openModal('userModal');
     });
   });
 
   tbody.querySelectorAll('.btn-del-usr').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('¿Eliminar esta cuenta de usuario?')) return;
-      await erpService.deleteUser(btn.dataset.id);
-      await syncAllData();
-      showToast('Usuario eliminado');
+      if (!confirm('¿Revocar acceso y eliminar esta cuenta de staff en Firebase?')) return;
+      try {
+        await staffAuthService.deleteStaffAccess(btn.dataset.id, btn.dataset.email);
+        await syncAllData();
+        showToast('Acceso de staff revocado');
+      } catch (err) {
+        showToast(err.message || 'Error al revocar acceso');
+      }
     });
   });
 }
@@ -6859,10 +7119,13 @@ function initSettingsModule() {
   document.getElementById('btnCfgNewCashier')?.addEventListener('click', () => {
     document.getElementById('userForm')?.reset();
     document.getElementById('usrId').value = '';
-    document.getElementById('usrUsername').disabled = false;
+    const emailEl = document.getElementById('usrEmail');
+    if (emailEl) emailEl.disabled = false;
+    const activeEl = document.getElementById('usrActive');
+    if (activeEl) activeEl.value = 'true';
     document.getElementById('usrRole').value = 'ventas';
     document.getElementById('usrSpecialty').value = 'Cajero Mostrador / POS';
-    document.getElementById('userModalTitle').textContent = 'Registrar Nuevo Cajero / Operador';
+    document.getElementById('userModalTitle').textContent = 'Autorizar Nuevo Cajero / Operador';
     openModal('userModal');
   });
 
@@ -7547,10 +7810,10 @@ function renderSettingsCashiersTable() {
       <td data-label="Cajero / Operador">
         <div><strong>${u.name}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${u.specialty || 'Operador ERP'}</div></div>
       </td>
-      <td data-label="Login" class="mono">@${u.username}</td>
+      <td data-label="Login" class="mono">${u.email || '@' + u.username}</td>
       <td data-label="Rol / Permiso"><span class="badge badge-purple">${u.permissions?.label || u.role}</span></td>
       <td data-label="Teléfono" class="mono tabular">${u.phone || '-'}</td>
-      <td data-label="Estado"><span class="badge badge-green">Autorizado</span></td>
+      <td data-label="Estado"><span class="badge ${u.active !== false ? 'badge-green' : 'badge-red'}">${u.active !== false ? 'Autorizado' : 'Inactivo'}</span></td>
       <td data-label="Acciones" style="text-align:right;">
         <button type="button" class="btn btn-secondary btn-sm btn-cfg-edit-cashier" data-id="${u.id}">Editar Cajero</button>
       </td>
@@ -7563,9 +7826,13 @@ function renderSettingsCashiersTable() {
       if (!u) return;
       document.getElementById('usrId').value = u.id;
       document.getElementById('usrName').value = u.name;
-      document.getElementById('usrUsername').value = u.username;
-      document.getElementById('usrUsername').disabled = true;
-      document.getElementById('usrPassword').value = '';
+      const emailEl = document.getElementById('usrEmail');
+      if (emailEl) {
+        emailEl.value = u.email || '';
+        emailEl.disabled = true;
+      }
+      const activeEl = document.getElementById('usrActive');
+      if (activeEl) activeEl.value = u.active !== false ? 'true' : 'false';
       document.getElementById('usrRole').value = u.role;
       document.getElementById('usrPhone').value = u.phone || '';
       document.getElementById('usrSpecialty').value = u.specialty || '';

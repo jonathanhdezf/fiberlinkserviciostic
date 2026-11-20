@@ -29,71 +29,29 @@
         </div>
         <div class="login-badge">
           <span class="status-dot dot-lime"></span>
-          FIBERLINK ENTERPRISE OS v2.4
+          FIBERLINK ENTERPRISE OS · FIREBASE AUTH
         </div>
-        <h2>Acceso a Mesa de Control</h2>
-        <p>Gestión unificada de Tickets, Laboratorio, POS, Almacén y Finanzas</p>
+        <h2>Acceso de Staff Autorizado</h2>
+        <p>Mesa de Control de Tickets, Laboratorio, POS, Almacén y Finanzas</p>
       </div>
 
-      <form id="loginForm" class="login-form">
-        <div class="field-group">
-          <label for="loginUser">Identificador de Usuario</label>
-          <div class="input-icon-wrap">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <input type="text" id="loginUser" required autocomplete="username" placeholder="admin, tecnico, caja, recepcion">
+      <div class="login-form" style="gap:14px;">
+        <div style="background:var(--bg-surface-2); border:1px solid var(--border-subtle); border-radius:10px; padding:12px 14px; font-size:0.78rem; color:var(--text-secondary); line-height:1.5;">
+          <div style="display:flex; align-items:center; gap:8px; font-weight:600; color:var(--text-main); margin-bottom:4px;">
+            <span class="status-dot dot-lime"></span>
+            <span id="loginStatusText">Verificando sesión de Firebase...</span>
           </div>
-        </div>
-
-        <div class="field-group">
-          <label for="loginPass">Clave de Seguridad</label>
-          <div class="input-icon-wrap">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <input type="password" id="loginPass" required autocomplete="current-password" placeholder="••••••••">
-          </div>
+          <span>Inicia sesión con tu cuenta de Google corporativa o autorizada en Firestore para acceder a los tickets de soporte.</span>
         </div>
 
         <div id="loginError" class="login-error" role="alert"></div>
 
-        <button type="submit" class="btn btn-primary btn-full">
-          <span>Autenticar en Consola</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <button type="button" id="firebaseGoogleLoginBtn" class="btn btn-primary btn-full" style="padding:11px 16px; font-size:0.88rem;">
+          <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27c3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10c5.35 0 9.25-3.67 9.25-9.09c0-1.15-.15-1.81-.15-1.81Z"/>
+          </svg>
+          <span>Iniciar sesión con Google (Staff)</span>
         </button>
-      </form>
-
-      <div class="quick-roles">
-        <div class="qr-header">
-          <span>Simulación instantánea de Rol (RBAC)</span>
-        </div>
-        <div class="qr-grid">
-          <button type="button" class="qr-btn" data-user="admin" data-pass="admin123">
-            <div class="qr-top">
-              <strong>Admin General</strong>
-              <span class="kbd-tag">ROOT</span>
-            </div>
-            <span>Control total y finanzas</span>
-          </button>
-          <button type="button" class="qr-btn" data-user="tecnico" data-pass="tec123">
-            <div class="qr-top">
-              <strong>Ing. Soporte</strong>
-              <span class="kbd-tag">TECH</span>
-            </div>
-            <span>Tickets y Laboratorio</span>
-          </button>
-          <button type="button" class="qr-btn" data-user="caja" data-pass="caja123">
-            <div class="qr-top">
-              <strong>Cajero / POS</strong>
-              <span class="kbd-tag">POS</span>
-            </div>
-            <span>Mostrador, caja y stock</span>
-          </button>
-          <button type="button" class="qr-btn" data-user="recepcion" data-pass="recep123">
-            <div class="qr-top">
-              <strong>Recepción</strong>
-              <span class="kbd-tag">DESK</span>
-            </div>
-            <span>Mesa de ayuda e ingreso</span>
-          </button>
-        </div>
       </div>
 
       <div class="login-footer">
@@ -1393,7 +1351,7 @@
                 <thead>
                   <tr>
                     <th>Colaborador</th>
-                    <th>Identificador</th>
+                    <th>Correo Google</th>
                     <th>Rol Asignado</th>
                     <th>Especialidad Operativa</th>
                     <th>Teléfono</th>
@@ -3500,9 +3458,9 @@
         <div class="full prod-photos-box" id="prodPhotosSection">
           <div class="prod-photos-header">
             <div>
-              <div class="panel-eyebrow">GALERÍA VISUAL DEL ARTÍCULO</div>
+              <div class="panel-eyebrow">GALERÍA VISUAL DEL ARTÍCULO · FIRESTORE SYNC</div>
               <strong style="font-size:0.88rem; color:var(--text-main);">📸 Fotografías del Producto</strong>
-              <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Sube imágenes desde tu equipo/cámara o agrega un enlace URL. La primera foto será la portada en Inventario y Punto de Venta.</span>
+              <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Sube, arrastra y suelta desde tu equipo/cámara o agrega un enlace URL. La primera foto será la portada en la Tienda Principal, Catálogo y POS.</span>
             </div>
             <span class="badge badge-blue mono tabular" id="prodPhotosCountBadge">0 / 6 fotos</span>
           </div>
@@ -3520,6 +3478,7 @@
             </div>
           </div>
 
+          <div id="prodPhotoUploadStatus" style="font-size:0.72rem; color:var(--text-muted); margin-bottom:8px;">Arrastra imágenes aquí o usa los botones · Compresión WebP/JPEG automática</div>
           <div id="prodPhotosGalleryPreview" class="prod-photos-gallery-grid"></div>
         </div>
 
@@ -3547,7 +3506,7 @@
     <div class="modal-back" data-close="userModal"></div>
     <div class="modal-panel surface-elevated" style="max-width:520px;">
       <div class="modal-head">
-        <h2 id="userModalTitle">Registrar Usuario del Sistema</h2>
+        <h2 id="userModalTitle">Autorizar Staff en Firebase</h2>
         <button class="close-btn" data-close="userModal">✕</button>
       </div>
       <form id="userForm" class="modal-body form-grid">
@@ -3555,11 +3514,8 @@
         <label class="full">Nombre Completo *
           <input type="text" id="usrName" required placeholder="Ej. Ing. Carlos Rivera">
         </label>
-        <label>Nombre de Usuario (Login) *
-          <input type="text" id="usrUsername" required placeholder="Ej. crivera">
-        </label>
-        <label>Contraseña *
-          <input type="password" id="usrPassword" placeholder="Contraseña de acceso">
+        <label class="full">Correo Electrónico de Google (Acceso Firebase) *
+          <input type="email" id="usrEmail" required placeholder="colaborador@gmail.com">
         </label>
         <label>Rol Operativo *
           <select id="usrRole">
@@ -3569,15 +3525,21 @@
             <option value="recepcion">Recepción (Mesa de Ayuda y Taller)</option>
           </select>
         </label>
+        <label>Estado de Acceso
+          <select id="usrActive">
+            <option value="true">Activo (Autorizado)</option>
+            <option value="false">Inactivo (Suspendido)</option>
+          </select>
+        </label>
         <label>Teléfono
           <input type="tel" id="usrPhone" placeholder="231 000 0000">
         </label>
-        <label class="full">Especialidad / Cargo
+        <label>Especialidad / Cargo
           <input type="text" id="usrSpecialty" placeholder="Ej. Soporte Redes y CCTV">
         </label>
         <div class="full modal-actions">
           <button type="button" class="btn btn-ghost" data-close="userModal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+          <button type="submit" class="btn btn-primary">Guardar Autorización</button>
         </div>
       </form>
     </div>

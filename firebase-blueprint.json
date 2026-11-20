@@ -1,0 +1,537 @@
+{
+  "entities": {
+    "StaffMember": {
+      "title": "StaffMember",
+      "description": "Authenticated Fiberlink staff member with verified Google account and RBAC role.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified Google email address of the staff member",
+          "maxLength": 180
+        },
+        "name": {
+          "type": "string",
+          "description": "Full display name",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "tecnico", "ventas", "recepcion"],
+          "description": "RBAC role in Fiberlink ERP"
+        },
+        "specialty": {
+          "type": "string",
+          "description": "Technical or operational specialty",
+          "maxLength": 140
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 32
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Profile avatar URL",
+          "maxLength": 500
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the staff account is active"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": ["uid", "email", "name", "role", "active", "createdAt", "updatedAt"]
+    },
+    "StaffInvite": {
+      "title": "StaffInvite",
+      "description": "Admin-managed staff allowlist entry keyed by sanitized lowercase email.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Authorized Google email address",
+          "maxLength": 180
+        },
+        "name": {
+          "type": "string",
+          "description": "Full display name",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "tecnico", "ventas", "recepcion"],
+          "description": "Assigned RBAC role"
+        },
+        "specialty": {
+          "type": "string",
+          "description": "Technical or operational specialty",
+          "maxLength": 140
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 32
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether access is currently enabled"
+        },
+        "invitedBy": {
+          "type": "string",
+          "description": "UID of the admin who created or updated this invite",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": ["email", "name", "role", "active", "invitedBy", "createdAt", "updatedAt"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Support ticket document containing customer request, technical log (bitacora), and POS quote items.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "folio": {
+          "type": "string",
+          "description": "Public tracking folio (e.g. FL-1001)",
+          "minLength": 4,
+          "maxLength": 20,
+          "pattern": "^FL-[0-9]{4,10}$"
+        },
+        "estado": {
+          "type": "string",
+          "enum": ["creación", "diagnostico", "proceso", "resuelto"],
+          "description": "Workflow stage of the ticket"
+        },
+        "name": {
+          "type": "string",
+          "description": "Client or business name",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "phone": {
+          "type": "string",
+          "description": "Client WhatsApp/phone",
+          "maxLength": 32
+        },
+        "email": {
+          "type": "string",
+          "description": "Client email",
+          "maxLength": 180
+        },
+        "company": {
+          "type": "string",
+          "description": "Client company name",
+          "maxLength": 140
+        },
+        "address": {
+          "type": "string",
+          "description": "Service location or remote label",
+          "maxLength": 260
+        },
+        "service": {
+          "type": "string",
+          "description": "Requested service category",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "modality": {
+          "type": "string",
+          "description": "Service modality (En Sitio / Remoto / Taller)",
+          "maxLength": 80
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["Normal", "Alta", "Urgente", "Crítica"],
+          "description": "Ticket priority level"
+        },
+        "assignedTo": {
+          "type": "string",
+          "description": "Assigned technician name or Sin asignar",
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "description": "Technical issue description",
+          "maxLength": 2000
+        },
+        "source": {
+          "type": "string",
+          "description": "Origin channel of the ticket",
+          "maxLength": 80
+        },
+        "bitacora": {
+          "type": "array",
+          "description": "Bounded list (max 50) of technician notes"
+        },
+        "pos": {
+          "type": "object",
+          "description": "POS charges and payment status ({ items, total, paid })"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "id",
+        "folio",
+        "estado",
+        "name",
+        "phone",
+        "service",
+        "modality",
+        "priority",
+        "assignedTo",
+        "description",
+        "source",
+        "bitacora",
+        "pos",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TicketTracking": {
+      "title": "TicketTracking",
+      "description": "Public PII-free folio tracking status synced atomically with SupportTicket.",
+      "type": "object",
+      "properties": {
+        "folio": {
+          "type": "string",
+          "description": "Public tracking folio (e.g. FL-1001)",
+          "minLength": 4,
+          "maxLength": 20,
+          "pattern": "^FL-[0-9]{4,10}$"
+        },
+        "ticketId": {
+          "type": "string",
+          "description": "Reference ID in /tickets",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "estado": {
+          "type": "string",
+          "enum": ["creación", "diagnostico", "proceso", "resuelto"],
+          "description": "Current workflow stage"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["Normal", "Alta", "Urgente", "Crítica"],
+          "description": "Current ticket priority"
+        },
+        "service": {
+          "type": "string",
+          "description": "Service category",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "assignedTo": {
+          "type": "string",
+          "description": "Assigned technician label",
+          "maxLength": 120
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": ["folio", "ticketId", "estado", "priority", "service", "assignedTo", "updatedAt"]
+    },
+    "StoreProduct": {
+      "title": "StoreProduct",
+      "description": "Store product or technical service in the Fiberlink catalog and inventory synced with Firestore.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "sku": {
+          "type": "string",
+          "description": "Unique SKU code",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "barcode": {
+          "type": "string",
+          "description": "EAN/QR barcode",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Product or service display name",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "category": {
+          "type": "string",
+          "enum": ["pos", "cctv", "redes", "software", "refacciones", "servicios"],
+          "description": "Catalog category"
+        },
+        "cost": {
+          "type": "number",
+          "description": "Unit purchase cost"
+        },
+        "price": {
+          "type": "number",
+          "description": "Public sale price in MXN"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Available inventory stock"
+        },
+        "minStock": {
+          "type": "number",
+          "description": "Low-stock alert threshold"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measure (pza, kit, metro, licencia, servicio)",
+          "maxLength": 32
+        },
+        "isService": {
+          "type": "boolean",
+          "description": "Whether item is an intangible service"
+        },
+        "publicVisible": {
+          "type": "boolean",
+          "description": "Whether item appears in the public store catalog"
+        },
+        "description": {
+          "type": "string",
+          "description": "Commercial or technical product description",
+          "maxLength": 2000
+        },
+        "specs": {
+          "type": "array",
+          "description": "Bounded list (max 20) of technical specification strings"
+        },
+        "images": {
+          "type": "array",
+          "description": "Bounded list (max 6) of product photograph URLs or compressed image data URLs"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Primary cover photograph URL or compressed image data URL",
+          "maxLength": 150000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "id",
+        "sku",
+        "name",
+        "category",
+        "cost",
+        "price",
+        "stock",
+        "minStock",
+        "unit",
+        "isService",
+        "publicVisible",
+        "description",
+        "specs",
+        "images",
+        "imageUrl",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InventoryMovement": {
+      "title": "InventoryMovement",
+      "description": "Immutable Kardex warehouse movement entry synchronized atomically with StoreProduct stock.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "folio": {
+          "type": "string",
+          "description": "Kardex folio (e.g. KDX-1001)",
+          "minLength": 4,
+          "maxLength": 20,
+          "pattern": "^KDX-[0-9]{4,10}$"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO date string of movement"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Referenced StoreProduct document ID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "sku": {
+          "type": "string",
+          "description": "Product SKU snapshot",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "productName": {
+          "type": "string",
+          "description": "Product name snapshot",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "category": {
+          "type": "string",
+          "enum": ["pos", "cctv", "redes", "software", "refacciones", "servicios"],
+          "description": "Product category snapshot"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["entrada", "salida_venta", "ajuste_conteo", "ajuste_salida", "merma", "taller"],
+          "description": "Kardex movement type"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason or concept for movement",
+          "maxLength": 300
+        },
+        "reference": {
+          "type": "string",
+          "description": "Document reference (invoice, sale folio, workshop folio)",
+          "maxLength": 80
+        },
+        "stockBefore": {
+          "type": "number",
+          "description": "Stock prior to movement"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Absolute units moved"
+        },
+        "delta": {
+          "type": "number",
+          "description": "Signed quantity change"
+        },
+        "stockAfter": {
+          "type": "number",
+          "description": "Stock after movement"
+        },
+        "unitCost": {
+          "type": "number",
+          "description": "Unit cost at time of movement"
+        },
+        "totalCost": {
+          "type": "number",
+          "description": "Total movement valuation"
+        },
+        "user": {
+          "type": "string",
+          "description": "Staff user display name",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        }
+      },
+      "required": [
+        "id",
+        "folio",
+        "date",
+        "productId",
+        "sku",
+        "productName",
+        "category",
+        "type",
+        "reason",
+        "reference",
+        "stockBefore",
+        "quantity",
+        "delta",
+        "stockAfter",
+        "unitCost",
+        "totalCost",
+        "user",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/staff/{uid}": {
+      "schema": { "$ref": "#/entities/StaffMember" },
+      "description": "Authenticated staff profiles keyed by Firebase Auth UID."
+    },
+    "/staff_invites/{emailKey}": {
+      "schema": { "$ref": "#/entities/StaffInvite" },
+      "description": "Admin-managed staff allowlist keyed by sanitized email."
+    },
+    "/tickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/SupportTicket" },
+      "description": "Support tickets database managed by verified staff and created atomically from portal/ERP."
+    },
+    "/ticket_tracking/{folio}": {
+      "schema": { "$ref": "#/entities/TicketTracking" },
+      "description": "PII-isolated public status lookup indexed by ticket folio."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/StoreProduct" },
+      "description": "Fiberlink store catalog and warehouse inventory with product gallery photographs."
+    },
+    "/inventory_movements/{movementId}": {
+      "schema": { "$ref": "#/entities/InventoryMovement" },
+      "description": "Immutable Kardex inventory movements log linked to StoreProduct."
+    }
+  }
+}
