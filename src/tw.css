@@ -145,10 +145,15 @@
     box-shadow: inset 0 1px 0 rgba(156, 195, 46, 0.22), 0 -10px 32px rgba(0, 0, 0, 0.55);
   }
   html:not(.light) .catalog-command-bar,
-  html:not(.light) .section-command-bar,
-  html:not(.light) #modulo-ticket .lg\:col-span-7.rounded-2xl,
-  html:not(.light) #compartir > .rounded-2xl {
-    background-color: rgba(11, 16, 22, 0.90) !important;
+  html:not(.light) .section-command-bar {
+    background-color: rgba(11, 16, 22, 0.96) !important;
+    border-color: rgba(156, 195, 46, 0.24) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 38px -12px rgba(0, 0, 0, 0.78);
+  }
+  html:not(.light) #modulo-ticket .lg\:col-span-7.rounded-2xl {
+    background-color: rgba(11, 16, 22, 0.92) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 38px -12px rgba(0, 0, 0, 0.72);
@@ -229,6 +234,11 @@
     -webkit-backdrop-filter: none !important;
     border-color: rgba(68, 104, 4, 0.18) !important;
   }
+  html.light .catalog-command-bar,
+  html.light .section-command-bar {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    border-color: rgba(68, 104, 4, 0.20) !important;
+  }
   html.light article[data-product],
   html.light .catalog-command-bar,
   html.light .section-command-bar,
@@ -239,7 +249,7 @@
   html.light #compartir .rounded-2xl {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    box-shadow: 0 4px 18px -2px rgba(15, 26, 10, 0.06), 0 1px 3px rgba(15, 26, 10, 0.04);
+    box-shadow: 0 4px 18px -2px rgba(15, 26, 10, 0.07), 0 1px 3px rgba(15, 26, 10, 0.05);
   }
   html.light article[data-product]:hover {
     border-color: rgba(68, 104, 4, 0.45) !important;
