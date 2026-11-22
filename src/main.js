@@ -884,14 +884,13 @@ function initDesktopNav() {
 function initScrollSpy() {
   const sections = [
     { id: 'inicio', selector: '#inicio' },
-    { id: 'servicios', selector: '#servicios' },
-    { id: 'soluciones', selector: '#soluciones' },
-    { id: 'catalogo', selector: '#catalogo' },
-    { id: 'proceso', selector: '#proceso' },
-    { id: 'testimonios', selector: '#testimonios' },
+    { id: 'seccion-catalogo', selector: '#seccion-catalogo' },
+    { id: 'asistencia-expres', selector: '#asistencia-expres' },
+    { id: 'seccion-blog', selector: '#seccion-blog' },
+    { id: 'modulo-ticket', selector: '#modulo-ticket' },
+    { id: 'opiniones-clientes', selector: '#opiniones-clientes' },
     { id: 'compartir', selector: '#compartir' },
-    { id: 'fiberlink-labs', selector: '#fiberlink-labs' },
-    { id: 'contacto', selector: '#contacto' }
+    { id: 'soluciones', selector: '#soluciones' }
   ];
 
   const desktopLinks = document.querySelectorAll('.nav-desktop .nav-link');
@@ -945,7 +944,7 @@ function initScrollSpy() {
 // ============================
 function initSmoothNav() {
   const allNavAnchors = document.querySelectorAll(
-    '.nav-desktop a[href^="#"], .drawer-nav a[href^="#"], .dropdown-card[href^="#"], .hero-actions a[href^="#"], a.brand[href^="#"], .scroll-hint[href^="#"]'
+    '.fl-navlink[href^="#"], .nav-desktop a[href^="#"], .drawer-nav a[href^="#"], .dropdown-card[href^="#"], .hero-actions a[href^="#"], a.brand[href^="#"], .scroll-hint[href^="#"]'
   );
 
   allNavAnchors.forEach(anchor => {
