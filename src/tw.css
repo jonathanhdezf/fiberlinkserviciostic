@@ -103,22 +103,47 @@
     -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0.28) 95%) !important;
   }
 
-  /* Secciones translúcidas en Modo Oscuro para dejar ver fondo animado, dígitos y globo 3D */
-  html:not(.light) #inicio,
-  html:not(.light) #seccion-catalogo {
-    background-color: rgba(7, 11, 14, 0.14) !important;
+  /* Filtros oscuros por sección en Modo Oscuro: leve filtro oscuro con degradado temático para leer el texto con nitidez y mantener la visibilidad sutil del globo 3D */
+  html:not(.light) #inicio {
+    background-color: transparent !important;
+    background-image: radial-gradient(ellipse at 24% 40%, rgba(11, 16, 22, 0.54) 0%, rgba(7, 11, 14, 0.40) 56%, rgba(5, 8, 11, 0.68) 100%) !important;
     border-color: rgba(156, 195, 46, 0.14) !important;
   }
-  html:not(.light) #asistencia-expres,
-  html:not(.light) #video-software,
-  html:not(.light) #fibra-optica,
-  html:not(.light) #compartir,
-  html:not(.light) #fiberlink-labs {
-    background-color: rgba(7, 11, 14, 0.22) !important;
+  html:not(.light) #seccion-catalogo {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(8, 12, 17, 0.60) 0%, rgba(11, 17, 24, 0.48) 52%, rgba(7, 10, 15, 0.68) 100%) !important;
     border-color: rgba(156, 195, 46, 0.14) !important;
+  }
+  html:not(.light) #video-software {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(8, 12, 18, 0.80) 0%, rgba(12, 18, 26, 0.72) 55%, rgba(7, 11, 16, 0.84) 100%) !important;
+    border-color: rgba(156, 195, 46, 0.16) !important;
+  }
+  html:not(.light) #asistencia-expres {
+    background-color: transparent !important;
+    background-image: linear-gradient(135deg, rgba(16, 18, 14, 0.84) 0%, rgba(10, 13, 16, 0.76) 54%, rgba(14, 16, 12, 0.86) 100%) !important;
+    border-color: rgba(156, 195, 46, 0.18) !important;
+  }
+  html:not(.light) #fibra-optica {
+    background-color: transparent !important;
+    background-image: linear-gradient(135deg, rgba(6, 15, 26, 0.84) 0%, rgba(8, 14, 22, 0.74) 52%, rgba(5, 12, 20, 0.86) 100%) !important;
+    border-color: rgba(2, 132, 199, 0.22) !important;
   }
   html:not(.light) #modulo-ticket {
-    background-color: rgba(11, 16, 22, 0.26) !important;
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(11, 17, 24, 0.84) 0%, rgba(8, 13, 18, 0.76) 55%, rgba(10, 15, 22, 0.88) 100%) !important;
+    border-color: rgba(156, 195, 46, 0.18) !important;
+  }
+  html:not(.light) #opiniones-clientes {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(8, 12, 17, 0.82) 0%, rgba(11, 16, 22, 0.74) 55%, rgba(7, 10, 15, 0.85) 100%) !important;
+    border-color: rgba(156, 195, 46, 0.16) !important;
+  }
+  html:not(.light) #compartir,
+  html:not(.light) #fiberlink-labs {
+    background-color: transparent !important;
+    background-image: radial-gradient(ellipse at 50% 45%, rgba(11, 17, 25, 0.84) 0%, rgba(8, 12, 17, 0.76) 70%, rgba(6, 9, 13, 0.88) 100%) !important;
+    border-color: rgba(156, 195, 46, 0.16) !important;
   }
   html:not(.light) .hero-video-backdrop video {
     opacity: 0.14 !important;
