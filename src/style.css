@@ -3910,6 +3910,230 @@ textarea{min-height:115px;resize:vertical}
   flex-wrap: wrap;
 }
 
+/* Blog Card Quick-Share & Reader Social Share Bar */
+.wp-card-share-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+}
+
+.wp-card-share-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.wp-card-share-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.wp-card-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  background: var(--surface-overlay);
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.wp-card-share-btn:hover {
+  transform: translateY(-1px);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+
+.wp-card-share-btn.is-wa {
+  color: #25d366;
+  border-color: rgba(37, 211, 102, 0.28);
+  background: rgba(37, 211, 102, 0.09);
+}
+
+.wp-card-share-btn.is-wa:hover {
+  background: #25d366;
+  color: #0b0f12;
+  border-color: #25d366;
+}
+
+.wp-card-share-btn.is-fb:hover {
+  background: #1877f2;
+  color: #ffffff;
+  border-color: #1877f2;
+}
+
+.wp-card-share-btn.is-x:hover {
+  background: #111827;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.wp-card-share-btn.is-copy.is-copied {
+  background: var(--verde);
+  color: #0b0f12;
+  border-color: var(--verde);
+}
+
+.wp-reader-share-box {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wp-reader-share-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wp-reader-share-head strong {
+  font-family: var(--euro);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.wp-reader-share-head span {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.wp-share-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wp-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 9px;
+  border: 1px solid var(--border-glass);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-family: var(--texto);
+  font-size: 0.81rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.wp-share-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-active);
+}
+
+.wp-share-btn.wp-share-wa {
+  background: #25d366;
+  color: #07130c;
+  border-color: #25d366;
+  font-weight: 700;
+}
+
+.wp-share-btn.wp-share-wa:hover {
+  background: #2ee673;
+  border-color: #2ee673;
+}
+
+.wp-share-btn.wp-share-fb:hover {
+  background: #1877f2;
+  color: #ffffff;
+  border-color: #1877f2;
+}
+
+.wp-share-btn.wp-share-x:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.wp-share-btn.wp-share-li:hover {
+  background: #0a66c2;
+  color: #ffffff;
+  border-color: #0a66c2;
+}
+
+.wp-share-btn.wp-share-tg:hover {
+  background: #229ed9;
+  color: #ffffff;
+  border-color: #229ed9;
+}
+
+.wp-share-btn.wp-share-copy.is-copied {
+  background: var(--verde);
+  color: #0b0f12;
+  border-color: var(--verde);
+}
+
+.wp-topbar-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border-glass);
+  background: var(--surface-overlay);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.wp-topbar-share-btn:hover {
+  border-color: var(--border-active);
+  color: var(--c);
+}
+
+.wp-topbar-share-btn.is-wa {
+  background: rgba(37, 211, 102, 0.14);
+  border-color: rgba(37, 211, 102, 0.35);
+  color: #4ade80;
+}
+
+.wp-topbar-share-btn.is-wa:hover {
+  background: #25d366;
+  color: #07130c;
+  border-color: #25d366;
+}
+
+.wp-topbar-share-btn.is-copied {
+  background: var(--verde);
+  color: #0b0f12;
+  border-color: var(--verde);
+}
+
 @media (max-width: 680px) {
   .wp-reader-overlay {
     padding: 0;
@@ -6768,6 +6992,61 @@ html.light .wp-reader-close {
   background: #f5f8f2;
   border-color: rgba(13, 20, 10, 0.1);
   color: #0d140a;
+}
+html.light .wp-card-share-row {
+  background: #f5f8f2;
+  border-color: rgba(13, 20, 10, 0.08);
+}
+html.light .wp-card-share-label {
+  color: #556651;
+}
+html.light .wp-card-share-btn {
+  background: #ffffff;
+  border-color: rgba(13, 20, 10, 0.12);
+  color: #334155;
+}
+html.light .wp-card-share-btn.is-wa {
+  color: #15803d;
+  border-color: rgba(21, 128, 61, 0.28);
+  background: rgba(34, 197, 94, 0.10);
+}
+html.light .wp-card-share-btn.is-wa:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+html.light .wp-reader-share-box {
+  background: #f5f8f2;
+  border-color: rgba(13, 20, 10, 0.1);
+}
+html.light .wp-share-btn {
+  background: #ffffff;
+  border-color: rgba(13, 20, 10, 0.12);
+  color: #0d140a;
+}
+html.light .wp-share-btn.wp-share-wa {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+}
+html.light .wp-share-btn.wp-share-wa:hover {
+  background: #15803d;
+  border-color: #15803d;
+}
+html.light .wp-topbar-share-btn {
+  background: #f5f8f2;
+  border-color: rgba(13, 20, 10, 0.12);
+  color: #0d140a;
+}
+html.light .wp-topbar-share-btn.is-wa {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.3);
+  color: #15803d;
+}
+html.light .wp-topbar-share-btn.is-wa:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
 }
 @media (max-width: 768px) {
   .sol-hero-card {

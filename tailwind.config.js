@@ -5,7 +5,13 @@
 const v = (name) => `rgb(var(--tw-${name}) / <alpha-value>)`;
 
 export default {
-  content: ['./index.html'],
+  content: [
+    './index.html',
+    './catalogo.html',
+    './src/main.js',
+    './src/catalogPage.js',
+    './src/services/**/*.js'
+  ],
   darkMode: 'class',
   theme: {
     extend: {

@@ -1,9 +1,9 @@
 // ============================
 // FIBERLINK PWA SERVICE WORKER
-// Cache Version: fiberlink-v1.0.8
+// Cache Version: fiberlink-v1.1.0
 // ============================
 
-const CACHE_NAME = 'fiberlink-v1.0.8';
+const CACHE_NAME = 'fiberlink-v1.1.0';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -55,11 +55,22 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (!request.url.startsWith('http')) return;
 
-  // Never cache dynamic API requests (products, inventory, tickets, POS)
+  // NEVER intercept cross-origin requests (Firestore, Firebase Auth, Google Fonts/APIs)
+  // or dynamic/dev endpoints (/api/, Vite module paths)
   try {
     const reqUrl = new URL(request.url);
-    if (reqUrl.pathname.startsWith('/api/')) return;
-  } catch (_) {}
+    if (reqUrl.origin !== self.location.origin) return;
+    if (
+      reqUrl.pathname.startsWith('/api/') ||
+      reqUrl.pathname.startsWith('/@vite/') ||
+      reqUrl.pathname.startsWith('/src/') ||
+      reqUrl.pathname.startsWith('/node_modules/')
+    ) {
+      return;
+    }
+  } catch (_) {
+    return;
+  }
 
   // 1. Navigation requests (HTML document): Network-first with cache fallback
   if (request.mode === 'navigate') {

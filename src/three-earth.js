@@ -1,97 +1,13 @@
 import * as THREE from 'three';
 
-function createGyroTiltController() {
-  const state = {
-    targetX: 0,
-    targetY: 0,
-    currentX: 0,
-    currentY: 0,
-    spinBoostY: 0,
-  };
+const GLOBE_POINTER_SLOTS = 3;
 
-  const isTouchMobile =
-    typeof window !== 'undefined' &&
-    (window.matchMedia?.('(pointer: coarse)')?.matches ||
-      'ontouchstart' in window ||
-      (navigator.maxTouchPoints || 0) > 0);
-
-  if (!isTouchMobile || typeof window.DeviceOrientationEvent === 'undefined') {
-    return {
-      update() {
-        return state;
-      },
-    };
-  }
-
-  let baseBeta = null;
-  let baseGamma = null;
-  let lastBeta = null;
-  let lastGamma = null;
-  let listening = false;
-
-  function clamp(v, min, max) {
-    return v < min ? min : v > max ? max : v;
-  }
-
-  function handleOrientation(event) {
-    const beta = event.beta;
-    const gamma = event.gamma;
-    if (typeof beta !== 'number' || typeof gamma !== 'number') return;
-
-    if (baseBeta === null || baseGamma === null) {
-      baseBeta = beta;
-      baseGamma = gamma;
-      lastBeta = beta;
-      lastGamma = gamma;
-      return;
-    }
-
-    // Gentle baseline adaptation so any comfortable holding posture stays centered
-    baseBeta += (beta - baseBeta) * 0.008;
-    baseGamma += (gamma - baseGamma) * 0.008;
-
-    const deltaGamma = clamp(gamma - baseGamma, -28, 28) / 28;
-    const deltaBeta = clamp(beta - baseBeta, -28, 28) / 28;
-
-    state.targetX = deltaGamma;
-    state.targetY = deltaBeta;
-
-    const velGamma = clamp(gamma - lastGamma, -8, 8);
-    state.spinBoostY = clamp(state.spinBoostY + velGamma * 0.0018, -0.028, 0.028);
-
-    lastBeta = beta;
-    lastGamma = gamma;
-  }
-
-  function attachListener() {
-    if (listening) return;
-    listening = true;
-    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-  }
-
-  if (typeof window.DeviceOrientationEvent.requestPermission === 'function') {
-    const requestOnGesture = () => {
-      window.DeviceOrientationEvent.requestPermission()
-        .then((res) => {
-          if (res === 'granted') attachListener();
-        })
-        .catch(() => {});
-    };
-    window.addEventListener('touchstart', requestOnGesture, { once: true, passive: true });
-  } else {
-    attachListener();
-  }
-
-  return {
-    update(dt = 0.033) {
-      const safeDt = Math.min(Math.max(dt, 0.008), 0.1);
-      const alpha = 1 - Math.exp(-7 * safeDt);
-      state.currentX += (state.targetX - state.currentX) * alpha;
-      state.currentY += (state.targetY - state.currentY) * alpha;
-      state.spinBoostY *= Math.exp(-4.5 * safeDt);
-      return state;
-    },
-  };
+function createSurfacePulseSlots() {
+  return Array.from({ length: GLOBE_POINTER_SLOTS }, () => ({
+    dir: new THREE.Vector3(0, 0, 1),
+    strength: 0,
+    age: 0,
+  }));
 }
 
 function createCircleSpriteTexture() {
@@ -306,12 +222,101 @@ function initEarth2DFallback(container) {
   }
 
   let rotY = 0;
-  let rotX = 0.24;
-  let rotZ = 0;
+  const rotX = 0.24;
+  const rotZ = 0;
   let t = 0;
   let lastFrameTime = 0;
-  const gyro = createGyroTiltController();
   const network = createNetworkArcData();
+
+  // Touch & pointer localized illumination (no gyroscope)
+  const fallbackSpots = [
+    { x: 0, y: 0, z: 1, strength: 0, age: 0 },
+    { x: 0, y: 0, z: 1, strength: 0, age: 0 },
+    { x: 0, y: 0, z: 1, strength: 0, age: 0 },
+  ];
+  let fallbackSlotIdx = 0;
+  const hoverSpot = { x: 0, y: 0, z: 1, strength: 0, target: 0 };
+  let lastMoveTime = 0;
+
+  function screenToLocalSphereDir(clientX, clientY) {
+    const radius = Math.min(w, h) * (w < 480 ? 0.33 : w < 768 ? 0.34 : 0.34);
+    const cx = w * 0.5;
+    const cy = h * 0.48;
+    let nx = (clientX - cx) / Math.max(1, radius);
+    let ny = (clientY - cy) / Math.max(1, radius);
+    const r2 = nx * nx + ny * ny;
+    let nz;
+    if (r2 <= 1) {
+      nz = Math.sqrt(1 - r2);
+    } else {
+      const inv = 1 / Math.sqrt(r2);
+      nx *= inv * 0.88;
+      ny *= inv * 0.88;
+      nz = Math.sqrt(Math.max(0.05, 1 - nx * nx - ny * ny));
+    }
+
+    // Inverse rotations (Z -> X -> Y) to pin spot onto rotating sphere coordinates
+    const cosZ = Math.cos(-rotZ);
+    const sinZ = Math.sin(-rotZ);
+    const x1 = nx * cosZ - ny * sinZ;
+    const y1 = nx * sinZ + ny * cosZ;
+    const z1 = nz;
+
+    const cosX = Math.cos(-rotX);
+    const sinX = Math.sin(-rotX);
+    const y2 = y1 * cosX - z1 * sinX;
+    const z2 = y1 * sinX + z1 * cosX;
+    const x2 = x1;
+
+    const cosY = Math.cos(-rotY);
+    const sinY = Math.sin(-rotY);
+    const lx = x2 * cosY - z2 * sinY;
+    const lz = x2 * sinY + z2 * cosY;
+    const ly = y2;
+    const invLen = 1 / (Math.hypot(lx, ly, lz) || 1);
+    return { x: lx * invLen, y: ly * invLen, z: lz * invLen };
+  }
+
+  function triggerFallbackPulse(clientX, clientY, boost = 1) {
+    const dir = screenToLocalSphereDir(clientX, clientY);
+    const slot = fallbackSpots[fallbackSlotIdx];
+    fallbackSlotIdx = (fallbackSlotIdx + 1) % fallbackSpots.length;
+    slot.x = dir.x;
+    slot.y = dir.y;
+    slot.z = dir.z;
+    slot.strength = boost;
+    slot.age = 0;
+  }
+
+  window.addEventListener(
+    'pointerdown',
+    (ev) => {
+      triggerFallbackPulse(ev.clientX, ev.clientY, 1);
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    'pointermove',
+    (ev) => {
+      const now = performance.now();
+      if (now - lastMoveTime < 36) return;
+      lastMoveTime = now;
+      const dir = screenToLocalSphereDir(ev.clientX, ev.clientY);
+      hoverSpot.x = dir.x;
+      hoverSpot.y = dir.y;
+      hoverSpot.z = dir.z;
+      hoverSpot.target = ev.pointerType === 'touch' ? 0.8 : 0.55;
+      if (ev.buttons > 0 || ev.pointerType === 'touch') {
+        triggerFallbackPulse(ev.clientX, ev.clientY, 0.72);
+      }
+    },
+    { passive: true }
+  );
+
+  window.addEventListener('blur', () => {
+    hoverSpot.target = 0;
+  });
 
   function project(x, y, z, radius, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ) {
     const x1 = x * cosY - z * sinY;
@@ -341,18 +346,25 @@ function initEarth2DFallback(container) {
     }
     if (document.hidden) return;
     if (now && now - lastFrameTime < 32) return; // Smooth ~30fps cap for battery & UI responsiveness
-    const dt = lastFrameTime ? (now - lastFrameTime) / 1000 : 0.033;
+    const dt = lastFrameTime ? Math.min(0.1, (now - lastFrameTime) / 1000) : 0.033;
     lastFrameTime = now;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
-    const g = reducedMotion ? { currentX: 0, currentY: 0, spinBoostY: 0 } : gyro.update(dt);
-
     t += 0.032;
-    rotY += 0.0045 + g.spinBoostY + g.currentX * 0.006;
-    rotX = 0.24 + g.currentY * 0.34;
-    rotZ = -g.currentX * 0.22;
+    rotY += 0.0045;
+
+    for (let s = 0; s < fallbackSpots.length; s++) {
+      if (fallbackSpots[s].strength > 0.004) {
+        fallbackSpots[s].age += dt;
+        fallbackSpots[s].strength *= Math.exp(-1.55 * dt);
+      } else {
+        fallbackSpots[s].strength = 0;
+      }
+    }
+    hoverSpot.strength += (hoverSpot.target - hoverSpot.strength) * (1 - Math.exp(-6 * dt));
+    hoverSpot.target *= Math.exp(-1.2 * dt);
 
     const cosY = Math.cos(rotY);
     const sinY = Math.sin(rotY);
@@ -363,8 +375,8 @@ function initEarth2DFallback(container) {
 
     const radius = Math.min(w, h) * (w < 480 ? 0.33 : w < 768 ? 0.34 : 0.34);
     const floatY = reducedMotion ? 0 : Math.sin(t * 0.85) * 8;
-    const cx = w * 0.5 + g.currentX * 18;
-    const cy = h * 0.48 + floatY + g.currentY * 14;
+    const cx = w * 0.5;
+    const cy = h * 0.48 + floatY;
 
     // Volumetric core + atmosphere halo
     const halo = ctx.createRadialGradient(cx, cy, radius * 0.22, cx, cy, radius * 1.34);
@@ -391,11 +403,11 @@ function initEarth2DFallback(container) {
 
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(-0.34 + g.currentX * 0.18);
+    ctx.rotate(-0.34);
     ctx.lineWidth = 0.85;
     ctx.strokeStyle = isLight ? 'rgba(63, 98, 4, 0.20)' : 'rgba(184, 220, 62, 0.20)';
     ctx.beginPath();
-    ctx.ellipse(0, 0, radius * 1.24, radius * (0.34 + g.currentY * 0.08), 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, radius * 1.24, radius * 0.34, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
@@ -476,16 +488,80 @@ function initEarth2DFallback(container) {
 
     ctx.fillStyle = isLight ? 'rgba(42, 70, 2, 0.85)' : 'rgba(184, 220, 62, 0.88)';
     ctx.beginPath();
+    const litFallbackNodes = [];
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
       const pt = project(n.x, n.y, n.z, radius * 1.018, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
       if (pt.depth > 0) {
-        const r = 1.75 * pt.scale;
-        ctx.moveTo(pt.sx + r, pt.sy);
-        ctx.arc(pt.sx, pt.sy, r, 0, Math.PI * 2);
+        let boost = 0;
+        if (hoverSpot.strength > 0.03) {
+          const hd = n.x * hoverSpot.x + n.y * hoverSpot.y + n.z * hoverSpot.z;
+          if (hd > 0.52) boost = Math.max(boost, ((hd - 0.52) / 0.48) * hoverSpot.strength * 0.72);
+        }
+        for (let s = 0; s < fallbackSpots.length; s++) {
+          const sp = fallbackSpots[s];
+          if (sp.strength <= 0.02) continue;
+          const sd = n.x * sp.x + n.y * sp.y + n.z * sp.z;
+          if (sd > 0.45) {
+            boost = Math.max(boost, ((sd - 0.45) / 0.55) * sp.strength);
+          }
+        }
+        if (boost > 0.15) {
+          litFallbackNodes.push({ sx: pt.sx, sy: pt.sy, scale: pt.scale, boost });
+        } else {
+          const r = 1.75 * pt.scale;
+          ctx.moveTo(pt.sx + r, pt.sy);
+          ctx.arc(pt.sx, pt.sy, r, 0, Math.PI * 2);
+        }
       }
     }
     ctx.fill();
+
+    if (litFallbackNodes.length > 0) {
+      for (let i = 0; i < litFallbackNodes.length; i++) {
+        const ln = litFallbackNodes[i];
+        const r = (1.9 + ln.boost * 2.1) * ln.scale;
+        ctx.fillStyle = isLight
+          ? `rgba(63, 108, 4, ${Math.min(1, 0.65 + ln.boost * 0.35)})`
+          : `rgba(220, 255, 118, ${Math.min(1, 0.7 + ln.boost * 0.3)})`;
+        ctx.beginPath();
+        ctx.arc(ln.sx, ln.sy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Touch spotlight glow & expanding ring on 2D globe surface
+    for (let s = 0; s < fallbackSpots.length; s++) {
+      const sp = fallbackSpots[s];
+      if (sp.strength <= 0.02) continue;
+      const pt = project(sp.x, sp.y, sp.z, radius * 1.02, cx, cy, cosY, sinY, cosX, sinX, cosZ, sinZ);
+      if (pt.depth > -0.15) {
+        const gRad = radius * 0.48;
+        const grad = ctx.createRadialGradient(pt.sx, pt.sy, 0, pt.sx, pt.sy, gRad);
+        if (isLight) {
+          grad.addColorStop(0, `rgba(101, 163, 13, ${sp.strength * 0.38})`);
+          grad.addColorStop(0.5, `rgba(2, 132, 199, ${sp.strength * 0.16})`);
+          grad.addColorStop(1, 'rgba(101, 163, 13, 0)');
+        } else {
+          grad.addColorStop(0, `rgba(200, 255, 92, ${sp.strength * 0.42})`);
+          grad.addColorStop(0.45, `rgba(124, 231, 255, ${sp.strength * 0.2})`);
+          grad.addColorStop(1, 'rgba(156, 195, 46, 0)');
+        }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(pt.sx, pt.sy, gRad, 0, Math.PI * 2);
+        ctx.fill();
+
+        const ringR = (6 + sp.age * radius * 0.55) * pt.scale;
+        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = isLight
+          ? `rgba(2, 132, 199, ${sp.strength * 0.55})`
+          : `rgba(130, 240, 255, ${sp.strength * 0.65})`;
+        ctx.beginPath();
+        ctx.arc(pt.sx, pt.sy, ringR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
 
     // Living digital network: curved great-circle fiber arcs (front hemisphere emphasized)
     ctx.lineWidth = 1.05;
@@ -565,12 +641,12 @@ function initEarth2DFallback(container) {
     }
     ctx.fill();
 
-    // Ambient orbital star particles
+    // Ambient orbital star particles (no gyro offset)
     ctx.fillStyle = isLight ? 'rgba(68, 104, 4, 0.42)' : 'rgba(156, 195, 46, 0.45)';
     ctx.beginPath();
     for (let i = 0; i < stars.length; i++) {
       const st = stars[i];
-      const sx = w * 0.5 + g.currentX * 10 + (st.x * Math.cos(t * 0.12) - st.y * Math.sin(t * 0.12)) * w * 0.42;
+      const sx = w * 0.5 + (st.x * Math.cos(t * 0.12) - st.y * Math.sin(t * 0.12)) * w * 0.42;
       const sy = cy + st.y * h * 0.42 + Math.sin(t + st.p) * 6;
       ctx.moveTo(sx + st.r, sy);
       ctx.arc(sx, sy, st.r, 0, Math.PI * 2);
@@ -667,7 +743,7 @@ export function initEarth(containerId) {
   orbitRing.rotation.set(Math.PI * 0.41, 0.25, 0);
   earthGroup.add(orbitRing);
 
-  // 3. Particles / Data nodes (round glowing orbs via sprite map, never hard squares)
+  // 3. Touch-Reactive Particles / Data Nodes (ShaderMaterial with circular sprite)
   const particlesGeometry = new THREE.BufferGeometry();
   const particleCount = isMobile ? 540 : 1400;
   const posArray = new Float32Array(particleCount * 3);
@@ -683,19 +759,182 @@ export function initEarth(containerId) {
   }
 
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-  const particleMaterial = new THREE.PointsMaterial({
-    size: isMobile ? 0.14 : 0.125,
-    map: circleSprite,
-    color: 0xb8dc3e,
+
+  const getPerspectiveScale = () =>
+    (window.innerHeight * getTargetDpr()) / (2 * Math.tan((45 * Math.PI) / 360));
+
+  const surfaceSpots = createSurfacePulseSlots();
+  let nextSpotSlot = 0;
+  const hoverDirLocal = new THREE.Vector3(0, 0, 1);
+  let hoverStrength = 0;
+  let hoverTargetStrength = 0;
+
+  const particleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uSprite: { value: circleSprite },
+      uBaseColor: { value: new THREE.Color(0xb8dc3e) },
+      uHotColor: { value: new THREE.Color(0x82f0ff) },
+      uBaseSize: { value: isMobile ? 0.145 : 0.13 },
+      uOpacity: { value: 0.96 },
+      uPerspectiveScale: { value: getPerspectiveScale() },
+      uSpot0: { value: surfaceSpots[0].dir },
+      uSpot1: { value: surfaceSpots[1].dir },
+      uSpot2: { value: surfaceSpots[2].dir },
+      uMeta0: { value: new THREE.Vector2(0, 0) },
+      uMeta1: { value: new THREE.Vector2(0, 0) },
+      uMeta2: { value: new THREE.Vector2(0, 0) },
+      uHoverDir: { value: hoverDirLocal },
+      uHoverStrength: { value: 0 },
+    },
+    vertexShader: `
+      uniform float uBaseSize;
+      uniform float uPerspectiveScale;
+      uniform vec3 uSpot0;
+      uniform vec3 uSpot1;
+      uniform vec3 uSpot2;
+      uniform vec2 uMeta0;
+      uniform vec2 uMeta1;
+      uniform vec2 uMeta2;
+      uniform vec3 uHoverDir;
+      uniform float uHoverStrength;
+      varying float vBoost;
+
+      float spotNodeBoost(vec3 nPos, vec3 spotDir, vec2 meta) {
+        if (meta.x <= 0.005) return 0.0;
+        float d = clamp(dot(nPos, normalize(spotDir)), -1.0, 1.0);
+        float angle = acos(d);
+        float coreGlow = exp(-angle * angle * 8.5) * meta.x;
+        float ring = exp(-pow((angle - meta.y * 1.15) * 11.0, 2.0)) * smoothstep(2.0, 0.0, meta.y) * meta.x * 0.75;
+        return max(coreGlow, ring);
+      }
+
+      void main() {
+        vec3 nPos = normalize(position);
+        float b = 0.0;
+        b = max(b, spotNodeBoost(nPos, uSpot0, uMeta0));
+        b = max(b, spotNodeBoost(nPos, uSpot1, uMeta1));
+        b = max(b, spotNodeBoost(nPos, uSpot2, uMeta2));
+        if (uHoverStrength > 0.005) {
+          float hd = clamp(dot(nPos, normalize(uHoverDir)), -1.0, 1.0);
+          float hAng = acos(hd);
+          b = max(b, exp(-hAng * hAng * 9.5) * uHoverStrength * 0.65);
+        }
+        vBoost = clamp(b, 0.0, 1.0);
+
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = uBaseSize * (1.0 + vBoost * 1.25) * (uPerspectiveScale / max(1.0, -mvPosition.z));
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uSprite;
+      uniform vec3 uBaseColor;
+      uniform vec3 uHotColor;
+      uniform float uOpacity;
+      varying float vBoost;
+
+      void main() {
+        vec4 tex = texture2D(uSprite, gl_PointCoord);
+        if (tex.a < 0.02) discard;
+        vec3 finalCol = mix(uBaseColor, uHotColor, vBoost * 0.85);
+        float alpha = tex.a * mix(uOpacity, 1.0, vBoost);
+        gl_FragColor = vec4(finalCol, alpha);
+      }
+    `,
     transparent: true,
-    opacity: 0.96,
-    alphaTest: 0.01,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
 
   const particlesMesh = new THREE.Points(particlesGeometry, particleMaterial);
   earthGroup.add(particlesMesh);
+
+  // 3a. Touch-Reactive Surface Glow Shell (wraps sphere mesh softly where touched)
+  const touchShellGeo = new THREE.SphereGeometry(5.035, coreSegments, coreSegments);
+  const touchShellMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uGlowColor: { value: new THREE.Color(0xc2f04d) },
+      uRingColor: { value: new THREE.Color(0x7ce7ff) },
+      uSpot0: { value: surfaceSpots[0].dir },
+      uSpot1: { value: surfaceSpots[1].dir },
+      uSpot2: { value: surfaceSpots[2].dir },
+      uMeta0: { value: new THREE.Vector2(0, 0) },
+      uMeta1: { value: new THREE.Vector2(0, 0) },
+      uMeta2: { value: new THREE.Vector2(0, 0) },
+      uHoverDir: { value: hoverDirLocal },
+      uHoverStrength: { value: 0 },
+      uLightMode: { value: 0 },
+    },
+    vertexShader: `
+      varying vec3 vLocalDir;
+      varying vec3 vViewNormal;
+      varying vec3 vViewPos;
+      void main() {
+        vLocalDir = normalize(position);
+        vViewNormal = normalize(normalMatrix * normal);
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        vViewPos = -mvPos.xyz;
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uGlowColor;
+      uniform vec3 uRingColor;
+      uniform vec3 uSpot0;
+      uniform vec3 uSpot1;
+      uniform vec3 uSpot2;
+      uniform vec2 uMeta0;
+      uniform vec2 uMeta1;
+      uniform vec2 uMeta2;
+      uniform vec3 uHoverDir;
+      uniform float uHoverStrength;
+      uniform float uLightMode;
+      varying vec3 vLocalDir;
+      varying vec3 vViewNormal;
+      varying vec3 vViewPos;
+
+      vec2 evalSpot(vec3 nPos, vec3 spotDir, vec2 meta) {
+        if (meta.x <= 0.005) return vec2(0.0);
+        float d = clamp(dot(nPos, normalize(spotDir)), -1.0, 1.0);
+        float angle = acos(d);
+        float glow = exp(-angle * angle * 7.5) * meta.x;
+        float ring = exp(-pow((angle - meta.y * 1.15) * 12.5, 2.0)) * smoothstep(2.1, 0.0, meta.y) * meta.x;
+        return vec2(glow, ring);
+      }
+
+      void main() {
+        vec3 nPos = normalize(vLocalDir);
+        vec2 s0 = evalSpot(nPos, uSpot0, uMeta0);
+        vec2 s1 = evalSpot(nPos, uSpot1, uMeta1);
+        vec2 s2 = evalSpot(nPos, uSpot2, uMeta2);
+
+        float glow = min(1.2, s0.x + s1.x + s2.x);
+        float ring = min(1.0, s0.y + s1.y + s2.y);
+
+        if (uHoverStrength > 0.005) {
+          float hd = clamp(dot(nPos, normalize(uHoverDir)), -1.0, 1.0);
+          float hAng = acos(hd);
+          glow += exp(-hAng * hAng * 9.0) * uHoverStrength * 0.42;
+        }
+
+        if (glow + ring < 0.004) discard;
+
+        vec3 viewDir = normalize(vViewPos);
+        float rim = 1.0 - max(0.0, dot(viewDir, normalize(vViewNormal)));
+        float fresnelBoost = 0.72 + pow(rim, 2.0) * 0.55;
+
+        vec3 col = mix(uGlowColor, uRingColor, clamp(ring * 0.9, 0.0, 1.0));
+        float baseAlpha = uLightMode > 0.5 ? 0.38 : 0.56;
+        float alpha = clamp((glow * baseAlpha + ring * 0.62) * fresnelBoost, 0.0, 0.85);
+        gl_FragColor = vec4(col, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const touchShell = new THREE.Mesh(touchShellGeo, touchShellMat);
+  earthGroup.add(touchShell);
 
   // 3b. Living Digital Network: Fiber Arcs + Active Hubs + Surface Pulse Rings + Streaming Packets
   const network = createNetworkArcData();
@@ -813,6 +1052,11 @@ export function initEarth(containerId) {
   pointLight2.position.set(-10, -10, 10);
   scene.add(pointLight2);
 
+  // Subtle interactive touch spotlight catching specular sheen on globe core
+  const touchLight = new THREE.PointLight(0x9ee8ff, 0, 26);
+  touchLight.position.set(0, 2, 8);
+  scene.add(touchLight);
+
   // Floating Particles Background (also crisp circular sprites)
   const bgParticlesGeo = new THREE.BufferGeometry();
   const bgCount = isMobile ? 200 : 650;
@@ -835,7 +1079,10 @@ export function initEarth(containerId) {
   const bgParticles = new THREE.Points(bgParticlesGeo, bgParticleMat);
   scene.add(bgParticles);
 
+  let isLightTheme = document.documentElement.classList.contains('light');
+
   function applyThemeColors(isLight) {
+    isLightTheme = isLight;
     if (isLight) {
       coreMaterial.color.setHex(0xdce8cf);
       coreMaterial.emissive.setHex(0xcde0ba);
@@ -848,11 +1095,18 @@ export function initEarth(containerId) {
       orbitMaterial.color.setHex(0x3f6204);
       orbitMaterial.opacity = 0.28;
 
-      particleMaterial.color.setHex(0x2a4602);
-      particleMaterial.size = isMobile ? 0.175 : 0.15;
-      particleMaterial.opacity = 0.94;
+      particleMaterial.uniforms.uBaseColor.value.setHex(0x2a4602);
+      particleMaterial.uniforms.uHotColor.value.setHex(0x0284c7);
+      particleMaterial.uniforms.uBaseSize.value = isMobile ? 0.175 : 0.15;
+      particleMaterial.uniforms.uOpacity.value = 0.94;
       particleMaterial.blending = THREE.NormalBlending;
       particleMaterial.needsUpdate = true;
+
+      touchShellMat.uniforms.uGlowColor.value.setHex(0x65a30d);
+      touchShellMat.uniforms.uRingColor.value.setHex(0x0284c7);
+      touchShellMat.uniforms.uLightMode.value = 1.0;
+      touchShellMat.blending = THREE.NormalBlending;
+      touchShellMat.needsUpdate = true;
 
       atmosMaterial.color.setHex(0x7cb016);
       atmosMaterial.opacity = 0.22;
@@ -862,6 +1116,7 @@ export function initEarth(containerId) {
       ambientLight.intensity = 0.85;
       pointLight.color.setHex(0x557d08);
       pointLight.intensity = 1.8;
+      touchLight.color.setHex(0x0284c7);
 
       bgParticleMat.color.setHex(0x3f6204);
       bgParticleMat.opacity = 0.58;
@@ -897,11 +1152,18 @@ export function initEarth(containerId) {
       orbitMaterial.color.setHex(0xb8dc3e);
       orbitMaterial.opacity = 0.28;
 
-      particleMaterial.color.setHex(0xb8dc3e);
-      particleMaterial.size = isMobile ? 0.145 : 0.13;
-      particleMaterial.opacity = 0.96;
+      particleMaterial.uniforms.uBaseColor.value.setHex(0xb8dc3e);
+      particleMaterial.uniforms.uHotColor.value.setHex(0x82f0ff);
+      particleMaterial.uniforms.uBaseSize.value = isMobile ? 0.145 : 0.13;
+      particleMaterial.uniforms.uOpacity.value = 0.96;
       particleMaterial.blending = THREE.AdditiveBlending;
       particleMaterial.needsUpdate = true;
+
+      touchShellMat.uniforms.uGlowColor.value.setHex(0xc2f04d);
+      touchShellMat.uniforms.uRingColor.value.setHex(0x7ce7ff);
+      touchShellMat.uniforms.uLightMode.value = 0.0;
+      touchShellMat.blending = THREE.AdditiveBlending;
+      touchShellMat.needsUpdate = true;
 
       atmosMaterial.color.setHex(0x9cc32e);
       atmosMaterial.opacity = 0.16;
@@ -911,6 +1173,7 @@ export function initEarth(containerId) {
       ambientLight.intensity = 0.32;
       pointLight.color.setHex(0x9cc32e);
       pointLight.intensity = 2.8;
+      touchLight.color.setHex(0x9ee8ff);
 
       bgParticleMat.color.setHex(0x9cc32e);
       bgParticleMat.opacity = 0.55;
@@ -937,14 +1200,92 @@ export function initEarth(containerId) {
     }
   }
 
-  applyThemeColors(document.documentElement.classList.contains('light'));
+  applyThemeColors(isLightTheme);
   window.addEventListener('themechange', (e) => {
     applyThemeColors(Boolean(e.detail?.isLight));
   });
 
-  // Animation Loop (smooth autonomous rotation + mobile gyroscope tilt + living data arcs)
+  // Zero-GC Pointer / Touch Raycasting onto the 3D Globe
+  const _raycaster = new THREE.Raycaster();
+  const _ndc = new THREE.Vector2();
+  const _hitWorld = new THREE.Vector3();
+  const _hitLocal = new THREE.Vector3();
+  const _planeNormal = new THREE.Vector3();
+  const _hitPlane = new THREE.Plane();
+  const _rayHitList = [];
+  const _lightTargetWorld = new THREE.Vector3(0, 2, 8);
+  let lastPointerMoveMs = 0;
+
+  function resolveGlobeLocalDirection(clientX, clientY, outVec) {
+    const w = window.innerWidth || 1;
+    const h = window.innerHeight || 1;
+    _ndc.set((clientX / w) * 2 - 1, -(clientY / h) * 2 + 1);
+    _raycaster.setFromCamera(_ndc, camera);
+
+    _rayHitList.length = 0;
+    _raycaster.intersectObject(core, false, _rayHitList);
+    if (_rayHitList.length > 0) {
+      _hitWorld.copy(_rayHitList[0].point);
+    } else {
+      // If tap is outside globe silhouette, gently illuminate the nearest facing edge
+      _planeNormal.subVectors(camera.position, earthGroup.position).normalize();
+      _hitPlane.setFromNormalAndCoplanarPoint(_planeNormal, earthGroup.position);
+      if (!_raycaster.ray.intersectPlane(_hitPlane, _hitWorld)) {
+        _hitWorld.copy(camera.position);
+      }
+      _hitWorld.sub(earthGroup.position).normalize().multiplyScalar(4.8);
+      _hitWorld.addScaledVector(_planeNormal, 1.9);
+      _hitWorld.add(earthGroup.position);
+    }
+
+    _hitLocal.copy(_hitWorld);
+    earthGroup.worldToLocal(_hitLocal);
+    if (_hitLocal.lengthSq() < 0.0001) {
+      _hitLocal.set(0, 0, 1);
+    } else {
+      _hitLocal.normalize();
+    }
+    outVec.copy(_hitLocal);
+    _lightTargetWorld.copy(_hitWorld);
+  }
+
+  function triggerGlobeTouchPulse(clientX, clientY, intensity = 1) {
+    const slot = surfaceSpots[nextSpotSlot];
+    nextSpotSlot = (nextSpotSlot + 1) % surfaceSpots.length;
+    resolveGlobeLocalDirection(clientX, clientY, slot.dir);
+    slot.strength = intensity;
+    slot.age = 0;
+  }
+
+  window.addEventListener(
+    'pointerdown',
+    (ev) => {
+      triggerGlobeTouchPulse(ev.clientX, ev.clientY, 1.0);
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    'pointermove',
+    (ev) => {
+      const now = performance.now();
+      if (now - lastPointerMoveMs < 35) return;
+      lastPointerMoveMs = now;
+      resolveGlobeLocalDirection(ev.clientX, ev.clientY, hoverDirLocal);
+      hoverTargetStrength = ev.pointerType === 'touch' ? 0.78 : 0.56;
+      if (ev.buttons > 0 || ev.pointerType === 'touch') {
+        triggerGlobeTouchPulse(ev.clientX, ev.clientY, 0.72);
+      }
+    },
+    { passive: true }
+  );
+
+  window.addEventListener('blur', () => {
+    hoverTargetStrength = 0;
+  });
+
+  // Animation Loop (smooth autonomous rotation + interactive touch energy + living data arcs)
   const clock = new THREE.Clock();
-  const gyro = createGyroTiltController();
   const reducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lastRenderTime = 0;
@@ -988,20 +1329,52 @@ export function initEarth(containerId) {
     if (document.hidden) return;
     // Pace WebGL at ~30fps on both desktop and mobile so UI scrolling stays instant
     if (now && now - lastRenderTime < 32) return;
-    const dt = lastRenderTime ? (now - lastRenderTime) / 1000 : 0.033;
+    const dt = lastRenderTime ? Math.min(0.1, (now - lastRenderTime) / 1000) : 0.033;
     lastRenderTime = now;
 
     const elapsedTime = clock.getElapsedTime();
-    const g = reducedMotion ? { currentX: 0, currentY: 0, spinBoostY: 0 } : gyro.update(dt);
 
-    earthGroup.rotation.y += 0.003 + g.spinBoostY + g.currentX * 0.006;
-    earthGroup.rotation.x = 0.18 + g.currentY * 0.34;
-    earthGroup.rotation.z = -g.currentX * 0.22;
-    earthGroup.position.x = g.currentX * 0.75;
-    earthGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.5 - g.currentY * 0.55;
-    orbitRing.rotation.z = elapsedTime * 0.08 + g.currentX * 0.25;
-    bgParticles.rotation.y = elapsedTime * 0.02 + g.currentX * 0.12;
-    bgParticles.rotation.x = g.currentY * 0.08;
+    // Update interactive surface hotspots & damped hover glow
+    let peakEnergy = 0;
+    for (let i = 0; i < surfaceSpots.length; i++) {
+      const sp = surfaceSpots[i];
+      if (sp.strength > 0.004) {
+        sp.age += dt;
+        sp.strength *= Math.exp(-1.55 * dt);
+        if (sp.strength > peakEnergy) peakEnergy = sp.strength;
+      } else {
+        sp.strength = 0;
+      }
+    }
+    hoverStrength += (hoverTargetStrength - hoverStrength) * (1 - Math.exp(-6.5 * dt));
+    hoverTargetStrength *= Math.exp(-1.1 * dt);
+    peakEnergy = Math.max(peakEnergy, hoverStrength * 0.55);
+
+    particleMaterial.uniforms.uMeta0.value.set(surfaceSpots[0].strength, surfaceSpots[0].age);
+    particleMaterial.uniforms.uMeta1.value.set(surfaceSpots[1].strength, surfaceSpots[1].age);
+    particleMaterial.uniforms.uMeta2.value.set(surfaceSpots[2].strength, surfaceSpots[2].age);
+    particleMaterial.uniforms.uHoverStrength.value = hoverStrength;
+
+    touchShellMat.uniforms.uMeta0.value.set(surfaceSpots[0].strength, surfaceSpots[0].age);
+    touchShellMat.uniforms.uMeta1.value.set(surfaceSpots[1].strength, surfaceSpots[1].age);
+    touchShellMat.uniforms.uMeta2.value.set(surfaceSpots[2].strength, surfaceSpots[2].age);
+    touchShellMat.uniforms.uHoverStrength.value = hoverStrength;
+
+    // Gentle point light boost facing touched spot + subtle wire excitement
+    touchLight.position.lerp(_lightTargetWorld, 1 - Math.exp(-8 * dt));
+    const maxTouchLight = isLightTheme ? 2.4 : 3.8;
+    touchLight.intensity += (peakEnergy * maxTouchLight - touchLight.intensity) * (1 - Math.exp(-7 * dt));
+    wireMaterial.opacity = (isLightTheme ? 0.36 : 0.22) + peakEnergy * 0.14;
+
+    // Clean autonomous rotation without gyroscope drift
+    earthGroup.rotation.y += 0.003 + peakEnergy * 0.0012;
+    earthGroup.rotation.x = 0.18;
+    earthGroup.rotation.z = 0;
+    earthGroup.position.x = 0;
+    earthGroup.position.y = Math.sin(elapsedTime * 0.5) * 0.5;
+    orbitRing.rotation.z = elapsedTime * 0.08;
+    bgParticles.rotation.y = elapsedTime * 0.02;
+    bgParticles.rotation.x = 0;
 
     if (!reducedMotion) {
       updateLivingNetwork(elapsedTime);
@@ -1022,6 +1395,7 @@ export function initEarth(containerId) {
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(getTargetDpr());
     renderer.setSize(window.innerWidth, window.innerHeight);
+    particleMaterial.uniforms.uPerspectiveScale.value = getPerspectiveScale();
     adjustScale();
   });
 

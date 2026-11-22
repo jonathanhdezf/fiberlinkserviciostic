@@ -1,13 +1,22 @@
 import { storeService, STARTER_PRODUCTS } from './services/storeService.js';
+import { cartStore } from './services/cartStore.js';
+import {
+  attachCardHoverZoom,
+  getProductPhotos,
+  initCartWidgets,
+  openCartDrawer,
+  openProductZoomModal,
+  showStoreToast
+} from './services/storeWidgets.js';
 
 const CATEGORY_ORDER = ['pos', 'cctv', 'redes', 'software', 'refacciones', 'servicios'];
 const CATEGORY_META = {
-  pos: { tabLabel: 'Puntos de Venta (POS)', badge: 'PUNTO DE VENTA' },
-  cctv: { tabLabel: 'Cámaras & Seguridad', badge: 'VIDEOVIGILANCIA' },
-  redes: { tabLabel: 'Redes & Conectividad', badge: 'REDES & FIBRA' },
-  software: { tabLabel: 'Licencias & Software', badge: 'SOFTWARE ORIGINAL' },
-  refacciones: { tabLabel: 'Refacciones & Cómputo', badge: 'REFACCIONES' },
-  servicios: { tabLabel: 'Servicio Técnico', badge: 'SERVICIO TIC' }
+  pos: { tabLabel: 'Puntos de Venta (POS)', label: 'Punto de Venta', icon: 'point_of_sale', tone: 'text-neon-emerald' },
+  cctv: { tabLabel: 'Cámaras & Seguridad', label: 'Videovigilancia', icon: 'videocam', tone: 'text-status-info' },
+  redes: { tabLabel: 'Redes & Conectividad', label: 'Redes & Fibra', icon: 'router', tone: 'text-status-info' },
+  software: { tabLabel: 'Licencias & Software', label: 'Software & Licencias', icon: 'key', tone: 'text-neon-emerald' },
+  refacciones: { tabLabel: 'Refacciones & Cómputo', label: 'Refacciones & Cómputo', icon: 'memory', tone: 'text-status-warning' },
+  servicios: { tabLabel: 'Servicio Técnico', label: 'Servicio TIC', icon: 'build_circle', tone: 'text-neon-emerald' }
 };
 
 function escapeHtml(val) {
@@ -19,119 +28,64 @@ function escapeHtml(val) {
     .replace(/'/g, '&#39;');
 }
 
-function getProductPhotos(p) {
-  if (Array.isArray(p?.images) && p.images.length > 0) {
-    return p.images.filter((x) => typeof x === 'string' && x.trim());
-  }
-  return p?.imageUrl ? [String(p.imageUrl).trim()] : [];
+function buildFallbackVisualHtml(catMeta, sku) {
+  return `
+    <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-center select-none" style="background-image: radial-gradient(rgba(156,195,46,0.18) 1px, transparent 1px); background-size: 16px 16px;">
+      <div class="w-16 h-16 rounded-2xl bg-panel border border-primary-container/30 flex items-center justify-center text-neon-emerald shadow-sm">
+        <span class="material-symbols-outlined text-[36px]" aria-hidden="true">${catMeta.icon}</span>
+      </div>
+      <span class="font-label-mono-xs text-[11px] text-text-tertiary uppercase tracking-wider">${escapeHtml(sku || catMeta.label)}</span>
+    </div>
+  `;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('catalogProductsContainer');
-  const tabsWrap = document.getElementById('catalogFilterTabs');
-  const searchInput = document.getElementById('catalogSearch');
-  const clearBtn = document.getElementById('catalogClearSearch');
-  const emptyState = document.getElementById('catalogEmptyState');
-  const resetBtn = document.getElementById('catalogResetFilters');
+function bootCatalogPage() {
+  initCartWidgets();
+  const grid = document.getElementById('storeProductsGrid');
+  const tabsWrap = document.getElementById('storeCategoryTabs');
+  const searchInput = document.getElementById('storeSearch');
+  const clearBtn = document.getElementById('storeClearSearch');
+  const inStockCheckbox = document.getElementById('storeInStockOnly');
+  const sortSelect = document.getElementById('storeSort');
+  const visibleCountEl = document.getElementById('storeVisibleCount');
+  const resetToolbarBtn = document.getElementById('storeResetFiltersBtn');
+  const emptyState = document.getElementById('storeEmptyState');
+  const emptyResetBtn = document.getElementById('storeEmptyResetBtn');
+  const mobileCartBar = document.getElementById('mobileCartFloatingBar');
 
-  if (!container) return;
+  if (!grid) return;
 
   let allItems = [];
   let currentCategory = 'all';
   let searchQuery = '';
+  let sortBy = 'popular';
+  let inStockOnly = false;
 
-  function ensureLightbox() {
-    let modal = document.getElementById('catalogGalleryLightbox');
-    if (modal) return modal;
+  // Allow deep-linking via URL ?cat=pos or ?q=tapo
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('cat');
+    const qParam = params.get('q');
+    if (catParam && CATEGORY_ORDER.includes(catParam)) {
+      currentCategory = catParam;
+    }
+    if (qParam) {
+      searchQuery = qParam.trim();
+      if (searchInput) searchInput.value = searchQuery;
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !searchQuery);
+        clearBtn.classList.toggle('flex', Boolean(searchQuery));
+      }
+    }
+  } catch (_) {}
 
-    modal = document.createElement('div');
-    modal.id = 'catalogGalleryLightbox';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(4,7,3,0.86);backdrop-filter:blur(6px);';
-    modal.innerHTML = `
-      <div style="width:100%;max-width:680px;max-height:90vh;overflow-y:auto;background:var(--fondo, #0c110a);border:1px solid rgba(156,195,46,0.35);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.85);">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(156,195,46,0.2);">
-          <div style="min-width:0;">
-            <div id="clbSku" style="font-family:var(--mono);font-size:0.72rem;color:var(--verde);letter-spacing:0.06em;">SKU</div>
-            <h3 id="clbTitle" style="font-family:var(--euro);font-size:1.05rem;color:var(--blanco);margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Producto</h3>
-          </div>
-          <button type="button" id="clbClose" aria-label="Cerrar galería" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(156,195,46,0.3);background:rgba(255,255,255,0.06);color:var(--blanco);font-size:1.1rem;cursor:pointer;">✕</button>
-        </div>
-        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;">
-          <div style="width:100%;height:300px;border-radius:12px;background:rgba(0,0,0,0.35);border:1px solid rgba(156,195,46,0.2);display:flex;align-items:center;justify-content:center;padding:14px;overflow:hidden;">
-            <img id="clbMainImg" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;">
-          </div>
-          <div id="clbThumbs" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;"></div>
-          <p id="clbDesc" style="font-size:0.88rem;color:var(--muted);line-height:1.5;margin:0;"></p>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid rgba(156,195,46,0.2);">
-            <strong id="clbPrice" style="font-family:var(--euro);font-size:1.25rem;color:var(--verde);"></strong>
-            <a id="clbWaBtn" href="#" target="_blank" rel="noopener" class="prod-btn-wa" style="width:auto;padding:10px 18px;text-decoration:none;">Pedir por WhatsApp</a>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    const closeModal = () => {
-      modal.style.display = 'none';
-    };
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-    modal.querySelector('#clbClose')?.addEventListener('click', closeModal);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
-    });
-
-    return modal;
+  function syncMobileBarVisibility(count) {
+    if (!mobileCartBar) return;
+    mobileCartBar.classList.toggle('hidden', count <= 0);
   }
 
-  function openProductGallery(prod) {
-    const photos = getProductPhotos(prod);
-    if (photos.length === 0) return;
-
-    const modal = ensureLightbox();
-    const skuEl = modal.querySelector('#clbSku');
-    const titleEl = modal.querySelector('#clbTitle');
-    const mainImg = modal.querySelector('#clbMainImg');
-    const thumbsEl = modal.querySelector('#clbThumbs');
-    const descEl = modal.querySelector('#clbDesc');
-    const priceEl = modal.querySelector('#clbPrice');
-    const waBtn = modal.querySelector('#clbWaBtn');
-
-    const catMeta = CATEGORY_META[prod.category] || CATEGORY_META.pos;
-    if (skuEl) skuEl.textContent = `[${catMeta.badge}]${prod.sku ? ` · ${prod.sku}` : ''}`;
-    if (titleEl) titleEl.textContent = prod.name;
-    if (mainImg) {
-      mainImg.src = photos[0];
-      mainImg.alt = prod.name;
-    }
-    if (descEl) descEl.textContent = prod.description || 'Equipamiento homologado con garantía directa Fiberlink.';
-    const priceVal = Math.round(parseFloat(prod.price) || 0);
-    if (priceEl) priceEl.textContent = `$${priceVal.toLocaleString('es-MX')} MXN`;
-    if (waBtn) {
-      waBtn.href = `https://wa.me/522311024672?text=${encodeURIComponent(`Hola Fiberlink, me interesa comprar: ${prod.name} ($${priceVal.toLocaleString('es-MX')} MXN)`)}`;
-    }
-
-    if (thumbsEl) {
-      thumbsEl.innerHTML = photos.map((src, i) => `
-        <button type="button" data-idx="${i}" style="width:62px;height:62px;flex-shrink:0;border-radius:8px;padding:4px;background:rgba(0,0,0,0.35);cursor:pointer;border:2px solid ${i === 0 ? 'var(--verde)' : 'rgba(156,195,46,0.2)'};">
-          <img src="${escapeHtml(src)}" alt="Vista ${i + 1}" style="width:100%;height:100%;object-fit:contain;">
-        </button>
-      `).join('');
-
-      thumbsEl.querySelectorAll('button[data-idx]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const i = Number(btn.dataset.idx);
-          if (mainImg) mainImg.src = photos[i];
-          thumbsEl.querySelectorAll('button[data-idx]').forEach((b) => {
-            b.style.borderColor = 'rgba(156,195,46,0.2)';
-          });
-          btn.style.borderColor = 'var(--verde)';
-        });
-      });
-    }
-
-    modal.style.display = 'flex';
+  function hasActiveFilters() {
+    return currentCategory !== 'all' || Boolean(searchQuery.trim()) || inStockOnly || sortBy !== 'popular';
   }
 
   function renderTabs() {
@@ -146,21 +100,26 @@ document.addEventListener('DOMContentLoaded', () => {
       currentCategory = 'all';
     }
 
+    const baseBtnClass = (active) =>
+      active
+        ? 'px-3.5 py-2 rounded-xl bg-primary-container text-on-brand font-button-text text-xs font-bold whitespace-nowrap shadow-sm shrink-0 transition-all'
+        : 'px-3.5 py-2 rounded-xl bg-panel-2 hover:bg-surface-overlay text-text-secondary hover:text-text-primary border border-glass font-button-text text-xs font-medium whitespace-nowrap shrink-0 transition-all';
+
     const tabsHtml = [
-      `<button class="cat-tab-btn ${currentCategory === 'all' ? 'active' : ''}" data-category="all" type="button">Todos los Productos (${counts.all})</button>`
+      `<button class="${baseBtnClass(currentCategory === 'all')}" data-category="all" type="button">Todos (<span class="tabular-nums">${counts.all}</span>)</button>`
     ];
 
     CATEGORY_ORDER.forEach((catKey) => {
       if ((counts[catKey] || 0) > 0) {
         const label = CATEGORY_META[catKey]?.tabLabel || catKey;
         tabsHtml.push(
-          `<button class="cat-tab-btn ${currentCategory === catKey ? 'active' : ''}" data-category="${catKey}" type="button">${escapeHtml(label)} (${counts[catKey]})</button>`
+          `<button class="${baseBtnClass(currentCategory === catKey)}" data-category="${catKey}" type="button">${escapeHtml(label)} (<span class="tabular-nums">${counts[catKey]}</span>)</button>`
         );
       }
     });
 
     tabsWrap.innerHTML = tabsHtml.join('');
-    tabsWrap.querySelectorAll('.cat-tab-btn').forEach((btn) => {
+    tabsWrap.querySelectorAll('button[data-category]').forEach((btn) => {
       btn.addEventListener('click', () => {
         currentCategory = btn.getAttribute('data-category') || 'all';
         renderTabs();
@@ -171,125 +130,224 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderCards() {
     const q = searchQuery.toLowerCase().trim();
-    const filtered = allItems.filter((p) => {
-      const matchesCat = currentCategory === 'all' || (p.category || 'pos') === currentCategory;
-      if (!matchesCat) return false;
+    const cartMap = cartStore.getCartMap();
+
+    let filtered = allItems.filter((p) => {
+      if (currentCategory !== 'all' && (p.category || 'pos') !== currentCategory) return false;
+      if (inStockOnly && !p.isService && (Number(p.stock) || 0) <= 0) return false;
       if (!q) return true;
       const hay = `${p.name || ''} ${p.sku || ''} ${p.description || ''} ${p.category || ''} ${(Array.isArray(p.specs) ? p.specs.join(' ') : '')}`.toLowerCase();
       return hay.includes(q);
     });
 
+    if (sortBy === 'popular') {
+      const popularIds = new Map(
+        cartStore.getTopPopularProducts(allItems, allItems.length).map((p, i) => [p.id, i])
+      );
+      filtered.sort((a, b) => (popularIds.get(a.id) ?? 999) - (popularIds.get(b.id) ?? 999));
+    } else if (sortBy === 'precio-asc') {
+      filtered.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
+    } else if (sortBy === 'precio-desc') {
+      filtered.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
+    } else if (sortBy === 'stock-desc') {
+      filtered.sort((a, b) => (Number(b.stock) || 0) - (Number(a.stock) || 0));
+    } else if (sortBy === 'nombre-asc') {
+      filtered.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'es'));
+    }
+
+    if (visibleCountEl) {
+      visibleCountEl.textContent = `Mostrando ${filtered.length} de ${allItems.length} artículos`;
+    }
+    if (resetToolbarBtn) {
+      resetToolbarBtn.classList.toggle('hidden', !hasActiveFilters());
+    }
+
     if (filtered.length === 0) {
-      container.innerHTML = '';
-      if (emptyState) emptyState.style.display = 'block';
+      grid.innerHTML = '';
+      grid.classList.add('hidden');
+      if (emptyState) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+      }
       return;
     }
 
-    if (emptyState) emptyState.style.display = 'none';
+    grid.classList.remove('hidden');
+    if (emptyState) {
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+    }
 
-    container.innerHTML = filtered.map((p) => {
+    grid.innerHTML = filtered.map((p) => {
       const catKey = p.category || 'pos';
       const catMeta = CATEGORY_META[catKey] || CATEGORY_META.pos;
       const photos = getProductPhotos(p);
       const cover = photos[0] || '';
       const stockNum = Number(p.stock) || 0;
+      const minStockNum = Number(p.minStock) || 2;
+      const isOutOfStock = !p.isService && stockNum <= 0;
+      const isLowStock = !p.isService && stockNum > 0 && stockNum <= minStockNum;
       const priceVal = Math.round(parseFloat(p.price) || 0);
       const priceStr = `$${priceVal.toLocaleString('es-MX')}`;
-      const unitLabel = p.unit === 'metro' ? 'MXN / metro' : 'MXN';
-      const statusText = p.isService
-        ? 'Servicio disponible'
-        : stockNum > 0
-          ? `${stockNum} en stock`
-          : 'Bajo pedido';
+      const unitSuffix = p.unit === 'metro' ? ' / metro' : '';
+      const currentQty = cartMap[p.id]?.qty || 0;
+      const specsList = Array.isArray(p.specs) ? p.specs.slice(0, 3).map((s) => escapeHtml(s)).join(' · ') : '';
 
-      const specsArr = Array.isArray(p.specs) ? p.specs.slice(0, 5) : [];
-      const specsHtml = specsArr.map((s) => `
-        <li>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>${escapeHtml(s)}</span>
-        </li>
-      `).join('');
+      const stockLabel = p.isService
+        ? 'Servicio disponible'
+        : isOutOfStock
+          ? 'Agotado'
+          : isLowStock
+            ? `${stockNum} disp. · Últimas piezas`
+            : `${stockNum} ${p.unit === 'kit' ? 'kits en stock' : 'en stock'}`;
+
+      const stockClass = isOutOfStock
+        ? 'text-status-alert font-semibold'
+        : isLowStock
+          ? 'text-status-warning font-semibold'
+          : 'text-text-secondary';
+
+      const zoomBadgeHtml = photos.length > 1
+        ? `<span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-panel/95 border border-primary-container/40 text-neon-emerald font-label-mono-xs text-[11px] font-semibold flex items-center gap-1 shadow-sm pointer-events-none"><span class="material-symbols-outlined text-[14px]" aria-hidden="true">zoom_in</span>1/${photos.length}</span>`
+        : `<span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-panel/95 border border-glass text-text-primary group-hover/media:text-neon-emerald group-hover/media:border-primary-container/45 font-label-mono-xs text-[11px] font-semibold flex items-center gap-1 shadow-sm transition-colors pointer-events-none"><span class="material-symbols-outlined text-[14px]" aria-hidden="true">zoom_in</span>Zoom</span>`;
 
       const mediaHtml = cover
-        ? `
-          <div class="prod-media-box" data-gallery-id="${escapeHtml(p.id)}" style="cursor:pointer;" title="${photos.length > 1 ? `Ver ${photos.length} fotografías` : 'Ampliar fotografía'}">
-            <img src="${escapeHtml(cover)}" alt="${escapeHtml(p.name)}" loading="lazy" referrerpolicy="no-referrer" />
-            ${photos.length > 1 ? `<span style="position:absolute;bottom:8px;right:10px;font-family:var(--mono);font-size:0.68rem;padding:2px 8px;border-radius:6px;background:rgba(10,14,8,0.88);border:1px solid rgba(156,195,46,0.4);color:var(--verde);">📷 1/${photos.length}</span>` : ''}
-          </div>
-        `
-        : `
-          <div class="prod-icon-box">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6v6H9z"/></svg>
-          </div>
-        `;
-
-      const waUrl = `https://wa.me/522311024672?text=${encodeURIComponent(`Hola Fiberlink, me interesa comprar: ${p.name} (${priceStr} MXN)`)}`;
+        ? `<img loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="${escapeHtml(p.name)}" class="w-full h-full object-contain transition-transform duration-200 ease-out will-change-transform" src="${escapeHtml(cover)}" data-product-img>${zoomBadgeHtml}`
+        : buildFallbackVisualHtml(catMeta, p.sku);
 
       return `
-        <article class="prod-card" data-category="${escapeHtml(catKey)}">
-          <div class="prod-meta-bar">
-            <span class="prod-cat-badge">[${escapeHtml(catMeta.badge)}${p.sku ? ` · ${escapeHtml(p.sku)}` : ''}]</span>
-            <span class="prod-status-tag"><span class="prod-status-dot"></span> ${escapeHtml(statusText)}</span>
-          </div>
-          ${mediaHtml}
-          <h2 class="prod-title">${escapeHtml(p.name)}</h2>
-          <p class="prod-desc">${escapeHtml(p.description || 'Equipamiento homologado con garantía directa en Teziutlán y soporte técnico Fiberlink.')}</p>
-          <div class="prod-price-bar">
-            <span class="prod-price-label">Precio Fiberlink</span>
-            <div>
-              <span class="prod-price-amount">${priceStr}</span>
-              <span class="prod-price-currency">${escapeHtml(unitLabel)}</span>
+        <article data-product data-id="${escapeHtml(p.id)}" data-category="${escapeHtml(catKey)}" class="p-4 sm:p-5 rounded-2xl bg-panel border ${isLowStock ? 'border-primary-container/35' : 'border-glass'} hover:border-primary-container/45 hover:bg-panel-2 transition-all flex flex-col justify-between group shadow-sm">
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-glass/60">
+              <span class="font-label-mono-xs text-[11px] ${catMeta.tone} uppercase tracking-wider font-semibold truncate">${escapeHtml(catMeta.label)}${p.sku ? ` · ${escapeHtml(p.sku)}` : ''}</span>
+              <span class="font-label-mono-xs text-[11px] ${stockClass} tabular-nums whitespace-nowrap">${escapeHtml(stockLabel)}</span>
             </div>
+
+            <div class="relative w-full aspect-[4/3] rounded-xl bg-surface-container-low border border-glass p-4 flex items-center justify-center overflow-hidden mb-3.5 transition-all cursor-zoom-in group/media hover:border-primary-container/50" data-media-box role="button" tabindex="0" aria-label="Hacer zoom y ver detalles de ${escapeHtml(p.name)}">
+              ${mediaHtml}
+            </div>
+
+            <h2 data-open-pdp class="font-headline-sm text-base sm:text-[17px] text-text-primary group-hover:text-neon-emerald transition-colors font-semibold leading-snug line-clamp-2 cursor-pointer">${escapeHtml(p.name)}</h2>
+            <p class="font-body-sm text-xs sm:text-sm text-text-secondary mt-1.5 leading-relaxed line-clamp-2">${escapeHtml(p.description || 'Equipamiento homologado con garantía directa en Teziutlán y soporte técnico Fiberlink.')}</p>
+            ${specsList ? `<p class="font-label-mono-xs text-[11px] text-text-tertiary mt-2 leading-relaxed truncate">${specsList}</p>` : ''}
           </div>
-          ${specsHtml ? `<ul class="prod-specs">${specsHtml}</ul>` : ''}
-          <div class="prod-warranty-bar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Garantía directa + soporte técnico Fiberlink</span>
-          </div>
-          <div class="prod-actions">
-            <a class="prod-btn-wa" href="${waUrl}" target="_blank" rel="noopener">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-              <span>Pedir por WhatsApp (${priceStr} MXN)</span>
-            </a>
-            <button class="prod-btn-sub open-ticket" type="button" data-service="${escapeHtml(p.name)}">Solicitar Cotización Formal &rarr;</button>
+
+          <div class="flex flex-col gap-3 pt-4 mt-4 border-t border-glass">
+            <div class="flex items-baseline justify-between gap-2">
+              <div class="flex flex-col">
+                <span class="font-headline-md text-xl text-text-primary font-bold tracking-tight tabular-nums">${priceStr} <span class="text-xs text-text-tertiary font-normal">MXN${escapeHtml(unitSuffix)}</span></span>
+                <span class="font-label-mono-xs text-[11px] text-neon-emerald">IVA incluido · CFDI 4.0</span>
+              </div>
+              <span class="font-label-mono-xs text-[11px] ${isOutOfStock ? 'text-text-tertiary' : 'text-neon-emerald'} font-semibold whitespace-nowrap">${isOutOfStock ? 'Bajo pedido' : 'Entrega hoy'}</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              ${currentQty > 0 ? `
+                <div class="flex items-center rounded-xl bg-surface-container-low border border-primary-container/40 p-1">
+                  <button type="button" data-qty="minus" aria-label="Quitar uno" class="w-8 h-8 rounded-lg hover:bg-surface-overlay text-text-primary flex items-center justify-center font-bold">−</button>
+                  <span data-qty="value" aria-live="polite" class="w-7 text-center font-label-mono-xs text-xs font-bold text-neon-emerald tabular-nums">${currentQty}</span>
+                  <button type="button" data-qty="plus" aria-label="Agregar uno" class="w-8 h-8 rounded-lg hover:bg-surface-overlay text-text-primary flex items-center justify-center font-bold">+</button>
+                </div>
+                <button type="button" data-open-cart class="flex-1 py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap">
+                  <span class="material-symbols-outlined text-[17px]">shopping_bag</span>
+                  <span>Ver Carrito</span>
+                </button>
+              ` : `
+                <button type="button" data-add-cart class="flex-1 py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-xs sm:text-sm font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap disabled:opacity-45 disabled:cursor-not-allowed" ${isOutOfStock ? 'disabled' : ''}>
+                  <span class="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+                  <span>${isOutOfStock ? 'Agotado' : 'Agregar al carrito'}</span>
+                </button>
+                <button type="button" data-open-pdp aria-label="Ver detalles y zoom" title="Ampliar fotografía y ficha" class="w-10 h-10 rounded-xl bg-panel-2 border border-glass hover:border-primary-container/45 text-text-secondary hover:text-neon-emerald flex items-center justify-center shrink-0 transition-colors">
+                  <span class="material-symbols-outlined text-[19px]">zoom_in</span>
+                </button>
+              `}
+            </div>
           </div>
         </article>
       `;
     }).join('');
 
-    // Wire image error fallback + gallery lightbox + ticket redirect
-    container.querySelectorAll('[data-gallery-id]').forEach((box) => {
-      const id = box.getAttribute('data-gallery-id');
+    grid.querySelectorAll('article[data-product]').forEach((card) => {
+      const id = card.dataset.id;
       const prod = allItems.find((x) => x.id === id);
       if (!prod) return;
-      const img = box.querySelector('img');
-      if (img) {
-        img.addEventListener('error', () => {
-          img.src = '/logo.gif';
-        }, { once: true });
-      }
-      box.addEventListener('click', () => openProductGallery(prod));
-    });
 
-    container.querySelectorAll('.open-ticket').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const srv = btn.getAttribute('data-service') || 'Equipamiento y Licencias';
-        window.location.href = `/?ticket=${encodeURIComponent(srv)}#inicio`;
+      const mediaBox = card.querySelector('[data-media-box]');
+      const img = card.querySelector('img[data-product-img]');
+      if (img && mediaBox) {
+        img.addEventListener('error', () => {
+          const catMeta = CATEGORY_META[prod.category || 'pos'] || CATEGORY_META.pos;
+          mediaBox.innerHTML = buildFallbackVisualHtml(catMeta, prod.sku);
+        }, { once: true });
+        attachCardHoverZoom(mediaBox, img);
+      }
+
+      const openPdp = () => openProductZoomModal(prod);
+
+      mediaBox?.addEventListener('click', openPdp);
+      mediaBox?.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          openPdp();
+        }
       });
+      card.querySelectorAll('[data-open-pdp]').forEach((el) => {
+        el.addEventListener('click', openPdp);
+      });
+
+      card.querySelector('[data-add-cart]')?.addEventListener('click', () => {
+        const res = cartStore.addItem(prod, 1);
+        if (!res.ok) {
+          showStoreToast(res.reason === 'out_of_stock' ? 'Producto temporalmente agotado.' : `Stock máximo: ${res.maxStock}`, 'warning');
+          return;
+        }
+        showStoreToast(`${prod.name} agregado al carrito.`, 'success');
+      });
+
+      card.querySelector('[data-qty="plus"]')?.addEventListener('click', () => {
+        const res = cartStore.addItem(prod, 1);
+        if (!res.ok && res.reason === 'max_stock') {
+          showStoreToast(`Stock máximo disponible: ${res.maxStock}`, 'warning');
+        }
+      });
+
+      card.querySelector('[data-qty="minus"]')?.addEventListener('click', () => {
+        const curr = cartStore.getItemQty(prod.id);
+        cartStore.setQty(prod.id, curr - 1, prod);
+      });
+
+      card.querySelector('[data-open-cart]')?.addEventListener('click', openCartDrawer);
     });
   }
 
   function applyCatalog(list) {
     allItems = Array.isArray(list) ? list.filter((p) => p && p.publicVisible !== false) : [];
+    cartStore.syncWithProducts(allItems);
     renderTabs();
     renderCards();
   }
 
-  // Search Input
+  function resetAllFilters() {
+    currentCategory = 'all';
+    searchQuery = '';
+    sortBy = 'popular';
+    inStockOnly = false;
+    if (searchInput) searchInput.value = '';
+    if (sortSelect) sortSelect.value = 'popular';
+    if (inStockCheckbox) inStockCheckbox.checked = false;
+    if (clearBtn) {
+      clearBtn.classList.add('hidden');
+      clearBtn.classList.remove('flex');
+    }
+    renderTabs();
+    renderCards();
+  }
+
   searchInput?.addEventListener('input', (e) => {
     searchQuery = e.target.value;
     if (clearBtn) {
-      clearBtn.style.display = searchQuery ? 'flex' : 'none';
+      clearBtn.classList.toggle('hidden', !searchQuery);
+      clearBtn.classList.toggle('flex', Boolean(searchQuery));
     }
     renderCards();
   });
@@ -298,29 +356,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
       searchInput.value = '';
       searchQuery = '';
-      clearBtn.style.display = 'none';
+      clearBtn.classList.add('hidden');
+      clearBtn.classList.remove('flex');
       renderCards();
       searchInput.focus();
     }
   });
 
-  resetBtn?.addEventListener('click', () => {
-    if (searchInput) {
-      searchInput.value = '';
-      searchQuery = '';
-    }
-    if (clearBtn) clearBtn.style.display = 'none';
-    currentCategory = 'all';
-    renderTabs();
+  inStockCheckbox?.addEventListener('change', (e) => {
+    inStockOnly = Boolean(e.target.checked);
     renderCards();
   });
 
-  // Top header/banner ticket triggers
-  document.querySelectorAll('body .open-ticket').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const srv = btn.getAttribute('data-service') || 'Equipamiento y Licencias';
-      window.location.href = `/?ticket=${encodeURIComponent(srv)}#inicio`;
-    });
+  sortSelect?.addEventListener('change', (e) => {
+    sortBy = e.target.value || 'popular';
+    renderCards();
+  });
+
+  resetToolbarBtn?.addEventListener('click', resetAllFilters);
+  emptyResetBtn?.addEventListener('click', resetAllFilters);
+
+  cartStore.subscribe(({ count }) => {
+    syncMobileBarVisibility(count);
+    if (allItems.length > 0) renderCards();
   });
 
   // Real-time Firestore public catalog subscription
@@ -337,4 +395,10 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('[CatalogoPage] Fallback local activo tras error Firestore:', err?.message || err);
     }
   );
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootCatalogPage);
+} else {
+  bootCatalogPage();
+}

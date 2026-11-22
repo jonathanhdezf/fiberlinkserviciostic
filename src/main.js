@@ -4,20 +4,42 @@ import { initEarth } from './three-earth.js';
 import { initAnimations } from './animations.js';
 import { ticketService } from './services/ticketService.js';
 import { storeService, STARTER_PRODUCTS } from './services/storeService.js';
+import { cartStore } from './services/cartStore.js';
+import {
+  attachCardHoverZoom,
+  openProductZoomModal,
+  openCartDrawer,
+  closeCartDrawer,
+  initCartWidgets,
+  showStoreToast
+} from './services/storeWidgets.js';
 import { initAssistant } from './assistant.js';
+import { recordAndFetchVisitorStats } from './services/visitorService.js';
 
 window.ticketService = ticketService;
 window.storeService = storeService;
 window.STARTER_PRODUCTS = STARTER_PRODUCTS;
+window.fiberlinkCart = cartStore;
+window.fiberlinkStoreUI = {
+  attachCardHoverZoom,
+  openProductZoomModal,
+  openCartDrawer,
+  closeCartDrawer,
+  showStoreToast
+};
 window.dispatchEvent(new CustomEvent('fiberlink:store-ready'));
 
-document.addEventListener('DOMContentLoaded', () => {
+function bootApp() {
   // 0. Expose ticket & store services globally for interactive forms
   window.ticketService = ticketService;
   window.storeService = storeService;
+  window.fiberlinkCart = cartStore;
 
   // 0. Initialize Dark / Light Theme Controller
   initThemeController();
+
+  // 0b. Initialize Shopping Cart Drawer & Live Badges
+  initCartWidgets();
 
   // 1. Initialize Cyber Background canvas (floating matrix particles)
   initCyberBg();
@@ -53,7 +75,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 11. Process Pipeline Timeline Highlighting
   initProcessPipeline();
-});
+
+  // 12. Hero Bento Cards Interactive Tooltips (mobile tap & keyboard support)
+  initHeroCardTooltips();
+
+  // 13. Testimonials Pasarela tap-to-pause on touch devices
+  initReviewsMarquee();
+
+  // 14. Fiberlink Labs Tech Showcase Modal
+  initFiberlinkLabsModal();
+
+  // 15. Fibra Óptica & Fiberlink Play Interactive Profiles
+  initFiberOpticSection();
+
+  // 16. Subtle Visitor Registry (Firestore /site_stats/visitors)
+  initVisitorRegistry();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+  bootApp();
+}
 
 function initUI() {
   // Desktop Navigation & Sliding Indicator
@@ -973,7 +1016,7 @@ function initSmoothNav() {
 }
 
 // ============================
-// CYBER BACKGROUND CANVAS (AI-DAY)
+// CYBER BACKGROUND CANVAS (TOUCH-REACTIVE MATRIX NUMBERS)
 // ============================
 function initCyberBg() {
   const canvas = document.getElementById('bgCanvas');
@@ -987,8 +1030,8 @@ function initCyberBg() {
   const glyphs = ['0', '1', '7', '9'];
 
   // Pre-render glyph sprites once per theme/tint (15x faster than calling fillText 2000x/frame)
-  const spriteSize = 18;
-  function createSpriteSet(color) {
+  const spriteSize = 20;
+  function createSpriteSet(color, shadowColor = '') {
     const set = {};
     for (let i = 0; i < glyphs.length; i++) {
       const g = glyphs[i];
@@ -996,9 +1039,13 @@ function initCyberBg() {
       c.width = spriteSize;
       c.height = spriteSize;
       const gctx = c.getContext('2d');
-      gctx.font = '600 13px "Space Mono", "Share Tech Mono", monospace';
+      gctx.font = '700 13px "Space Mono", "Share Tech Mono", monospace';
       gctx.textBaseline = 'middle';
       gctx.textAlign = 'center';
+      if (shadowColor) {
+        gctx.shadowColor = shadowColor;
+        gctx.shadowBlur = 5;
+      }
       gctx.fillStyle = color;
       gctx.fillText(g, spriteSize / 2, spriteSize / 2);
       set[g] = c;
@@ -1010,12 +1057,67 @@ function initCyberBg() {
     dark: {
       lime: createSpriteSet('rgb(170, 214, 52)'),
       neutral: createSpriteSet('rgb(220, 234, 218)'),
+      glow: createSpriteSet('rgb(222, 255, 118)', 'rgba(156, 195, 46, 0.85)'),
+      cyan: createSpriteSet('rgb(132, 240, 255)', 'rgba(124, 231, 255, 0.8)'),
     },
     light: {
       lime: createSpriteSet('rgb(68, 114, 6)'),
       neutral: createSpriteSet('rgb(26, 44, 18)'),
+      glow: createSpriteSet('rgb(63, 128, 8)', 'rgba(156, 195, 46, 0.55)'),
+      cyan: createSpriteSet('rgb(2, 132, 199)', 'rgba(2, 132, 199, 0.45)'),
     },
   };
+
+  // Interactive pointer & touch wave ring buffer
+  const pointer = { x: -9999, y: -9999, energy: 0, targetEnergy: 0 };
+  const touchWaves = [
+    { x: 0, y: 0, radius: 0, strength: 0 },
+    { x: 0, y: 0, radius: 0, strength: 0 },
+    { x: 0, y: 0, radius: 0, strength: 0 },
+    { x: 0, y: 0, radius: 0, strength: 0 },
+  ];
+  let waveSlot = 0;
+  let lastMoveMs = 0;
+
+  function spawnWave(x, y, strength = 1) {
+    const slot = touchWaves[waveSlot];
+    waveSlot = (waveSlot + 1) % touchWaves.length;
+    slot.x = x;
+    slot.y = y;
+    slot.radius = 10;
+    slot.strength = strength;
+  }
+
+  window.addEventListener(
+    'pointerdown',
+    (ev) => {
+      pointer.x = ev.clientX;
+      pointer.y = ev.clientY;
+      pointer.targetEnergy = 1;
+      spawnWave(ev.clientX, ev.clientY, 1);
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    'pointermove',
+    (ev) => {
+      const now = performance.now();
+      if (now - lastMoveMs < 24) return;
+      lastMoveMs = now;
+      pointer.x = ev.clientX;
+      pointer.y = ev.clientY;
+      pointer.targetEnergy = ev.pointerType === 'touch' ? 0.95 : 0.72;
+      if (ev.buttons > 0 || ev.pointerType === 'touch') {
+        spawnWave(ev.clientX, ev.clientY, 0.65);
+      }
+    },
+    { passive: true }
+  );
+
+  window.addEventListener('blur', () => {
+    pointer.targetEnergy = 0;
+  });
 
   function resize() {
     w = window.innerWidth;
@@ -1056,6 +1158,8 @@ function initCyberBg() {
   const reducedMotion =
     window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lastTick = 0;
+  const hoverRadius = 150;
+  const hoverRadiusSq = hoverRadius * hoverRadius;
 
   function loop(now = 0) {
     if (!reducedMotion) {
@@ -1063,11 +1167,70 @@ function initCyberBg() {
     }
     if (document.hidden) return;
     if (now && now - lastTick < 34) return; // ~30fps cap keeps UI scrolling butter-smooth
+    const dt = lastTick ? Math.min(0.1, (now - lastTick) / 1000) : 0.034;
     lastTick = now;
 
     ctx.clearRect(0, 0, w, h);
     const isLight = document.documentElement.classList.contains('light');
     const themeSet = isLight ? sprites.light : sprites.dark;
+
+    // Smoothly decay pointer proximity & expand touch ripples
+    pointer.energy += (pointer.targetEnergy - pointer.energy) * (1 - Math.exp(-8 * dt));
+    pointer.targetEnergy *= Math.exp(-1.15 * dt);
+
+    for (let k = 0; k < touchWaves.length; k++) {
+      const wave = touchWaves[k];
+      if (wave.strength > 0.015) {
+        wave.radius += 215 * dt;
+        wave.strength *= Math.exp(-1.7 * dt);
+      } else {
+        wave.strength = 0;
+      }
+    }
+
+    // Subtle soft ambient glow halo on touched zones
+    if (pointer.energy > 0.04) {
+      const hg = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, hoverRadius);
+      if (isLight) {
+        hg.addColorStop(0, `rgba(101, 163, 13, ${pointer.energy * 0.14})`);
+        hg.addColorStop(1, 'rgba(101, 163, 13, 0)');
+      } else {
+        hg.addColorStop(0, `rgba(156, 195, 46, ${pointer.energy * 0.16})`);
+        hg.addColorStop(0.55, `rgba(124, 231, 255, ${pointer.energy * 0.05})`);
+        hg.addColorStop(1, 'rgba(156, 195, 46, 0)');
+      }
+      ctx.fillStyle = hg;
+      ctx.beginPath();
+      ctx.arc(pointer.x, pointer.y, hoverRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    for (let k = 0; k < touchWaves.length; k++) {
+      const wave = touchWaves[k];
+      if (wave.strength <= 0.02) continue;
+      const glowR = Math.min(185, 65 + wave.radius * 0.6);
+      const wg = ctx.createRadialGradient(wave.x, wave.y, 0, wave.x, wave.y, glowR);
+      if (isLight) {
+        wg.addColorStop(0, `rgba(101, 163, 13, ${wave.strength * 0.18})`);
+        wg.addColorStop(1, 'rgba(101, 163, 13, 0)');
+      } else {
+        wg.addColorStop(0, `rgba(184, 220, 62, ${wave.strength * 0.22})`);
+        wg.addColorStop(0.6, `rgba(124, 231, 255, ${wave.strength * 0.08})`);
+        wg.addColorStop(1, 'rgba(156, 195, 46, 0)');
+      }
+      ctx.fillStyle = wg;
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, glowR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = isLight
+        ? `rgba(2, 132, 199, ${wave.strength * 0.28})`
+        : `rgba(130, 240, 255, ${wave.strength * 0.34})`;
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     for (let i = 0; i < digits.length; i++) {
       const d = digits[i];
@@ -1076,19 +1239,65 @@ function initCyberBg() {
       d.y += d.vy;
       if (d.y > h + 14) d.y = -2;
       else if (d.y < -14) d.y = h + 2;
-      if (Math.random() < d.flip) {
+
+      const drawX = d.x + Math.sin(d.dx) * 1.6;
+      let heat = 0;
+      let crestHeat = 0;
+
+      if (pointer.energy > 0.03) {
+        const pdx = drawX - pointer.x;
+        const pdy = d.y - pointer.y;
+        const distSq = pdx * pdx + pdy * pdy;
+        if (distSq < hoverRadiusSq) {
+          const falloff = 1 - Math.sqrt(distSq) / hoverRadius;
+          heat = Math.max(heat, falloff * falloff * pointer.energy * 0.9);
+        }
+      }
+
+      for (let k = 0; k < touchWaves.length; k++) {
+        const wave = touchWaves[k];
+        if (wave.strength <= 0.02) continue;
+        const wdx = drawX - wave.x;
+        const wdy = d.y - wave.y;
+        const wDistSq = wdx * wdx + wdy * wdy;
+        const maxRange = wave.radius + 70;
+        if (wDistSq < maxRange * maxRange) {
+          const wDist = Math.sqrt(wDistSq);
+          const ringDiff = Math.abs(wDist - wave.radius);
+          if (ringDiff < 58) {
+            const ringEnergy = (1 - ringDiff / 58) * wave.strength;
+            heat = Math.max(heat, ringEnergy);
+            crestHeat = Math.max(crestHeat, ringEnergy);
+          }
+          if (wDist < 110) {
+            heat = Math.max(heat, (1 - wDist / 110) * wave.strength * 0.85);
+          }
+        }
+      }
+
+      if (Math.random() < d.flip * (1 + heat * 6)) {
         d.c = d.c === '0' ? '1' : d.c === '1' ? '7' : d.c === '7' ? '9' : '0';
       }
+
       const a = (Math.sin(d.p) + 1) / 2;
-      ctx.globalAlpha = d.lime
+      const baseAlpha = d.lime
         ? isLight
           ? 0.34 + a * 0.40
           : 0.24 + a * 0.48
         : isLight
           ? 0.14 + a * 0.22
           : 0.09 + a * 0.17;
-      const sprite = d.lime ? themeSet.lime[d.c] : themeSet.neutral[d.c];
-      ctx.drawImage(sprite, d.x + Math.sin(d.dx) * 1.6, d.y);
+
+      ctx.globalAlpha = Math.min(0.98, baseAlpha + heat * (isLight ? 0.56 : 0.68));
+      const sprite =
+        crestHeat > 0.45
+          ? themeSet.cyan[d.c]
+          : heat > 0.18
+            ? themeSet.glow[d.c]
+            : d.lime
+              ? themeSet.lime[d.c]
+              : themeSet.neutral[d.c];
+      ctx.drawImage(sprite, drawX, d.y);
     }
     ctx.globalAlpha = 1;
   }
@@ -1482,5 +1691,309 @@ export function initThemeController() {
         applyTheme(e.matches ? 'light' : 'dark');
       }
     });
+  }
+}
+
+// ==========================================
+// HERO CARDS INTERACTIVE TOOLTIPS (TAP / KEYBOARD / HOVER)
+// ==========================================
+function initHeroCardTooltips() {
+  const cards = Array.from(document.querySelectorAll('[data-hero-card]'));
+  if (!cards.length) return;
+
+  function closeAll(exceptCard = null) {
+    cards.forEach((c) => {
+      if (c !== exceptCard) {
+        c.classList.remove('is-tooltip-open');
+        c.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  cards.forEach((card) => {
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !card.classList.contains('is-tooltip-open');
+      closeAll(card);
+      card.classList.toggle('is-tooltip-open', willOpen);
+      card.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const willOpen = !card.classList.contains('is-tooltip-open');
+        closeAll(card);
+        card.classList.toggle('is-tooltip-open', willOpen);
+        card.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      } else if (e.key === 'Escape') {
+        closeAll();
+        card.blur();
+      }
+    });
+
+    card.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse' && document.activeElement !== card) {
+        card.classList.remove('is-tooltip-open');
+        card.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-hero-card]')) {
+      closeAll();
+    }
+  });
+}
+
+// ==========================================
+// TESTIMONIALS PASARELA (TAP TO PAUSE ON TOUCH)
+// ==========================================
+function initReviewsMarquee() {
+  const marquee = document.getElementById('reviewsMarquee');
+  if (!marquee) return;
+
+  marquee.addEventListener('click', (e) => {
+    if (e.target.closest('a, button')) return;
+    marquee.classList.toggle('is-paused');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!marquee.contains(e.target)) {
+      marquee.classList.remove('is-paused');
+    }
+  });
+}
+
+// ==========================================
+// FIBERLINK LABS TECHNICAL MODAL
+// ==========================================
+function initFiberlinkLabsModal() {
+  const modal = document.getElementById('fiberlinkLabsModal');
+  const openTriggers = document.querySelectorAll('[data-open-labs-modal], #openLabsModalBtn');
+  const closeBtn = document.getElementById('closeLabsModalBtn');
+  if (!modal || !openTriggers.length) return;
+
+  let lastFocusedEl = null;
+
+  function openModal() {
+    lastFocusedEl = document.activeElement;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (closeBtn) {
+      requestAnimationFrame(() => closeBtn.focus());
+    }
+  }
+
+  function closeModal() {
+    if (modal.classList.contains('hidden')) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    modal.setAttribute('aria-hidden', 'true');
+    const zoomModal = document.getElementById('flProductZoomModal');
+    const cartDrawer = document.getElementById('flCartDrawer');
+    const otherOpen =
+      (zoomModal && !zoomModal.classList.contains('hidden')) ||
+      (cartDrawer && !cartDrawer.classList.contains('hidden'));
+    if (!otherOpen) {
+      document.body.style.overflow = '';
+    }
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+      lastFocusedEl.focus();
+    }
+  }
+
+  openTriggers.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+  });
+
+  closeBtn?.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+}
+
+// ==========================================
+// FIBRA ÓPTICA & FIBERLINK PLAY (PERFILES)
+// ==========================================
+function initFiberOpticSection() {
+  const buttons = Array.from(document.querySelectorAll('.fiber-profile-btn'));
+  if (!buttons.length) return;
+
+  const tagEl = document.getElementById('fiberPlanTag');
+  const titleEl = document.getElementById('fiberPlanTitle');
+  const descEl = document.getElementById('fiberPlanDesc');
+  const speedEl = document.getElementById('fiberPlanSpeed');
+  const tvEl = document.getElementById('fiberPlanTv');
+  const featuresEl = document.getElementById('fiberPlanFeatures');
+  const waBtn = document.getElementById('fiberPlanWaBtn');
+  const ticketBtn = document.getElementById('fiberPlanTicketBtn');
+  const playLink = document.getElementById('fiberlinkPlayLink');
+
+  const PROFILES = {
+    hogar: {
+      tag: 'Hogar & Familia',
+      title: 'Internet Fibra Hogar + TV Familiar HD',
+      desc: 'Ideal para hogares con múltiples celulares, Smart TVs y tareas escolares al mismo tiempo, sin pausas en películas ni series.',
+      speed: '100 – 200 Mbps Simétricos',
+      tv: 'TV HD + Apps de Streaming',
+      features: [
+        'Revisión previa de cobertura exacta en tu domicilio',
+        'Configuración de Wi-Fi óptimo para Smart TVs y consolas',
+        'Canales en vivo, deportes, cine y programación infantil',
+        'Acompañamiento completo desde contratación hasta activación'
+      ],
+      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Hogar y Familia.'
+    },
+    negocio: {
+      tag: 'Negocio & Mostrador',
+      title: 'Fibra Comercial + TV para Sala o Local',
+      desc: 'Diseñado para tiendas, clínicas y restaurantes que necesitan estabilidad para terminales, punto de venta, cámaras CCTV y entretenimiento para clientes.',
+      speed: '200 – 300 Mbps Empresarial',
+      tv: 'TV Comercial + Pantallas',
+      features: [
+        'Red estable para cobro con terminal bancaria y POS',
+        'Ancho de banda ideal para respaldo en nube y monitoreo CCTV',
+        'Programación deportiva, noticias y entretenimiento para clientes',
+        'Separación opcional de red Wi-Fi privada e invitados'
+      ],
+      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Negocio y Mostrador.'
+    },
+    gaming: {
+      tag: 'Gaming & Streaming Pro',
+      title: 'Fibra Simétrica Ultra Baja Latencia + Streaming',
+      desc: 'Pensado para jugadores en línea, creadores de contenido y hogares exigentes que demandan ping mínimo y descargas sin espera.',
+      speed: '300 – 500+ Mbps Baja Latencia',
+      tv: 'Streaming 4K + Canales En Vivo',
+      features: [
+        'Velocidad simétrica de subida y bajada para transmitir en vivo',
+        'Recomendación de enlace cableado Gigabit para consola o PC',
+        'Estabilidad para juegos competitivos y descargas pesadas',
+        'Soporte técnico para apertura de puertos y optimización Wi-Fi'
+      ],
+      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Gaming y Streaming Pro.'
+    },
+    oficina: {
+      tag: 'Oficina & Home Office',
+      title: 'Fibra Productividad + TV Ejecutiva',
+      desc: 'Para despachos, consultorios y trabajo remoto con videollamadas continuas, envío de archivos pesados y conexión sin interrupciones.',
+      speed: '200 – 300 Mbps Simétricos',
+      tv: 'TV Noticias, Cultura & Streaming',
+      features: [
+        'Estabilidad en videollamadas Zoom, Meet y Teams sin cortes',
+        'Subida rápida de respaldos, facturas y carpetas en la nube',
+        'Asesoría para cobertura en todas las áreas de trabajo',
+        'Atención directa para trámite de instalación en tu zona'
+      ],
+      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Oficina y Home Office.'
+    }
+  };
+
+  function selectProfile(key) {
+    const data = PROFILES[key] || PROFILES.hogar;
+
+    buttons.forEach((btn) => {
+      const isSelected = btn.dataset.fiberProfile === key;
+      btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      btn.classList.toggle('bg-panel-2', isSelected);
+      btn.classList.toggle('bg-panel', !isSelected);
+      btn.classList.toggle('border-primary-container/50', isSelected);
+      btn.classList.toggle('shadow-sm', isSelected);
+      btn.classList.toggle('border-glass', !isSelected);
+
+      const arrow = btn.querySelector('span.material-symbols-outlined:last-child');
+      if (arrow) {
+        arrow.classList.toggle('text-neon-emerald', isSelected);
+        arrow.classList.toggle('text-text-tertiary', !isSelected);
+      }
+    });
+
+    if (tagEl) tagEl.textContent = data.tag;
+    if (titleEl) titleEl.textContent = data.title;
+    if (descEl) descEl.textContent = data.desc;
+    if (speedEl) speedEl.textContent = data.speed;
+    if (tvEl) tvEl.textContent = data.tv;
+
+    if (featuresEl) {
+      featuresEl.innerHTML = data.features.map((item) => `
+        <li class="flex items-start gap-2 font-body-sm text-xs text-text-secondary">
+          <span class="material-symbols-outlined text-[16px] text-neon-emerald shrink-0 mt-0.5" aria-hidden="true">check_circle</span>
+          <span>${item}</span>
+        </li>
+      `).join('');
+    }
+
+    if (waBtn) {
+      waBtn.href = `https://wa.me/522311024672?text=${encodeURIComponent(data.waMsg)}`;
+    }
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectProfile(btn.dataset.fiberProfile);
+    });
+  });
+
+  if (ticketBtn) {
+    ticketBtn.addEventListener('click', () => {
+      const activeTag = tagEl ? tagEl.textContent : 'Hogar & Familia';
+      const issueField = document.getElementById('client-issue');
+      const netOpt = document.querySelector('.service-opt[onclick*="REDES_WIFI"]');
+      if (netOpt && typeof window.selectService === 'function') {
+        window.selectService(netOpt, 'REDES_WIFI');
+      }
+      if (typeof window.goToStep === 'function') {
+        window.goToStep(3);
+      }
+      if (issueField && !issueField.value.trim()) {
+        issueField.value = `Validar cobertura de Fibra Óptica + TV (Fiberlink Play) para perfil: ${activeTag}.`;
+      }
+    });
+  }
+
+  if (playLink) {
+    playLink.addEventListener('click', (e) => {
+      const targetUrl = (playLink.dataset.fiberlinkPlayUrl || '').trim();
+      if (!targetUrl) {
+        e.preventDefault();
+        if (typeof window.showToast === 'function') {
+          window.showToast('El enlace web de Fiberlink Play estará disponible muy pronto. Cotiza tu paquete por WhatsApp ahora.', 'success');
+        }
+      }
+    });
+  }
+}
+
+// ==========================================
+// SUBTLE VISITOR REGISTRY (FIRESTORE)
+// ==========================================
+async function initVisitorRegistry() {
+  const badge = document.getElementById('visitorRegistryBadge');
+  const countEl = document.getElementById('visitorCountVal');
+  if (!badge || !countEl) return;
+
+  try {
+    const stats = await recordAndFetchVisitorStats();
+    if (!stats || !Number.isFinite(stats.totalVisits)) return;
+
+    countEl.textContent = stats.totalVisits.toLocaleString('es-MX');
+    badge.title = `Visitas registradas hoy: ${stats.todayVisits.toLocaleString('es-MX')} · Total acumulado: ${stats.totalVisits.toLocaleString('es-MX')}`;
+    badge.classList.remove('hidden');
+    badge.classList.add('inline-flex');
+  } catch (_) {
+    // Keep UI silent if offline or unavailable
   }
 }

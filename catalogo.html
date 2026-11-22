@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es-MX">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Catálogo de productos tecnológicos por Fiberlink: Cámaras de seguridad, impresoras de tickets y etiquetas, cajones de dinero, lectores láser y licencias originales en Teziutlán y la región.">
-  <title>Catálogo de Productos & Equipamiento TIC | Fiberlink</title>
+  <title>Tienda Oficial TIC, POS, CCTV y Redes | Fiberlink</title>
+  <meta name="description" content="Tienda en línea Fiberlink Servicios TIC en Teziutlán: impresoras térmicas, cajones de dinero, cámaras Tapo CCTV, redes Wi-Fi 6 y licencias Microsoft con garantía local y CFDI 4.0.">
+  <meta name="theme-color" content="#0b0f12" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f8f2" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://fiberlinkserviciostic.vercel.app/catalogo.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_MX">
+  <meta property="og:site_name" content="Fiberlink Servicios TIC">
+  <meta property="og:title" content="Tienda Oficial TIC, POS, CCTV y Redes | Fiberlink">
+  <meta property="og:description" content="Compra equipamiento POS, videovigilancia CCTV, redes y software original con envío local en Teziutlán y facturación CFDI 4.0.">
+  <meta property="og:url" content="https://fiberlinkserviciostic.vercel.app/catalogo.html">
+  <meta property="og:image" content="https://fiberlinkserviciostic.vercel.app/favicon.png">
 
-  <!-- PWA Manifest & Web App Config -->
   <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#0a0b08">
-  <meta name="color-scheme" content="dark">
-
-  <!-- Favicons & App Icons -->
   <link rel="icon" type="image/gif" href="/logo.gif">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
 
-  <!-- Typography Preconnect & Styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sora:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="/src/style.css" />
 
-  <!-- Anti-FOUC Theme Script (Instant Dark/Light Persistence) -->
+  <!-- Anti-FOUC Theme Script -->
   <script>
     (function() {
       try {
@@ -38,67 +38,46 @@
       } catch (e) {}
     })();
   </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Sora:wght@600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/tw.css">
 </head>
-<body>
+<body class="font-body-md text-body-md text-text-primary bg-surface-base selection:bg-primary-container selection:text-on-brand min-h-screen flex flex-col">
 
-<!-- Progress indicator -->
-<div id="sp" aria-hidden="true"><div id="sp-fill"></div></div>
+<a href="#tienda-contenido" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary-container focus:text-on-brand font-button-text text-button-text">Ir al catálogo</a>
 
-<!-- Background matrix canvas -->
-<canvas id="bgCanvas" aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35;"></canvas>
+<!-- Subtle Ambient Background Canvas -->
+<div class="bg bg--base" aria-hidden="true"></div>
+<div class="bg bg--wash" aria-hidden="true"></div>
+<canvas id="bgCanvas" class="bg--canvas" aria-hidden="true"></canvas>
 
 <!-- ============================
-     HEADER
+     TOP NAVIGATION HEADER
 ============================ -->
-<header class="site-header gamer-hud" id="site-header">
-  <div class="hud-laser" aria-hidden="true"></div>
-  <div class="hud-grid-bg" aria-hidden="true"></div>
+<header class="fixed top-0 w-full z-50 bg-surface-card border-b border-glass shadow-[0_1px_8px_rgba(0,0,0,0.25)]">
+  <div class="h-16 md:h-20 w-full max-w-7xl mx-auto px-margin-mobile md:px-margin flex items-center justify-between gap-2 sm:gap-space-md">
+    <div class="flex items-center gap-2 sm:gap-space-md flex-shrink-0">
+      <a href="/" class="flex items-center gap-2 sm:gap-space-sm" aria-label="Fiberlink Servicios TIC — Inicio">
+        <img alt="" width="32" height="32" class="h-8 w-auto object-contain shrink-0" src="/logo.gif">
+        <div class="flex flex-col leading-none">
+          <span class="font-headline-sm text-[16px] sm:text-headline-sm text-text-primary tracking-tight font-bold leading-tight">Fiberlink</span>
+          <span class="block font-label-mono-xs text-[9px] sm:text-label-mono-xs text-neon-emerald uppercase tracking-wider font-semibold leading-none mt-0.5">Tienda TIC</span>
+        </div>
+      </a>
+    </div>
 
-  <div class="hud-inner">
-    <!-- Brand -->
-    <a class="brand hud-brand" href="/" aria-label="Fiberlink Servicios TIC - Inicio">
-      <div class="brand-mark">
-        <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
-      </div>
-      <div class="brand-text">
-        <strong data-glitch="Fiberlink"><span class="glitch-txt">Fiberlink</span></strong>
-        <span>Servicios TIC</span>
-      </div>
-    </a>
-
-    <!-- Nav buttons -->
-    <nav class="nav-desktop gamer-nav" aria-label="Navegación secundaria">
-      <a class="nav-link hud-link" href="/" style="display:inline-flex; align-items:center; gap:6px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        <span>VOLVER AL INICIO</span>
-      </a>
-      <a class="nav-link hud-link" href="/#servicios">
-        <span class="hud-num">01</span>
-        <span>SERVICIOS</span>
-      </a>
-      <a class="nav-link hud-link" href="/soluciones.html">
-        <span class="hud-num">02</span>
-        <span>SOLUCIONES & BLOG</span>
-      </a>
-      <a class="nav-link hud-link nav-active" href="/catalogo.html">
-        <span class="hud-num">03</span>
-        <span>CATÁLOGO</span>
-      </a>
-      <a class="nav-link hud-link" href="/#contacto">
-        <span class="hud-num">05</span>
-        <span>CONTACTO</span>
-      </a>
+    <nav class="hidden lg:flex items-center gap-1 bg-surface-base/60 p-1 rounded-xl border border-glass" aria-label="Navegación de tienda">
+      <a class="px-3 py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-overlay transition-colors font-button-text text-button-text whitespace-nowrap" href="/">Inicio</a>
+      <a class="px-3 py-1.5 rounded-lg bg-surface-overlay text-neon-emerald font-semibold transition-colors font-button-text text-button-text whitespace-nowrap" href="/catalogo.html" aria-current="page">Tienda</a>
+      <a class="px-3 py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-overlay transition-colors font-button-text text-button-text whitespace-nowrap" href="/soluciones.html">Blog TIC</a>
+      <a class="px-3 py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-overlay transition-colors font-button-text text-button-text whitespace-nowrap" href="/#modulo-ticket">Soporte y Tickets</a>
     </nav>
 
-    <!-- Header Actions -->
-    <div class="nav-actions">
-      <div class="live-pill hud-status" title="Catálogo con inventario disponible">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span class="hud-status-code">STOCK.OK</span>
-      </div>
-
-      <!-- Theme Switcher (Dark / Light) -->
-      <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Cambiar a Modo Claro" title="Modo Claro / Oscuro">
+    <div class="flex items-center gap-1.5 sm:gap-space-sm flex-shrink-0">
+      <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="Cambiar a Modo Claro / Oscuro" title="Modo Claro / Oscuro">
         <span class="theme-toggle-icon icon-sun" aria-hidden="true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
@@ -119,140 +98,299 @@
         </span>
       </button>
 
-      <button class="btn btn-primary nav-cta hud-cta open-ticket" type="button" data-glitch="[ TICKET ]" data-service="Equipamiento / Catálogo">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 13v-1a8 8 0 0116 0v1"/><path d="M5 13v3a2 2 0 002 2h1"/><path d="M19 13v3a2 2 0 01-2 2h-1"/></svg>
-        <span class="glitch-txt">[ TICKET ]</span>
+      <!-- Shopping Cart Drawer Trigger -->
+      <button id="storeCartBtn" type="button" class="relative flex items-center justify-center gap-2 h-10 px-3 sm:px-3.5 rounded-lg bg-panel-2 hover:bg-surface-overlay border border-primary-container/40 hover:border-primary-container text-text-primary transition-all shadow-sm" aria-label="Abrir carrito de compras">
+        <span class="material-symbols-outlined text-neon-emerald text-[19px]" aria-hidden="true">shopping_bag</span>
+        <span class="hidden sm:inline font-button-text text-xs font-semibold">Carrito</span>
+        <span id="headerCartCount" class="fl-cart-count px-1.5 py-0.5 rounded-md bg-primary-container text-on-brand font-label-mono-xs text-[11px] font-bold tabular-nums leading-none">0</span>
+        <span class="hidden md:inline font-label-mono-xs text-[11px] text-neon-emerald font-semibold tabular-nums">· $<span class="fl-cart-subtotal">0</span></span>
       </button>
 
-      <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20gustar%C3%ADa%20cotizar%20equipos%20del%20cat%C3%A1logo" target="_blank" rel="noopener" style="min-height:36px; padding:0 14px; font-size:.84rem;">
-        WhatsApp
+      <a class="hidden sm:flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-lg bg-surface-overlay hover:bg-surface-container-high transition-all border border-glass font-button-text text-xs font-semibold text-text-primary" href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20deseo%20cotizar%20productos%20de%20la%20tienda." rel="noopener noreferrer" target="_blank">
+        <span class="material-symbols-outlined text-neon-emerald text-[17px]" aria-hidden="true">chat</span>
+        <span>WhatsApp</span>
       </a>
+
+      <button class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-surface-overlay text-text-primary border border-glass" id="menuBtn" type="button" aria-label="Abrir menú" aria-controls="drawer" aria-expanded="false">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
     </div>
   </div>
 </header>
 
-<main>
-  <!-- ============================
-       HERO
-  ============================ -->
-  <section class="cat-page-hero">
-    <div class="wrap cat-page-hero-inner">
-      <div class="lbl">// HARDWARE & SOFTWARE PROFESIONAL // ASESORÍA LOCAL EN TEZIUTLÁN</div>
-      <h1>Equipos y licencias probadas para que tu negocio <span class="accent-text">trabaje sin pausas.</span></h1>
-      <p>Cámaras de vigilancia de alta definición, impresoras de tickets sin tinta, cajones de dinero metálicos, lectores láser y software legal. Te lo entregamos configurado, con garantía local y soporte técnico directo.</p>
-
-      <!-- Stitch Console Telemetry Bar -->
-      <div class="telemetry-strip" style="margin-top:16px; margin-bottom:18px;">
-        <div class="telemetry-left">
-          <span class="live-dot" aria-hidden="true"></span>
-          <span class="telemetry-tag">STOCK // DISPONIBLE EN TEZIUTLÁN</span>
-          <span class="telemetry-sub">Garantía local directa · Entrega, instalación y enlace POS in situ</span>
+<!-- Mobile Drawer -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-back" id="drawerBack"></div>
+  <aside class="drawer-panel gamer-drawer" role="dialog" aria-modal="true" aria-label="Menú de tienda">
+    <div class="drawer-laser" aria-hidden="true"></div>
+    <div class="drawer-head">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <img class="brand-logo h-8 w-8 rounded-lg object-contain shrink-0" src="/logo.gif" alt="">
+        <div class="flex flex-col min-w-0">
+          <strong class="font-headline-sm text-base text-text-primary font-bold leading-tight truncate">Fiberlink</strong>
+          <span class="font-label-mono-xs text-[10px] text-neon-emerald font-semibold uppercase tracking-wider truncate">Tienda TIC Oficial</span>
         </div>
-        <div class="telemetry-badge">SLA &lt;15m // GUARDIA</div>
       </div>
+      <button class="w-11 h-11 rounded-xl bg-surface-container-low hover:bg-surface-overlay text-text-primary border border-glass flex items-center justify-center transition-colors shrink-0" id="drawerClose" type="button" aria-label="Cerrar menú">
+        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
+      </button>
+    </div>
 
-      <!-- Search Box with Live Filter -->
-      <div class="cat-search-box-wrap">
-        <div class="cat-search-input-inner">
-          <span class="cat-search-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="px-3.5 pt-3">
+      <button class="drawer-theme-toggle theme-toggle-trigger" type="button" aria-label="Alternar Modo Claro / Oscuro">
+        <span class="theme-toggle-badge">
+          <span class="w-7 h-7 rounded-lg bg-panel border border-glass flex items-center justify-center text-neon-emerald">
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">routine</span>
           </span>
-          <input type="search" id="catalogSearch" class="cat-search-input" placeholder="Buscar por producto (ej. cámara, ticket, lector, windows, cajón)..." autocomplete="off" />
-          <button type="button" id="catalogClearSearch" class="cat-clear-btn" aria-label="Limpiar búsqueda">✕</button>
+          <span class="theme-text-indicator">Modo Claro</span>
+        </span>
+        <span class="font-label-mono-xs text-[11px] text-neon-emerald font-semibold">Cambiar</span>
+      </button>
+    </div>
+
+    <nav class="drawer-nav" aria-label="Navegación móvil">
+      <a class="dl" href="/">
+        <div class="dl-left">
+          <span class="dl-icon"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">home</span></span>
+          <div class="flex flex-col min-w-0">
+            <span class="text-sm font-semibold text-text-primary leading-tight">Volver al Inicio</span>
+            <span class="text-[11px] text-text-secondary leading-tight mt-0.5">Página principal y mesa de soporte</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined dl-arrow text-[18px] text-text-tertiary" aria-hidden="true">chevron_right</span>
+      </a>
+      <a class="dl" href="/catalogo.html" data-drawer-close>
+        <div class="dl-left">
+          <span class="dl-icon"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">storefront</span></span>
+          <div class="flex flex-col min-w-0">
+            <span class="text-sm font-semibold text-neon-emerald leading-tight">Tienda Completa</span>
+            <span class="text-[11px] text-text-secondary leading-tight mt-0.5">Todo nuestro inventario en línea</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined dl-arrow text-[18px] text-text-tertiary" aria-hidden="true">chevron_right</span>
+      </a>
+      <a class="dl" href="/soluciones.html">
+        <div class="dl-left">
+          <span class="dl-icon"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">auto_stories</span></span>
+          <div class="flex flex-col min-w-0">
+            <span class="text-sm font-semibold text-text-primary leading-tight">Blog TIC &amp; Guías</span>
+            <span class="text-[11px] text-text-secondary leading-tight mt-0.5">Tutoriales y software seguro</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined dl-arrow text-[18px] text-text-tertiary" aria-hidden="true">chevron_right</span>
+      </a>
+      <a class="dl" href="/#modulo-ticket">
+        <div class="dl-left">
+          <span class="dl-icon"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">confirmation_number</span></span>
+          <div class="flex flex-col min-w-0">
+            <span class="text-sm font-semibold text-text-primary leading-tight">Levantar Ticket</span>
+            <span class="text-[11px] text-text-secondary leading-tight mt-0.5">Cotizaciones o soporte técnico</span>
+          </div>
+        </div>
+        <span class="material-symbols-outlined dl-arrow text-[18px] text-text-tertiary" aria-hidden="true">chevron_right</span>
+      </a>
+    </nav>
+
+    <div class="drawer-foot">
+      <button type="button" data-open-cart data-drawer-close class="w-full min-h-[46px] px-4 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all">
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">shopping_bag</span>
+        <span>Abrir Carrito (<span class="fl-cart-count">0</span>)</span>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- ============================
+     MAIN ECOMMERCE STOREFRONT
+============================ -->
+<main id="tienda-contenido" class="flex-1 w-full pt-20 md:pt-24 pb-20 md:pb-14 relative z-10">
+  <div class="w-full max-w-7xl mx-auto px-margin-mobile md:px-margin flex flex-col gap-space-md md:gap-space-lg">
+
+    <!-- ECOMMERCE STORE HERO + VALUE PROPS -->
+    <section class="!p-5 sm:!p-7 rounded-2xl bg-panel/95 border border-glass shadow-md grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <div class="lg:col-span-8 flex flex-col gap-2.5">
+        <div class="flex items-center gap-2 font-label-mono-xs text-[11px] text-neon-emerald uppercase tracking-wider font-semibold">
+          <span>Tienda Oficial Fiberlink</span>
+          <span aria-hidden="true" class="text-text-tertiary">·</span>
+          <span>Inventario en Tiempo Real · Teziutlán</span>
+        </div>
+        <h1 class="font-headline-lg text-[26px] sm:text-[34px] md:text-[40px] leading-[1.12] text-text-primary font-bold tracking-tight text-balance">
+          Equipamiento POS, Cámaras CCTV y Redes <span class="text-neon-emerald">listo para operar.</span>
+        </h1>
+        <p class="font-body-sm text-sm sm:text-base text-text-secondary max-w-2xl leading-relaxed">
+          Explora cada ficha con zoom interactivo, agrega equipos a tu carrito y recibe entrega el mismo día en Teziutlán con factura CFDI 4.0 y garantía local directa.
+        </p>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 font-label-mono-xs text-xs text-text-secondary">
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-neon-emerald" aria-hidden="true">local_shipping</span> Envío local gratis &gt; $2,000 MXN</span>
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-neon-emerald" aria-hidden="true">verified_user</span> Garantía presencial en taller</span>
+          <span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-neon-emerald" aria-hidden="true">receipt_long</span> Precios netos con IVA</span>
         </div>
       </div>
 
-      <!-- Category Filter Tabs -->
-      <div class="cat-filter-tabs" id="catalogFilterTabs">
-        <button class="cat-tab-btn active" data-category="all" type="button">Todos los Productos (12)</button>
-        <button class="cat-tab-btn" data-category="pos" type="button">Puntos de Venta (POS)</button>
-        <button class="cat-tab-btn" data-category="cctv" type="button">Cámaras & Seguridad</button>
-        <button class="cat-tab-btn" data-category="software" type="button">Licencias & Software</button>
+      <div class="lg:col-span-4 rounded-xl bg-panel-2 border border-glass p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-glass">
+          <div>
+            <span class="font-label-mono-xs text-[10px] text-text-tertiary uppercase tracking-wider block">Tu pedido actual</span>
+            <strong class="font-headline-md text-lg text-text-primary tabular-nums"><span class="fl-cart-count">0</span> artículos · $<span class="fl-cart-subtotal">0</span> MXN</strong>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-panel border border-primary-container/35 flex items-center justify-center text-neon-emerald shrink-0">
+            <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+          </div>
+        </div>
+        <button type="button" data-open-cart class="w-full py-2.5 px-4 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all">
+          <span class="material-symbols-outlined text-[18px]">shopping_cart_checkout</span>
+          <span>Ver Carrito y Confirmar Pedido</span>
+        </button>
+        <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20quiero%20que%20me%20armen%20un%20paquete%20POS%20o%20CCTV%20para%20mi%20negocio." target="_blank" rel="noopener noreferrer" class="w-full py-2 px-3 rounded-lg bg-panel border border-glass hover:border-primary-container/45 text-text-secondary hover:text-neon-emerald font-button-text text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+          <span class="material-symbols-outlined text-[15px] text-neon-emerald">support_agent</span>
+          <span>Asesoría para armar paquete</span>
+        </a>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================
-       PRODUCTS GRID
-  ============================ -->
-  <section class="wrap">
-    <div class="cat-products-grid" id="catalogProductsContainer" aria-live="polite"></div>
+    <!-- STICKY ECOMMERCE TOOLBAR: SEARCH, SORT, STOCK FILTER & CATEGORIES -->
+    <section class="section-command-bar !p-4 sm:!p-5 rounded-2xl bg-panel/95 border border-glass shadow-md flex flex-col gap-3.5" aria-label="Filtros y búsqueda de tienda">
+      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+        <div class="flex-1 min-w-0 relative">
+          <span class="material-symbols-outlined text-text-tertiary text-[19px] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">search</span>
+          <input id="storeSearch" type="search" autocomplete="off" placeholder="Buscar impresora, cámara Tapo, cajón de dinero, Office, SKU..." aria-label="Buscar en la tienda" class="w-full !h-11 !py-0 !pl-10 !pr-10 !rounded-xl bg-surface-container-lowest border border-glass text-text-primary !font-body-sm !text-sm placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-neon-emerald">
+          <button type="button" id="storeClearSearch" aria-label="Limpiar búsqueda" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg hover:bg-surface-overlay text-text-secondary hover:text-text-primary items-center justify-center">
+            <span class="material-symbols-outlined text-[17px]">close</span>
+          </button>
+        </div>
 
-    <!-- Estado Vacío cuando la búsqueda no coincide -->
-    <div class="cat-empty-state" id="catalogEmptyState" style="display:none; margin-bottom:60px;">
-      <h3>No encontramos productos que coincidan</h3>
-      <p>Prueba con otra palabra o dinos qué equipo necesitas por WhatsApp para verificar disponibilidad de inmediato.</p>
-      <button type="button" class="btn btn-secondary" id="catalogResetFilters">Restablecer Búsqueda</button>
-    </div>
-  </section>
+        <div class="flex items-center gap-2 shrink-0">
+          <label class="flex items-center gap-2 h-11 px-3 rounded-xl bg-surface-container-low border border-glass cursor-pointer select-none hover:border-primary-container/40 transition-colors">
+            <input type="checkbox" id="storeInStockOnly" class="!w-4 !h-4 !p-0 accent-[#9cc32e] rounded cursor-pointer shrink-0">
+            <span class="font-button-text text-xs text-text-primary font-medium whitespace-nowrap">Solo en stock</span>
+          </label>
 
-  <!-- ============================
-       ASSURANCE BANNER
-  ============================ -->
-  <section class="wrap">
-    <div class="cat-assurance-banner">
-      <div class="cat-assurance-text">
-        <div class="lbl" style="color:var(--verde); margin-bottom:8px;">// ASESORÍA PERSONALIZADA EN HARDWARE Y SOFTWARE</div>
-        <h3>¿Quieres armar tu Punto de Venta o Kit de Seguridad completo?</h3>
-        <p>Diseñamos combos completos (Cajón + Impresora + Lector + Software + Cámaras) adaptados al presupuesto de tu negocio, con instalación y capacitación a domicilio en Teziutlán y municipios vecinos.</p>
+          <select id="storeSort" aria-label="Ordenar productos" class="!w-auto !h-11 !py-0 !pl-3 !pr-8 !rounded-xl bg-surface-container-lowest border border-glass text-text-primary !font-button-text !text-xs sm:!text-sm font-medium focus:outline-none focus:ring-1 focus:ring-neon-emerald cursor-pointer">
+            <option value="popular">Más populares</option>
+            <option value="precio-asc">Menor precio</option>
+            <option value="precio-desc">Mayor precio</option>
+            <option value="stock-desc">Mayor disponibilidad</option>
+            <option value="nombre-asc">Nombre (A-Z)</option>
+          </select>
+        </div>
       </div>
-      <div class="cat-assurance-actions">
-        <a class="btn btn-primary" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20me%20gustar%C3%ADa%20que%20me%20armen%20un%20paquete%20completo%20para%20mi%20negocio" target="_blank" rel="noopener">
+
+      <div class="pt-3 border-t border-glass flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div id="storeCategoryTabs" class="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar flex-1 min-w-0" role="group" aria-label="Categorías de producto"></div>
+        <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+          <span id="storeVisibleCount" class="font-label-mono-xs text-xs text-text-secondary tabular-nums whitespace-nowrap">Cargando catálogo...</span>
+          <button type="button" id="storeResetFiltersBtn" class="hidden font-label-mono-xs text-xs text-neon-emerald font-semibold hover:underline whitespace-nowrap">Limpiar filtros</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- UNIFORM 3-COLUMN ECOMMERCE PRODUCTS GRID -->
+    <section class="!p-0" aria-label="Productos disponibles">
+      <div id="storeProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6" aria-live="polite"></div>
+
+      <!-- Empty Search / Filter State -->
+      <div id="storeEmptyState" class="hidden rounded-2xl bg-panel border border-glass p-8 sm:p-12 text-center flex-col items-center gap-3">
+        <div class="w-16 h-16 rounded-2xl bg-surface-container-low border border-glass flex items-center justify-center text-neon-emerald">
+          <span class="material-symbols-outlined text-[32px]">inventory_2</span>
+        </div>
+        <h2 class="font-headline-sm text-xl text-text-primary font-bold">No encontramos productos con ese filtro</h2>
+        <p class="font-body-sm text-sm text-text-secondary max-w-md">
+          Prueba limpiando tu búsqueda o escríbenos por WhatsApp si necesitas un equipo especial sobre pedido.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+          <button type="button" id="storeEmptyResetBtn" class="px-5 py-2.5 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-xs font-bold transition-all">
+            Ver todos los productos
+          </button>
+          <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20busco%20cotizar%20un%20equipo%20especial." target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 rounded-xl bg-panel-2 border border-glass hover:border-primary-container/45 text-text-primary font-button-text text-xs font-semibold transition-all">
+            Consultar por WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSURANCE & PACKAGE BUILDER BANNER -->
+    <section class="!p-5 sm:!p-7 rounded-2xl bg-panel border border-glass shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <div class="flex flex-col gap-1.5 max-w-2xl">
+        <span class="font-label-mono-xs text-[11px] text-neon-emerald uppercase tracking-wider font-semibold">Soluciones llave en mano</span>
+        <h2 class="font-headline-lg text-xl sm:text-2xl text-text-primary font-bold text-balance">¿Necesitas armar tu Punto de Venta o Kit CCTV completo?</h2>
+        <p class="font-body-sm text-xs sm:text-sm text-text-secondary leading-relaxed">
+          Diseñamos combos completos (Cajón + Impresora térmica + Lector QR + Software + Cámaras IP) adaptados a tu giro, con instalación y capacitación in situ en Teziutlán y municipios vecinos.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+        <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20quiero%20armar%20un%20combo%20completo%20para%20mi%20negocio." target="_blank" rel="noopener noreferrer" class="px-5 py-3 rounded-xl bg-primary-container hover:bg-primary-fixed text-on-brand font-button-text text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition-all">
+          <span class="material-symbols-outlined text-[18px]">chat</span>
           <span>Armar Paquete por WhatsApp</span>
         </a>
-        <button class="btn btn-secondary open-ticket" type="button" data-service="Paquete Completo Equipamiento">
-          Solicitar Diagnóstico en Local
-        </button>
+        <a href="/?ticket=Cotizaci%C3%B3n%20de%20paquete%20completo%20POS%20%2F%20CCTV#modulo-ticket" class="px-4 py-3 rounded-xl bg-panel-2 border border-glass hover:border-primary-container/45 text-text-primary hover:text-neon-emerald font-button-text text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[17px] text-neon-emerald">confirmation_number</span>
+          <span>Solicitar Cotización</span>
+        </a>
       </div>
-    </div>
-  </section>
+    </section>
+
+  </div>
 </main>
+
+<!-- Mobile Sticky Quick Cart Bar (shown when items > 0) -->
+<div id="mobileCartFloatingBar" class="hidden md:hidden fixed bottom-3 left-3 right-3 z-40">
+  <button type="button" data-open-cart class="w-full py-3 px-4 rounded-xl bg-primary-container text-on-brand font-button-text text-sm font-bold shadow-2xl flex items-center justify-between gap-3">
+    <span class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+      <span><span class="fl-cart-count tabular-nums">0</span> items en carrito</span>
+    </span>
+    <span class="tabular-nums">$<span class="fl-cart-subtotal">0</span> MXN · Ver →</span>
+  </button>
+</div>
 
 <!-- ============================
      FOOTER
 ============================ -->
-<footer style="border-top:1px solid rgba(156,195,46,0.2); padding:50px 0 30px; background:rgba(6,10,5,0.9); font-family:var(--texto);">
-  <div class="wrap">
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:36px; margin-bottom:40px;">
-      <div>
-        <a class="brand" href="/" style="display:flex; align-items:center; gap:10px; margin-bottom:14px; text-decoration:none;">
-          <div class="brand-mark">
-            <img class="brand-logo" src="logo.gif" alt="Fiberlink Logo" width="26" height="26">
-          </div>
-          <div class="brand-text">
-            <strong>Fiberlink</strong>
-            <span>Servicios TIC</span>
+<footer class="w-full bg-surface-container-lowest border-t border-glass pt-space-lg pb-space-md relative z-10">
+  <div class="w-full max-w-7xl px-margin-mobile md:px-margin mx-auto flex flex-col gap-space-md">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-space-md border-b border-glass">
+      <div class="md:col-span-5 flex flex-col gap-2">
+        <a class="flex items-center gap-2.5" href="/">
+          <img alt="Fiberlink" width="28" height="28" class="h-7 w-auto object-contain" src="/logo.gif">
+          <div class="flex flex-col leading-none">
+            <span class="font-headline-sm text-base text-text-primary font-bold">Fiberlink</span>
+            <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase tracking-wider font-semibold mt-0.5">Servicios TIC · Teziutlán</span>
           </div>
         </a>
-        <p style="font-size:0.88rem; color:var(--muted); max-width:320px; line-height:1.5;">
-          Equipamiento de punto de venta, cámaras de vigilancia, redes y licencias de software para negocios en Teziutlán y la región.
+        <p class="font-body-sm text-xs text-text-secondary max-w-sm leading-relaxed">
+          Equipamiento de punto de venta, videovigilancia CCTV, redes empresariales y licencias originales con garantía local.
         </p>
       </div>
-      <div>
-        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ENLACES RÁPIDOS</div>
-        <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
-          <a href="/" style="color:var(--muted); text-decoration:none;">Inicio</a>
-          <a href="/#servicios" style="color:var(--muted); text-decoration:none;">Servicios</a>
-          <a href="/soluciones.html" style="color:var(--muted); text-decoration:none;">Soluciones & Blog</a>
-          <a href="/catalogo.html" style="color:var(--verde); text-decoration:none;">Catálogo de Productos</a>
-          <a href="/#contacto" style="color:var(--muted); text-decoration:none;">Contacto Directo</a>
-        </div>
+      <div class="md:col-span-3 flex flex-col gap-1.5">
+        <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase tracking-wider font-semibold">Navegación</span>
+        <ul class="flex flex-col gap-1.5 font-body-sm text-xs text-text-secondary">
+          <li><a class="hover:text-neon-emerald transition-colors" href="/">Inicio</a></li>
+          <li><a class="text-neon-emerald font-semibold" href="/catalogo.html">Tienda en Línea</a></li>
+          <li><a class="hover:text-neon-emerald transition-colors" href="/soluciones.html">Blog TIC</a></li>
+          <li><a class="hover:text-neon-emerald transition-colors" href="/#modulo-ticket">Soporte y Tickets</a></li>
+        </ul>
       </div>
-      <div>
-        <div style="font-family:var(--mono); color:var(--verde); font-size:0.82rem; margin-bottom:12px;">ATENCIÓN DIRECTA</div>
-        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Teléfono: 231 102 4672</p>
-        <p style="font-size:0.88rem; color:var(--muted); margin-bottom:8px;">Email: fiberlinkserviciostic@gmail.com</p>
-        <p style="font-size:0.88rem; color:var(--muted);">Teziutlán, Puebla · Entrega y soporte a domicilio</p>
+      <div class="md:col-span-4 flex flex-col gap-1.5">
+        <span class="font-label-mono-xs text-[10px] text-neon-emerald uppercase tracking-wider font-semibold">Atención Directa</span>
+        <p class="font-body-sm text-xs text-text-secondary">Av. Cuauhtémoc 1010, Col. Centro, Teziutlán, Puebla</p>
+        <p class="font-body-sm text-xs text-text-secondary tabular-nums">Tel / WhatsApp: (231) 102 4672</p>
+        <p class="font-body-sm text-xs text-text-secondary">fiberlinkserviciostic@gmail.com</p>
       </div>
     </div>
-
-    <div style="border-top:1px solid rgba(156,195,46,0.15); padding-top:20px; text-align:center; font-size:0.8rem; color:var(--muted);">
-      © 2026 Fiberlink Servicios TIC. Todos los derechos reservados.
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-text-tertiary font-label-mono-xs text-[10px]">
+      <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
+        <span>© 2026 Fiberlink Servicios TIC · Teziutlán, Puebla.</span>
+        <span id="visitorRegistryBadge" class="hidden items-center gap-1 text-text-tertiary tabular-nums whitespace-nowrap" title="Registro de visitas acumulado">
+          <span aria-hidden="true">·</span>
+          <span class="material-symbols-outlined text-[12px] text-neon-emerald" aria-hidden="true">visibility</span>
+          <span>Visitas: <strong id="visitorCountVal" class="font-semibold text-text-secondary">—</strong></span>
+        </span>
+      </div>
+      <a class="hover:text-neon-emerald transition-colors" href="/admin.html" rel="nofollow">Acceso staff</a>
     </div>
   </div>
 </footer>
 
-<!-- Main App & Live Firestore Catalog Scripts -->
 <script type="module" src="/src/main.js"></script>
 <script type="module" src="/src/catalogPage.js"></script>
 </body>

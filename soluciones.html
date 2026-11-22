@@ -1165,8 +1165,13 @@
         <span>Volver al blog</span>
       </button>
       <div class="wp-reader-topbar-actions">
-        <a class="btn btn-ghost" href="https://wa.me/522311024672?text=Hola%20Fiberlink,%20tengo%20dudas%20sobre%20una%20guía%20del%20blog" target="_blank" rel="noopener" style="min-height:36px; padding:0 12px; font-size:0.8rem;">
-          WhatsApp
+        <button id="wpReaderCopyBtn" class="wp-topbar-share-btn" type="button" aria-label="Copiar enlace del artículo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span>Copiar enlace</span>
+        </button>
+        <a id="wpReaderShareWaBtn" class="wp-topbar-share-btn is-wa" href="https://wa.me/522311024672" target="_blank" rel="noopener noreferrer" aria-label="Compartir artículo por WhatsApp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <span>Compartir</span>
         </a>
         <button id="wpReaderCloseBtn" class="wp-reader-close" type="button" aria-label="Cerrar artículo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -1258,8 +1263,124 @@
     const prevPostBtn = document.getElementById('wpPrevPostBtn');
     const nextPostBtn = document.getElementById('wpNextPostBtn');
 
+    const readerCopyBtn = document.getElementById('wpReaderCopyBtn');
+    const readerShareWaBtn = document.getElementById('wpReaderShareWaBtn');
+    const basePageTitle = document.title;
+
     let activeCat = 'all';
     let currentIndex = -1;
+
+    function getPostShareUrl(slug) {
+      const origin = window.location.origin && window.location.origin !== 'null'
+        ? window.location.origin
+        : 'https://fiberlinkserviciostic.vercel.app';
+      return `${origin}/soluciones.html#${slug}`;
+    }
+
+    function getShareLinks(post) {
+      const url = getPostShareUrl(post.slug);
+      const waText = `📖 ${post.title}\nGuía práctica de Fiberlink Servicios TIC:\n${url}`;
+      const xText = `${post.title} · Guía TIC de Fiberlink`;
+      return {
+        url,
+        wa: `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`,
+        fb: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+        x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(xText)}&url=${encodeURIComponent(url)}`,
+        li: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+        tg: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(post.title)}`
+      };
+    }
+
+    async function copyArticleLink(url, btnEl, defaultText) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        if (btnEl) {
+          btnEl.classList.add('is-copied');
+          const labelSpan = btnEl.querySelector('span');
+          if (labelSpan) {
+            labelSpan.textContent = '¡Enlace copiado!';
+            setTimeout(() => {
+              btnEl.classList.remove('is-copied');
+              if (defaultText) labelSpan.textContent = defaultText;
+            }, 2200);
+          } else {
+            const prevHtml = btnEl.innerHTML;
+            btnEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+            setTimeout(() => {
+              btnEl.classList.remove('is-copied');
+              btnEl.innerHTML = prevHtml;
+            }, 2200);
+          }
+        }
+      } catch (_) {}
+    }
+
+    const ICONS = {
+      wa: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+      fb: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.5 1.6-1.5h1.6V4.9c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1V11H7.6v3h2.7v8h3.2z"/></svg>`,
+      x: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+      li: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V19.5H6.94V8.5ZM5.25 3.5C4.14 3.5 3.25 4.39 3.25 5.5C3.25 6.6 4.14 7.5 5.25 7.5C6.35 7.5 7.25 6.6 7.25 5.5C7.25 4.39 6.35 3.5 5.25 3.5ZM20.44 13.02C20.44 9.88 18.76 8.22 16.16 8.22C14.37 8.22 13.48 9.2 13.02 9.93V8.5H9.65C9.7 9.48 9.65 19.5 9.65 19.5H13.02V13.36C13.02 13.02 13.05 12.69 13.15 12.45C13.42 11.78 14.03 11.09 15.07 11.09C16.41 11.09 17.06 12.11 17.06 13.6V19.5H20.44V13.02Z"/></svg>`,
+      tg: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+      copy: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
+      share: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>`
+    };
+
+    function buildReaderShareBoxHtml(post) {
+      const links = getShareLinks(post);
+      const hasNativeShare = typeof navigator.share === 'function';
+      return `
+        <div class="wp-reader-share-box" aria-label="Compartir artículo en redes sociales y WhatsApp">
+          <div class="wp-reader-share-head">
+            <strong>¿Te resultó útil esta guía? Compártela</strong>
+            <span>Envía este artículo directamente por WhatsApp o publícalo en tus redes sociales.</span>
+          </div>
+          <div class="wp-share-links">
+            <a class="wp-share-btn wp-share-wa" href="${links.wa}" target="_blank" rel="noopener noreferrer">
+              ${ICONS.wa}
+              <span>WhatsApp</span>
+            </a>
+            <a class="wp-share-btn wp-share-fb" href="${links.fb}" target="_blank" rel="noopener noreferrer">
+              ${ICONS.fb}
+              <span>Facebook</span>
+            </a>
+            <a class="wp-share-btn wp-share-x" href="${links.x}" target="_blank" rel="noopener noreferrer">
+              ${ICONS.x}
+              <span>X / Twitter</span>
+            </a>
+            <a class="wp-share-btn wp-share-li" href="${links.li}" target="_blank" rel="noopener noreferrer">
+              ${ICONS.li}
+              <span>LinkedIn</span>
+            </a>
+            <a class="wp-share-btn wp-share-tg" href="${links.tg}" target="_blank" rel="noopener noreferrer">
+              ${ICONS.tg}
+              <span>Telegram</span>
+            </a>
+            <button class="wp-share-btn wp-share-copy" type="button" data-copy-url="${links.url}">
+              ${ICONS.copy}
+              <span>Copiar enlace</span>
+            </button>
+            ${hasNativeShare ? `
+              <button class="wp-share-btn wp-share-native" type="button">
+                ${ICONS.share}
+                <span>Más apps...</span>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
 
     const posts = sourceArticles.map((art, index) => {
       const catBadgeEl = art.querySelector('.cat-badge');
@@ -1304,11 +1425,33 @@
       const post = posts[idx];
       if (!post || !readerOverlay) return;
       currentIndex = idx;
+      const links = getShareLinks(post);
 
       readerMeta.innerHTML = post.metaHtml;
       readerTitle.textContent = post.title;
-      readerBody.innerHTML = `${post.bannerHtml}${post.bodyHtml}${post.ctaHtml}`;
+      readerBody.innerHTML = `${post.bannerHtml}${post.bodyHtml}${buildReaderShareBoxHtml(post)}${post.ctaHtml}`;
       bindTicketButtons(readerBody);
+
+      readerBody.querySelectorAll('.wp-share-copy').forEach(btn => {
+        btn.addEventListener('click', () => copyArticleLink(links.url, btn, 'Copiar enlace'));
+      });
+      const nativeBtn = readerBody.querySelector('.wp-share-native');
+      if (nativeBtn && navigator.share) {
+        nativeBtn.addEventListener('click', () => {
+          navigator.share({
+            title: post.title,
+            text: post.excerpt || post.title,
+            url: links.url
+          }).catch(() => {});
+        });
+      }
+
+      if (readerShareWaBtn) {
+        readerShareWaBtn.href = links.wa;
+      }
+      if (readerCopyBtn) {
+        readerCopyBtn.onclick = () => copyArticleLink(links.url, readerCopyBtn, 'Copiar enlace');
+      }
 
       if (prevPostBtn) {
         const prevIdx = (idx - 1 + posts.length) % posts.length;
@@ -1323,6 +1466,7 @@
       readerOverlay.setAttribute('aria-hidden', 'false');
       readerOverlay.scrollTop = 0;
       document.body.style.overflow = 'hidden';
+      document.title = `${post.title} | Blog Fiberlink`;
 
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', `#${post.slug}`);
@@ -1334,6 +1478,7 @@
       readerOverlay.classList.remove('open');
       readerOverlay.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      document.title = basePageTitle;
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
@@ -1349,6 +1494,7 @@
 
       grid.innerHTML = '';
       filtered.forEach(post => {
+        const links = getShareLinks(post);
         const card = document.createElement('article');
         card.className = 'wp-post-card';
         card.setAttribute('tabindex', '0');
@@ -1368,12 +1514,38 @@
             </div>
             <h2 class="wp-post-title">${post.title}</h2>
             <p class="wp-post-excerpt">${post.excerpt}</p>
+            <div class="wp-card-share-row">
+              <span class="wp-card-share-label">Compartir:</span>
+              <div class="wp-card-share-actions">
+                <a class="wp-card-share-btn is-wa" href="${links.wa}" target="_blank" rel="noopener noreferrer" aria-label="Compartir ${post.title} en WhatsApp" title="Compartir en WhatsApp">
+                  ${ICONS.wa}
+                </a>
+                <a class="wp-card-share-btn is-fb" href="${links.fb}" target="_blank" rel="noopener noreferrer" aria-label="Compartir ${post.title} en Facebook" title="Compartir en Facebook">
+                  ${ICONS.fb}
+                </a>
+                <a class="wp-card-share-btn is-x" href="${links.x}" target="_blank" rel="noopener noreferrer" aria-label="Compartir ${post.title} en X" title="Compartir en X / Twitter">
+                  ${ICONS.x}
+                </a>
+                <button class="wp-card-share-btn is-copy" type="button" aria-label="Copiar enlace de ${post.title}" title="Copiar enlace del artículo">
+                  ${ICONS.copy}
+                </button>
+              </div>
+            </div>
             <div class="wp-post-footer">
               <span class="wp-post-format">Guía práctica</span>
               <span class="wp-read-btn">Leer artículo &rarr;</span>
             </div>
           </div>
         `;
+
+        card.querySelectorAll('.wp-card-share-btn').forEach(el => {
+          el.addEventListener('click', (e) => e.stopPropagation());
+          el.addEventListener('keydown', (e) => e.stopPropagation());
+        });
+        const cardCopyBtn = card.querySelector('.wp-card-share-btn.is-copy');
+        if (cardCopyBtn) {
+          cardCopyBtn.addEventListener('click', () => copyArticleLink(links.url, cardCopyBtn, null));
+        }
 
         card.addEventListener('click', () => openPost(post.index));
         card.addEventListener('keydown', (e) => {

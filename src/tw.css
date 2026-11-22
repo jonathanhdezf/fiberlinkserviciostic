@@ -110,7 +110,10 @@
     border-color: rgba(156, 195, 46, 0.14) !important;
   }
   html:not(.light) #asistencia-expres,
-  html:not(.light) #compartir {
+  html:not(.light) #video-software,
+  html:not(.light) #fibra-optica,
+  html:not(.light) #compartir,
+  html:not(.light) #fiberlink-labs {
     background-color: rgba(7, 11, 14, 0.22) !important;
     border-color: rgba(156, 195, 46, 0.14) !important;
   }
@@ -165,7 +168,11 @@
   html:not(.light) #inicio .lg\:col-span-5 > .rounded-xl,
   html:not(.light) #inicio .relative.z-10 > .rounded-xl,
   html:not(.light) #seccion-catalogo .grid > .rounded-xl,
-  html:not(.light) #modulo-ticket .lg\:col-span-5 .rounded-xl {
+  html:not(.light) #modulo-ticket .lg\:col-span-5 .rounded-xl,
+  html:not(.light) #video-software .rounded-xl,
+  html:not(.light) #video-software .rounded-2xl,
+  html:not(.light) #fibra-optica .rounded-xl,
+  html:not(.light) #fibra-optica .rounded-2xl {
     background-color: rgba(11, 16, 22, 0.89) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -182,9 +189,16 @@
     background-image: linear-gradient(90deg, #b8dc3e, #dff978);
   }
   html:not(.light) #catalog-search,
-  html:not(.light) #catalog-sort {
+  html:not(.light) #catalog-sort,
+  html:not(.light) #storeSearch,
+  html:not(.light) #storeSort {
     background-color: #090d11;
     border-color: rgba(255, 255, 255, 0.14);
+  }
+  html.light #storeSearch,
+  html.light #storeSort {
+    background-color: #ffffff;
+    border-color: rgba(15, 26, 10, 0.14);
   }
   html:not(.light) .fl-marquee {
     background-color: rgba(8, 12, 17, 0.88) !important;
@@ -210,6 +224,16 @@
     background-image: linear-gradient(135deg, rgba(235, 244, 222, 0.58) 0%, rgba(249, 252, 246, 0.48) 54%, rgba(232, 242, 219, 0.58) 100%) !important;
     border-color: rgba(68, 104, 4, 0.15) !important;
   }
+  html.light #video-software {
+    background-color: transparent !important;
+    background-image: linear-gradient(180deg, rgba(249, 252, 245, 0.54) 0%, rgba(238, 245, 228, 0.44) 55%, rgba(247, 251, 242, 0.56) 100%) !important;
+    border-color: rgba(68, 104, 4, 0.15) !important;
+  }
+  html.light #fibra-optica {
+    background-color: transparent !important;
+    background-image: linear-gradient(135deg, rgba(238, 248, 253, 0.54) 0%, rgba(246, 250, 242, 0.52) 52%, rgba(234, 245, 222, 0.56) 100%) !important;
+    border-color: rgba(2, 132, 199, 0.16) !important;
+  }
   html.light #modulo-ticket {
     background-color: transparent !important;
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(243, 248, 237, 0.50) 100%) !important;
@@ -219,7 +243,8 @@
     background-color: transparent !important;
     background-image: linear-gradient(180deg, rgba(241, 247, 234, 0.48) 0%, rgba(255, 255, 255, 0.54) 55%, rgba(237, 244, 228, 0.56) 100%) !important;
   }
-  html.light #compartir {
+  html.light #compartir,
+  html.light #fiberlink-labs {
     background-color: transparent !important;
     background-image: radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.62) 0%, rgba(237, 245, 226, 0.52) 70%, rgba(229, 239, 216, 0.58) 100%) !important;
     border-color: rgba(68, 104, 4, 0.15) !important;
@@ -262,7 +287,12 @@
   html.light #opiniones-clientes .rounded-xl,
   html.light #inicio .rounded-xl,
   html.light #modulo-ticket .rounded-2xl,
-  html.light #compartir .rounded-2xl {
+  html.light #video-software .rounded-xl,
+  html.light #video-software .rounded-2xl,
+  html.light #fibra-optica .rounded-xl,
+  html.light #fibra-optica .rounded-2xl,
+  html.light #compartir .rounded-2xl,
+  html.light #fiberlink-labs .rounded-2xl {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: 0 4px 18px -2px rgba(15, 26, 10, 0.07), 0 1px 3px rgba(15, 26, 10, 0.05);
@@ -321,6 +351,72 @@
 
   /* Estado de carga del botón de envío del ticket */
   .is-loading { opacity: .7; pointer-events: none; }
+
+  /* Tooltips interactivos de las 4 tarjetas del Hero (hover / focus / tap) */
+  .hero-bento-card:hover,
+  .hero-bento-card:focus-visible,
+  .hero-bento-card.is-tooltip-open {
+    z-index: 35;
+    border-color: rgba(156, 195, 46, 0.55) !important;
+  }
+  .hero-card-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    width: min(275px, 78vw);
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.75rem;
+    background: rgb(var(--tw-panel));
+    color: rgb(var(--tw-text-secondary));
+    border: 1px solid rgba(156, 195, 46, 0.42);
+    box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.55);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.48;
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+  }
+  html.light .hero-card-tooltip {
+    box-shadow: 0 14px 32px -6px rgba(15, 26, 10, 0.16), 0 2px 8px rgba(15, 26, 10, 0.08);
+    border-color: rgba(68, 104, 4, 0.35);
+  }
+  .hero-bento-card:hover .hero-card-tooltip,
+  .hero-bento-card:focus-visible .hero-card-tooltip,
+  .hero-bento-card.is-tooltip-open .hero-card-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Pasarela continua de opiniones de clientes (GPU, pausa al interactuar) */
+  .fl-reviews-marquee {
+    contain: paint;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 0, 1) 96%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 0, 1) 96%, transparent 100%);
+  }
+  .fl-reviews-track {
+    display: flex;
+    width: max-content;
+    animation: fl-marquee 34s linear infinite;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+  }
+  .fl-reviews-marquee:hover .fl-reviews-track,
+  .fl-reviews-marquee:focus-within .fl-reviews-track,
+  .fl-reviews-marquee.is-paused .fl-reviews-track {
+    animation-play-state: paused;
+  }
+  .fl-reviews-group {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    padding-right: 1rem;
+    flex-shrink: 0;
+  }
 }
 
 @keyframes fl-marquee { to { transform: translate3d(-50%, 0, 0); } }
@@ -329,7 +425,9 @@
 /* Accesibilidad + rendimiento: respetar "reducir movimiento" */
 @media (prefers-reduced-motion: reduce) {
   .fl-marquee-track,
+  .fl-reviews-track,
   .animate-ping,
   .animate-pulse { animation: none !important; }
+  .fl-reviews-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   .hero-video-backdrop video { display: none !important; }
 }

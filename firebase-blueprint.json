@@ -506,6 +506,46 @@
         "user",
         "createdAt"
       ]
+    },
+    "SiteVisitorStats": {
+      "title": "SiteVisitorStats",
+      "description": "PII-free aggregate visitor counter and daily visit registry document.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID (visitors)",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "totalVisits": {
+          "type": "number",
+          "description": "Total cumulative recorded visitor sessions"
+        },
+        "todayKey": {
+          "type": "string",
+          "description": "Current YYYY-MM-DD date key for daily counter",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}$"
+        },
+        "todayVisits": {
+          "type": "number",
+          "description": "Recorded visits for the active date key"
+        },
+        "lastPage": {
+          "type": "string",
+          "description": "Last visited public route path",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest visit"
+        }
+      },
+      "required": ["id", "totalVisits", "todayKey", "todayVisits", "lastPage", "updatedAt"]
     }
   },
   "firestore": {
@@ -532,6 +572,10 @@
     "/inventory_movements/{movementId}": {
       "schema": { "$ref": "#/entities/InventoryMovement" },
       "description": "Immutable Kardex inventory movements log linked to StoreProduct."
+    },
+    "/site_stats/{statId}": {
+      "schema": { "$ref": "#/entities/SiteVisitorStats" },
+      "description": "PII-free aggregate site visitor registry document (/site_stats/visitors)."
     }
   }
 }

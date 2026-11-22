@@ -301,6 +301,23 @@ service cloud.firestore {
         && data.createdAt is timestamp;
     }
 
+    function isValidDateKey(val) {
+      return val is string && val.size() == 10 && val.matches('^20[0-9]{2}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function isValidSiteStats(data, statIdParam) {
+      return data.keys().hasAll(['id', 'totalVisits', 'todayKey', 'todayVisits', 'lastPage', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'totalVisits', 'todayKey', 'todayVisits', 'lastPage', 'updatedAt'])
+        && isValidId(data.id)
+        && data.id == statIdParam
+        && statIdParam == 'visitors'
+        && data.totalVisits is int && data.totalVisits >= 1 && data.totalVisits <= 1000000000
+        && isValidDateKey(data.todayKey)
+        && data.todayVisits is int && data.todayVisits >= 1 && data.todayVisits <= 10000000
+        && data.lastPage is string && data.lastPage.size() >= 1 && data.lastPage.size() <= 80
+        && data.updatedAt is timestamp;
+    }
+
     // ==========================================
     // COLLECTION 1: /staff/{uid}
     // ==========================================
@@ -495,6 +512,40 @@ service cloud.firestore {
 
       allow update: if false;
       allow delete: if isValidId(movementId) && isAdmin();
+    }
+
+    // ==========================================
+    // COLLECTION 7: /site_stats/{statId} (PII-Free Visitor Registry)
+    // ==========================================
+    match /site_stats/{statId} {
+      allow get: if isValidId(statId) && statId == 'visitors';
+      allow list: if isStaff();
+
+      allow create: if isValidId(statId)
+        && statId == 'visitors'
+        && isValidSiteStats(incoming(), statId)
+        && incoming().totalVisits == 1
+        && incoming().todayVisits == 1
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(statId)
+        && statId == 'visitors'
+        && isValidSiteStats(incoming(), statId)
+        && incoming().id == existing().id
+        && incoming().updatedAt == request.time
+        && (
+          isAdmin()
+          || (
+            incoming().diff(existing()).affectedKeys().hasOnly(['totalVisits', 'todayKey', 'todayVisits', 'lastPage', 'updatedAt'])
+            && incoming().totalVisits == existing().totalVisits + 1
+            && (
+              (incoming().todayKey == existing().todayKey && incoming().todayVisits == existing().todayVisits + 1)
+              || (incoming().todayKey != existing().todayKey && incoming().todayVisits == 1)
+            )
+          )
+        );
+
+      allow delete: if false;
     }
   }
 }
