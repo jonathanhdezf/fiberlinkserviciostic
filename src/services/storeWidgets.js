@@ -260,7 +260,7 @@ function ensureZoomModal() {
 
             <div class="pb-3 border-b border-glass">
               <div id="flpdpPrice" class="font-headline-lg text-2xl sm:text-3xl font-bold text-text-primary tabular-nums">$0 MXN</div>
-              <p class="font-label-mono-xs text-[11px] text-neon-emerald mt-1">IVA incluido · Facturación CFDI 4.0 · Garantía local</p>
+              <p class="font-label-mono-xs text-[11px] text-neon-emerald mt-1">Precio neto · Garantía local directa</p>
             </div>
 
             <p id="flpdpDesc" class="font-body-sm text-xs sm:text-sm text-text-secondary leading-relaxed"></p>
@@ -729,7 +729,7 @@ function ensureCartDrawer() {
         <div class="flex items-baseline justify-between pt-1">
           <div>
             <span class="font-body-sm text-xs text-text-secondary block">Subtotal estimado</span>
-            <span class="font-label-mono-xs text-[10px] text-neon-emerald">IVA incluido · CFDI 4.0</span>
+            <span class="font-label-mono-xs text-[10px] text-neon-emerald">Precio neto · Entrega local</span>
           </div>
           <span id="flCartSubtotal" class="font-headline-lg text-xl font-bold text-text-primary tabular-nums">$0 MXN</span>
         </div>

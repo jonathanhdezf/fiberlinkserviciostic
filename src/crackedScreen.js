@@ -4,16 +4,29 @@
 // ==========================================================
 
 import './crackedScreen.css';
+import {
+  DEFAULT_GLASS_PRESETS,
+  getCachedActiveSound,
+  playCrackedSound,
+  soundLibraryService
+} from './services/soundLibraryService.js';
 
 let overlayEl = null;
 let canvasEl = null;
 let ctx = null;
+let glitchCanvasEl = null;
+let glitchCtx = null;
+let vignetteEl = null;
 let cardEl = null;
 let scanlineEl = null;
 let lcdLineVEl = null;
 let lcdLineHEl = null;
 let isCracked = false;
 let crackPoints = [];
+let flickerRafId = null;
+let lastGlitchDraw = 0;
+let activeCrackSound = getCachedActiveSound() || DEFAULT_GLASS_PRESETS[0];
+let activeSoundUnsub = null;
 
 // Multi-tap trigger configuration
 const TAP_THRESHOLD = 4; // 4 rapid taps to trigger
@@ -22,80 +35,12 @@ const TAP_MAX_DISTANCE = 160; // taps must be relatively close together
 let recentTaps = [];
 
 /**
- * Procedural Glass Shatter Sound (Layered Web Audio API)
+ * Play Active Shatter Sound (Synced from Firestore Admin Sound Library)
  */
 function playGlassShatterSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const actx = new AudioCtx();
-    if (actx.state === 'suspended') actx.resume();
-
-    const now = actx.currentTime;
-
-    // 1. Initial mechanical impact snap
-    const clickOsc = actx.createOscillator();
-    clickOsc.type = 'square';
-    clickOsc.frequency.setValueAtTime(1400, now);
-    clickOsc.frequency.exponentialRampToValueAtTime(120, now + 0.035);
-
-    const clickGain = actx.createGain();
-    clickGain.gain.setValueAtTime(0.7, now);
-    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-
-    clickOsc.connect(clickGain);
-    clickGain.connect(actx.destination);
-    clickOsc.start(now);
-    clickOsc.stop(now + 0.035);
-
-    // 2. High-frequency glass crunch (filtered noise)
-    const noiseDuration = 0.28;
-    const bufferSize = Math.floor(actx.sampleRate * noiseDuration);
-    const noiseBuffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (actx.sampleRate * 0.05));
-    }
-
-    const whiteNoise = actx.createBufferSource();
-    whiteNoise.buffer = noiseBuffer;
-
-    const bandpass = actx.createBiquadFilter();
-    bandpass.type = 'bandpass';
-    bandpass.frequency.setValueAtTime(4200, now);
-    bandpass.Q.setValueAtTime(4.5, now);
-
-    const highpass = actx.createBiquadFilter();
-    highpass.type = 'highpass';
-    highpass.frequency.setValueAtTime(2400, now);
-
-    const noiseGain = actx.createGain();
-    noiseGain.gain.setValueAtTime(0.9, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + noiseDuration);
-
-    whiteNoise.connect(bandpass);
-    bandpass.connect(highpass);
-    highpass.connect(noiseGain);
-    noiseGain.connect(actx.destination);
-    whiteNoise.start(now);
-
-    // 3. Shimmering crystalline glass resonant harmonics (tinkle)
-    [4800, 7200, 9400].forEach((freq, idx) => {
-      const osc = actx.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.015);
-      osc.frequency.exponentialRampToValueAtTime(freq * 0.4, now + 0.18);
-
-      const oscGain = actx.createGain();
-      oscGain.gain.setValueAtTime(0.35 / (idx + 1), now + idx * 0.015);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-      osc.connect(oscGain);
-      oscGain.connect(actx.destination);
-      osc.start(now + idx * 0.015);
-      osc.stop(now + 0.18);
-    });
-  } catch (err) {
+    playCrackedSound(activeCrackSound);
+  } catch (_) {
     // AudioContext blocked or not supported
   }
 }
@@ -219,79 +164,151 @@ function createFractureData(centerX, centerY) {
     return polygon;
   });
 
-  // 4. Detached glass shard facets with subtle refractive distortion
+  // 4. Detached glass shard facets (mix of darkened dead OLED shards & subtle refractive glass)
   const shards = [];
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < 9; s++) {
     const theta1 = Math.random() * Math.PI * 2;
-    const theta2 = theta1 + 0.22 + Math.random() * 0.35;
-    const r1 = 18 + Math.random() * 70;
-    const r2 = r1 + 25 + Math.random() * 50;
-    shards.push([
-      { x: centerX + Math.cos(theta1) * r1, y: centerY + Math.sin(theta1) * r1 },
-      { x: centerX + Math.cos(theta2) * r1, y: centerY + Math.sin(theta2) * r1 },
-      { x: centerX + Math.cos(theta2) * r2, y: centerY + Math.sin(theta2) * r2 },
-      { x: centerX + Math.cos(theta1) * r2, y: centerY + Math.sin(theta1) * r2 }
-    ]);
+    const theta2 = theta1 + 0.18 + Math.random() * 0.34;
+    const r1 = 10 + Math.random() * 68;
+    const r2 = r1 + 22 + Math.random() * 64;
+    shards.push({
+      isDeadShard: s < 4,
+      points: [
+        { x: centerX + Math.cos(theta1) * r1, y: centerY + Math.sin(theta1) * r1 },
+        { x: centerX + Math.cos(theta2) * r1, y: centerY + Math.sin(theta2) * r1 },
+        { x: centerX + Math.cos(theta2) * r2, y: centerY + Math.sin(theta2) * r2 },
+        { x: centerX + Math.cos(theta1) * r2, y: centerY + Math.sin(theta1) * r2 }
+      ]
+    });
   }
 
-  return { centerX, centerY, rays, microRays, rings, shards };
+  // 5. Organic OLED/LCD dead liquid-crystal ink-bleed blotches ("manchas negras")
+  const inkBlots = [];
+  // Primary epicenter ink bleed (irregular overlapping dark lobes)
+  const mainLobes = 5 + Math.floor(Math.random() * 4);
+  for (let b = 0; b < mainLobes; b++) {
+    const ang = (b / mainLobes) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+    const dist = 6 + Math.random() * 24;
+    inkBlots.push({
+      x: centerX + Math.cos(ang) * dist,
+      y: centerY + Math.sin(ang) * dist,
+      rx: 12 + Math.random() * 24,
+      ry: 8 + Math.random() * 18,
+      rot: ang,
+      halo: Math.random() < 0.65 ? 'rgba(92, 34, 180, 0.34)' : 'rgba(0, 175, 220, 0.25)'
+    });
+  }
+  // Secondary dark ink pockets seeping along fracture rays
+  for (let s = 0; s < 3; s++) {
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 42 + Math.random() * 88;
+    inkBlots.push({
+      x: centerX + Math.cos(ang) * dist,
+      y: centerY + Math.sin(ang) * dist,
+      rx: 7 + Math.random() * 14,
+      ry: 4 + Math.random() * 9,
+      rot: ang + 0.3,
+      halo: 'rgba(65, 25, 130, 0.28)'
+    });
+  }
+
+  // 6. Crushed crater micro-needles (precomputed so resize preserves exact pattern)
+  const needles = [];
+  for (let k = 0; k < 36; k++) {
+    const spikeAngle = (k / 36) * Math.PI * 2 + (Math.random() - 0.5) * 0.16;
+    const spikeLen = 6 + Math.random() * 20;
+    needles.push({
+      x1: centerX + Math.cos(spikeAngle) * 3,
+      y1: centerY + Math.sin(spikeAngle) * 3,
+      x2: centerX + Math.cos(spikeAngle) * spikeLen,
+      y2: centerY + Math.sin(spikeAngle) * spikeLen,
+      alpha: 0.45 + Math.random() * 0.42
+    });
+  }
+
+  return { centerX, centerY, rays, microRays, rings, shards, inkBlots, needles };
 }
 
 /**
- * Render fine, ultra-realistic glass fractures onto Canvas
+ * Render realistic dark glass fractures & dead liquid-crystal ink onto Canvas
  */
 function renderCracks() {
   if (!ctx || !canvasEl) return;
-  const w = canvasEl.width;
-  const h = canvasEl.height;
-  ctx.clearRect(0, 0, w, h);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  ctx.clearRect(0, 0, width, height);
 
   crackPoints.forEach(fracture => {
-    const { centerX, centerY, rays, microRays, rings, shards } = fracture;
+    const { centerX, centerY, rays, microRays, rings, shards, inkBlots, needles } = fracture;
 
-    // A. Shard facet fills (semi-translucent reflective glass plates)
-    shards.forEach((poly, idx) => {
+    // A. Dead liquid-crystal shards & subtle refractive glass facets
+    shards.forEach((shard, idx) => {
+      const poly = shard.points;
       ctx.beginPath();
       ctx.moveTo(poly[0].x, poly[0].y);
       for (let i = 1; i < poly.length; i++) {
         ctx.lineTo(poly[i].x, poly[i].y);
       }
       ctx.closePath();
-      // Slight alternating refractive glass sheen
-      ctx.fillStyle = idx % 2 === 0 ? 'rgba(255, 255, 255, 0.055)' : 'rgba(0, 240, 255, 0.035)';
+      if (shard.isDeadShard) {
+        ctx.fillStyle = idx % 2 === 0 ? 'rgba(2, 4, 7, 0.84)' : 'rgba(6, 9, 14, 0.68)';
+      } else {
+        ctx.fillStyle = idx % 2 === 0 ? 'rgba(255, 255, 255, 0.035)' : 'rgba(0, 210, 255, 0.028)';
+      }
       ctx.fill();
     });
 
-    // B. Spiderweb Concentric Rings
-    rings.forEach(ring => {
-      // 1. Deep crack shadow (sub-surface absorption)
+    // B. Organic OLED ink-bleed blotches (bruised violet/cyan rim + dead black core)
+    inkBlots.forEach(blot => {
+      ctx.save();
+      ctx.translate(blot.x, blot.y);
+      ctx.rotate(blot.rot);
+
+      const haloGrad = ctx.createRadialGradient(0, 0, blot.rx * 0.3, 0, 0, blot.rx * 1.25);
+      haloGrad.addColorStop(0, 'rgba(2, 3, 5, 0.96)');
+      haloGrad.addColorStop(0.58, 'rgba(5, 7, 11, 0.88)');
+      haloGrad.addColorStop(0.8, blot.halo);
+      haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, blot.rx * 1.25, blot.ry * 1.25, 0, 0, Math.PI * 2);
+      ctx.fillStyle = haloGrad;
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // C. Spiderweb Concentric Rings (deep dark fissures + delicate glass glint)
+    rings.forEach((ring, rIdx) => {
+      const ringAlpha = Math.max(0.28, 0.85 - rIdx * 0.065);
+
+      // 1. Deep crack shadow (obsidian sub-surface trench)
       ctx.beginPath();
       ctx.moveTo(ring[0].x, ring[0].y);
       for (let i = 1; i < ring.length; i++) {
         ctx.lineTo(ring[i].x, ring[i].y);
       }
       ctx.closePath();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = `rgba(0, 0, 0, ${Math.min(0.95, ringAlpha + 0.12)})`;
+      ctx.lineWidth = rIdx < 3 ? 2.1 : 1.5;
       ctx.stroke();
 
-      // 2. Razor-sharp specular highlight on edge
+      // 2. Selective specular glass edge (subtle natural glint, not harsh white)
       ctx.beginPath();
       ctx.moveTo(ring[0].x - 0.5, ring[0].y - 0.5);
       for (let i = 1; i < ring.length; i++) {
         ctx.lineTo(ring[i].x - 0.5, ring[i].y - 0.5);
       }
       ctx.closePath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 0.75;
+      ctx.strokeStyle = `rgba(225, 240, 255, ${(ringAlpha * 0.62).toFixed(2)})`;
+      ctx.lineWidth = 0.65;
       ctx.stroke();
     });
 
-    // C. Radial Primary Rays & Micro-branches
+    // D. Radial Primary Rays & Micro-branches (distance-attenuated highlights)
     const allRays = [...rays, ...microRays];
 
-    allRays.forEach(ray => {
-      // 1. Dark hairline shadow pass
+    allRays.forEach((ray, rayIdx) => {
+      // 1. Deep dark fracture shadow pass
       ctx.beginPath();
       ctx.moveTo(ray[0].x, ray[0].y);
       for (let i = 1; i < ray.length; i++) {
@@ -306,82 +323,164 @@ function renderCracks() {
           ctx.lineTo(p.x, p.y);
         }
       }
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.88)';
-      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.94)';
+      ctx.lineWidth = rayIdx % 3 === 0 ? 2.2 : 1.65;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // 2. Razor-sharp specular glass edge (white reflection)
+      // 2. Natural specular glint gradient (strong near impact, dimmer toward outer glass edge)
+      const tip = ray.slice().reverse().find(p => !p.isBranch) || ray[0];
+      const highlightGrad = ctx.createLinearGradient(centerX, centerY, tip.x, tip.y);
+      highlightGrad.addColorStop(0, 'rgba(235, 246, 255, 0.84)');
+      highlightGrad.addColorStop(0.35, 'rgba(215, 232, 245, 0.52)');
+      highlightGrad.addColorStop(1, 'rgba(185, 205, 220, 0.22)');
+
       ctx.beginPath();
-      ctx.moveTo(ray[0].x - 0.6, ray[0].y - 0.6);
+      ctx.moveTo(ray[0].x - 0.55, ray[0].y - 0.55);
       for (let i = 1; i < ray.length; i++) {
         const p = ray[i];
         if (p.isBranch) {
-          ctx.moveTo(p.branchPoints[0].x - 0.6, p.branchPoints[0].y - 0.6);
+          ctx.moveTo(p.branchPoints[0].x - 0.55, p.branchPoints[0].y - 0.55);
           for (let b = 1; b < p.branchPoints.length; b++) {
-            ctx.lineTo(p.branchPoints[b].x - 0.6, p.branchPoints[b].y - 0.6);
+            ctx.lineTo(p.branchPoints[b].x - 0.55, p.branchPoints[b].y - 0.55);
           }
-          ctx.moveTo(ray[i - 1].x - 0.6, ray[i - 1].y - 0.6);
+          ctx.moveTo(ray[i - 1].x - 0.55, ray[i - 1].y - 0.55);
         } else {
-          ctx.lineTo(p.x - 0.6, p.y - 0.6);
+          ctx.lineTo(p.x - 0.55, p.y - 0.55);
         }
       }
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
-      ctx.lineWidth = 0.85;
+      ctx.strokeStyle = highlightGrad;
+      ctx.lineWidth = 0.7;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // 3. Chromatic dispersion fringe (delicate cyan / magenta optical dispersion)
+      // 3. Subtle chromatic dispersion near center impact
       ctx.beginPath();
       ctx.moveTo(ray[0].x + 0.5, ray[0].y + 0.5);
-      for (let i = 1; i < Math.min(ray.length, 10); i++) {
+      for (let i = 1; i < Math.min(ray.length, 8); i++) {
         const p = ray[i];
         if (!p.isBranch) ctx.lineTo(p.x + 0.5, p.y + 0.5);
       }
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(ray[0].x - 0.5, ray[0].y + 0.5);
-      for (let i = 1; i < Math.min(ray.length, 7); i++) {
-        const p = ray[i];
-        if (!p.isBranch) ctx.lineTo(p.x - 0.5, p.y + 0.5);
-      }
-      ctx.strokeStyle = 'rgba(255, 60, 180, 0.25)';
-      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = 'rgba(0, 230, 255, 0.26)';
+      ctx.lineWidth = 0.55;
       ctx.stroke();
     });
 
-    // D. Crushed glass impact epicenter (opaque milky white crater + micro-needles)
-    const craterGrad = ctx.createRadialGradient(centerX, centerY, 1, centerX, centerY, 20);
-    craterGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
-    craterGrad.addColorStop(0.25, 'rgba(255, 255, 255, 0.82)');
-    craterGrad.addColorStop(0.65, 'rgba(215, 230, 240, 0.38)');
-    craterGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    // E. Dark crushed-glass & dead OLED cavity at impact core (realistic black pit + fine silvery splinters)
+    const craterGrad = ctx.createRadialGradient(centerX, centerY, 1, centerX, centerY, 22);
+    craterGrad.addColorStop(0, 'rgba(2, 3, 5, 0.99)');
+    craterGrad.addColorStop(0.32, 'rgba(8, 11, 16, 0.94)');
+    craterGrad.addColorStop(0.55, 'rgba(180, 205, 225, 0.42)');
+    craterGrad.addColorStop(0.8, 'rgba(40, 22, 70, 0.24)');
+    craterGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, 22, 0, Math.PI * 2);
     ctx.fillStyle = craterGrad;
     ctx.fill();
 
-    // 40 Dense micro-needles radiating from the crushed core
-    for (let k = 0; k < 40; k++) {
-      const spikeAngle = (k / 40) * Math.PI * 2 + (Math.random() - 0.5) * 0.15;
-      const spikeLen = 6 + Math.random() * 22;
+    // Fine crushed glass splinters around the dark core
+    needles.forEach(n => {
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.lineTo(
-        centerX + Math.cos(spikeAngle) * spikeLen,
-        centerY + Math.sin(spikeAngle) * spikeLen
-      );
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 0.9;
+      ctx.moveTo(n.x1, n.y1);
+      ctx.lineTo(n.x2, n.y2);
+      ctx.strokeStyle = `rgba(220, 236, 250, ${n.alpha.toFixed(2)})`;
+      ctx.lineWidth = 0.75;
       ctx.stroke();
+    });
+  });
+}
+
+/**
+ * Draw intermittent dark OLED/LCD dead-strip & subpixel flicker frame
+ */
+function drawGlitchFrame() {
+  if (!glitchCtx || !glitchCanvasEl || !isCracked) return;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  glitchCtx.clearRect(0, 0, w, h);
+
+  if (!crackPoints.length) return;
+
+  // Occasional subtle dark panel brownout across a wide section band
+  if (Math.random() < 0.28) {
+    const bandY = Math.random() * (h * 0.75);
+    const bandH = 30 + Math.random() * 140;
+    glitchCtx.fillStyle = `rgba(2, 4, 7, ${(0.12 + Math.random() * 0.22).toFixed(2)})`;
+    glitchCtx.fillRect(0, bandY, w, bandH);
+  }
+
+  crackPoints.forEach(fracture => {
+    const { centerX, centerY } = fracture;
+
+    // 1. Flickering dark vertical dead columns aligned to impact X
+    const colCount = 3;
+    for (let c = 0; c < colCount; c++) {
+      if (Math.random() < 0.22) continue; // blink out briefly
+      const offsetX = centerX + (c - 1) * (3 + Math.random() * 6);
+      const segStart = Math.max(0, centerY - 120 - Math.random() * 260);
+      const segH = h - segStart;
+
+      // Dark dead column core
+      glitchCtx.fillStyle = `rgba(2, 4, 7, ${(0.65 + Math.random() * 0.3).toFixed(2)})`;
+      glitchCtx.fillRect(offsetX - 1, 0, 2 + Math.random() * 2, h);
+
+      // Flickering subpixel green/cyan/magenta trace inside the column
+      const lineColors = ['rgba(0, 255, 136, 0.72)', 'rgba(0, 230, 255, 0.55)', 'rgba(255, 45, 120, 0.48)'];
+      glitchCtx.fillStyle = lineColors[c % lineColors.length];
+      glitchCtx.fillRect(offsetX, segStart, 1, segH * (0.45 + Math.random() * 0.55));
+    }
+
+    // 2. Flickering horizontal blacked-out display strips & glitch tears near impact Y
+    const barCount = 4 + Math.floor(Math.random() * 5);
+    for (let b = 0; b < barCount; b++) {
+      if (Math.random() < 0.35) continue;
+      const spreadY = (Math.random() - 0.5) * 280;
+      const y = Math.max(0, Math.min(h - 4, centerY + spreadY));
+      const barH = Math.random() < 0.35 ? 10 + Math.random() * 22 : 2 + Math.random() * 6;
+      const barW = Math.random() < 0.45 ? w : 110 + Math.random() * (w * 0.6);
+      const barX = Math.random() < 0.45 ? 0 : Math.max(0, centerX - barW * 0.5 + (Math.random() - 0.5) * 140);
+
+      glitchCtx.fillStyle = `rgba(2, 4, 7, ${(0.72 + Math.random() * 0.25).toFixed(2)})`;
+      glitchCtx.fillRect(barX, y, barW, barH);
+
+      // Crisp 1px corrupted RGB tear along top/bottom of dark bar
+      if (Math.random() < 0.65) {
+        glitchCtx.fillStyle = Math.random() < 0.5 ? 'rgba(0, 255, 160, 0.42)' : 'rgba(255, 52, 96, 0.42)';
+        glitchCtx.fillRect(barX, y + (Math.random() < 0.5 ? 0 : barH), barW * (0.35 + Math.random() * 0.65), 1);
+      }
     }
   });
+}
+
+function startGlitchLoop() {
+  stopGlitchLoop();
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  drawGlitchFrame();
+  if (prefersReduced) return;
+
+  const tick = (ts) => {
+    if (!isCracked) return;
+    // Authentic ~15fps hardware display malfunction cadence (65ms-110ms jitter)
+    if (ts - lastGlitchDraw > 68) {
+      lastGlitchDraw = ts;
+      drawGlitchFrame();
+    }
+    flickerRafId = window.requestAnimationFrame(tick);
+  };
+  flickerRafId = window.requestAnimationFrame(tick);
+}
+
+function stopGlitchLoop() {
+  if (flickerRafId !== null) {
+    window.cancelAnimationFrame(flickerRafId);
+    flickerRafId = null;
+  }
+  if (glitchCtx && glitchCanvasEl) {
+    glitchCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  }
 }
 
 /**
@@ -401,19 +500,11 @@ function crackScreen(x, y) {
   if (lcdLineVEl) lcdLineVEl.style.left = `${relX}px`;
   if (lcdLineHEl) lcdLineHEl.style.top = `${relY}px`;
 
-  // Audio & Haptic feedback
+  // Audio & Haptic feedback (sin mover el body para mantener la pantalla fija y realista)
   playGlassShatterSound();
   if (navigator.vibrate) {
     navigator.vibrate([45, 25, 80]);
   }
-
-  // Screen shake animation
-  document.body.classList.remove('screen-shatter-active');
-  void document.body.offsetWidth; // trigger reflow
-  document.body.classList.add('screen-shatter-active');
-  setTimeout(() => {
-    document.body.classList.remove('screen-shatter-active');
-  }, 340);
 
   // Resize canvas to viewport and render
   resizeCanvas();
@@ -423,6 +514,7 @@ function crackScreen(x, y) {
   overlayEl.classList.add('active');
   cardEl.classList.add('visible');
   isCracked = true;
+  startGlitchLoop();
 }
 
 /**
@@ -432,6 +524,7 @@ function repairScreen() {
   if (!isCracked) return;
 
   playRepairSound();
+  stopGlitchLoop();
 
   // Trigger laser scan animation
   scanlineEl.classList.remove('scanning');
@@ -448,7 +541,7 @@ function repairScreen() {
     if (opacity <= 0) {
       clearInterval(fadeInterval);
       crackPoints = [];
-      if (ctx) ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      if (ctx) ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
       overlayEl.classList.remove('active');
       scanlineEl.classList.remove('scanning');
       isCracked = false;
@@ -525,7 +618,17 @@ function resizeCanvas() {
   canvasEl.style.height = `${height}px`;
 
   if (ctx) {
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  if (glitchCanvasEl) {
+    glitchCanvasEl.width = width * dpr;
+    glitchCanvasEl.height = height * dpr;
+    glitchCanvasEl.style.width = `${width}px`;
+    glitchCanvasEl.style.height = `${height}px`;
+    if (glitchCtx) {
+      glitchCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
   }
 }
 
@@ -540,11 +643,22 @@ function setupDOM() {
   overlayEl.id = 'crackedScreenOverlay';
   overlayEl.className = 'cracked-screen-overlay';
 
-  // Canvas
+  // Canvas (glass fracture & dark ink bleed)
   canvasEl = document.createElement('canvas');
   canvasEl.className = 'cracked-screen-canvas';
   ctx = canvasEl.getContext('2d');
   overlayEl.appendChild(canvasEl);
+
+  // Dark damaged OLED vignette/subpixel flicker veil
+  vignetteEl = document.createElement('div');
+  vignetteEl.className = 'cracked-vignette-flicker';
+  overlayEl.appendChild(vignetteEl);
+
+  // Dynamic glitch & dark scan-strip canvas
+  glitchCanvasEl = document.createElement('canvas');
+  glitchCanvasEl.className = 'cracked-glitch-canvas';
+  glitchCtx = glitchCanvasEl.getContext('2d');
+  overlayEl.appendChild(glitchCanvasEl);
 
   // AMOLED / LCD dead-pixel lines passing through impact
   lcdLineVEl = document.createElement('div');
@@ -571,14 +685,13 @@ function setupDOM() {
       </div>
       <div class="min-w-0 flex-1">
         <div class="cracked-repair-title">
-          <span>¡Pantalla fracturada simulada!</span>
+          <span>¿Problemas con tu pantalla?</span>
           <span class="cracked-repair-badge">Simulación</span>
         </div>
         <div class="cracked-repair-desc">
           Reparación de pantallas, sistema de carga, software, liberaciones en Teziutlán.
         </div>
         <div class="cracked-tags-list">
-          <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">smartphone</span>Pantallas</span>
           <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">battery_charging_full</span>Sistema de Carga</span>
           <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">terminal</span>Software</span>
           <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">lock_open</span>Liberaciones</span>
@@ -638,9 +751,21 @@ export function initCrackedScreen() {
   setupDOM();
   document.addEventListener('pointerdown', handlePointerDown, { passive: true });
 
+  if (!activeSoundUnsub) {
+    activeSoundUnsub = soundLibraryService.subscribeActiveCrackedSound(
+      (soundCfg) => {
+        if (soundCfg) activeCrackSound = soundCfg;
+      },
+      () => {
+        // Fallback already applied from cache/defaults
+      }
+    );
+  }
+
   // Expose on window for easy developer testing
   window.fiberlinkEasterEgg = {
     crack: (x, y) => crackScreen(x, y),
-    repair: () => repairScreen()
+    repair: () => repairScreen(),
+    getActiveSound: () => activeCrackSound
   };
 }

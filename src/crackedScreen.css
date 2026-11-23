@@ -6,8 +6,6 @@
 .cracked-screen-overlay {
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
   z-index: 99998;
   pointer-events: none;
   overflow: hidden;
@@ -20,7 +18,8 @@
   pointer-events: auto;
 }
 
-.cracked-screen-canvas {
+.cracked-screen-canvas,
+.cracked-glitch-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -29,30 +28,66 @@
   pointer-events: none;
 }
 
-/* Screen Shatter Impact Shake */
-@keyframes screenShatterShake {
-  0% { transform: translate(0, 0) scale(1); }
-  12% { transform: translate(-5px, 4px) rotate(-0.3deg) scale(0.998); }
-  25% { transform: translate(6px, -4px) rotate(0.4deg) scale(1.002); }
-  40% { transform: translate(-4px, -3px) rotate(-0.2deg); }
-  55% { transform: translate(4px, 3px) rotate(0.2deg); }
-  70% { transform: translate(-2px, 1px) rotate(-0.1deg); }
-  85% { transform: translate(1px, -1px); }
-  100% { transform: translate(0, 0) scale(1); }
+.cracked-glitch-canvas {
+  z-index: 2;
 }
 
-.screen-shatter-active {
-  animation: screenShatterShake 0.32s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+/* Dark damaged OLED shadow veil & faint subpixel interference grid */
+.cracked-vignette-flicker {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.22) 0px,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(circle at center, rgba(2, 4, 7, 0.12) 0%, rgba(1, 3, 6, 0.44) 100%);
+  transition: opacity 0.16s ease;
 }
 
-/* Subtle AMOLED Dead Pixel / Glitch Lines */
+.cracked-screen-overlay.active .cracked-vignette-flicker {
+  opacity: 1;
+  animation: crackedOledFlicker 3.4s steps(1, end) infinite;
+}
+
+@keyframes crackedOledFlicker {
+  0%, 100% { opacity: 0.72; }
+  7% { opacity: 0.94; }
+  8% { opacity: 0.65; }
+  23% { opacity: 0.78; }
+  24% { opacity: 1; }
+  25% { opacity: 0.68; }
+  51% { opacity: 0.85; }
+  52% { opacity: 0.98; }
+  53% { opacity: 0.7; }
+  79% { opacity: 0.9; }
+  80% { opacity: 0.64; }
+}
+
+/* AMOLED Dead Pixel / Flickering Glitch Lines */
 .cracked-lcd-line-v {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 1px;
-  background: rgba(0, 255, 136, 0.65);
-  box-shadow: 0 0 4px rgba(0, 255, 136, 0.8), 0 0 8px rgba(0, 255, 136, 0.4);
+  width: 2px;
+  z-index: 3;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 255, 136, 0.72) 22%,
+    rgba(0, 0, 0, 0.85) 38%,
+    rgba(0, 255, 136, 0.85) 55%,
+    rgba(0, 240, 255, 0.55) 72%,
+    rgba(0, 0, 0, 0.92) 86%,
+    rgba(0, 255, 136, 0.5) 100%
+  );
+  box-shadow: -2px 0 0 rgba(0, 0, 0, 0.75), 0 0 6px rgba(0, 255, 136, 0.55);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -62,17 +97,60 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 1px;
-  background: rgba(255, 72, 66, 0.65);
-  box-shadow: 0 0 4px rgba(255, 72, 66, 0.8), 0 0 8px rgba(255, 72, 66, 0.4);
+  height: 2px;
+  z-index: 3;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(255, 58, 92, 0.65) 18%,
+    rgba(0, 0, 0, 0.88) 44%,
+    rgba(0, 240, 255, 0.55) 68%,
+    rgba(0, 0, 0, 0.92) 100%
+  );
+  box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.82), 0 0 5px rgba(255, 58, 92, 0.45);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.cracked-screen-overlay.active .cracked-lcd-line-v,
-.cracked-screen-overlay.active .cracked-lcd-line-h {
+@keyframes crackedLineFlickerV {
+  0%, 100% { opacity: 0.88; transform: translateX(0); }
+  14% { opacity: 0.28; transform: translateX(0); }
+  16% { opacity: 0.95; transform: translateX(-1px); }
+  41% { opacity: 0.82; transform: translateX(0); }
+  43% { opacity: 0.12; transform: translateX(1px); }
+  45% { opacity: 0.9; transform: translateX(0); }
+  74% { opacity: 0.45; }
+  76% { opacity: 0.92; }
+}
+
+@keyframes crackedLineFlickerH {
+  0%, 100% { opacity: 0.75; }
+  19% { opacity: 0.15; }
+  21% { opacity: 0.88; }
+  58% { opacity: 0.82; }
+  60% { opacity: 0.08; }
+  62% { opacity: 0.9; }
+  88% { opacity: 0.35; }
+  90% { opacity: 0.82; }
+}
+
+.cracked-screen-overlay.active .cracked-lcd-line-v {
   opacity: 0.85;
+  animation: crackedLineFlickerV 1.9s steps(1, end) infinite;
+}
+
+.cracked-screen-overlay.active .cracked-lcd-line-h {
+  opacity: 0.75;
+  animation: crackedLineFlickerH 2.3s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cracked-screen-overlay.active .cracked-vignette-flicker,
+  .cracked-screen-overlay.active .cracked-lcd-line-v,
+  .cracked-screen-overlay.active .cracked-lcd-line-h {
+    animation: none !important;
+  }
 }
 
 /* Repair UI Notification Card */
@@ -160,21 +238,22 @@
 .cracked-tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 5px;
+  margin-top: 6px;
 }
 
 .cracked-tag-item {
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 9.5px;
   color: #9cc32e;
   background: rgba(156, 195, 46, 0.12);
   border: 1px solid rgba(156, 195, 46, 0.25);
   border-radius: 6px;
-  padding: 2px 8px;
+  padding: 2px 7px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .cracked-repair-actions {

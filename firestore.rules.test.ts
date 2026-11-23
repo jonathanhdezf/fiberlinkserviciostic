@@ -125,5 +125,28 @@ export const DIRTY_DOZEN_CASES = [
     path: 'inventory_movements/kdx-1001',
     payload: { delta: 999 },
     expected: 'PERMISSION_DENIED'
+  },
+  {
+    name: '17. Unauthenticated or non-admin write to /site_config/cracked_screen must fail',
+    auth: { uid: 'tech1', email: 'tech@fiberlink.mx', email_verified: true, role: 'tecnico' },
+    operation: 'update',
+    path: 'site_config/cracked_screen',
+    payload: { activeSoundId: 'hijacked' },
+    expected: 'PERMISSION_DENIED'
+  },
+  {
+    name: '18. Unauthenticated list /sound_library must fail',
+    auth: null,
+    operation: 'list',
+    path: 'sound_library',
+    expected: 'PERMISSION_DENIED'
+  },
+  {
+    name: '19. Malicious non-audio data URI or javascript: URL in /sound_library must fail',
+    auth: { uid: 'admin1', email: 'Jonathanhdezf@gmail.com', email_verified: true, role: 'admin' },
+    operation: 'create',
+    path: 'sound_library/snd_evil',
+    payload: { audioData: 'data:text/html;base64,PHNjcmlwdD4=', audioUrl: 'javascript:alert(1)' },
+    expected: 'PERMISSION_DENIED'
   }
 ];

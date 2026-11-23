@@ -42,7 +42,7 @@ export const ROLES = {
 export const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: {
     label: 'Administrador General',
-    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users', 'settings'],
+    modules: ['overview', 'tickets', 'workshop', 'pos', 'store', 'clients', 'shifts', 'reports', 'users', 'sounds', 'settings'],
     canDelete: true,
     canManageUsers: true,
     canEditInventory: true,

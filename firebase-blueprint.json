@@ -546,6 +546,185 @@
         }
       },
       "required": ["id", "totalVisits", "todayKey", "todayVisits", "lastPage", "updatedAt"]
+    },
+    "SoundLibraryItem": {
+      "title": "SoundLibraryItem",
+      "description": "Admin-managed audio preset, WebAudio synth profile, or custom audio clip for the Cracked Screen sound library.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the sound effect",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description of the acoustic texture",
+          "maxLength": 300
+        },
+        "category": {
+          "type": "string",
+          "enum": ["cristal", "oled", "impacto", "glitch", "personalizado"],
+          "description": "Sound effect category"
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["preset", "synth", "audio_file", "audio_url"],
+          "description": "Audio playback engine source type"
+        },
+        "presetKey": {
+          "type": "string",
+          "description": "Built-in studio preset identifier if applicable",
+          "maxLength": 64
+        },
+        "audioData": {
+          "type": "string",
+          "description": "Bounded base64 data:audio/* URL for uploaded custom clips (<= 250KB raw audio)",
+          "maxLength": 360000
+        },
+        "audioUrl": {
+          "type": "string",
+          "description": "Optional external HTTPS audio URL",
+          "maxLength": 500
+        },
+        "volume": {
+          "type": "number",
+          "description": "Normalized playback volume between 0 and 1"
+        },
+        "synthConfig": {
+          "type": "object",
+          "description": "Bounded WebAudio synthesis parameters (impactFreq, impactGain, noiseFreq, noiseQ, noiseDecayMs, shimmerFreq, glitchBuzzHz, durationMs)"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "UID of the admin who saved this sound",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdByName": {
+          "type": "string",
+          "description": "Display name of the admin creator",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "category",
+        "sourceType",
+        "presetKey",
+        "audioData",
+        "audioUrl",
+        "volume",
+        "synthConfig",
+        "createdBy",
+        "createdByName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CrackedScreenSoundConfig": {
+      "title": "CrackedScreenSoundConfig",
+      "description": "Public PII-free singleton configuration storing the active cracked-screen shatter sound synced across portal visitors.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Singleton config document ID (cracked_screen)",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "activeSoundId": {
+          "type": "string",
+          "description": "ID of the active preset or custom sound",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Active sound display name",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "category": {
+          "type": "string",
+          "enum": ["cristal", "oled", "impacto", "glitch", "personalizado"],
+          "description": "Active sound category"
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["preset", "synth", "audio_file", "audio_url"],
+          "description": "Playback source engine"
+        },
+        "presetKey": {
+          "type": "string",
+          "description": "Preset key when sourceType is preset",
+          "maxLength": 64
+        },
+        "audioData": {
+          "type": "string",
+          "description": "Bounded base64 audio data URL",
+          "maxLength": 360000
+        },
+        "audioUrl": {
+          "type": "string",
+          "description": "Optional HTTPS audio URL",
+          "maxLength": 500
+        },
+        "volume": {
+          "type": "number",
+          "description": "Normalized active volume between 0 and 1"
+        },
+        "synthConfig": {
+          "type": "object",
+          "description": "Bounded WebAudio synthesis parameters"
+        },
+        "updatedByName": {
+          "type": "string",
+          "description": "Admin display label who last updated the sound",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest update"
+        }
+      },
+      "required": [
+        "id",
+        "activeSoundId",
+        "name",
+        "category",
+        "sourceType",
+        "presetKey",
+        "audioData",
+        "audioUrl",
+        "volume",
+        "synthConfig",
+        "updatedByName",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
@@ -576,6 +755,14 @@
     "/site_stats/{statId}": {
       "schema": { "$ref": "#/entities/SiteVisitorStats" },
       "description": "PII-free aggregate site visitor registry document (/site_stats/visitors)."
+    },
+    "/sound_library/{soundId}": {
+      "schema": { "$ref": "#/entities/SoundLibraryItem" },
+      "description": "Admin-managed library of custom and synthesized cracked-screen sound effects."
+    },
+    "/site_config/{configId}": {
+      "schema": { "$ref": "#/entities/CrackedScreenSoundConfig" },
+      "description": "Public PII-free singleton configuration for cracked-screen active sound (/site_config/cracked_screen)."
     }
   }
 }

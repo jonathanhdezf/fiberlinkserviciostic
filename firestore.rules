@@ -318,6 +318,93 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    function isValidSoundCategory(cat) {
+      return cat in ['cristal', 'oled', 'impacto', 'glitch', 'personalizado'];
+    }
+
+    function isValidSoundSourceType(st) {
+      return st in ['preset', 'synth', 'audio_file', 'audio_url'];
+    }
+
+    function isValidAudioData(dataStr) {
+      return dataStr is string
+        && dataStr.size() <= 360000
+        && (dataStr == '' || dataStr.matches('^data:audio/[a-zA-Z0-9.+_-]+;base64,[A-Za-z0-9+/=]+$'));
+    }
+
+    function isValidAudioUrl(url) {
+      return url is string
+        && url.size() <= 500
+        && (url == '' || url.matches('^https://.*'));
+    }
+
+    function isValidSynthConfig(cfg) {
+      return cfg is map
+        && cfg.keys().hasAll(['impactFreq', 'impactGain', 'noiseFreq', 'noiseQ', 'noiseDecayMs', 'shimmerFreq', 'glitchBuzzHz', 'durationMs'])
+        && cfg.keys().hasOnly(['impactFreq', 'impactGain', 'noiseFreq', 'noiseQ', 'noiseDecayMs', 'shimmerFreq', 'glitchBuzzHz', 'durationMs'])
+        && cfg.impactFreq is number && cfg.impactFreq >= 60 && cfg.impactFreq <= 5000
+        && cfg.impactGain is number && cfg.impactGain >= 0 && cfg.impactGain <= 1
+        && cfg.noiseFreq is number && cfg.noiseFreq >= 400 && cfg.noiseFreq <= 12000
+        && cfg.noiseQ is number && cfg.noiseQ >= 0.5 && cfg.noiseQ <= 15
+        && cfg.noiseDecayMs is number && cfg.noiseDecayMs >= 40 && cfg.noiseDecayMs <= 1200
+        && cfg.shimmerFreq is number && cfg.shimmerFreq >= 1000 && cfg.shimmerFreq <= 12000
+        && cfg.glitchBuzzHz is number && cfg.glitchBuzzHz >= 0 && cfg.glitchBuzzHz <= 2000
+        && cfg.durationMs is number && cfg.durationMs >= 80 && cfg.durationMs <= 2000;
+    }
+
+    function isValidSoundLibraryItem(data, soundIdParam) {
+      return data.keys().hasAll([
+          'id', 'name', 'description', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig',
+          'createdBy', 'createdByName', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'name', 'description', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig',
+          'createdBy', 'createdByName', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == soundIdParam
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 120
+        && data.description is string && data.description.size() <= 300
+        && isValidSoundCategory(data.category)
+        && isValidSoundSourceType(data.sourceType)
+        && data.presetKey is string && data.presetKey.size() <= 64
+        && isValidAudioData(data.audioData)
+        && isValidAudioUrl(data.audioUrl)
+        && data.volume is number && data.volume >= 0 && data.volume <= 1
+        && isValidSynthConfig(data.synthConfig)
+        && isValidId(data.createdBy)
+        && data.createdByName is string && data.createdByName.size() >= 1 && data.createdByName.size() <= 120
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCrackedSoundConfig(data, configIdParam) {
+      return data.keys().hasAll([
+          'id', 'activeSoundId', 'name', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig', 'updatedByName', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'activeSoundId', 'name', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig', 'updatedByName', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == configIdParam
+        && configIdParam == 'cracked_screen'
+        && isValidId(data.activeSoundId)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 120
+        && isValidSoundCategory(data.category)
+        && isValidSoundSourceType(data.sourceType)
+        && data.presetKey is string && data.presetKey.size() <= 64
+        && isValidAudioData(data.audioData)
+        && isValidAudioUrl(data.audioUrl)
+        && data.volume is number && data.volume >= 0 && data.volume <= 1
+        && isValidSynthConfig(data.synthConfig)
+        && data.updatedByName is string && data.updatedByName.size() >= 1 && data.updatedByName.size() <= 120
+        && data.updatedAt is timestamp;
+    }
+
     // ==========================================
     // COLLECTION 1: /staff/{uid}
     // ==========================================
@@ -544,6 +631,62 @@ service cloud.firestore {
             )
           )
         );
+
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // COLLECTION 8: /sound_library/{soundId} (Admin Sound Library)
+    // ==========================================
+    match /sound_library/{soundId} {
+      allow get: if isValidId(soundId) && isStaff();
+      allow list: if isStaff();
+
+      allow create: if isValidId(soundId)
+        && isAdmin()
+        && isValidSoundLibraryItem(incoming(), soundId)
+        && incoming().createdBy == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(soundId)
+        && isAdmin()
+        && isValidSoundLibraryItem(incoming(), soundId)
+        && incoming().id == existing().id
+        && incoming().createdBy == existing().createdBy
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'description', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig', 'updatedAt'
+        ]);
+
+      allow delete: if isValidId(soundId) && isAdmin();
+    }
+
+    // ==========================================
+    // COLLECTION 9: /site_config/{configId} (Public PII-Free Cracked Screen Sound Sync)
+    // ==========================================
+    match /site_config/{configId} {
+      allow get: if isValidId(configId) && configId == 'cracked_screen';
+      allow list: if isStaff();
+
+      allow create: if isValidId(configId)
+        && configId == 'cracked_screen'
+        && isAdmin()
+        && isValidCrackedSoundConfig(incoming(), configId)
+        && incoming().updatedAt == request.time;
+
+      allow update: if isValidId(configId)
+        && configId == 'cracked_screen'
+        && isAdmin()
+        && isValidCrackedSoundConfig(incoming(), configId)
+        && incoming().id == existing().id
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'activeSoundId', 'name', 'category', 'sourceType', 'presetKey',
+          'audioData', 'audioUrl', 'volume', 'synthConfig', 'updatedByName', 'updatedAt'
+        ]);
 
       allow delete: if false;
     }

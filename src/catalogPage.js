@@ -236,7 +236,7 @@ function bootCatalogPage() {
             <div class="flex items-baseline justify-between gap-2">
               <div class="flex flex-col">
                 <span class="font-headline-md text-xl text-text-primary font-bold tracking-tight tabular-nums">${priceStr} <span class="text-xs text-text-tertiary font-normal">MXN${escapeHtml(unitSuffix)}</span></span>
-                <span class="font-label-mono-xs text-[11px] text-neon-emerald">IVA incluido · CFDI 4.0</span>
+                <span class="font-label-mono-xs text-[11px] text-neon-emerald">Precio neto · Garantía local</span>
               </div>
               <span class="font-label-mono-xs text-[11px] ${isOutOfStock ? 'text-text-tertiary' : 'text-neon-emerald'} font-semibold whitespace-nowrap">${isOutOfStock ? 'Bajo pedido' : 'Entrega hoy'}</span>
             </div>

@@ -150,6 +150,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span class="nav-label">Usuarios & Roles</span>
         </button>
+        <button class="nav-btn" data-view="sounds" title="Biblioteca de Sonidos para Pantalla Rota sincronizada con Firestore">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span class="nav-label">Biblioteca Sonidos</span>
+        </button>
         <button class="nav-btn" data-view="settings" title="Módulo de Configuración: Opciones, Cajeros, Folios, Cajas, Logotipo, Ticket, Pagos, Impuestos, Corte, Unidades, Notificaciones y Respaldo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <span class="nav-label">Configuración</span>
@@ -1380,7 +1384,7 @@
               </div>
               <div class="kpi-main">
                 <div class="kpi-value tabular" id="cliKpiTotal">0</div>
-                <span class="kpi-trend trend-info" id="cliKpiBillingBadge">0 con CFDI 4.0</span>
+                <span class="kpi-trend trend-info" id="cliKpiBillingBadge">0 con Datos Fiscales</span>
               </div>
               <div class="kpi-foot">Control de clientes activos y datos fiscales</div>
             </article>
@@ -1437,7 +1441,7 @@
                 </div>
                 <div class="pos-tab-text">
                   <span class="pos-tab-title">1. Control y Administración de Clientes</span>
-                  <span class="pos-tab-sub">Nuevo · Modificar · Eliminar · Crédito autorizado · Facturación CFDI · Exportar</span>
+                  <span class="pos-tab-sub">Nuevo · Modificar · Eliminar · Crédito autorizado · Datos Fiscales · Exportar</span>
                 </div>
               </button>
 
@@ -1469,7 +1473,7 @@
                 <div class="filter-pills" id="cliFilterPills">
                   <button type="button" class="pill-btn active" data-clifilter="all">Todos</button>
                   <button type="button" class="pill-btn" data-clifilter="credit">Con Crédito Autorizado</button>
-                  <button type="button" class="pill-btn" data-clifilter="billing">Con Facturación CFDI</button>
+                  <button type="button" class="pill-btn" data-clifilter="billing">Con Datos Fiscales</button>
                   <button type="button" class="pill-btn" data-clifilter="balance">Con Saldo Deudor</button>
                 </div>
                 <button type="button" class="btn btn-secondary" id="btnExportClientsCsv" title="Exportar padrón de clientes a CSV / Excel">
@@ -2818,7 +2822,7 @@
                   <input type="checkbox" id="cfgTaxRetentionIsr">
                   <div>
                     <strong>Habilitar cálculo de Retención ISR (1.25% RESICO a Personas Morales)</strong>
-                    <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Útil para cotizaciones y facturación CFDI 4.0 a clientes corporativos.</span>
+                    <span style="display:block; font-size:0.74rem; color:var(--text-secondary);">Útil para cotizaciones corporativas y desglose fiscal.</span>
                   </div>
                 </label>
               </div>
@@ -2895,7 +2899,7 @@
                   <label>Abreviatura *
                     <input type="text" id="cfgUnitKey" class="mono" required placeholder="Ej. bobina" maxlength="10">
                   </label>
-                  <label>Clave SAT (CFDI 4.0)
+                  <label>Clave SAT / Unidad
                     <input type="text" id="cfgUnitSat" class="mono" placeholder="Ej. H87 / MTR" value="H87">
                   </label>
                   <label class="full">Descripción de la Unidad *
@@ -3053,6 +3057,206 @@
             <div style="display:flex; gap:8px;">
               <button type="button" class="btn btn-primary btn-sm" id="btnCfgFooterSave">💾 Guardar Cambios</button>
               <button type="button" class="btn btn-secondary btn-sm" id="btnCfgFooterNext">Siguiente Pestaña →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 11: BIBLIOTECA DE SONIDOS (FIRESTORE SYNC)
+        ========================================== -->
+        <section id="view-sounds" class="erp-view">
+          <!-- Banner de Estado Activo Sincronizado -->
+          <div class="sound-active-banner surface-card">
+            <div class="sound-active-info">
+              <div class="sound-active-eyebrow">
+                <span class="status-dot dot-lime"></span>
+                <span>SINCRONIZADO EN TIEMPO REAL CON CLOUD FIRESTORE · PANTALLA ESTRELLADA</span>
+              </div>
+              <div class="sound-active-title-row">
+                <h2 id="sndActiveName">Cristal Templado Clásico</h2>
+                <span class="badge badge-green" id="sndActiveCategoryBadge">Cristal &amp; Vidrio</span>
+              </div>
+              <p class="sound-active-meta" id="sndActiveMeta">
+                Los visitantes que fracturen la pantalla en el portal reproducirán automáticamente este sonido.
+              </p>
+            </div>
+
+            <div class="sound-active-controls">
+              <div class="sound-vol-box">
+                <div class="sound-vol-head">
+                  <label for="sndActiveVolumeRange">Volumen en portal</label>
+                  <strong class="mono tabular" id="sndActiveVolumeVal">85%</strong>
+                </div>
+                <div class="sound-vol-row">
+                  <input type="range" id="sndActiveVolumeRange" min="0" max="100" step="5" value="85">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnSaveActiveVolume">Aplicar</button>
+                </div>
+              </div>
+              <div class="sound-active-btns">
+                <button type="button" class="btn btn-primary" id="btnTestActiveSound">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Probar Activo</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnStopAnySound" title="Detener reproducción">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                  <span>Detener</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bento-grid">
+            <!-- Catálogo de Sonidos (Estudio + Guardados en Firestore) -->
+            <div class="bento-span-7 panel-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">CATÁLOGO DE EFECTOS ACÚSTICOS</div>
+                  <h3>Presets de Estudio &amp; Biblioteca Guardada</h3>
+                </div>
+                <div class="sound-filter-bar" id="soundCategoryFilters">
+                  <button type="button" class="btn btn-secondary btn-sm active" data-sndcat="all">Todos</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-sndcat="cristal">Cristal</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-sndcat="oled">OLED</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-sndcat="impacto">Impacto</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-sndcat="glitch">Glitch</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-sndcat="personalizado">Propios</button>
+                </div>
+              </div>
+
+              <div id="soundsLibraryGrid" class="sound-cards-grid"></div>
+            </div>
+
+            <!-- Creador / Subida de Sonido Personalizado -->
+            <div class="bento-span-5 panel-card">
+              <div class="panel-head">
+                <div>
+                  <div class="panel-eyebrow">NUEVO EFECTO PARA PANTALLA ROTA</div>
+                  <h3>Subir Audio o Diseñar Sintetizador</h3>
+                </div>
+              </div>
+
+              <form id="soundCreatorForm" class="sound-creator-form" novalidate>
+                <!-- Selector de Fuente -->
+                <div class="sound-mode-tabs" id="soundCreatorModeTabs" role="tablist">
+                  <button type="button" class="sound-mode-btn active" data-sndmode="synth" role="tab" aria-selected="true">
+                    Sintetizador
+                  </button>
+                  <button type="button" class="sound-mode-btn" data-sndmode="audio_file" role="tab" aria-selected="false">
+                    Subir Archivo
+                  </button>
+                  <button type="button" class="sound-mode-btn" data-sndmode="audio_url" role="tab" aria-selected="false">
+                    Enlace HTTPS
+                  </button>
+                </div>
+
+                <div class="sound-form-row">
+                  <div class="form-group">
+                    <label for="sndInputName">Nombre del sonido *</label>
+                    <input type="text" id="sndInputName" maxlength="120" placeholder="Ej. Impacto Cristal Seco v2" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="sndInputCategory">Categoría</label>
+                    <select id="sndInputCategory">
+                      <option value="cristal">Cristal &amp; Vidrio</option>
+                      <option value="oled">OLED &amp; Eléctrico</option>
+                      <option value="impacto">Impacto Seco</option>
+                      <option value="glitch">Glitch Digital</option>
+                      <option value="personalizado">Personalizado</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="sndInputDesc">Descripción corta</label>
+                  <input type="text" id="sndInputDesc" maxlength="300" placeholder="Ej. Crujido rápido de display estrellado sin eco largo">
+                </div>
+
+                <!-- Panel Modo Sintetizador -->
+                <div id="sndModeSynthPanel" class="sound-mode-panel">
+                  <div class="sound-sliders-grid">
+                    <div class="sound-slider-item">
+                      <div class="sound-slider-head">
+                        <label for="sndSynthImpactFreq">Golpe Inicial</label>
+                        <span class="mono tabular" id="sndValImpactFreq">1400 Hz</span>
+                      </div>
+                      <input type="range" id="sndSynthImpactFreq" min="80" max="4500" step="20" value="1400">
+                    </div>
+
+                    <div class="sound-slider-item">
+                      <div class="sound-slider-head">
+                        <label for="sndSynthNoiseFreq">Crujido Vidrio</label>
+                        <span class="mono tabular" id="sndValNoiseFreq">4200 Hz</span>
+                      </div>
+                      <input type="range" id="sndSynthNoiseFreq" min="600" max="10000" step="100" value="4200">
+                    </div>
+
+                    <div class="sound-slider-item">
+                      <div class="sound-slider-head">
+                        <label for="sndSynthShimmerFreq">Resonancia Cristal</label>
+                        <span class="mono tabular" id="sndValShimmerFreq">4800 Hz</span>
+                      </div>
+                      <input type="range" id="sndSynthShimmerFreq" min="1200" max="11000" step="100" value="4800">
+                    </div>
+
+                    <div class="sound-slider-item">
+                      <div class="sound-slider-head">
+                        <label for="sndSynthDecayMs">Duración Crujido</label>
+                        <span class="mono tabular" id="sndValDecayMs">280 ms</span>
+                      </div>
+                      <input type="range" id="sndSynthDecayMs" min="60" max="900" step="20" value="280">
+                    </div>
+
+                    <div class="sound-slider-item sound-slider-full">
+                      <div class="sound-slider-head">
+                        <label for="sndSynthGlitchHz">Interferencia Eléctrica OLED (0 = Apagado)</label>
+                        <span class="mono tabular" id="sndValGlitchHz">0 Hz</span>
+                      </div>
+                      <input type="range" id="sndSynthGlitchHz" min="0" max="1600" step="20" value="0">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Panel Modo Subir Archivo -->
+                <div id="sndModeFilePanel" class="sound-mode-panel hidden">
+                  <label class="sound-upload-dropzone" for="sndAudioFileInput">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    <strong>Seleccionar clip de audio (.MP3, .WAV, .OGG, .M4A)</strong>
+                    <span>Máximo 255 KB (~0.3s a 3s) para sincronización instantánea en Firestore</span>
+                    <input type="file" id="sndAudioFileInput" accept=".mp3,.wav,.ogg,.m4a,.aac,.webm,audio/*" class="hidden">
+                  </label>
+                  <div id="sndUploadedFileInfo" class="sound-file-pill hidden"></div>
+                </div>
+
+                <!-- Panel Modo URL HTTPS -->
+                <div id="sndModeUrlPanel" class="sound-mode-panel hidden">
+                  <div class="form-group">
+                    <label for="sndAudioUrlInput">URL directa del audio (HTTPS) *</label>
+                    <input type="url" id="sndAudioUrlInput" maxlength="500" placeholder="https://ejemplo.com/sonidos/cristal-roto.mp3">
+                    <small style="color:var(--text-muted); font-size:0.72rem;">Debe apuntar directamente a un archivo MP3, WAV u OGG accesible vía HTTPS.</small>
+                  </div>
+                </div>
+
+                <div class="sound-slider-item">
+                  <div class="sound-slider-head">
+                    <label for="sndInputVolume">Nivel de volumen predeterminado</label>
+                    <span class="mono tabular" id="sndValInputVolume">85%</span>
+                  </div>
+                  <input type="range" id="sndInputVolume" min="10" max="100" step="5" value="85">
+                </div>
+
+                <div class="sound-creator-actions">
+                  <button type="button" class="btn btn-secondary" id="btnPreviewDraftSound">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Escuchar</span>
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnSaveDraftSound">
+                    <span>Guardar en Biblioteca</span>
+                  </button>
+                  <button type="submit" class="btn btn-primary" id="btnSaveAndActivateSound">
+                    <span>Guardar y Activar</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </section>
@@ -3613,13 +3817,13 @@
             </div>
           </div>
 
-          <!-- SECCIÓN 2: TIENE DATOS DE FACTURACIÓN ELECTRÓNICA (CFDI 4.0) -->
+          <!-- SECCIÓN 2: DATOS FISCALES DEL CLIENTE -->
           <div class="full client-feature-box">
             <label class="checkbox-row client-feature-toggle">
               <input type="checkbox" id="cliHasBilling">
               <div>
-                <strong>🧾 Tiene Datos de Facturación Electrónica (CFDI 4.0)</strong>
-                <span style="display:block; font-size:0.76rem; color:var(--text-secondary);">Almacena RFC, Razón Social, Régimen Fiscal SAT, Código Postal y Uso de CFDI.</span>
+                <strong>🧾 Tiene Datos Fiscales / Comprobante</strong>
+                <span style="display:block; font-size:0.76rem; color:var(--text-secondary);">Almacena RFC, Razón Social, Régimen Fiscal, Código Postal y Uso Fiscal.</span>
               </div>
             </label>
 
@@ -3630,10 +3834,10 @@
               <label>Código Postal Fiscal (C.P.) *
                 <input type="text" id="cliCpFiscal" class="mono tabular" placeholder="Ej. 73800" maxlength="5">
               </label>
-              <label class="full">Razón Social Fiscal (Sin régimen societario en CFDI 4.0) *
+              <label class="full">Razón Social o Nombre Fiscal *
                 <input type="text" id="cliRazonSocial" placeholder="Ej. SUPERMERCADO LA SIERRA" style="text-transform:uppercase;">
               </label>
-              <label>Régimen Fiscal SAT *
+              <label>Régimen Fiscal *
                 <select id="cliRegimenFiscal">
                   <option value="601 - General de Ley Personas Morales">601 - General de Ley Personas Morales</option>
                   <option value="612 - Personas Físicas con Actividades Empresariales y Profesionales">612 - Personas Físicas con Actividades Empresariales</option>
@@ -3643,7 +3847,7 @@
                   <option value="616 - Sin obligaciones fiscales">616 - Sin obligaciones fiscales</option>
                 </select>
               </label>
-              <label>Uso de CFDI Predeterminado *
+              <label>Uso Fiscal Predeterminado *
                 <select id="cliUsoCfdi">
                   <option value="G03 - Gastos en general">G03 - Gastos en general</option>
                   <option value="G01 - Adquisición de mercancías">G01 - Adquisición de mercancías</option>

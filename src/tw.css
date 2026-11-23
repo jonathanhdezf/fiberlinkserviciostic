@@ -134,7 +134,8 @@
     background-image: linear-gradient(180deg, rgba(11, 17, 24, 0.84) 0%, rgba(8, 13, 18, 0.76) 55%, rgba(10, 15, 22, 0.88) 100%) !important;
     border-color: rgba(156, 195, 46, 0.18) !important;
   }
-  html:not(.light) #opiniones-clientes {
+  html:not(.light) #opiniones-clientes,
+  html:not(.light) #preguntas-frecuentes {
     background-color: transparent !important;
     background-image: linear-gradient(180deg, rgba(8, 12, 17, 0.82) 0%, rgba(11, 16, 22, 0.74) 55%, rgba(7, 10, 15, 0.85) 100%) !important;
     border-color: rgba(156, 195, 46, 0.16) !important;
@@ -264,7 +265,8 @@
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(243, 248, 237, 0.50) 100%) !important;
     border-color: rgba(68, 104, 4, 0.14) !important;
   }
-  html.light #opiniones-clientes {
+  html.light #opiniones-clientes,
+  html.light #preguntas-frecuentes {
     background-color: transparent !important;
     background-image: linear-gradient(180deg, rgba(241, 247, 234, 0.48) 0%, rgba(255, 255, 255, 0.54) 55%, rgba(237, 244, 228, 0.56) 100%) !important;
   }
@@ -317,7 +319,9 @@
   html.light #fibra-optica .rounded-xl,
   html.light #fibra-optica .rounded-2xl,
   html.light #compartir .rounded-2xl,
-  html.light #fiberlink-labs .rounded-2xl {
+  html.light #fiberlink-labs .rounded-2xl,
+  html.light #preguntas-frecuentes .rounded-xl,
+  html.light #preguntas-frecuentes .rounded-2xl {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: 0 4px 18px -2px rgba(15, 26, 10, 0.07), 0 1px 3px rgba(15, 26, 10, 0.05);
@@ -442,17 +446,239 @@
     padding-right: 1rem;
     flex-shrink: 0;
   }
+
+  /* =========================================================
+     TICKET WIZARD: ESTADOS DE SELECCIÓN INEQUÍVOCOS & VALIDACIÓN
+     ========================================================= */
+  .ticket-opt-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    pointer-events: none;
+  }
+
+  .service-opt:not(.is-selected),
+  .modality-opt:not(.is-selected) {
+    opacity: 0.78;
+  }
+  .service-opt:not(.is-selected):hover,
+  .modality-opt:not(.is-selected):hover {
+    opacity: 1;
+  }
+
+  .service-opt.is-selected,
+  .modality-opt.is-selected {
+    opacity: 1 !important;
+    background: linear-gradient(135deg, rgba(156, 195, 46, 0.22), rgba(156, 195, 46, 0.08)) !important;
+    border: 2px solid rgb(var(--tw-brand)) !important;
+    box-shadow: 0 0 0 1px rgba(156, 195, 46, 0.32), 0 10px 22px -8px rgba(156, 195, 46, 0.38) !important;
+  }
+  html.light .service-opt.is-selected,
+  html.light .modality-opt.is-selected {
+    background: linear-gradient(135deg, rgba(156, 195, 46, 0.28), rgba(156, 195, 46, 0.12)) !important;
+    border-color: rgb(var(--tw-brand-ink)) !important;
+    box-shadow: 0 0 0 1px rgba(68, 104, 4, 0.24), 0 8px 18px -6px rgba(68, 104, 4, 0.28) !important;
+  }
+
+  .service-opt.is-selected .ticket-opt-icon,
+  .modality-opt.is-selected .ticket-opt-icon {
+    background-color: rgb(var(--tw-brand)) !important;
+    color: rgb(var(--tw-on-brand)) !important;
+    box-shadow: 0 4px 12px rgba(156, 195, 46, 0.35);
+  }
+
+  .service-opt.is-selected .ticket-opt-check,
+  .modality-opt.is-selected .ticket-opt-check {
+    opacity: 1;
+    transform: scale(1);
+    color: rgb(var(--tw-brand-ink));
+  }
+
+  /* Selector de Urgencia (Normal / Alta / Crítica) claramente diferenciado */
+  .urgency-opt {
+    position: relative;
+    min-height: 68px;
+    border: 1.5px solid transparent;
+    transition: all 0.16s ease;
+  }
+  .urgency-opt:not(.is-selected) {
+    opacity: 0.56;
+    background-color: transparent !important;
+  }
+  .urgency-opt:not(.is-selected):hover {
+    opacity: 0.92;
+    background-color: rgba(156, 195, 46, 0.06) !important;
+  }
+  .urgency-opt.is-selected {
+    opacity: 1 !important;
+    transform: translateY(-1px);
+  }
+  .urgency-opt.is-selected[data-urgency="NORMAL"] {
+    background: linear-gradient(180deg, rgba(156, 195, 46, 0.22), rgba(156, 195, 46, 0.10)) !important;
+    border: 2px solid rgb(var(--tw-brand)) !important;
+    box-shadow: 0 4px 14px -4px rgba(156, 195, 46, 0.42);
+  }
+  html.light .urgency-opt.is-selected[data-urgency="NORMAL"] {
+    border-color: rgb(var(--tw-brand-ink)) !important;
+  }
+  .urgency-opt.is-selected[data-urgency="ALTA"] {
+    background: linear-gradient(180deg, rgba(255, 193, 7, 0.24), rgba(255, 193, 7, 0.10)) !important;
+    border: 2px solid rgb(var(--tw-warning)) !important;
+    box-shadow: 0 4px 16px -4px rgba(255, 193, 7, 0.45);
+  }
+  .urgency-opt.is-selected[data-urgency="CRITICA"] {
+    background: linear-gradient(180deg, rgba(255, 72, 66, 0.26), rgba(255, 72, 66, 0.12)) !important;
+    border: 2px solid rgb(var(--tw-alert)) !important;
+    box-shadow: 0 0 0 1px rgba(var(--tw-alert), 0.30), 0 6px 18px -4px rgba(255, 72, 66, 0.50);
+  }
+  .urgency-opt.is-selected .ticket-opt-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .urgency-opt.is-selected[data-urgency="NORMAL"] .ticket-opt-check { color: rgb(var(--tw-brand-ink)); }
+  .urgency-opt.is-selected[data-urgency="ALTA"] .ticket-opt-check { color: rgb(var(--tw-warning)); }
+  .urgency-opt.is-selected[data-urgency="CRITICA"] .ticket-opt-check { color: rgb(var(--tw-alert)); }
+
+  /* Validación en tiempo real para formulario de tickets */
+  .ticket-input-wrap {
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  }
+  .ticket-input-wrap.is-invalid {
+    border-color: rgb(var(--tw-alert)) !important;
+    box-shadow: 0 0 0 2px rgba(var(--tw-alert), 0.18) !important;
+  }
+  .ticket-input-wrap.is-valid {
+    border-color: rgb(var(--tw-brand-ink)) !important;
+    box-shadow: 0 0 0 1px rgba(var(--tw-brand), 0.22) !important;
+  }
+  .ticket-field-msg {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11.5px;
+    line-height: 1.35;
+    margin-top: 0.15rem;
+    font-weight: 500;
+  }
+  .ticket-field-msg.is-error {
+    color: rgb(var(--tw-alert));
+  }
+  .ticket-field-msg.is-valid {
+    color: rgb(var(--tw-brand-ink));
+  }
+  .ticket-field-shake {
+    animation: fl-field-shake 0.28s ease-in-out;
+  }
+
+  /* =========================================================
+     PREGUNTAS FRECUENTES (ACORDEÓN COLAPSABLE)
+     ========================================================= */
+  .faq-filter-btn {
+    min-height: 40px;
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--fl-glass);
+    background-color: rgb(var(--tw-panel));
+    color: rgb(var(--tw-text-secondary));
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.16s ease;
+    white-space: nowrap;
+  }
+  .faq-filter-btn:hover {
+    color: rgb(var(--tw-text-primary));
+    border-color: rgba(156, 195, 46, 0.4);
+  }
+  .faq-filter-btn.is-active {
+    background-color: rgb(var(--tw-brand));
+    color: rgb(var(--tw-on-brand));
+    border-color: rgb(var(--tw-brand));
+    font-weight: 700;
+    box-shadow: 0 4px 14px -4px rgba(156, 195, 46, 0.45);
+  }
+
+  .faq-item {
+    border-radius: 0.95rem;
+    background-color: rgb(var(--tw-panel));
+    border: 1px solid var(--fl-glass);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  }
+  html:not(.light) .faq-item {
+    background-color: rgba(11, 16, 22, 0.9);
+  }
+  .faq-item:hover {
+    border-color: rgba(156, 195, 46, 0.38);
+  }
+  .faq-item.is-open {
+    border-color: rgba(156, 195, 46, 0.6);
+    box-shadow: 0 10px 26px -10px rgba(156, 195, 46, 0.25);
+  }
+  html.light .faq-item.is-open {
+    border-color: rgb(var(--tw-brand-ink));
+    box-shadow: 0 10px 24px -8px rgba(68, 104, 4, 0.18);
+  }
+
+  .faq-trigger {
+    width: 100%;
+    min-height: 58px;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+  }
+  .faq-chevron {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.16s ease;
+  }
+  .faq-item.is-open .faq-chevron {
+    transform: rotate(180deg);
+    color: rgb(var(--tw-brand-ink));
+  }
+  .faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .faq-item.is-open .faq-panel {
+    grid-template-rows: 1fr;
+  }
+  .faq-panel-inner {
+    overflow: hidden;
+  }
 }
 
 @keyframes fl-marquee { to { transform: translate3d(-50%, 0, 0); } }
 @keyframes fl-toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fl-field-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
 
 /* Accesibilidad + rendimiento: respetar "reducir movimiento" */
 @media (prefers-reduced-motion: reduce) {
   .fl-marquee-track,
   .fl-reviews-track,
   .animate-ping,
-  .animate-pulse { animation: none !important; }
+  .animate-pulse,
+  .ticket-field-shake { animation: none !important; }
+  .faq-panel,
+  .faq-chevron { transition: none !important; }
   .fl-reviews-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
   .hero-video-backdrop video { display: none !important; }
 }

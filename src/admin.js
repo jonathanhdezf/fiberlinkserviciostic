@@ -2,6 +2,16 @@ import { ticketService } from './services/ticketService.js';
 import { erpService } from './services/erpService.js';
 import { staffAuthService } from './services/staffAuthService.js';
 import { storeService } from './services/storeService.js';
+import {
+  DEFAULT_GLASS_PRESETS,
+  SOUND_CATEGORIES,
+  getCachedActiveSound,
+  normalizeSynthConfig,
+  playCrackedSound,
+  prepareAudioFilePayload,
+  soundLibraryService,
+  stopActivePreviewSound
+} from './services/soundLibraryService.js';
 
 // ==========================================
 // GLOBAL ERP STATE
@@ -10,6 +20,8 @@ let currentUser = null;
 let ticketsUnsubscribe = null;
 let productsUnsubscribe = null;
 let movementsUnsubscribe = null;
+let soundConfigUnsubscribe = null;
+let soundLibraryUnsubscribe = null;
 let lastKnownTicketIds = new Set();
 let isFirstTicketSnapshot = true;
 let currentView = 'overview';
@@ -61,6 +73,7 @@ const VIEW_META = {
   shifts: { title: 'Organización de Turnos, Arqueo y Cortes de Caja', bc: 'Cortes y Turnos' },
   reports: { title: 'Analítica Financiera y Reportes Ejecutivos', bc: 'Reportes & Analítica' },
   users: { title: 'Usuarios, Roles y Seguridad RBAC', bc: 'Usuarios & Roles' },
+  sounds: { title: 'Biblioteca de Sonidos · Pantalla Estrellada', bc: 'Biblioteca Sonidos' },
   settings: { title: 'Módulo de Configuración General del Sistema', bc: 'Configuración' }
 };
 
@@ -99,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReportsModule();
   initUsersModule();
   initSettingsModule();
+  initSoundLibraryModule();
   initRealtimeSync();
 });
 
@@ -315,6 +329,15 @@ function initAuth() {
       movementsUnsubscribe();
       movementsUnsubscribe = null;
     }
+    if (soundConfigUnsubscribe) {
+      soundConfigUnsubscribe();
+      soundConfigUnsubscribe = null;
+    }
+    if (soundLibraryUnsubscribe) {
+      soundLibraryUnsubscribe();
+      soundLibraryUnsubscribe = null;
+    }
+    stopActivePreviewSound();
     sessionStorage.clear();
     currentUser = null;
     await staffAuthService.logout();
@@ -411,6 +434,32 @@ async function enterDashboard() {
     },
     (err) => {
       console.error('[Firestore Movements Listener Error]:', err);
+    }
+  );
+
+  if (soundConfigUnsubscribe) {
+    soundConfigUnsubscribe();
+  }
+  soundConfigUnsubscribe = soundLibraryService.subscribeActiveCrackedSound(
+    (liveCfg) => {
+      activeCrackSoundConfig = liveCfg || getCachedActiveSound();
+      renderSoundLibraryView();
+    },
+    (err) => {
+      console.error('[Firestore Active Sound Listener Error]:', err);
+    }
+  );
+
+  if (soundLibraryUnsubscribe) {
+    soundLibraryUnsubscribe();
+  }
+  soundLibraryUnsubscribe = soundLibraryService.subscribeSoundLibrary(
+    (liveSounds) => {
+      customSoundsList = Array.isArray(liveSounds) ? liveSounds : [];
+      renderSoundLibraryView();
+    },
+    (err) => {
+      console.error('[Firestore Sound Library Listener Error]:', err);
     }
   );
 
@@ -612,7 +661,7 @@ function renderCommandResults(query) {
     { group: 'Acciones Rápidas', title: 'Registrar Producto en Tienda / Almacén', sub: 'Acción', run: () => { closeModal('cmdPaletteModal'); document.getElementById('btnOpenNewProductModal')?.click(); } },
     { group: 'Acciones Rápidas', title: 'Alternar Tema Oscuro / Claro', sub: 'Preferencia', run: () => { closeModal('cmdPaletteModal'); document.getElementById('themeToggleBtn')?.click(); } },
     { group: 'Acciones Rápidas', title: 'Exportar Reporte de Ventas a CSV', sub: 'Reporte', run: () => { closeModal('cmdPaletteModal'); exportSalesToCSV(); } },
-    { group: 'Acciones Rápidas', title: 'Registrar Nuevo Cliente (Crédito / CFDI)', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); openClientModalForCreate(); } },
+    { group: 'Acciones Rápidas', title: 'Registrar Nuevo Cliente (Crédito / Datos Fiscales)', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); openClientModalForCreate(); } },
     { group: 'Acciones Rápidas', title: 'Registrar Abono o Liquidación de Crédito', sub: 'Créditos', run: () => { closeModal('cmdPaletteModal'); openCreditMovementModal(); } },
     { group: 'Acciones Rápidas', title: 'Exportar Padrón de Clientes a CSV', sub: 'Clientes', run: () => { closeModal('cmdPaletteModal'); exportClientsToCSV(); } },
     { group: 'Acciones Rápidas', title: 'Realizar Corte del Turno (Arqueo X/Z)', sub: 'Cortes y Turnos', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); switchShiftsSubTab('turn_cut'); } },
@@ -626,6 +675,7 @@ function renderCommandResults(query) {
     { group: 'Navegación', title: 'Ir a Tienda e Inventario', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('store'); } },
     { group: 'Navegación', title: 'Ir a Cortes y Turnos (Turno, Día, WhatsApp)', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('shifts'); } },
     { group: 'Navegación', title: 'Ir a Módulo de Configuración General', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('settings'); } },
+    { group: 'Navegación', title: 'Ir a Biblioteca de Sonidos (Pantalla Rota)', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('sounds'); } },
     { group: 'Navegación', title: 'Ir a Reportes y Analítica', sub: 'Vista', run: () => { closeModal('cmdPaletteModal'); switchView('reports'); } }
   ];
 
@@ -2723,7 +2773,7 @@ function initPosModule() {
       infoBox.innerHTML = client.hasCredit
         ? `<span>💳 <strong>Crédito Autorizado:</strong> Límite ${formatMoney(client.creditLimit)} (${client.creditDays || 30} días)</span>
            <span>Saldo: <strong style="color:var(--amber);">${formatMoney(client.currentBalance)}</strong> · Disponible: <strong style="color:var(--secondary);">${formatMoney(avail)}</strong></span>`
-        : `<span>⚠️ Cliente de contado (Sin línea de crédito autorizada) · ${client.hasBilling ? 'CFDI: ' + client.rfc : 'Sin datos CFDI'}</span>`;
+        : `<span>⚠️ Cliente de contado (Sin línea de crédito autorizada) · ${client.hasBilling ? 'RFC: ' + client.rfc : 'Sin datos fiscales'}</span>`;
     }
   });
 
@@ -5117,7 +5167,7 @@ function renderClientsModule() {
   const elTabCount = document.getElementById('cliTabActiveCreditsCount');
 
   if (elTotal) elTotal.textContent = totalClients;
-  if (elBilling) elBilling.textContent = `${billingClients} con CFDI 4.0`;
+  if (elBilling) elBilling.textContent = `${billingClients} con Datos Fiscales`;
   if (elCreditCount) elCreditCount.textContent = creditClients.length;
   if (elTotalLimit) elTotalLimit.textContent = `Línea: ${formatMoney(totalLimit)}`;
   if (elTotalBalance) elTotalBalance.textContent = formatMoney(totalBalance);
@@ -5175,7 +5225,7 @@ function renderClientsDirectoryTable() {
         <td data-label="Facturación Electrónica">
           ${c.hasBilling
             ? `<div>
-                 <span class="badge badge-blue"><span class="status-dot dot-blue"></span>CFDI 4.0 · ${c.rfc || 'RFC'}</span>
+                 <span class="badge badge-blue"><span class="status-dot dot-blue"></span>Fiscal · ${c.rfc || 'RFC'}</span>
                  <div style="font-size:0.71rem; color:var(--text-muted); margin-top:3px;">${c.usoCfdi || 'G03'} · C.P. ${c.cpFiscal || '-'}</div>
                </div>`
             : `<span class="badge badge-amber">Sin Facturación</span>`
@@ -5550,13 +5600,13 @@ function exportClientsToCSV() {
     'PlazoDias',
     'SaldoDeudorActual',
     'CreditoDisponible',
-    'TieneFacturacionCFDI',
+    'TieneDatosFiscales',
     'RFC',
     'RazonSocialFiscal',
     'RegimenFiscal',
-    'UsoCFDI',
+    'UsoFiscal',
     'CPFiscal',
-    'CorreoFacturacion'
+    'CorreoComprobantes'
   ];
 
   const rows = allClients.map(c => {
@@ -8107,6 +8157,435 @@ async function downloadFullSystemBackup() {
   } catch (err) {
     showToast('Error al generar respaldo: ' + err.message);
   }
+}
+
+// ==========================================
+// 13. BIBLIOTECA DE SONIDOS (FIRESTORE SYNC)
+// ==========================================
+let activeCrackSoundConfig = getCachedActiveSound();
+let customSoundsList = [];
+let soundCategoryFilter = 'all';
+let soundCreatorMode = 'synth'; // 'synth' | 'audio_file' | 'audio_url'
+let draftUploadedAudioData = '';
+let draftUploadedFileMeta = null;
+let currentPlayingSoundId = null;
+
+function escSoundText(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getSoundSourceLabel(sourceType) {
+  switch (sourceType) {
+    case 'audio_file': return 'Archivo MP3/WAV';
+    case 'audio_url': return 'URL HTTPS';
+    case 'synth': return 'Sintetizador';
+    default: return 'Preset Estudio';
+  }
+}
+
+function readDraftSynthConfig() {
+  const impactFreq = Number(document.getElementById('sndSynthImpactFreq')?.value) || 1400;
+  const noiseFreq = Number(document.getElementById('sndSynthNoiseFreq')?.value) || 4200;
+  const shimmerFreq = Number(document.getElementById('sndSynthShimmerFreq')?.value) || 4800;
+  const noiseDecayMs = Number(document.getElementById('sndSynthDecayMs')?.value) || 280;
+  const glitchBuzzHz = Number(document.getElementById('sndSynthGlitchHz')?.value) || 0;
+  return normalizeSynthConfig({
+    impactFreq,
+    impactGain: 0.78,
+    noiseFreq,
+    noiseQ: 4.5,
+    noiseDecayMs,
+    shimmerFreq,
+    glitchBuzzHz,
+    durationMs: Math.max(240, noiseDecayMs + 60)
+  });
+}
+
+function buildDraftSoundPayload() {
+  const name = (document.getElementById('sndInputName')?.value || '').trim();
+  const category = document.getElementById('sndInputCategory')?.value || 'personalizado';
+  const description = (document.getElementById('sndInputDesc')?.value || '').trim();
+  const volumePct = Number(document.getElementById('sndInputVolume')?.value) || 85;
+  const volume = Math.min(1, Math.max(0.05, volumePct / 100));
+  const synthConfig = readDraftSynthConfig();
+  const audioUrl = (document.getElementById('sndAudioUrlInput')?.value || '').trim();
+
+  return {
+    name,
+    description: description || (
+      soundCreatorMode === 'audio_file'
+        ? `Clip personalizado (${draftUploadedFileMeta?.fileSizeKb || 0} KB)`
+        : soundCreatorMode === 'audio_url'
+          ? 'Audio remoto HTTPS sincronizado'
+          : `Synth ${synthConfig.impactFreq}Hz / ${synthConfig.noiseFreq}Hz`
+    ),
+    category: soundCreatorMode === 'audio_file' || soundCreatorMode === 'audio_url' ? 'personalizado' : category,
+    sourceType: soundCreatorMode,
+    presetKey: '',
+    audioData: soundCreatorMode === 'audio_file' ? draftUploadedAudioData : '',
+    audioUrl: soundCreatorMode === 'audio_url' ? audioUrl : '',
+    volume,
+    synthConfig
+  };
+}
+
+function syncSynthSliderLabels() {
+  const map = [
+    ['sndSynthImpactFreq', 'sndValImpactFreq', ' Hz'],
+    ['sndSynthNoiseFreq', 'sndValNoiseFreq', ' Hz'],
+    ['sndSynthShimmerFreq', 'sndValShimmerFreq', ' Hz'],
+    ['sndSynthDecayMs', 'sndValDecayMs', ' ms'],
+    ['sndSynthGlitchHz', 'sndValGlitchHz', ' Hz'],
+    ['sndInputVolume', 'sndValInputVolume', '%']
+  ];
+  map.forEach(([inputId, labelId, suffix]) => {
+    const inp = document.getElementById(inputId);
+    const lbl = document.getElementById(labelId);
+    if (inp && lbl) lbl.textContent = `${inp.value}${suffix}`;
+  });
+}
+
+function switchSoundCreatorMode(mode) {
+  soundCreatorMode = ['synth', 'audio_file', 'audio_url'].includes(mode) ? mode : 'synth';
+  document.querySelectorAll('#soundCreatorModeTabs .sound-mode-btn').forEach((btn) => {
+    const active = btn.dataset.sndmode === soundCreatorMode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+  document.getElementById('sndModeSynthPanel')?.classList.toggle('hidden', soundCreatorMode !== 'synth');
+  document.getElementById('sndModeFilePanel')?.classList.toggle('hidden', soundCreatorMode !== 'audio_file');
+  document.getElementById('sndModeUrlPanel')?.classList.toggle('hidden', soundCreatorMode !== 'audio_url');
+}
+
+function resetSoundCreatorForm() {
+  document.getElementById('soundCreatorForm')?.reset();
+  draftUploadedAudioData = '';
+  draftUploadedFileMeta = null;
+  const pill = document.getElementById('sndUploadedFileInfo');
+  if (pill) {
+    pill.textContent = '';
+    pill.classList.add('hidden');
+  }
+  switchSoundCreatorMode('synth');
+  syncSynthSliderLabels();
+}
+
+function renderSoundLibraryView() {
+  const activeCfg = activeCrackSoundConfig || DEFAULT_GLASS_PRESETS[0];
+
+  // Update Active Banner
+  const nameEl = document.getElementById('sndActiveName');
+  const catBadgeEl = document.getElementById('sndActiveCategoryBadge');
+  const metaEl = document.getElementById('sndActiveMeta');
+  const volRangeEl = document.getElementById('sndActiveVolumeRange');
+  const volValEl = document.getElementById('sndActiveVolumeVal');
+
+  if (nameEl) nameEl.textContent = activeCfg.name || 'Cristal Templado Clásico';
+  if (catBadgeEl) {
+    catBadgeEl.textContent = SOUND_CATEGORIES[activeCfg.category] || 'Personalizado';
+  }
+  if (metaEl) {
+    const srcLbl = getSoundSourceLabel(activeCfg.sourceType);
+    const updater = activeCfg.updatedByName ? ` · Actualizado por ${activeCfg.updatedByName}` : '';
+    const when = activeCfg.updatedAt ? ` (${new Date(activeCfg.updatedAt).toLocaleString('es-MX')})` : '';
+    metaEl.textContent = `Motor: ${srcLbl}${updater}${when}. Sincronizado con los visitantes en el portal.`;
+  }
+  const pct = Math.round((Number(activeCfg.volume ?? 0.85)) * 100);
+  if (volRangeEl && document.activeElement !== volRangeEl) {
+    volRangeEl.value = String(pct);
+  }
+  if (volValEl && document.activeElement !== volRangeEl) {
+    volValEl.textContent = `${pct}%`;
+  }
+
+  // Render Grid (Built-in Studio Presets + Custom Saved Sounds in Firestore)
+  const grid = document.getElementById('soundsLibraryGrid');
+  if (!grid) return;
+
+  const combined = [...customSoundsList, ...DEFAULT_GLASS_PRESETS];
+  const filtered = soundCategoryFilter === 'all'
+    ? combined
+    : combined.filter((item) => {
+        if (soundCategoryFilter === 'personalizado') {
+          return !item.isBuiltIn || item.category === 'personalizado';
+        }
+        return item.category === soundCategoryFilter;
+      });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1 / -1; padding:26px; text-align:center; border:1px dashed var(--border-subtle); border-radius:12px; color:var(--text-muted);">
+        No hay sonidos en esta categoría todavía. Crea o sube uno en el panel derecho.
+      </div>
+    `;
+    return;
+  }
+
+  const activeId = activeCfg.activeSoundId || activeCfg.id;
+  grid.innerHTML = filtered.map((item) => {
+    const isAct = item.id === activeId;
+    const isPlaying = currentPlayingSoundId === item.id;
+    const catLabel = SOUND_CATEGORIES[item.category] || 'Personalizado';
+    const srcLabel = getSoundSourceLabel(item.sourceType);
+    const volStr = `${Math.round((Number(item.volume ?? 0.85)) * 100)}%`;
+
+    return `
+      <article class="sound-card ${isAct ? 'is-active' : ''} ${isPlaying ? 'is-playing' : ''}" data-sndid="${escSoundText(item.id)}">
+        <div>
+          <div class="sound-card-top">
+            <div>
+              <h4 class="sound-card-title">${escSoundText(item.name)}</h4>
+              <p class="sound-card-desc">${escSoundText(item.description || 'Efecto acústico para fractura de pantalla.')}</p>
+            </div>
+            ${isAct ? '<span class="badge badge-green">ACTIVO</span>' : ''}
+          </div>
+          <div class="sound-card-tags">
+            <span class="sound-tag">${escSoundText(catLabel)}</span>
+            <span class="sound-tag">${escSoundText(srcLabel)}</span>
+            <span class="sound-tag">Vol ${volStr}</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="sound-card-wave" aria-hidden="true">
+            <span style="height:35%"></span>
+            <span style="height:85%"></span>
+            <span style="height:60%"></span>
+            <span style="height:100%"></span>
+            <span style="height:45%"></span>
+            <span style="height:75%"></span>
+            <span style="height:50%"></span>
+            <span style="height:90%"></span>
+            <span style="height:40%"></span>
+            <span style="height:65%"></span>
+          </div>
+          <div class="sound-card-actions">
+            <button type="button" class="btn btn-secondary btn-sm btn-snd-preview" data-sndid="${escSoundText(item.id)}">
+              ${isPlaying ? '⏹ Detener' : '▶ Escuchar'}
+            </button>
+            <button type="button" class="btn ${isAct ? 'btn-secondary' : 'btn-primary'} btn-sm btn-snd-activate" data-sndid="${escSoundText(item.id)}" ${isAct ? 'disabled' : ''}>
+              ${isAct ? '✓ Activo en Portal' : 'Usar en Pantalla'}
+            </button>
+            ${!item.isBuiltIn ? `
+              <button type="button" class="btn btn-danger btn-sm btn-snd-delete" data-sndid="${escSoundText(item.id)}" title="Eliminar sonido de biblioteca">
+                ✕
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  // Bind card actions
+  grid.querySelectorAll('.btn-snd-preview').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const target = combined.find((s) => s.id === btn.dataset.sndid);
+      if (!target) return;
+      if (currentPlayingSoundId === target.id) {
+        stopActivePreviewSound();
+        currentPlayingSoundId = null;
+        renderSoundLibraryView();
+        return;
+      }
+      currentPlayingSoundId = target.id;
+      renderSoundLibraryView();
+      await playCrackedSound(target, {
+        onEnded: () => {
+          if (currentPlayingSoundId === target.id) {
+            currentPlayingSoundId = null;
+            renderSoundLibraryView();
+          }
+        }
+      });
+    });
+  });
+
+  grid.querySelectorAll('.btn-snd-activate').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const target = combined.find((s) => s.id === btn.dataset.sndid);
+      if (!target) return;
+      btn.disabled = true;
+      try {
+        const updated = await soundLibraryService.activateCrackedSound(target);
+        activeCrackSoundConfig = updated;
+        renderSoundLibraryView();
+        await playCrackedSound(updated);
+        showToast(`Sonido "${target.name}" activado y sincronizado con Firestore`);
+      } catch (err) {
+        showToast('Error al activar sonido: ' + err.message);
+        btn.disabled = false;
+      }
+    });
+  });
+
+  grid.querySelectorAll('.btn-snd-delete').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const target = customSoundsList.find((s) => s.id === btn.dataset.sndid);
+      if (!target) return;
+      btn.disabled = true;
+      try {
+        await soundLibraryService.deleteCustomSound(target.id);
+        if (activeId === target.id) {
+          const fallback = await soundLibraryService.activateCrackedSound(DEFAULT_GLASS_PRESETS[0]);
+          activeCrackSoundConfig = fallback;
+        }
+        showToast(`Sonido "${target.name}" eliminado de Firestore`);
+      } catch (err) {
+        showToast('Error al eliminar sonido: ' + err.message);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+function initSoundLibraryModule() {
+  syncSynthSliderLabels();
+
+  // Active volume slider preview + save
+  const volRange = document.getElementById('sndActiveVolumeRange');
+  const volVal = document.getElementById('sndActiveVolumeVal');
+  volRange?.addEventListener('input', () => {
+    if (volVal) volVal.textContent = `${volRange.value}%`;
+  });
+
+  document.getElementById('btnSaveActiveVolume')?.addEventListener('click', async () => {
+    const pct = Number(volRange?.value) || 85;
+    const vol = Math.min(1, Math.max(0, pct / 100));
+    try {
+      const updated = await soundLibraryService.activateCrackedSound(activeCrackSoundConfig || DEFAULT_GLASS_PRESETS[0], vol);
+      activeCrackSoundConfig = updated;
+      renderSoundLibraryView();
+      showToast(`Volumen actualizado al ${pct}% en Firestore`);
+    } catch (err) {
+      showToast('Error al guardar volumen: ' + err.message);
+    }
+  });
+
+  document.getElementById('btnTestActiveSound')?.addEventListener('click', async () => {
+    const cfg = {
+      ...(activeCrackSoundConfig || DEFAULT_GLASS_PRESETS[0]),
+      volume: Math.min(1, Math.max(0, (Number(volRange?.value) || 85) / 100))
+    };
+    await playCrackedSound(cfg);
+  });
+
+  document.getElementById('btnStopAnySound')?.addEventListener('click', () => {
+    stopActivePreviewSound();
+    currentPlayingSoundId = null;
+    renderSoundLibraryView();
+  });
+
+  // Category filter buttons
+  document.querySelectorAll('#soundCategoryFilters [data-sndcat]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      soundCategoryFilter = btn.dataset.sndcat || 'all';
+      document.querySelectorAll('#soundCategoryFilters [data-sndcat]').forEach((b) => {
+        b.classList.toggle('active', b === btn);
+      });
+      renderSoundLibraryView();
+    });
+  });
+
+  // Mode switcher tabs (synth / audio_file / audio_url)
+  document.querySelectorAll('#soundCreatorModeTabs .sound-mode-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      switchSoundCreatorMode(btn.dataset.sndmode || 'synth');
+    });
+  });
+
+  // Live synth range label updates
+  [
+    'sndSynthImpactFreq',
+    'sndSynthNoiseFreq',
+    'sndSynthShimmerFreq',
+    'sndSynthDecayMs',
+    'sndSynthGlitchHz',
+    'sndInputVolume'
+  ].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', syncSynthSliderLabels);
+  });
+
+  // Audio file upload & compression/validation
+  document.getElementById('sndAudioFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const pill = document.getElementById('sndUploadedFileInfo');
+    try {
+      const res = await prepareAudioFilePayload(file);
+      draftUploadedAudioData = res.audioData;
+      draftUploadedFileMeta = res;
+      const nameInput = document.getElementById('sndInputName');
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.value = file.name.replace(/\.[^/.]+$/, '').slice(0, 80);
+      }
+      if (pill) {
+        const durTxt = res.durationSec ? ` · ${res.durationSec}s` : '';
+        pill.innerHTML = `<span>🎵 <strong>${escSoundText(file.name)}</strong> (${res.fileSizeKb} KB${durTxt}) listo para Firestore</span>`;
+        pill.classList.remove('hidden');
+      }
+      showToast('Audio cargado y validado correctamente');
+    } catch (err) {
+      draftUploadedAudioData = '';
+      draftUploadedFileMeta = null;
+      e.target.value = '';
+      if (pill) {
+        pill.textContent = '';
+        pill.classList.add('hidden');
+      }
+      showToast(err.message);
+    }
+  });
+
+  // Preview Draft
+  document.getElementById('btnPreviewDraftSound')?.addEventListener('click', async () => {
+    const draft = buildDraftSoundPayload();
+    if (draft.sourceType === 'audio_file' && !draft.audioData) {
+      showToast('Primero selecciona un archivo de audio MP3, WAV u OGG.');
+      return;
+    }
+    if (draft.sourceType === 'audio_url' && !/^https:\/\/.+/.test(draft.audioUrl)) {
+      showToast('Ingresa una URL https:// válida para escuchar la vista previa.');
+      return;
+    }
+    await playCrackedSound(draft);
+  });
+
+  // Save to library only
+  document.getElementById('btnSaveDraftSound')?.addEventListener('click', async () => {
+    try {
+      const draft = buildDraftSoundPayload();
+      const saved = await soundLibraryService.saveCustomSoundToLibrary(draft);
+      resetSoundCreatorForm();
+      showToast(`Sonido "${saved.name}" guardado en la biblioteca de Firestore`);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Save to library AND activate immediately
+  document.getElementById('soundCreatorForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const draft = buildDraftSoundPayload();
+      const saved = await soundLibraryService.saveCustomSoundToLibrary(draft);
+      const activated = await soundLibraryService.activateCrackedSound(saved);
+      activeCrackSoundConfig = activated;
+      resetSoundCreatorForm();
+      renderSoundLibraryView();
+      await playCrackedSound(activated);
+      showToast(`Sonido "${saved.name}" guardado y activado en Pantalla Rota`);
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  renderSoundLibraryView();
 }
 
 
