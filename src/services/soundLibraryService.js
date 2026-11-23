@@ -8,6 +8,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocFromServer,
   onSnapshot,
   orderBy,
   query,
@@ -252,12 +253,139 @@ function writeCachedActiveSound(cfg) {
     if (cfg) {
       localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(cfg));
     }
-  } catch (_) {}
+  } catch (_) {
+    try {
+      localStorage.removeItem(LOCAL_CACHE_KEY);
+      if (cfg) localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(cfg));
+    } catch (_) {}
+  }
 }
 
-// Track active playback so Admin UI can stop previews immediately
+// Track active playback & shared WebAudio context so multi-tap / iframe playback never gets blocked
 let currentAudioEl = null;
-let currentAudioCtx = null;
+let sharedAudioCtx = null;
+let activeStopCallbacks = [];
+const decodedBufferCache = new Map(); // cacheKey -> Promise<AudioBuffer|null> | AudioBuffer
+const resolvedBufferMap = new Map(); // cacheKey -> AudioBuffer
+const preloadedHtmlAudioMap = new Map(); // cacheKey -> HTMLAudioElement
+
+export function getSharedAudioContext() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    sharedAudioCtx = new AudioCtx();
+  }
+  return sharedAudioCtx;
+}
+
+function getSoundCacheKey(cfg) {
+  if (!cfg) return '';
+  if (cfg.sourceType === 'audio_file' && cfg.audioData) {
+    return `file:${cfg.activeSoundId || cfg.id || ''}:${cfg.audioData.length}:${cfg.audioData.slice(0, 48)}:${cfg.audioData.slice(-24)}`;
+  }
+  if (cfg.sourceType === 'audio_url' && cfg.audioUrl) {
+    return `url:${cfg.activeSoundId || cfg.id || ''}:${cfg.audioUrl}`;
+  }
+  return '';
+}
+
+function dataUrlToArrayBuffer(dataUrl) {
+  const idx = dataUrl.indexOf('base64,');
+  if (idx === -1) return null;
+  const b64 = dataUrl.slice(idx + 7);
+  const binStr = window.atob(b64);
+  const len = binStr.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binStr.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+async function decodeSoundToBuffer(cfg) {
+  const key = getSoundCacheKey(cfg);
+  if (!key) return null;
+  if (resolvedBufferMap.has(key)) {
+    return resolvedBufferMap.get(key);
+  }
+  if (decodedBufferCache.has(key)) {
+    return decodedBufferCache.get(key);
+  }
+
+  const actx = getSharedAudioContext();
+  if (!actx) return null;
+
+  const decodePromise = (async () => {
+    try {
+      let rawBuffer = null;
+      if (cfg.sourceType === 'audio_file' && cfg.audioData) {
+        rawBuffer = dataUrlToArrayBuffer(cfg.audioData);
+      } else if (cfg.sourceType === 'audio_url' && cfg.audioUrl) {
+        const resp = await fetch(cfg.audioUrl, { mode: 'cors' });
+        if (resp.ok) {
+          rawBuffer = await resp.arrayBuffer();
+        }
+      }
+      if (!rawBuffer) return null;
+      const decoded = await actx.decodeAudioData(rawBuffer.slice(0));
+      if (decoded) {
+        if (resolvedBufferMap.size > 8) {
+          const oldestKey = resolvedBufferMap.keys().next().value;
+          resolvedBufferMap.delete(oldestKey);
+        }
+        resolvedBufferMap.set(key, decoded);
+      }
+      return decoded;
+    } catch (_) {
+      return null;
+    } finally {
+      decodedBufferCache.delete(key);
+    }
+  })();
+
+  decodedBufferCache.set(key, decodePromise);
+  return decodePromise;
+}
+
+export function preloadCrackedSound(soundConfig) {
+  const cfg = soundConfig;
+  if (!cfg) return;
+  const key = getSoundCacheKey(cfg);
+  if (!key) return;
+
+  // 1. Decode into WebAudio AudioBuffer for zero-latency, gesture-safe playback
+  decodeSoundToBuffer(cfg);
+
+  // 2. Also warm an HTMLAudioElement backup
+  const src =
+    cfg.sourceType === 'audio_file' && cfg.audioData
+      ? cfg.audioData
+      : (cfg.sourceType === 'audio_url' && cfg.audioUrl ? cfg.audioUrl : '');
+  if (src && !preloadedHtmlAudioMap.has(key)) {
+    try {
+      if (preloadedHtmlAudioMap.size > 6) {
+        const oldestKey = preloadedHtmlAudioMap.keys().next().value;
+        preloadedHtmlAudioMap.delete(oldestKey);
+      }
+      const el = new Audio(src);
+      el.preload = 'auto';
+      el.load();
+      preloadedHtmlAudioMap.set(key, el);
+    } catch (_) {}
+  }
+}
+
+export function unlockCrackedAudioEngine(soundConfig) {
+  try {
+    const actx = getSharedAudioContext();
+    if (actx && actx.state === 'suspended') {
+      actx.resume().catch(() => {});
+    }
+    if (soundConfig) {
+      preloadCrackedSound(soundConfig);
+    }
+  } catch (_) {}
+}
 
 export function stopActivePreviewSound() {
   if (currentAudioEl) {
@@ -267,36 +395,85 @@ export function stopActivePreviewSound() {
     } catch (_) {}
     currentAudioEl = null;
   }
-  if (currentAudioCtx) {
-    try {
-      if (currentAudioCtx.state !== 'closed') {
-        currentAudioCtx.close();
-      }
-    } catch (_) {}
-    currentAudioCtx = null;
+  if (activeStopCallbacks.length > 0) {
+    activeStopCallbacks.forEach((fn) => {
+      try {
+        fn();
+      } catch (_) {}
+    });
+    activeStopCallbacks = [];
   }
 }
 
-function playSynthGlassSound(soundCfg, onEnded) {
+async function ensureRunningAudioContext() {
+  const actx = getSharedAudioContext();
+  if (!actx) return null;
+  if (actx.state === 'suspended') {
+    try {
+      await actx.resume();
+    } catch (_) {}
+  }
+  return actx;
+}
+
+function playDecodedBuffer(actx, audioBuffer, vol, onEnded) {
+  stopActivePreviewSound();
+  const source = actx.createBufferSource();
+  source.buffer = audioBuffer;
+
+  const gainNode = actx.createGain();
+  const now = actx.currentTime;
+  gainNode.gain.setValueAtTime(vol, now);
+
+  source.connect(gainNode);
+  gainNode.connect(actx.destination);
+
+  let finished = false;
+  const cleanup = () => {
+    if (finished) return;
+    finished = true;
+    try {
+      source.disconnect();
+      gainNode.disconnect();
+    } catch (_) {}
+  };
+
+  const stopFn = () => {
+    try {
+      source.stop();
+    } catch (_) {}
+    cleanup();
+  };
+  activeStopCallbacks.push(stopFn);
+
+  source.onended = () => {
+    activeStopCallbacks = activeStopCallbacks.filter((fn) => fn !== stopFn);
+    cleanup();
+    if (onEnded) onEnded();
+  };
+
+  source.start(0);
+}
+
+async function playSynthGlassSound(soundCfg, onEnded) {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) {
+    const actx = await ensureRunningAudioContext();
+    if (!actx) {
       if (onEnded) onEnded();
       return;
     }
 
     stopActivePreviewSound();
-    const actx = new AudioCtx();
-    currentAudioCtx = actx;
-    if (actx.state === 'suspended') actx.resume();
 
-    const now = actx.currentTime;
+    const now = actx.currentTime + 0.008;
     const vol = clampNum(soundCfg?.volume, 0, 1, 0.85);
     const cfg = normalizeSynthConfig(soundCfg?.synthConfig);
 
     const masterGain = actx.createGain();
     masterGain.gain.setValueAtTime(vol, now);
     masterGain.connect(actx.destination);
+
+    const synthNodes = [];
 
     // 1. Initial mechanical impact snap
     const clickOsc = actx.createOscillator();
@@ -312,6 +489,7 @@ function playSynthGlassSound(soundCfg, onEnded) {
     clickGain.connect(masterGain);
     clickOsc.start(now);
     clickOsc.stop(now + 0.045);
+    synthNodes.push(clickOsc);
 
     // 2. High-frequency glass crunch (filtered noise burst)
     const noiseDuration = Math.max(0.06, cfg.noiseDecayMs / 1000);
@@ -344,6 +522,7 @@ function playSynthGlassSound(soundCfg, onEnded) {
     highpass.connect(noiseGain);
     noiseGain.connect(masterGain);
     whiteNoise.start(now);
+    synthNodes.push(whiteNoise);
 
     // 3. Crystalline glass shimmer harmonics
     const baseShimmer = cfg.shimmerFreq;
@@ -363,6 +542,7 @@ function playSynthGlassSound(soundCfg, onEnded) {
       oscGain.connect(masterGain);
       osc.start(startAt);
       osc.stop(stopAt);
+      synthNodes.push(osc);
     });
 
     // 4. Optional OLED electrical / digital glitch buzz
@@ -387,16 +567,32 @@ function playSynthGlassSound(soundCfg, onEnded) {
       buzzGain.connect(masterGain);
       buzzOsc.start(now + 0.02);
       buzzOsc.stop(now + buzzDur);
+      synthNodes.push(buzzOsc);
     }
 
     const totalMs = Math.max(220, cfg.durationMs + 80);
-    setTimeout(() => {
-      if (currentAudioCtx === actx) {
-        try {
-          if (actx.state !== 'closed') actx.close();
-        } catch (_) {}
-        currentAudioCtx = null;
+    let endTimer = null;
+    const stopSynth = () => {
+      if (endTimer) {
+        clearTimeout(endTimer);
+        endTimer = null;
       }
+      synthNodes.forEach((n) => {
+        try {
+          n.stop();
+        } catch (_) {}
+      });
+      try {
+        masterGain.disconnect();
+      } catch (_) {}
+    };
+    activeStopCallbacks.push(stopSynth);
+
+    endTimer = setTimeout(() => {
+      activeStopCallbacks = activeStopCallbacks.filter((fn) => fn !== stopSynth);
+      try {
+        masterGain.disconnect();
+      } catch (_) {}
       if (onEnded) onEnded();
     }, totalMs);
   } catch (_) {
@@ -413,30 +609,66 @@ export async function playCrackedSound(soundConfig, { onEnded } = {}) {
       : (cfg.sourceType === 'audio_url' && cfg.audioUrl ? cfg.audioUrl : '');
 
   if (src) {
+    // 1. Prefer WebAudio AudioBuffer playback (reliable inside pointerdown, touch, and iframes)
+    const key = getSoundCacheKey(cfg);
+    try {
+      const fastCtx = getSharedAudioContext();
+      const fastBuffer = resolvedBufferMap.get(key);
+      if (fastBuffer && fastCtx && fastCtx.state === 'running') {
+        playDecodedBuffer(fastCtx, fastBuffer, vol, onEnded);
+        return;
+      }
+      const actx = await ensureRunningAudioContext();
+      if (actx) {
+        let buffer = resolvedBufferMap.get(key) || null;
+        if (!buffer) {
+          buffer = await decodeSoundToBuffer(cfg);
+        }
+        if (buffer) {
+          playDecodedBuffer(actx, buffer, vol, onEnded);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('[SoundLibrary] WebAudio decode failed, trying HTMLAudio:', err);
+    }
+
+    // 2. Fallback to preloaded/live HTMLAudioElement (e.g. non-CORS external audio URL)
     try {
       stopActivePreviewSound();
-      const audio = new Audio(src);
+      const cachedEl = preloadedHtmlAudioMap.get(key);
+      const audio = cachedEl || new Audio(src);
       audio.volume = vol;
+      audio.currentTime = 0;
       currentAudioEl = audio;
-      audio.addEventListener('ended', () => {
+
+      const handleEnded = () => {
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
         if (currentAudioEl === audio) currentAudioEl = null;
         if (onEnded) onEnded();
-      });
-      audio.addEventListener('error', () => {
+      };
+      const handleError = () => {
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
         if (currentAudioEl === audio) currentAudioEl = null;
+        console.warn('[SoundLibrary] HTMLAudio error, falling back to synth sound.');
         playSynthGlassSound(cfg, onEnded);
-      });
+      };
+
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError);
       await audio.play();
       return;
-    } catch (_) {
+    } catch (err) {
       currentAudioEl = null;
-      // Fallback to WebAudio synth so broken glass never stays silent
-      playSynthGlassSound(cfg, onEnded);
+      console.warn('[SoundLibrary] HTMLAudio play blocked/failed, falling back to synth sound:', err);
+      await playSynthGlassSound(cfg, onEnded);
       return;
     }
   }
 
-  playSynthGlassSound(cfg, onEnded);
+  await playSynthGlassSound(cfg, onEnded);
 }
 
 export function prepareAudioFilePayload(file) {
@@ -557,27 +789,50 @@ function normalizeLibraryDoc(id, data) {
 
 export const soundLibraryService = {
   subscribeActiveCrackedSound(onChange, onError) {
+    let active = true;
+    const emitSound = (cfg) => {
+      if (!active || !cfg) return;
+      preloadCrackedSound(cfg);
+      onChange(cfg);
+    };
+
     // Emit cached sound immediately for zero-latency playback
-    onChange(getCachedActiveSound());
+    emitSound(getCachedActiveSound());
 
     const ref = doc(db, 'site_config', 'cracked_screen');
-    return onSnapshot(
-      ref,
-      (snap) => {
-        if (!snap.exists()) {
+
+    const applySnapshot = (snap, allowMissingFallback) => {
+      if (!active) return;
+      if (!snap.exists()) {
+        if (allowMissingFallback) {
           const fallback = { ...DEFAULT_GLASS_PRESETS[0], activeSoundId: DEFAULT_GLASS_PRESETS[0].id };
           writeCachedActiveSound(fallback);
-          onChange(fallback);
-          return;
+          emitSound(fallback);
         }
-        const normalized = normalizeActiveConfigDoc(snap.data());
-        writeCachedActiveSound(normalized);
-        onChange(normalized);
+        return;
+      }
+      const normalized = normalizeActiveConfigDoc(snap.data());
+      writeCachedActiveSound(normalized);
+      emitSound(normalized);
+    };
+
+    // Fetch authoritative latest document from Firestore server immediately
+    const syncFromServer = () => {
+      getDocFromServer(ref)
+        .then((snap) => applySnapshot(snap, true))
+        .catch(() => {});
+    };
+    syncFromServer();
+
+    const unsubSnapshot = onSnapshot(
+      ref,
+      (snap) => {
+        applySnapshot(snap, !snap.metadata?.fromCache);
       },
       (err) => {
         if (isOfflineOrNetworkError(err)) {
           console.warn('[SoundLibrary] Firestore offline; usando caché local para sonido de pantalla rota.');
-          onChange(getCachedActiveSound());
+          emitSound(getCachedActiveSound());
           return;
         }
         if (onError) {
@@ -587,6 +842,27 @@ export const soundLibraryService = {
         }
       }
     );
+
+    const handleStorage = (e) => {
+      if (e.key === LOCAL_CACHE_KEY && e.newValue) {
+        emitSound(getCachedActiveSound());
+      }
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncFromServer();
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      active = false;
+      unsubSnapshot();
+      window.removeEventListener('storage', handleStorage);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   },
 
   subscribeSoundLibrary(onChange, onError) {

@@ -7,8 +7,10 @@ import './crackedScreen.css';
 import {
   DEFAULT_GLASS_PRESETS,
   getCachedActiveSound,
+  getSharedAudioContext,
   playCrackedSound,
-  soundLibraryService
+  soundLibraryService,
+  unlockCrackedAudioEngine
 } from './services/soundLibraryService.js';
 
 let clickShieldEl = null;
@@ -72,10 +74,9 @@ function playGlassShatterSound() {
  */
 function playRepairSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const actx = new AudioCtx();
-    if (actx.state === 'suspended') actx.resume();
+    const actx = getSharedAudioContext();
+    if (!actx) return;
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
 
     const now = actx.currentTime;
     const chords = [523.25, 659.25, 783.99, 1046.5, 1318.51]; // C major crystalline arpeggio
@@ -623,6 +624,9 @@ function repairScreen() {
  * Handle taps / clicks on document
  */
 function handlePointerDown(e) {
+  // Pre-unlock shared AudioContext & keep active Firestore audio buffer ready on first gesture
+  unlockCrackedAudioEngine(activeCrackSound);
+
   // Ignore clicks inside simulation cards, Android battery popup, shutdown veil, or bottom USB-C port
   if (
     e.target &&
@@ -847,10 +851,9 @@ function setupDOM() {
 
 function playLowBatteryAlertSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const actx = new AudioCtx();
-    if (actx.state === 'suspended') actx.resume();
+    const actx = getSharedAudioContext();
+    if (!actx) return;
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
     const now = actx.currentTime;
 
     // Authentic Android 2-tone descending low battery notification chime
@@ -874,10 +877,9 @@ function playLowBatteryAlertSound() {
 
 function playShortCircuitZapSound(intensity = 1) {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const actx = new AudioCtx();
-    if (actx.state === 'suspended') actx.resume();
+    const actx = getSharedAudioContext();
+    if (!actx) return;
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
     const now = actx.currentTime;
     const duration = 0.22 + intensity * 0.14;
 
@@ -1463,8 +1465,8 @@ export function initCrackedScreen() {
       (soundCfg) => {
         if (soundCfg) activeCrackSound = soundCfg;
       },
-      () => {
-        // Fallback already applied from cache/defaults
+      (err) => {
+        console.warn('[CrackedScreen] No se pudo leer sonido en Firestore; usando caché/respaldo:', err?.message || err);
       }
     );
   }
