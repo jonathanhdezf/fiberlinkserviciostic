@@ -11,6 +11,7 @@ import {
   soundLibraryService
 } from './services/soundLibraryService.js';
 
+let clickShieldEl = null;
 let overlayEl = null;
 let canvasEl = null;
 let ctx = null;
@@ -27,6 +28,27 @@ let flickerRafId = null;
 let lastGlitchDraw = 0;
 let activeCrackSound = getCachedActiveSound() || DEFAULT_GLASS_PRESETS[0];
 let activeSoundUnsub = null;
+
+// Charging port short-circuit & Android low-battery state (layered inside cracked screen)
+let chargingFlashEl = null;
+let chargingCanvasEl = null;
+let chargingCtx = null;
+let chargingDialogEl = null;
+let chargingShutdownEl = null;
+let chargingPortDockEl = null;
+let autoEscalateTimer = null;
+let autoHideToastTimer = null;
+let autoRestoreTimer = null;
+let isChargingSimActive = false;
+let chargingRafId = null;
+let chargingCountdownTimer = null;
+let chargingSurgeTimeout = null;
+let chargingShutdownTimeout = null;
+let chargingSecondsLeft = 16;
+let sparks = [];
+let smokePuffs = [];
+let activeArcs = [];
+let lastSparkAmbient = 0;
 
 // Multi-tap trigger configuration
 const TAP_THRESHOLD = 4; // 4 rapid taps to trigger
@@ -489,6 +511,7 @@ function stopGlitchLoop() {
 function crackScreen(x, y) {
   if (!overlayEl) setupDOM();
 
+  const wasAlreadyCracked = isCracked;
   const rect = overlayEl.getBoundingClientRect();
   const relX = x || rect.width / 2;
   const relY = y || rect.height / 2;
@@ -510,19 +533,58 @@ function crackScreen(x, y) {
   resizeCanvas();
   renderCracks();
 
-  // Show overlay and repair card
+  // Show click shield, overlay, and repair card
+  if (clickShieldEl) clickShieldEl.classList.add('active');
   overlayEl.classList.add('active');
   cardEl.classList.add('visible');
   isCracked = true;
   startGlitchLoop();
+
+  // Progressive failure: after cracking, allow a few seconds to read before escalating to battery + USB-C short circuit
+  if (!wasAlreadyCracked && !isChargingSimActive) {
+    clearTimeout(autoEscalateTimer);
+    autoEscalateTimer = setTimeout(() => {
+      if (isCracked && !isChargingSimActive) {
+        escalateToChargingShort();
+      }
+    }, 6500);
+  }
 }
 
 /**
- * Repair Screen (Laser scan restore effect)
+ * Reset repair card back to Stage 1 defaults
+ */
+function resetRepairCardToInitialState() {
+  if (!cardEl) return;
+  cardEl.classList.remove('aggravated');
+  const simBanner = cardEl.querySelector('#crackedSimBannerText');
+  const titleText = cardEl.querySelector('#crackedCardTitleText');
+  const descEl = cardEl.querySelector('#crackedCardDesc');
+  const chargingBtn = cardEl.querySelector('#btnTriggerChargingSim');
+  const chargingLabel = cardEl.querySelector('#btnChargingTagLabel');
+  const repairLabel = cardEl.querySelector('#btnRepairScreenLabel');
+  const helpBtn = cardEl.querySelector('#btnCrackedHelp');
+
+  if (simBanner) simBanner.textContent = 'Simulación · Vista previa';
+  if (titleText) titleText.textContent = '¿Problemas con tu pantalla?';
+  if (descEl) descEl.textContent = 'Reparación directa con garantía en Teziutlán.';
+  if (chargingBtn) chargingBtn.classList.remove('short-active');
+  if (chargingLabel) chargingLabel.textContent = 'Sistema de Carga';
+  if (repairLabel) repairLabel.textContent = 'Reparar pantalla';
+  if (helpBtn) {
+    helpBtn.href = 'https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20reparacion%20de%20pantalla%2C%20sistema%20de%20carga%2C%20software%20o%20liberacion%20en%20Teziutlan.';
+  }
+}
+
+/**
+ * Repair Screen & Charging Port (Laser scan restore effect)
  */
 function repairScreen() {
-  if (!isCracked) return;
+  if (!isCracked && !isChargingSimActive) return;
 
+  clearTimeout(autoEscalateTimer);
+  clearTimeout(autoRestoreTimer);
+  stopChargingShortSimulation(false);
   playRepairSound();
   stopGlitchLoop();
 
@@ -542,9 +604,11 @@ function repairScreen() {
       clearInterval(fadeInterval);
       crackPoints = [];
       if (ctx) ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (clickShieldEl) clickShieldEl.classList.remove('active');
       overlayEl.classList.remove('active');
       scanlineEl.classList.remove('scanning');
       isCracked = false;
+      resetRepairCardToInitialState();
     } else {
       if (overlayEl) overlayEl.style.opacity = opacity;
     }
@@ -559,8 +623,11 @@ function repairScreen() {
  * Handle taps / clicks on document
  */
 function handlePointerDown(e) {
-  // If clicking directly inside the repair card, ignore tap-to-crack
-  if (e.target && e.target.closest('.cracked-repair-card')) {
+  // Ignore clicks inside simulation cards, Android battery popup, shutdown veil, or bottom USB-C port
+  if (
+    e.target &&
+    e.target.closest('.cracked-repair-card, .android-battery-dialog, .usbc-port-dock, .android-shutdown-veil')
+  ) {
     return;
   }
 
@@ -638,7 +705,13 @@ function resizeCanvas() {
 function setupDOM() {
   if (overlayEl) return;
 
-  // Overlay wrapper
+  // Click shield below Android notification & cracked glass so clicks on page are blocked
+  clickShieldEl = document.createElement('div');
+  clickShieldEl.id = 'crackedClickShield';
+  clickShieldEl.className = 'cracked-click-shield';
+  document.body.appendChild(clickShieldEl);
+
+  // Overlay wrapper (pointer-events: none, renders fractures/glitch ON TOP of OS notifications)
   overlayEl = document.createElement('div');
   overlayEl.id = 'crackedScreenOverlay';
   overlayEl.className = 'cracked-screen-overlay';
@@ -674,38 +747,47 @@ function setupDOM() {
   scanlineEl.className = 'repair-scanline';
   overlayEl.appendChild(scanlineEl);
 
-  // Notification repair card with exact requested message:
-  // "Reparación de pantallas, sistema de carga, software, liberaciones en Teziutlán."
+  // Minimalist notification repair card (updates progressively when charging short circuit triggers)
   cardEl = document.createElement('div');
   cardEl.className = 'cracked-repair-card';
   cardEl.innerHTML = `
+    <div class="cracked-sim-strip">
+      <div class="cracked-sim-strip-left">
+        <span class="cracked-sim-dot" aria-hidden="true"></span>
+        <span id="crackedSimBannerText">Simulación · Vista previa</span>
+      </div>
+      <span class="cracked-sim-tag">No es daño real</span>
+    </div>
     <div class="cracked-repair-header">
       <div class="cracked-repair-icon" aria-hidden="true">
-        <span class="material-symbols-outlined text-[24px]">screen_lock_portrait</span>
+        <span class="material-symbols-outlined text-[19px]">screen_lock_portrait</span>
       </div>
       <div class="min-w-0 flex-1">
         <div class="cracked-repair-title">
-          <span>¿Problemas con tu pantalla?</span>
-          <span class="cracked-repair-badge">Simulación</span>
+          <span id="crackedCardTitleText">¿Problemas con tu pantalla?</span>
         </div>
-        <div class="cracked-repair-desc">
-          Reparación de pantallas, sistema de carga, software, liberaciones en Teziutlán.
-        </div>
-        <div class="cracked-tags-list">
-          <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">battery_charging_full</span>Sistema de Carga</span>
-          <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">terminal</span>Software</span>
-          <span class="cracked-tag-item"><span class="material-symbols-outlined text-[12px]">lock_open</span>Liberaciones</span>
+        <div id="crackedCardDesc" class="cracked-repair-desc">
+          Reparación directa con garantía en Teziutlán.
         </div>
       </div>
     </div>
+    <div class="cracked-inline-services" aria-label="Servicios disponibles">
+      <span class="cracked-service-pill active">Pantalla</span>
+      <button type="button" id="btnTriggerChargingSim" class="cracked-service-trigger" title="Probar o activar corto en sistema de carga">
+        <span class="material-symbols-outlined text-[12px]">battery_charging_full</span>
+        <span id="btnChargingTagLabel">Sistema de Carga</span>
+      </button>
+      <span class="cracked-service-pill">Software</span>
+      <span class="cracked-service-pill">Liberaciones</span>
+    </div>
     <div class="cracked-repair-actions">
       <button type="button" id="btnRepairScreen" class="cracked-btn-repair">
-        <span class="material-symbols-outlined text-[17px]">build</span>
-        <span>Reparar pantalla</span>
+        <span class="material-symbols-outlined text-[16px]">build</span>
+        <span id="btnRepairScreenLabel">Reparar pantalla</span>
       </button>
       <a href="https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20reparacion%20de%20pantalla%2C%20sistema%20de%20carga%2C%20software%20o%20liberacion%20en%20Teziutlan." target="_blank" rel="noopener noreferrer" id="btnCrackedHelp" class="cracked-btn-support">
-        <span class="material-symbols-outlined text-[16px] text-neon-emerald">chat</span>
-        <span>Cotizar Servicio</span>
+        <span class="material-symbols-outlined text-[15px] text-neon-emerald">chat</span>
+        <span>Cotizar</span>
       </a>
     </div>
   `;
@@ -713,6 +795,18 @@ function setupDOM() {
   document.body.appendChild(cardEl);
 
   // Bind buttons
+  const btnChargingSim = cardEl.querySelector('#btnTriggerChargingSim');
+  if (btnChargingSim) {
+    btnChargingSim.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isChargingSimActive) {
+        triggerShortCircuitBurst(1.45, true);
+      } else {
+        escalateToChargingShort();
+      }
+    });
+  }
+
   const btnRepair = cardEl.querySelector('#btnRepairScreen');
   if (btnRepair) {
     btnRepair.addEventListener('click', (e) => {
@@ -728,9 +822,9 @@ function setupDOM() {
     });
   }
 
-  // ESC key repairs screen
+  // ESC key repairs active simulation
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isCracked) {
+    if (e.key === 'Escape' && (isCracked || isChargingSimActive)) {
       repairScreen();
     }
   });
@@ -741,7 +835,620 @@ function setupDOM() {
       resizeCanvas();
       renderCracks();
     }
+    if (isChargingSimActive) {
+      resizeChargingCanvas();
+    }
   });
+}
+
+// ==========================================================
+// ANDROID LOW-BATTERY & BOTTOM USB-C SHORT-CIRCUIT SIMULATOR
+// ==========================================================
+
+function playLowBatteryAlertSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const actx = new AudioCtx();
+    if (actx.state === 'suspended') actx.resume();
+    const now = actx.currentTime;
+
+    // Authentic Android 2-tone descending low battery notification chime
+    [880, 659.25].forEach((freq, idx) => {
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+      gain.gain.setValueAtTime(0.001, now + idx * 0.14);
+      gain.gain.linearRampToValueAtTime(0.14, now + idx * 0.14 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.22);
+      osc.connect(gain);
+      gain.connect(actx.destination);
+      osc.start(now + idx * 0.14);
+      osc.stop(now + idx * 0.14 + 0.24);
+    });
+  } catch (_) {
+    // Ignore audio context block
+  }
+}
+
+function playShortCircuitZapSound(intensity = 1) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const actx = new AudioCtx();
+    if (actx.state === 'suspended') actx.resume();
+    const now = actx.currentTime;
+    const duration = 0.22 + intensity * 0.14;
+
+    // 1. Crackling electrical discharge noise
+    const bufferSize = Math.floor(actx.sampleRate * duration);
+    const buffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const env = Math.pow(1 - i / bufferSize, 1.5);
+      const stutter = Math.random() < 0.22 ? 0.15 : 1;
+      data[i] = (Math.random() * 2 - 1) * env * stutter;
+    }
+
+    const noise = actx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = actx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2400 + Math.random() * 1400, now);
+    filter.Q.value = 1.6;
+
+    const noiseGain = actx.createGain();
+    noiseGain.gain.setValueAtTime(0.24 * Math.min(1.4, intensity), now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(actx.destination);
+    noise.start(now);
+
+    // 2. 60Hz/120Hz AC-like short-circuit arc buzz
+    const buzz = actx.createOscillator();
+    const buzzGain = actx.createGain();
+    buzz.type = 'sawtooth';
+    buzz.frequency.setValueAtTime(118, now);
+    buzz.frequency.exponentialRampToValueAtTime(58, now + duration);
+    buzzGain.gain.setValueAtTime(0.11 * Math.min(1.3, intensity), now);
+    buzzGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    buzz.connect(buzzGain);
+    buzzGain.connect(actx.destination);
+    buzz.start(now);
+    buzz.stop(now + duration);
+  } catch (_) {
+    // Ignore audio context block
+  }
+}
+
+function resizeChargingCanvas() {
+  if (!chargingCanvasEl) return;
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  chargingCanvasEl.width = w * dpr;
+  chargingCanvasEl.height = h * dpr;
+  chargingCanvasEl.style.width = `${w}px`;
+  chargingCanvasEl.style.height = `${h}px`;
+  if (chargingCtx) {
+    chargingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+}
+
+function createElectricArc(originX, originY, spread) {
+  const segments = [];
+  let cx = originX + (Math.random() - 0.5) * 34;
+  let cy = originY;
+  segments.push({ x: cx, y: cy });
+
+  const steps = 6 + Math.floor(Math.random() * 5);
+  const targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 1.9;
+  for (let i = 0; i < steps; i++) {
+    const stepLen = (14 + Math.random() * 26) * spread;
+    const jitter = (Math.random() - 0.5) * 1.3;
+    cx += Math.cos(targetAngle + jitter) * stepLen;
+    cy += Math.sin(targetAngle + jitter) * stepLen;
+    segments.push({ x: cx, y: Math.min(window.innerHeight - 2, cy) });
+  }
+
+  return {
+    segments,
+    life: 1,
+    decay: 0.08 + Math.random() * 0.07,
+    color: Math.random() < 0.6 ? '#74e3ff' : '#ffb84d'
+  };
+}
+
+function triggerShortCircuitBurst(intensity = 1, withSound = true) {
+  if (!isChargingSimActive) return;
+
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const portX = w * 0.5;
+  const portY = h - 16;
+
+  if (withSound) {
+    playShortCircuitZapSound(intensity);
+  }
+  if (navigator.vibrate) {
+    navigator.vibrate(intensity > 1.1 ? [35, 25, 55] : [20, 15, 25]);
+  }
+
+  if (chargingFlashEl && !prefersReduced) {
+    chargingFlashEl.classList.add('surge');
+    setTimeout(() => {
+      if (chargingFlashEl) chargingFlashEl.classList.remove('surge');
+    }, 95);
+  }
+
+  const telemetryEl = chargingDialogEl && chargingDialogEl.querySelector('#androidFaultTelemetry');
+  if (telemetryEl) {
+    const peakAmps = (3.8 + Math.random() * 2.4 * intensity).toFixed(2);
+    telemetryEl.textContent = `0.00 V · Corto USB-C · Pico ${peakAmps} A`;
+  }
+
+  const arcCount = prefersReduced ? 1 : Math.round(3 + intensity * 3);
+  for (let a = 0; a < arcCount; a++) {
+    activeArcs.push(createElectricArc(portX, portY, 0.9 + intensity * 0.45));
+  }
+
+  const sparkCount = prefersReduced ? 6 : Math.round(22 * intensity);
+  for (let i = 0; i < sparkCount; i++) {
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 2.35;
+    const speed = (3.2 + Math.random() * 8.5) * (0.85 + intensity * 0.35);
+    sparks.push({
+      x: portX + (Math.random() - 0.5) * 44,
+      y: portY - Math.random() * 6,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: 1.4 + Math.random() * 2.4,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.026,
+      hot: Math.random() < 0.35
+    });
+  }
+
+  const smokeCount = prefersReduced ? 1 : Math.round(4 * intensity);
+  for (let s = 0; s < smokeCount; s++) {
+    smokePuffs.push({
+      x: portX + (Math.random() - 0.5) * 32,
+      y: portY - 6,
+      vx: (Math.random() - 0.5) * 0.9,
+      vy: -0.7 - Math.random() * 1.1,
+      radius: 10 + Math.random() * 14,
+      alpha: 0.24 + Math.random() * 0.14
+    });
+  }
+}
+
+function drawShortCircuitFrame(ts) {
+  if (!isChargingSimActive || !chargingCtx || !chargingCanvasEl) return;
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const portX = w * 0.5;
+  const portY = h - 14;
+  chargingCtx.clearRect(0, 0, w, h);
+
+  // Subtle ambient ember sparks from damaged USB-C pins
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!prefersReduced && ts - lastSparkAmbient > 140) {
+    lastSparkAmbient = ts;
+    if (Math.random() < 0.65) {
+      const ang = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
+      const spd = 2 + Math.random() * 4.2;
+      sparks.push({
+        x: portX + (Math.random() - 0.5) * 34,
+        y: portY,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        size: 1.2 + Math.random() * 1.6,
+        life: 0.9,
+        decay: 0.032 + Math.random() * 0.02,
+        hot: Math.random() < 0.25
+      });
+    }
+  }
+
+  // 1. Rising thermal smoke puffs
+  for (let i = smokePuffs.length - 1; i >= 0; i--) {
+    const p = smokePuffs[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.radius += 0.28;
+    p.alpha -= 0.0035;
+    if (p.alpha <= 0) {
+      smokePuffs.splice(i, 1);
+      continue;
+    }
+    const g = chargingCtx.createRadialGradient(p.x, p.y, 1, p.x, p.y, p.radius);
+    g.addColorStop(0, `rgba(170, 182, 198, ${p.alpha.toFixed(3)})`);
+    g.addColorStop(1, 'rgba(30, 35, 42, 0)');
+    chargingCtx.fillStyle = g;
+    chargingCtx.beginPath();
+    chargingCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    chargingCtx.fill();
+  }
+
+  // 2. Electric plasma arcs
+  for (let i = activeArcs.length - 1; i >= 0; i--) {
+    const arc = activeArcs[i];
+    arc.life -= arc.decay;
+    if (arc.life <= 0) {
+      activeArcs.splice(i, 1);
+      continue;
+    }
+    chargingCtx.save();
+    chargingCtx.globalAlpha = Math.max(0, arc.life);
+    chargingCtx.beginPath();
+    chargingCtx.moveTo(arc.segments[0].x, arc.segments[0].y);
+    for (let j = 1; j < arc.segments.length; j++) {
+      chargingCtx.lineTo(arc.segments[j].x, arc.segments[j].y);
+    }
+    chargingCtx.strokeStyle = arc.color;
+    chargingCtx.lineWidth = 3.2;
+    chargingCtx.lineCap = 'round';
+    chargingCtx.lineJoin = 'round';
+    chargingCtx.shadowColor = arc.color;
+    chargingCtx.shadowBlur = 14;
+    chargingCtx.stroke();
+
+    chargingCtx.strokeStyle = '#ffffff';
+    chargingCtx.lineWidth = 1.1;
+    chargingCtx.shadowBlur = 0;
+    chargingCtx.stroke();
+    chargingCtx.restore();
+  }
+
+  // 3. Ballistic glowing sparks with velocity trails
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const sp = sparks[i];
+    const prevX = sp.x;
+    const prevY = sp.y;
+    sp.vy += 0.24; // gravity
+    sp.vx *= 0.985;
+    sp.x += sp.vx;
+    sp.y += sp.vy;
+
+    // Bounce along bottom screen bezel
+    if (sp.y >= h - 3) {
+      sp.y = h - 3;
+      sp.vy *= -0.42;
+      sp.vx *= 0.78;
+    }
+
+    sp.life -= sp.decay;
+    if (sp.life <= 0) {
+      sparks.splice(i, 1);
+      continue;
+    }
+
+    chargingCtx.save();
+    chargingCtx.globalAlpha = Math.max(0, sp.life);
+    chargingCtx.beginPath();
+    chargingCtx.moveTo(prevX, prevY);
+    chargingCtx.lineTo(sp.x, sp.y);
+    chargingCtx.strokeStyle = sp.hot ? '#fff7d6' : '#ff9429';
+    chargingCtx.lineWidth = sp.size;
+    chargingCtx.lineCap = 'round';
+    chargingCtx.shadowColor = sp.hot ? '#8ce8ff' : '#ff6a00';
+    chargingCtx.shadowBlur = 8;
+    chargingCtx.stroke();
+    chargingCtx.restore();
+  }
+
+  chargingRafId = window.requestAnimationFrame(drawShortCircuitFrame);
+}
+
+function scheduleRandomShortCircuitSurge() {
+  if (!isChargingSimActive) return;
+  const delay = 1350 + Math.random() * 1750;
+  chargingSurgeTimeout = setTimeout(() => {
+    if (!isChargingSimActive) return;
+    triggerShortCircuitBurst(0.95 + Math.random() * 0.45, true);
+    scheduleRandomShortCircuitSurge();
+  }, delay);
+}
+
+function setupChargingSimDOM() {
+  if (!overlayEl) setupDOM();
+  if (chargingCanvasEl) return;
+
+  // Layer flash & sparks canvas inside the SAME #crackedScreenOverlay
+  chargingFlashEl = document.createElement('div');
+  chargingFlashEl.id = 'chargingVoltageFlash';
+  chargingFlashEl.className = 'charging-voltage-flash';
+  overlayEl.appendChild(chargingFlashEl);
+
+  chargingCanvasEl = document.createElement('canvas');
+  chargingCanvasEl.id = 'chargingShortCanvas';
+  chargingCanvasEl.className = 'charging-short-canvas';
+  chargingCtx = chargingCanvasEl.getContext('2d');
+  overlayEl.appendChild(chargingCanvasEl);
+
+  // Authentic compact Android low-battery alert at top-center
+  chargingDialogEl = document.createElement('div');
+  chargingDialogEl.id = 'androidBatteryDialog';
+  chargingDialogEl.className = 'android-battery-dialog';
+  chargingDialogEl.setAttribute('role', 'alertdialog');
+  chargingDialogEl.setAttribute('aria-label', 'Alerta de batería muy baja y corto en puerto de carga');
+  chargingDialogEl.innerHTML = `
+    <div class="android-battery-top">
+      <div class="android-battery-status">
+        <div class="android-battery-icon-wrap" aria-hidden="true">
+          <span class="material-symbols-outlined text-[20px]">battery_alert</span>
+        </div>
+        <div>
+          <div class="android-battery-percent" id="androidBatteryPercent">2%</div>
+          <div class="android-battery-sublabel">Sistema Android · Simulación de falla</div>
+        </div>
+      </div>
+      <button type="button" id="btnDismissAndroidToast" class="android-os-close" aria-label="Ocultar aviso Android">
+        <span class="material-symbols-outlined text-[16px]">close</span>
+      </button>
+    </div>
+
+    <h4 class="android-battery-title" id="androidBatteryTitle">Batería muy baja</h4>
+    <p class="android-battery-body">
+      Conecte el cargador o el equipo se apagará en
+      <span id="androidBatteryCountdown" class="android-battery-countdown">16</span> s.
+    </p>
+
+    <div class="android-fault-row">
+      <div class="android-fault-info">
+        <div id="androidFaultTelemetry" class="android-fault-telemetry">0.00 V · Corto USB-C · Pico 4.85 A</div>
+        <div id="androidFaultMessage" class="android-fault-note">Falla en centro de carga: energía interrumpida.</div>
+      </div>
+      <button type="button" id="btnSimPlugCable" class="android-btn-plug">
+        <span class="material-symbols-outlined text-[15px]">electrical_services</span>
+        <span>Conectar</span>
+      </button>
+    </div>
+  `;
+  // Insert BEFORE #crackedScreenOverlay so broken glass & OLED blotches render visually ON TOP
+  overlayEl.parentNode.insertBefore(chargingDialogEl, overlayEl);
+
+  // Bottom USB-C Port hardware dock right at bottom edge
+  chargingPortDockEl = document.createElement('button');
+  chargingPortDockEl.type = 'button';
+  chargingPortDockEl.id = 'usbcPortDock';
+  chargingPortDockEl.className = 'usbc-port-dock';
+  chargingPortDockEl.title = 'Toca el puerto USB-C para simular falso contacto';
+  chargingPortDockEl.innerHTML = `
+    <span class="usbc-port-hint">Simulación · Corto en centro de carga USB-C</span>
+    <div class="usbc-port-housing">
+      <div class="usbc-port-cavity">
+        <span class="usbc-pin"></span>
+        <span class="usbc-pin scorched"></span>
+        <span class="usbc-pin scorched"></span>
+        <span class="usbc-pin"></span>
+        <span class="usbc-pin scorched"></span>
+        <span class="usbc-pin"></span>
+      </div>
+      <div class="usbc-cable-plug" aria-hidden="true"></div>
+    </div>
+  `;
+  document.body.appendChild(chargingPortDockEl);
+
+  // Shutdown & Dead Battery Screen Veil if countdown hits 0
+  chargingShutdownEl = document.createElement('div');
+  chargingShutdownEl.id = 'androidShutdownVeil';
+  chargingShutdownEl.className = 'android-shutdown-veil';
+  chargingShutdownEl.innerHTML = `
+    <div class="android-shutdown-sim-badge">Simulación de falla · No es daño real</div>
+    <div class="android-shutdown-spinner" id="androidShutdownSpinner"></div>
+    <span class="material-symbols-outlined text-[42px] text-red-400 hidden" id="androidDeadBatteryIcon">battery_0_bar</span>
+    <div class="text-lg font-bold mt-2" id="androidShutdownTitle">Apagando...</div>
+    <div class="text-xs text-slate-400 mt-1 max-w-[290px]" id="androidShutdownSubtitle">
+      Protección térmica activada por descarga crítica y corto en puerto de carga.
+    </div>
+  `;
+  // Insert BEFORE #crackedScreenOverlay so shutdown screen renders underneath broken glass fractures
+  overlayEl.parentNode.insertBefore(chargingShutdownEl, overlayEl);
+
+  const btnDismissToast = chargingDialogEl.querySelector('#btnDismissAndroidToast');
+  if (btnDismissToast) {
+    btnDismissToast.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearTimeout(autoHideToastTimer);
+      chargingDialogEl.classList.remove('visible');
+    });
+  }
+
+  const btnPlugCable = chargingDialogEl.querySelector('#btnSimPlugCable');
+  if (btnPlugCable) {
+    btnPlugCable.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const faultMsg = chargingDialogEl.querySelector('#androidFaultMessage');
+      if (faultMsg) {
+        faultMsg.textContent = 'Corto activo al intentar cargar: desconecta el cable.';
+      }
+      triggerShortCircuitBurst(1.55, true);
+    });
+  }
+
+  chargingPortDockEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    triggerShortCircuitBurst(1.45, true);
+  });
+}
+
+/**
+ * Escalate inside the active cracked-screen simulation:
+ * Adds Android low-battery warning (underneath cracked glass), bottom USB-C short circuit,
+ * and updates the Fiberlink repair modal
+ */
+function escalateToChargingShort() {
+  if (!isCracked) {
+    crackScreen(window.innerWidth * 0.62, window.innerHeight * 0.42);
+  }
+  clearTimeout(autoEscalateTimer);
+  clearTimeout(autoHideToastTimer);
+  clearTimeout(autoRestoreTimer);
+  setupChargingSimDOM();
+
+  clearInterval(chargingCountdownTimer);
+  clearTimeout(chargingSurgeTimeout);
+  clearTimeout(chargingShutdownTimeout);
+  if (chargingRafId !== null) {
+    window.cancelAnimationFrame(chargingRafId);
+    chargingRafId = null;
+  }
+
+  sparks = [];
+  smokePuffs = [];
+  activeArcs = [];
+  chargingSecondsLeft = 16;
+
+  // Reset Android dialog & shutdown veil
+  const countdownEl = chargingDialogEl.querySelector('#androidBatteryCountdown');
+  const percentEl = chargingDialogEl.querySelector('#androidBatteryPercent');
+  const dialogTitleEl = chargingDialogEl.querySelector('#androidBatteryTitle');
+  const faultMsg = chargingDialogEl.querySelector('#androidFaultMessage');
+  const spinnerEl = chargingShutdownEl.querySelector('#androidShutdownSpinner');
+  const deadIconEl = chargingShutdownEl.querySelector('#androidDeadBatteryIcon');
+  const shutTitleEl = chargingShutdownEl.querySelector('#androidShutdownTitle');
+  const shutSubEl = chargingShutdownEl.querySelector('#androidShutdownSubtitle');
+
+  if (countdownEl) countdownEl.textContent = '16';
+  if (percentEl) percentEl.textContent = '2%';
+  if (dialogTitleEl) dialogTitleEl.textContent = 'Batería muy baja';
+  if (faultMsg) faultMsg.textContent = 'Falla en centro de carga: energía interrumpida.';
+  if (chargingShutdownEl) chargingShutdownEl.classList.remove('visible');
+  if (spinnerEl) spinnerEl.classList.remove('hidden');
+  if (deadIconEl) deadIconEl.classList.add('hidden');
+  if (shutTitleEl) shutTitleEl.textContent = 'Apagando...';
+  if (shutSubEl) shutSubEl.textContent = 'Protección térmica activada por descarga crítica y corto en puerto de carga.';
+
+  // Update the SAME minimalist modal to address both failures
+  if (cardEl) {
+    cardEl.classList.add('aggravated');
+    const simBanner = cardEl.querySelector('#crackedSimBannerText');
+    const titleText = cardEl.querySelector('#crackedCardTitleText');
+    const descEl = cardEl.querySelector('#crackedCardDesc');
+    const chargingBtn = cardEl.querySelector('#btnTriggerChargingSim');
+    const chargingLabel = cardEl.querySelector('#btnChargingTagLabel');
+    const repairLabel = cardEl.querySelector('#btnRepairScreenLabel');
+    const helpBtn = cardEl.querySelector('#btnCrackedHelp');
+
+    if (simBanner) simBanner.textContent = 'Simulación · Falla agravada';
+    if (titleText) titleText.textContent = '¿Tú sistema de carga o batería?';
+    if (descEl) {
+      descEl.textContent = 'Yo resuelvo pantalla, centro de carga en corto y batería en Teziutlán.';
+    }
+    if (chargingBtn) chargingBtn.classList.add('short-active');
+    if (chargingLabel) chargingLabel.textContent = 'Corto USB-C';
+    if (repairLabel) repairLabel.textContent = 'Reparar todo';
+    if (helpBtn) {
+      helpBtn.href =
+        'https://wa.me/522311024672?text=Hola%20Fiberlink%2C%20necesito%20reparar%20pantalla%2C%20sistema%20de%20carga%20o%20bater%C3%ADa%20en%20Teziutl%C3%A1n.';
+    }
+  }
+
+  resizeChargingCanvas();
+  chargingDialogEl.classList.add('visible');
+  chargingPortDockEl.classList.add('visible');
+  isChargingSimActive = true;
+
+  // Auto-hide the 2% notification upward after ~3.8 seconds, before returning at 1%
+  autoHideToastTimer = setTimeout(() => {
+    if (isChargingSimActive && chargingDialogEl && chargingSecondsLeft > 8) {
+      chargingDialogEl.classList.remove('visible');
+    }
+  }, 3800);
+
+  playLowBatteryAlertSound();
+  setTimeout(() => {
+    if (isChargingSimActive) triggerShortCircuitBurst(1.35, true);
+  }, 180);
+
+  chargingRafId = window.requestAnimationFrame(drawShortCircuitFrame);
+  scheduleRandomShortCircuitSurge();
+
+  chargingCountdownTimer = setInterval(() => {
+    if (!isChargingSimActive) return;
+    chargingSecondsLeft -= 1;
+
+    if (countdownEl) countdownEl.textContent = String(Math.max(0, chargingSecondsLeft));
+
+    // Reappear sliding down from top right when battery hits 1% (8 seconds left)
+    if (chargingSecondsLeft === 8) {
+      if (percentEl) percentEl.textContent = '1%';
+      if (dialogTitleEl) dialogTitleEl.textContent = 'Batería crítica (1%)';
+      if (chargingDialogEl) chargingDialogEl.classList.add('visible');
+      playLowBatteryAlertSound();
+      triggerShortCircuitBurst(1.25, true);
+    }
+
+    if (chargingSecondsLeft <= 0) {
+      clearInterval(chargingCountdownTimer);
+      clearTimeout(chargingSurgeTimeout);
+      clearTimeout(autoHideToastTimer);
+      triggerShortCircuitBurst(1.5, true);
+      if (chargingDialogEl) chargingDialogEl.classList.remove('visible');
+      if (cardEl) cardEl.classList.remove('visible');
+      if (chargingShutdownEl) chargingShutdownEl.classList.add('visible');
+
+      chargingShutdownTimeout = setTimeout(() => {
+        if (!isChargingSimActive) return;
+        if (spinnerEl) spinnerEl.classList.add('hidden');
+        if (deadIconEl) deadIconEl.classList.remove('hidden');
+        if (shutTitleEl) shutTitleEl.textContent = 'Equipo apagado (0%)';
+        if (shutSubEl) {
+          shutSubEl.textContent =
+            'Pantalla dañada y centro de carga en corto. Volviendo a la normalidad en un momento...';
+        }
+
+        // Auto-recover to normal state if user does not press repair
+        autoRestoreTimer = setTimeout(() => {
+          if (isCracked || isChargingSimActive) {
+            repairScreen();
+          }
+        }, 2800);
+      }, 1300);
+    }
+  }, 1000);
+}
+
+function stopChargingShortSimulation(playRepairFeedback = true) {
+  clearTimeout(autoEscalateTimer);
+  clearTimeout(autoHideToastTimer);
+  clearTimeout(autoRestoreTimer);
+  isChargingSimActive = false;
+
+  clearInterval(chargingCountdownTimer);
+  clearTimeout(chargingSurgeTimeout);
+  clearTimeout(chargingShutdownTimeout);
+
+  if (chargingRafId !== null) {
+    window.cancelAnimationFrame(chargingRafId);
+    chargingRafId = null;
+  }
+
+  if (playRepairFeedback) {
+    playRepairSound();
+  }
+
+  sparks = [];
+  smokePuffs = [];
+  activeArcs = [];
+  if (chargingCtx && chargingCanvasEl) {
+    chargingCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  }
+  if (chargingDialogEl) {
+    chargingDialogEl.classList.remove('visible');
+  }
+  if (chargingPortDockEl) {
+    chargingPortDockEl.classList.remove('visible');
+  }
+  if (chargingShutdownEl) {
+    chargingShutdownEl.classList.remove('visible');
+  }
 }
 
 /**
@@ -766,6 +1473,8 @@ export function initCrackedScreen() {
   window.fiberlinkEasterEgg = {
     crack: (x, y) => crackScreen(x, y),
     repair: () => repairScreen(),
+    triggerChargingShort: () => escalateToChargingShort(),
+    repairChargingShort: () => repairScreen(),
     getActiveSound: () => activeCrackSound
   };
 }
