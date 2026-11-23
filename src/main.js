@@ -15,6 +15,7 @@ import {
 } from './services/storeWidgets.js';
 import { initAssistant } from './assistant.js';
 import { recordAndFetchVisitorStats } from './services/visitorService.js';
+import { initCrackedScreen } from './crackedScreen.js';
 
 window.ticketService = ticketService;
 window.storeService = storeService;
@@ -90,6 +91,9 @@ function bootApp() {
 
   // 16. Subtle Visitor Registry (Firestore /site_stats/visitors)
   initVisitorRegistry();
+
+  // 17. Easter Egg — Pantalla Estrellada (Multi-tap screen shatter effect)
+  initCrackedScreen();
 }
 
 if (document.readyState === 'loading') {
