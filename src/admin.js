@@ -1339,7 +1339,7 @@ function renderOverviewChatLeads() {
 
     const st = statusMap[lead.status] || { label: lead.status || 'Nuevo', badge: 'badge-gray', pulse: '' };
     const cleanPhone = (lead.phone || '').toString().replace(/\D/g, '');
-    const waUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(`Hola ${lead.name}, te escribe el Ing. Roberto Méndez de Fiberlink respecto a tu mensaje en nuestro portal web.`)}`;
+    const waUrl = `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(`Hola ${lead.name}, te escribe el Ing. Roberto Méndez de Fiberlink respecto a tu mensaje en mi portal web.`)}`;
 
     return `
       <tr class="chat-lead-row" data-id="${lead.id}">
@@ -1431,7 +1431,7 @@ function openChatLeadModal(leadId) {
 
   if (waBtn) {
     const clean = (lead.phone || '').replace(/\D/g, '');
-    const waText = `Hola ${lead.name}, te contactamos de Fiberlink Servicios TIC en relación a tu solicitud enviada por nuestra página web.`;
+    const waText = `Hola ${lead.name}, te escribo personalmente de Fiberlink Servicios TIC respecto a tu solicitud enviada desde mi página web.`;
     waBtn.href = `https://wa.me/52${clean}?text=${encodeURIComponent(waText)}`;
   }
 

@@ -68,7 +68,7 @@ export function handleCreateChatLead(body = {}) {
       notes: [
         {
           id: `n-${Date.now()}`,
-          text: 'Prospecto recibido desde el botón "Chatea con nosotros" del portal web.',
+          text: 'Prospecto recibido desde el chat del portal web.',
           createdAt: now,
           user: 'Portal Web'
         }

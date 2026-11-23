@@ -485,7 +485,7 @@ async function askAssistant() {
     if (els.status) els.status.textContent = state.engine === 'gemini' ? 'En línea · Impulsado por Gemini' : 'En línea · Asistente Fiberlink';
   } catch (err) {
     console.warn('[Asistente IA] Sin conexión con el servidor:', err.message);
-    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket manual** o escribirnos por WhatsApp y un asesor te atiende de inmediato.' });
+    state.messages.push({ role: 'model', text: 'Tuve un problema de conexión 😕. Puedes usar el botón **Levantar ticket manual** o escribirme por WhatsApp y te atiendo de inmediato.' });
     state.quickReplies = [];
   } finally {
     state.busy = false;
@@ -584,10 +584,10 @@ async function submitTicket() {
       description: d.description,
       diagnosis: state.diagnosis
     };
-    state.messages.push({ role: 'model', text: `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket **${state.ticket.folio}** quedó registrado y el equipo técnico ya fue notificado. Toca el botón verde para enviarnos el resumen por WhatsApp y agilizar tu atención. 💚` });
+    state.messages.push({ role: 'model', text: `¡Listo, ${String(d.name).split(' ')[0]}! Tu ticket **${state.ticket.folio}** quedó registrado y ya recibí tu reporte. Toca el botón verde para enviarme el resumen por WhatsApp y agilizar tu atención. 💚` });
 
     showPush(`Ticket ${state.ticket.folio} registrado ✔`, {
-      body: `${state.ticket.service} · ${state.ticket.modality} · Prioridad ${state.ticket.priority}. Un técnico te contactará por WhatsApp.`,
+      body: `${state.ticket.service} · ${state.ticket.modality} · Prioridad ${state.ticket.priority}. Enseguida te contacto por WhatsApp.`,
       tag: `fl-ticket-${state.ticket.folio}`,
       data: { url: '/' }
     });
@@ -599,7 +599,7 @@ async function submitTicket() {
     } catch (_) {}
   } catch (err) {
     console.error('[Asistente IA] Error al crear ticket:', err);
-    state.messages.push({ role: 'model', text: 'No pude registrar el ticket en este momento. Puedes enviarnos tu solicitud por WhatsApp y la capturamos por ti.' });
+    state.messages.push({ role: 'model', text: 'No pude registrar el ticket en este momento. Puedes enviarme tu solicitud por WhatsApp y yo la capturo por ti.' });
   } finally {
     state.busy = false;
     state.showQuickForm = false;
@@ -622,7 +622,7 @@ function buildWhatsAppUrl() {
     `📝 *Problema:* ${t.description}`
   ];
   if (t.diagnosis) lines.push(`🤖 *Pre-diagnóstico IA:* ${t.diagnosis}`);
-  lines.push('', 'Quedo atento(a) a su contacto. ¡Gracias!');
+  lines.push('', 'Quedo atento(a) a tu respuesta. ¡Gracias!');
   return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
@@ -644,7 +644,7 @@ function buildWhatsAppOrderUrl() {
   if (o.clientName || state.draft.name) lines.push(`👤 *Cliente:* ${o.clientName || state.draft.name}`);
   if (o.clientPhone || state.draft.phone) lines.push(`📱 *WhatsApp:* ${o.clientPhone || state.draft.phone}`);
   if (o.deliveryAddress || state.draft.address) lines.push(`📍 *Dirección de entrega:* ${o.deliveryAddress || state.draft.address}`);
-  lines.push('', '¿Me pueden confirmar disponibilidad y método de entrega en Teziutlán? ¡Muchas gracias!');
+  lines.push('', '¿Me confirmas disponibilidad y método de entrega en Teziutlán? ¡Muchas gracias!');
   return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
@@ -693,7 +693,7 @@ function syncMobileViewport() {
 function greet() {
   state.messages.push({
     role: 'model',
-    text: '¡Hola! Soy **Fibi**, tu asistente de Fiberlink. 👋\n¿En qué podemos apoyarte hoy? Elige una opción o escribe tu consulta:'
+    text: '¡Hola! Soy **Fibi**, tu asistente de Fiberlink. 👋\n¿En qué te puedo apoyar hoy? Elige una opción o escribe tu consulta:'
   });
   state.quickReplies = ['Cotizar Punto de Venta', 'Cámaras de seguridad', 'Mantenimiento de PC'];
   saveSession();

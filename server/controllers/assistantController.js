@@ -51,7 +51,7 @@ export const OFFICIAL_CATALOG = [
 const CATALOG_SUMMARY = OFFICIAL_CATALOG.map(p => `- [${p.id}] ${p.name}: $${p.price} MXN (${p.category})`).join('\n');
 
 const SYSTEM_PROMPT = `Eres "Fibi", el asistente técnico y comercial virtual con IA de Fiberlink Servicios TIC en Teziutlán, Puebla, México.
-Tu trato es cálido, empático, ágil y profesional en español de México (trato de "tú").
+Tu trato es cálido, cercano, directo y profesional en español de México (trato de "tú"), hablando siempre en primera persona singular ("yo": "yo te ayudo", "te lo cotizo", "me encargo", "te contacto"), nunca en plural ("nosotros", "nuestro", "la empresa", "el equipo").
 Respuestas breves y directas (máximo 2-3 oraciones).
 
 TIENES DOS MODOS DE ATENCIÓN:
@@ -68,7 +68,7 @@ ${CATALOG_SUMMARY}
 
 2) MODO SOPORTE TÉCNICO / TICKETS (mode = "ticket"):
 - Se activa cuando el cliente tiene un problema técnico, falla, lentitud o descompostura.
-- NO des soluciones largas paso a paso; ofrece un pre-diagnóstico de UNA línea y captura los datos para que un técnico humano lo atienda:
+- NO des soluciones largas paso a paso; ofrece un pre-diagnóstico de UNA línea y captura los datos para atenderlo personalmente de inmediato:
   problema → servicio (${SERVICES.join(' | ')}) → modalidad (${MODALITIES.join(' | ')}) → nombre → WhatsApp 10 dígitos → dirección (si es a domicilio).
 - Prioridad: "Urgente" si el negocio está detenido; "Alta" si afecta operación; "Normal" en otros casos.
 - Al tener los datos completos, pide confirmación (action = "confirm"). Tras el sí, pon action = "submit".
@@ -246,7 +246,7 @@ function localEngine(messages, prevDraft, prevOrderDraft = {}) {
     const suggested = products.length ? products : OFFICIAL_CATALOG.slice(0, 3);
     const prodList = suggested.map(p => `• **${p.name}** en **$${p.price} MXN**`).join('\n');
     return {
-      reply: `¡Con gusto! Aquí tienes opciones con precio oficial en Teziutlán:\n${prodList}\n¿Te gustaría agregar alguno a tu pedido o prefieres que te ayudemos a armar un combo completo?`,
+      reply: `¡Con gusto! Aquí tienes opciones con precio oficial en Teziutlán:\n${prodList}\n¿Te gustaría agregar alguno a tu pedido o prefieres que te ayude a armar un combo completo?`,
       mode: 'order',
       diagnosis: 'Equipamiento en stock con garantía Fiberlink.',
       action: 'collect',
@@ -282,19 +282,19 @@ function localEngine(messages, prevDraft, prevOrderDraft = {}) {
       return { reply: `¡Perfecto${firstName ? ', ' + firstName : ''}! Estoy levantando tu ticket ahora mismo. 🚀`, mode: 'ticket', diagnosis, action: 'submit', quickReplies: [], draft };
     }
     return {
-      reply: `Gracias${firstName ? ', ' + firstName : ''}. Ya tengo todo: revisa el resumen y confírmame para enviarlo al equipo técnico.`,
+      reply: `Gracias${firstName ? ', ' + firstName : ''}. Ya tengo todo: revisa el resumen y confírmame para registrarlo y atenderte de inmediato.`,
       mode: 'ticket',
       diagnosis, action: 'confirm', quickReplies: ['Sí, confirmar ticket', 'Corregir un dato'], draft
     };
   }
 
   const prompts = {
-    description: { r: '¡Hola! Soy Fibi, tu asistente de Fiberlink en Teziutlán. 👋 ¿En qué te podemos apoyar hoy? ¿Requieres soporte técnico o cotizar un equipo?', q: ['Cotizar Punto de Venta', 'Mi computadora está lenta', 'Cámaras de seguridad'] },
-    service: { r: 'Entiendo, vamos a ayudarte. ¿Con qué área se relaciona tu solicitud?', q: ['Soporte técnico', 'Redes / WiFi', 'Punto de Venta POS'] },
-    modality: { r: `${diagnosis ? 'Entiendo lo molesto que es esto; un técnico lo revisará a detalle. ' : ''}¿Cómo prefieres la atención?`, q: ['Remoto', 'En Sitio / Domicilio', 'En Taller'] },
+    description: { r: '¡Hola! Soy Fibi, tu asistente de Fiberlink en Teziutlán. 👋 ¿En qué te puedo apoyar hoy? ¿Requieres soporte técnico o cotizar un equipo?', q: ['Cotizar Punto de Venta', 'Mi computadora está lenta', 'Cámaras de seguridad'] },
+    service: { r: 'Entiendo, yo te ayudo con eso. ¿Con qué área se relaciona tu solicitud?', q: ['Soporte técnico', 'Redes / WiFi', 'Punto de Venta POS'] },
+    modality: { r: `${diagnosis ? 'Entiendo lo molesto que es esto; lo revisaré contigo a detalle. ' : ''}¿Cómo prefieres la atención?`, q: ['Remoto', 'En Sitio / Domicilio', 'En Taller'] },
     name: { r: 'Perfecto. ¿A nombre de quién registro la solicitud?', q: [] },
-    phone: { r: `Gracias${firstName ? ', ' + firstName : ''}. ¿Me compartes tu número de WhatsApp a 10 dígitos para que el técnico te contacte?`, q: [] },
-    address: { r: '¿Cuál es la dirección o colonia donde realizaremos la visita?', q: [] }
+    phone: { r: `Gracias${firstName ? ', ' + firstName : ''}. ¿Me compartes tu número de WhatsApp a 10 dígitos para contactarte directo?`, q: [] },
+    address: { r: '¿Cuál es la dirección o colonia donde haré la visita?', q: [] }
   };
   const p = prompts[missing[0]];
   return { reply: p.r, mode: 'ticket', diagnosis, action: 'collect', quickReplies: p.q, draft };
@@ -514,7 +514,7 @@ export async function handleAssistantChat(body = {}) {
       return {
         status: 200,
         data: {
-          reply: String(ai.reply || '').slice(0, 750) || '¿En qué te podemos apoyar hoy?',
+          reply: String(ai.reply || '').slice(0, 750) || '¿En qué te puedo apoyar hoy?',
           mode,
           diagnosis: String(ai.diagnosis || '').slice(0, 220),
           action,

@@ -302,7 +302,7 @@ export const cartStore = {
       msg += `\n*Notas / Datos:* ${customerNote.trim()}`;
     }
 
-    msg += `\n\n¿Me confirman disponibilidad para entrega hoy?`;
+    msg += `\n\n¿Me confirmas disponibilidad para entrega hoy?`;
     return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(msg)}`;
   },
 
