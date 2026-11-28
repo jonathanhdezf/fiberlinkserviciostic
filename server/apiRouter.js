@@ -76,6 +76,7 @@ import {
   handleDeleteChatLead
 } from './controllers/chatController.js';
 import { handleAssistantChat, handleAssistantTts } from './controllers/assistantController.js';
+import { handleGeocodeProxy } from './controllers/geocodeController.js';
 
 export { DATA_DIR };
 export const DATA_FILE = FILES.tickets;
@@ -530,6 +531,11 @@ export async function handleApiRequest(req, res, next) {
         'Access-Control-Allow-Origin': '*'
       });
       return res.end(result.buffer);
+    }
+
+    if (pathname === '/api/geocode' && method === 'GET') {
+      const result = await handleGeocodeProxy(url.searchParams);
+      return sendJSON(res, result.status, result.data);
     }
 
     return sendJSON(res, 404, { error: 'Ruta de API no encontrada', path: pathname });

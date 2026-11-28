@@ -1830,17 +1830,19 @@ function initFiberlinkLabsModal() {
 }
 
 // ==========================================
-// FIBRA ÓPTICA & FIBERLINK PLAY (PERFILES)
+// FIBRA ÓPTICA · TELMEX INFINITUM & FIBERLINK PLAY
 // ==========================================
 function initFiberOpticSection() {
   const buttons = Array.from(document.querySelectorAll('.fiber-profile-btn'));
-  if (!buttons.length) return;
+  const planChips = Array.from(document.querySelectorAll('.fiber-plan-chip'));
+  if (!buttons.length && !planChips.length) return;
 
   const tagEl = document.getElementById('fiberPlanTag');
   const titleEl = document.getElementById('fiberPlanTitle');
   const descEl = document.getElementById('fiberPlanDesc');
   const speedEl = document.getElementById('fiberPlanSpeed');
   const tvEl = document.getElementById('fiberPlanTv');
+  const installEl = document.getElementById('fiberPlanInstall');
   const featuresEl = document.getElementById('fiberPlanFeatures');
   const waBtn = document.getElementById('fiberPlanWaBtn');
   const ticketBtn = document.getElementById('fiberPlanTicketBtn');
@@ -1849,59 +1851,63 @@ function initFiberOpticSection() {
   const PROFILES = {
     hogar: {
       tag: 'Hogar & Familia',
-      title: 'Internet Fibra Hogar + TV Familiar HD',
-      desc: 'Ideal para hogares con múltiples celulares, Smart TVs y tareas escolares al mismo tiempo, sin pausas en películas ni series.',
-      speed: '100 – 200 Mbps Simétricos',
-      tv: 'TV HD + Apps de Streaming',
+      title: 'Telmex Infinitum 200 Megas · $389 al mes',
+      desc: 'Sube de 120 a 200 megas simétricos de subida y de bajada por el mismo precio. Ideal para hogares con múltiples celulares, Smart TVs y tareas en línea sin pausas.',
+      speed: 'De 120 → 200 Megas',
+      tv: 'Claro video incluido',
+      install: '$0 al cambiarte',
       features: [
-        'Revisión previa de cobertura exacta en tu domicilio',
-        'Configuración de Wi-Fi óptimo para Smart TVs y consolas',
-        'Canales en vivo, deportes, cine y programación infantil',
-        'Acompañamiento completo desde contratación hasta activación'
+        'Velocidad simétrica de 200 megas de subida y de bajada',
+        'Claro video incluido sin costo adicional en tu paquete',
+        'Cámbiate sin costo de instalación ($0 por portabilidad/cambio)',
+        'Validación previa de fibra FTTH y ajuste óptimo de Wi-Fi en casa'
       ],
-      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Hogar y Familia.'
-    },
-    negocio: {
-      tag: 'Negocio & Mostrador',
-      title: 'Fibra Comercial + TV para Sala o Local',
-      desc: 'Diseñado para tiendas, clínicas y restaurantes que necesitan estabilidad para terminales, punto de venta, cámaras CCTV y entretenimiento para clientes.',
-      speed: '200 – 300 Mbps Empresarial',
-      tv: 'TV Comercial + Pantallas',
-      features: [
-        'Red estable para cobro con terminal bancaria y POS',
-        'Ancho de banda ideal para respaldo en nube y monitoreo CCTV',
-        'Programación deportiva, noticias y entretenimiento para clientes',
-        'Separación opcional de red Wi-Fi privada e invitados'
-      ],
-      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Negocio y Mostrador.'
-    },
-    gaming: {
-      tag: 'Gaming & Streaming Pro',
-      title: 'Fibra Simétrica Ultra Baja Latencia + Streaming',
-      desc: 'Pensado para jugadores en línea, creadores de contenido y hogares exigentes que demandan ping mínimo y descargas sin espera.',
-      speed: '300 – 500+ Mbps Baja Latencia',
-      tv: 'Streaming 4K + Canales En Vivo',
-      features: [
-        'Velocidad simétrica de subida y bajada para transmitir en vivo',
-        'Recomendación de enlace cableado Gigabit para consola o PC',
-        'Estabilidad para juegos competitivos y descargas pesadas',
-        'Soporte técnico para apertura de puertos y optimización Wi-Fi'
-      ],
-      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Gaming y Streaming Pro.'
+      waMsg: 'Hola Fiberlink, quiero contratar el paquete Telmex Infinitum de 200 Megas ($389/mes, antes 120 Megas) con Claro video y validar instalación sin costo.'
     },
     oficina: {
       tag: 'Oficina & Home Office',
-      title: 'Fibra Productividad + TV Ejecutiva',
-      desc: 'Para despachos, consultorios y trabajo remoto con videollamadas continuas, envío de archivos pesados y conexión sin interrupciones.',
-      speed: '200 – 300 Mbps Simétricos',
-      tv: 'TV Noticias, Cultura & Streaming',
+      title: 'Telmex Infinitum 400 Megas · $499 al mes',
+      desc: 'Aumento de 250 a 400 megas simétricos de subida y de bajada para despachos, consultorios y trabajo remoto con videollamadas estables y respaldos en nube.',
+      speed: 'De 250 → 400 Megas',
+      tv: 'Claro video incluido',
+      install: '$0 al cambiarte',
       features: [
-        'Estabilidad en videollamadas Zoom, Meet y Teams sin cortes',
-        'Subida rápida de respaldos, facturas y carpetas en la nube',
-        'Asesoría para cobertura en todas las áreas de trabajo',
-        'Atención directa para trámite de instalación en tu zona'
+        'Sube de 250 a 400 megas simétricos para videollamadas y nube fluida',
+        'Claro video incluido y telefonía fija para tu oficina o consultorio',
+        'Cámbiate sin costo de instalación ($0 en cambio de proveedor)',
+        'Te confirmo cobertura FTTH exacta en tu calle antes de agendar'
       ],
-      waMsg: 'Hola Fiberlink Play, quiero contratar Internet de Fibra Óptica y TV para mi perfil: Oficina y Home Office.'
+      waMsg: 'Hola Fiberlink, quiero contratar el paquete Telmex Infinitum de 400 Megas ($499/mes, antes 250 Megas) para Oficina/Home Office y validar instalación.'
+    },
+    negocio: {
+      tag: 'Negocio & Mostrador',
+      title: 'Telmex Infinitum 600 Megas · $649 al mes',
+      desc: 'Aumento de 500 a 600 megas para comercios, clínicas y restaurantes que operan terminales bancarias, punto de venta, cámaras CCTV y red Wi-Fi activa.',
+      speed: 'De 500 → 600 Megas',
+      tv: 'Claro video incluido',
+      install: '$0 al cambiarte',
+      features: [
+        'Ancho de banda de 600 megas (antes 500) ideal para POS y CCTV en nube',
+        'Claro video incluido y telefonía ilimitada para atención al cliente',
+        'Cámbiate sin costo de instalación sujeto a cobertura de fibra óptica',
+        'Asesoría técnica para separar tu red privada de la de clientes'
+      ],
+      waMsg: 'Hola Fiberlink, quiero contratar el paquete Telmex Infinitum de 600 Megas ($649/mes, antes 500 Megas) para mi negocio y validar cobertura e instalación.'
+    },
+    gaming: {
+      tag: 'Gaming & Streaming Pro',
+      title: 'Telmex Infinitum 1000 Megas · $999 al mes',
+      desc: 'Potencia máxima con aumento de 850 a 1000 megas (1 Gbps) para jugadores competitivos, creadores de contenido, streaming 4K y descargas masivas sin espera.',
+      speed: 'De 850 → 1000 Megas',
+      tv: 'Claro video incluido',
+      install: '$0 al cambiarte',
+      features: [
+        'Hasta 1000 megas (1 Gbps, antes 850 megas) con latencia mínima en fibra',
+        'Claro video incluido para entretenimiento en ultra alta definición',
+        'Cámbiate sin costo de instalación en zonas con red FTTH activa',
+        'Orientación de enlace Gigabit cableado para consola, PC o estudio'
+      ],
+      waMsg: 'Hola Fiberlink, quiero contratar el paquete Telmex Infinitum de 1000 Megas ($999/mes, antes 850 Megas) y validar cobertura e instalación.'
     }
   };
 
@@ -1924,11 +1930,25 @@ function initFiberOpticSection() {
       }
     });
 
+    planChips.forEach((chip) => {
+      const isSelected = chip.dataset.fiberPlan === key;
+      chip.classList.toggle('bg-panel-2', isSelected);
+      chip.classList.toggle('bg-surface-container-low', !isSelected);
+      chip.classList.toggle('border-primary-container/50', isSelected);
+      chip.classList.toggle('border-glass', !isSelected);
+      const priceEl = chip.querySelector('span:last-child');
+      if (priceEl) {
+        priceEl.classList.toggle('text-neon-emerald', isSelected);
+        priceEl.classList.toggle('text-status-info', !isSelected);
+      }
+    });
+
     if (tagEl) tagEl.textContent = data.tag;
     if (titleEl) titleEl.textContent = data.title;
     if (descEl) descEl.textContent = data.desc;
     if (speedEl) speedEl.textContent = data.speed;
     if (tvEl) tvEl.textContent = data.tv;
+    if (installEl) installEl.textContent = data.install;
 
     if (featuresEl) {
       featuresEl.innerHTML = data.features.map((item) => `
@@ -1950,9 +1970,15 @@ function initFiberOpticSection() {
     });
   });
 
+  planChips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      selectProfile(chip.dataset.fiberPlan);
+    });
+  });
+
   if (ticketBtn) {
     ticketBtn.addEventListener('click', () => {
-      const activeTag = tagEl ? tagEl.textContent : 'Hogar & Familia';
+      const activeTitle = titleEl ? titleEl.textContent : 'Telmex Infinitum 200 Megas';
       const issueField = document.getElementById('client-issue');
       const netOpt = document.querySelector('.service-opt[onclick*="REDES_WIFI"]');
       if (netOpt && typeof window.selectService === 'function') {
@@ -1962,7 +1988,7 @@ function initFiberOpticSection() {
         window.goToStep(3);
       }
       if (issueField && !issueField.value.trim()) {
-        issueField.value = `Validar cobertura de Fibra Óptica + TV (Fiberlink Play) para perfil: ${activeTag}.`;
+        issueField.value = `Validar cobertura FTTH e instalación sin costo para ${activeTitle}.`;
       }
     });
   }
@@ -1973,7 +1999,7 @@ function initFiberOpticSection() {
       if (!targetUrl) {
         e.preventDefault();
         if (typeof window.showToast === 'function') {
-          window.showToast('El enlace web de Fiberlink Play estará disponible muy pronto. Cotiza tu paquete por WhatsApp ahora.', 'success');
+          window.showToast('El enlace web de Fiberlink Play estará disponible muy pronto. Cotiza tu paquete Telmex Infinitum por WhatsApp ahora.', 'success');
         }
       }
     });

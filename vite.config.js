@@ -26,16 +26,24 @@ function fiberlinkApiPlugin() {
 export default defineConfig(({ mode }) => {
   // Variables privadas del servidor (GEMINI_API_KEY) — no usan prefijo VITE_, por lo que no llegan al navegador
   const env = loadEnv(mode, process.cwd(), '');
-  ['GEMINI_API_KEY', 'GEMINI_MODEL'].forEach((key) => {
+  ['GEMINI_API_KEY', 'GEMINI_MODEL', 'VITE_GOOGLE_MAPS_API_KEY', 'GOOGLE_MAPS_API_KEY'].forEach((key) => {
     if (env[key] && !process.env[key]) process.env[key] = env[key];
   });
+  const fallbackMapsApiKey =
+    !(env.VITE_GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY)
+      ? (env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '')
+      : '';
 
   return {
   base: '/',
   plugins: [fiberlinkApiPlugin()],
+  ...(fallbackMapsApiKey
+    ? { define: { 'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify(fallbackMapsApiKey) } }
+    : {}),
   server: {
     host: '0.0.0.0',
-    port: 3000
+    port: 3000,
+    allowedHosts: true
   },
   build: {
     rollupOptions: {

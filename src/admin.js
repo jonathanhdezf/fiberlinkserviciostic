@@ -12,6 +12,17 @@ import {
   soundLibraryService,
   stopActivePreviewSound
 } from './services/soundLibraryService.js';
+import {
+  downloadEquipmentDeliveryReceiptPdf,
+  downloadEquipmentPickupReceiptPdf
+} from './services/receiptPdfService.js';
+import {
+  createAddressMapPicker,
+  installMapsQuotaDefense,
+  isMapsQuotaExceeded
+} from './services/mapsAddressPicker.js';
+
+installMapsQuotaDefense();
 
 // ==========================================
 // GLOBAL ERP STATE
@@ -97,6 +108,7 @@ const CATEGORY_LABELS = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  initMapsQuotaBanner();
   initTheme();
   initModalsClose();
   initAuth();
@@ -115,6 +127,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initSoundLibraryModule();
   initRealtimeSync();
 });
+
+function initMapsQuotaBanner() {
+  const banner = document.getElementById('gmpQuotaBanner');
+  const dismissBtn = document.getElementById('gmpQuotaDismissBtn');
+  const showBanner = () => banner?.classList.remove('hidden');
+
+  if (isMapsQuotaExceeded()) showBanner();
+  window.addEventListener('gmp-quota-exceeded', showBanner);
+  dismissBtn?.addEventListener('click', () => {
+    banner?.classList.add('hidden');
+  });
+}
 
 // ==========================================
 // UTILITIES & EMPTY STATE GENERATOR
@@ -1731,6 +1755,156 @@ function renderOverviewUnifiedTransactions() {
 // ==========================================
 // 7. VIEW 2: TICKETS MODULE (KANBAN + TABLE)
 // ==========================================
+let ntPickupSigPad = null;
+let ntTechPickupSigPad = null;
+let ntDeliverySigPad = null;
+let ntTechDeliverySigPad = null;
+let tdPickupSigPad = null;
+let tdTechPickupSigPad = null;
+let tdDeliverySigPad = null;
+let tdTechDeliverySigPad = null;
+
+function createSignaturePad(canvasEl, statusEl, clearBtnEl) {
+  if (!canvasEl) {
+    return {
+      clear: () => {},
+      loadDataUrl: () => {},
+      getDataUrl: () => '',
+      hasSignature: () => false
+    };
+  }
+
+  const ctx = canvasEl.getContext('2d');
+  let isDrawing = false;
+  let hasInk = false;
+  let isDirty = false;
+  let loadedDataUrl = '';
+  let loadToken = 0;
+
+  const updateStatus = (signed) => {
+    if (!statusEl) return;
+    statusEl.textContent = signed ? 'Firma capturada ✓' : 'Sin firma';
+    statusEl.dataset.signed = signed ? 'true' : 'false';
+  };
+
+  const getPoint = (e) => {
+    const rect = canvasEl.getBoundingClientRect();
+    const scaleX = rect.width > 0 ? canvasEl.width / rect.width : 1;
+    const scaleY = rect.height > 0 ? canvasEl.height / rect.height : 1;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  };
+
+  const configureStroke = () => {
+    if (!ctx) return;
+    ctx.strokeStyle = '#0f172a';
+    ctx.fillStyle = '#0f172a';
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  };
+
+  canvasEl.addEventListener('pointerdown', (e) => {
+    if (!ctx || (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse')) return;
+    e.preventDefault();
+    canvasEl.setPointerCapture?.(e.pointerId);
+    const pt = getPoint(e);
+    configureStroke();
+    ctx.beginPath();
+    ctx.moveTo(pt.x, pt.y);
+    ctx.arc(pt.x, pt.y, 1.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(pt.x, pt.y);
+    isDrawing = true;
+    hasInk = true;
+    isDirty = true;
+    updateStatus(true);
+  });
+
+  canvasEl.addEventListener('pointermove', (e) => {
+    if (!isDrawing || !ctx) return;
+    e.preventDefault();
+    const pt = getPoint(e);
+    configureStroke();
+    ctx.lineTo(pt.x, pt.y);
+    ctx.stroke();
+  });
+
+  const endStroke = (e) => {
+    if (!isDrawing) return;
+    isDrawing = false;
+    if (e?.pointerId !== undefined && canvasEl.hasPointerCapture?.(e.pointerId)) {
+      canvasEl.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  canvasEl.addEventListener('pointerup', endStroke);
+  canvasEl.addEventListener('pointercancel', endStroke);
+
+  const clear = () => {
+    loadToken += 1;
+    isDrawing = false;
+    hasInk = false;
+    isDirty = false;
+    loadedDataUrl = '';
+    if (ctx) {
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    }
+    updateStatus(false);
+  };
+
+  const loadDataUrl = (dataUrl) => {
+    clear();
+    if (typeof dataUrl !== 'string' || !/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(dataUrl.trim())) {
+      return;
+    }
+    const cleanUrl = dataUrl.trim();
+    const token = ++loadToken;
+    loadedDataUrl = cleanUrl;
+    hasInk = true;
+    isDirty = false;
+    updateStatus(true);
+
+    const img = new Image();
+    img.onload = () => {
+      if (token !== loadToken || !ctx) return;
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      ctx.drawImage(img, 0, 0, canvasEl.width, canvasEl.height);
+    };
+    img.src = cleanUrl;
+  };
+
+  const getDataUrl = () => {
+    if (!hasInk) return '';
+    if (!isDirty && loadedDataUrl) return loadedDataUrl;
+    let png = canvasEl.toDataURL('image/png');
+    if (png.length > 78000) {
+      const compact = document.createElement('canvas');
+      compact.width = 300;
+      compact.height = 102;
+      const cctx = compact.getContext('2d');
+      if (cctx) {
+        cctx.drawImage(canvasEl, 0, 0, compact.width, compact.height);
+        png = compact.toDataURL('image/png');
+      }
+    }
+    return png.length <= 80000 ? png : '';
+  };
+
+  clearBtnEl?.addEventListener('click', clear);
+  updateStatus(false);
+
+  return {
+    clear,
+    loadDataUrl,
+    getDataUrl,
+    hasSignature: () => hasInk
+  };
+}
+
 function initTicketsModule() {
   document.getElementById('ticketSearchInput')?.addEventListener('input', renderTicketsKanban);
   document.getElementById('ticketPriorityFilter')?.addEventListener('change', renderTicketsKanban);
@@ -1765,7 +1939,99 @@ function initTicketsModule() {
     document.getElementById('ticketsTableContainer')?.classList.remove('hidden');
   });
 
+  const tdMapWrap = document.getElementById('tdMapPickerWrap');
+  const tdToggleMapBtn = document.getElementById('tdToggleMapBtn');
+  const tdAddressPicker = createAddressMapPicker({
+    mapEl: document.getElementById('tdMapCanvas'),
+    inputEl: document.getElementById('tdLocationInput'),
+    statusEl: document.getElementById('tdMapStatus'),
+    coordsEl: document.getElementById('tdMapCoords'),
+    searchBtnEl: document.getElementById('tdMapSearchBtn'),
+    locateBtnEl: document.getElementById('tdMapLocateBtn')
+  });
+
+  tdToggleMapBtn?.addEventListener('click', async () => {
+    if (!tdMapWrap) return;
+    const isHidden = tdMapWrap.classList.toggle('hidden');
+    tdToggleMapBtn.textContent = isHidden ? '📍 Mapa' : '🗺️ Ocultar mapa';
+    if (!isHidden) {
+      await tdAddressPicker.openAndSync();
+    }
+  });
+
+  const ntMapWrap = document.getElementById('ntMapPickerWrap');
+  const ntToggleMapBtn = document.getElementById('ntToggleMapBtn');
+  const ntAddressPicker = createAddressMapPicker({
+    mapEl: document.getElementById('ntMapCanvas'),
+    inputEl: document.getElementById('ntLocationInput'),
+    statusEl: document.getElementById('ntMapStatus'),
+    coordsEl: document.getElementById('ntMapCoords'),
+    searchBtnEl: document.getElementById('ntMapSearchBtn'),
+    locateBtnEl: document.getElementById('ntMapLocateBtn')
+  });
+
+  ntToggleMapBtn?.addEventListener('click', async () => {
+    if (!ntMapWrap) return;
+    const isHidden = ntMapWrap.classList.toggle('hidden');
+    ntToggleMapBtn.textContent = isHidden ? '📍 Mapa' : '🗺️ Ocultar mapa';
+    if (!isHidden) {
+      await ntAddressPicker.openAndSync();
+    }
+  });
+
+  ntPickupSigPad = createSignaturePad(
+    document.getElementById('ntPickupSignatureCanvas'),
+    document.getElementById('ntPickupSigStatus'),
+    document.getElementById('ntClearPickupSigBtn')
+  );
+  ntTechPickupSigPad = createSignaturePad(
+    document.getElementById('ntTechPickupSignatureCanvas'),
+    document.getElementById('ntTechPickupSigStatus'),
+    document.getElementById('ntClearTechPickupSigBtn')
+  );
+  ntDeliverySigPad = createSignaturePad(
+    document.getElementById('ntDeliverySignatureCanvas'),
+    document.getElementById('ntDeliverySigStatus'),
+    document.getElementById('ntClearDeliverySigBtn')
+  );
+  ntTechDeliverySigPad = createSignaturePad(
+    document.getElementById('ntTechDeliverySignatureCanvas'),
+    document.getElementById('ntTechDeliverySigStatus'),
+    document.getElementById('ntClearTechDeliverySigBtn')
+  );
+  tdPickupSigPad = createSignaturePad(
+    document.getElementById('tdPickupSignatureCanvas'),
+    document.getElementById('tdPickupSigStatus'),
+    document.getElementById('tdClearPickupSigBtn')
+  );
+  tdTechPickupSigPad = createSignaturePad(
+    document.getElementById('tdTechPickupSignatureCanvas'),
+    document.getElementById('tdTechPickupSigStatus'),
+    document.getElementById('tdClearTechPickupSigBtn')
+  );
+  tdDeliverySigPad = createSignaturePad(
+    document.getElementById('tdDeliverySignatureCanvas'),
+    document.getElementById('tdDeliverySigStatus'),
+    document.getElementById('tdClearDeliverySigBtn')
+  );
+  tdTechDeliverySigPad = createSignaturePad(
+    document.getElementById('tdTechDeliverySignatureCanvas'),
+    document.getElementById('tdTechDeliverySigStatus'),
+    document.getElementById('tdClearTechDeliverySigBtn')
+  );
+
+  const resetNewTicketSignaturePads = () => {
+    ntPickupSigPad?.clear();
+    ntTechPickupSigPad?.clear();
+    ntDeliverySigPad?.clear();
+    ntTechDeliverySigPad?.clear();
+  };
+
   document.getElementById('btnOpenNewTicketModal')?.addEventListener('click', () => {
+    ntMapWrap?.classList.add('hidden');
+    if (ntToggleMapBtn) ntToggleMapBtn.textContent = '📍 Mapa';
+    ntAddressPicker.resetView();
+    resetNewTicketSignaturePads();
     openModal('newTicketModal');
   });
 
@@ -1782,16 +2048,54 @@ function initTicketsModule() {
   newTicketForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(newTicketForm);
-    const payload = Object.fromEntries(fd.entries());
-    payload.author = currentUser?.name || 'Recepción';
-    payload.source = 'Mesa de Control';
+    const shouldDownloadPickup = e.submitter?.dataset?.ticketAction === 'create-pickup';
+    const deliveredToVal = String(fd.get('eqDeliveredTo') || '').trim();
+    const payload = {
+      name: fd.get('name'),
+      phone: fd.get('phone'),
+      company: fd.get('company'),
+      service: fd.get('service'),
+      modality: fd.get('modality'),
+      priority: fd.get('priority'),
+      address: fd.get('address'),
+      assignedTo: fd.get('assignedTo'),
+      description: fd.get('description'),
+      author: currentUser?.name || 'Recepción',
+      source: 'Mesa de Control',
+      equipment: {
+        deviceType: fd.get('eqDeviceType') || '',
+        brandModel: fd.get('eqBrandModel') || '',
+        serialNumber: fd.get('eqSerialNumber') || '',
+        accessories: fd.get('eqAccessories') || '',
+        physicalCondition: fd.get('eqPhysicalCondition') || '',
+        pickupAt: new Date().toISOString(),
+        deliveredAt: '',
+        deliveredTo: deliveredToVal || fd.get('name') || '',
+        deliveryNotes: '',
+        pickupSignature: ntPickupSigPad ? ntPickupSigPad.getDataUrl() : '',
+        techPickupSignature: ntTechPickupSigPad ? ntTechPickupSigPad.getDataUrl() : '',
+        deliverySignature: ntDeliverySigPad ? ntDeliverySigPad.getDataUrl() : '',
+        techDeliverySignature: ntTechDeliverySigPad ? ntTechDeliverySigPad.getDataUrl() : ''
+      }
+    };
 
     try {
-      await ticketService.createTicket(payload);
+      const createdTicket = await ticketService.createTicket(payload);
       newTicketForm.reset();
+      resetNewTicketSignaturePads();
+      ntMapWrap?.classList.add('hidden');
+      if (ntToggleMapBtn) ntToggleMapBtn.textContent = '📍 Mapa';
+      ntAddressPicker.resetView();
       closeModal('newTicketModal');
       await syncAllData();
-      showToast('Ticket registrado exitosamente en Firestore');
+      if (shouldDownloadPickup && createdTicket) {
+        await downloadEquipmentPickupReceiptPdf(createdTicket, {
+          logoUrl: systemSettings?.company?.logoUrl || '/logo.gif'
+        });
+        showToast(`Ticket ${createdTicket.folio} creado y recibo de recolección descargado`);
+      } else {
+        showToast('Ticket registrado exitosamente en Firestore');
+      }
     } catch (err) {
       handleTicketRuleError(err, 'No se pudo registrar el ticket en Firestore.');
     }
@@ -1809,12 +2113,22 @@ function initTicketsModule() {
   document.getElementById('tdEstado')?.addEventListener('change', async (e) => {
     if (!currentTicketId) return;
     const prev = allTickets.find(t => t.id === currentTicketId)?.estado || 'creación';
+    const nextState = e.target.value;
+    syncTicketInfoFormMode(nextState);
     try {
-      await ticketService.updateTicket(currentTicketId, { estado: e.target.value, author: currentUser?.name });
+      const updated = await ticketService.updateTicket(currentTicketId, { estado: nextState, author: currentUser?.name });
+      if (updated) {
+        const idx = allTickets.findIndex(t => t.id === currentTicketId);
+        if (idx !== -1) allTickets[idx] = { ...allTickets[idx], ...updated };
+        renderTicketBitacora(updated.bitacora || []);
+      }
       await syncAllData();
-      showToast('Estado del ticket actualizado');
+      showToast(nextState === 'diagnostico'
+        ? 'Modo Diagnóstico Técnico activado'
+        : 'Estado del ticket actualizado');
     } catch (err) {
       e.target.value = prev;
+      syncTicketInfoFormMode(prev);
       handleTicketRuleError(err, 'No se pudo actualizar el estado del ticket.');
     }
   });
@@ -1842,6 +2156,48 @@ function initTicketsModule() {
     } catch (err) {
       e.target.value = prev;
       handleTicketRuleError(err, 'No se pudo reasignar el ticket.');
+    }
+  });
+
+  document.getElementById('tdModalitySelect')?.addEventListener('change', async (e) => {
+    if (!currentTicketId) return;
+    const prev = allTickets.find(t => t.id === currentTicketId)?.modality || 'En Sitio / Domicilio';
+    try {
+      await ticketService.updateTicket(currentTicketId, { modality: e.target.value, author: currentUser?.name });
+      await syncAllData();
+      showToast('Modalidad actualizada');
+    } catch (err) {
+      e.target.value = prev;
+      handleTicketRuleError(err, 'No se pudo actualizar la modalidad.');
+    }
+  });
+
+  const saveTicketLocation = async () => {
+    if (!currentTicketId) return;
+    const input = document.getElementById('tdLocationInput');
+    if (!input) return;
+    const nextAddress = input.value.trim() || 'Soporte Remoto';
+    const prev = allTickets.find(t => t.id === currentTicketId)?.address || '';
+    if (nextAddress === prev) {
+      showToast('Sin cambios en la ubicación');
+      return;
+    }
+    try {
+      await ticketService.updateTicket(currentTicketId, { address: nextAddress, author: currentUser?.name });
+      input.value = nextAddress;
+      await syncAllData();
+      showToast('Ubicación / dirección actualizada');
+    } catch (err) {
+      input.value = prev;
+      handleTicketRuleError(err, 'No se pudo actualizar la ubicación.');
+    }
+  };
+
+  document.getElementById('tdSaveLocationBtn')?.addEventListener('click', saveTicketLocation);
+  document.getElementById('tdLocationInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveTicketLocation();
     }
   });
 
@@ -1931,6 +2287,142 @@ function initTicketsModule() {
       handleTicketRuleError(err, 'Solo un administrador puede eliminar tickets.');
     }
   });
+
+  const readTicketEquipmentForm = () => ({
+    deviceType: document.getElementById('tdEqDeviceType')?.value.trim() || '',
+    brandModel: document.getElementById('tdEqBrandModel')?.value.trim() || '',
+    serialNumber: document.getElementById('tdEqSerialNumber')?.value.trim() || '',
+    accessories: document.getElementById('tdEqAccessories')?.value.trim() || '',
+    physicalCondition: document.getElementById('tdEqPhysicalCondition')?.value.trim() || '',
+    deliveredTo: document.getElementById('tdEqDeliveredTo')?.value.trim() || '',
+    deliveryNotes: document.getElementById('tdEqDeliveryNotes')?.value.trim() || '',
+    pickupSignature: tdPickupSigPad ? tdPickupSigPad.getDataUrl() : '',
+    techPickupSignature: tdTechPickupSigPad ? tdTechPickupSigPad.getDataUrl() : '',
+    deliverySignature: tdDeliverySigPad ? tdDeliverySigPad.getDataUrl() : '',
+    techDeliverySignature: tdTechDeliverySigPad ? tdTechDeliverySigPad.getDataUrl() : ''
+  });
+
+  const persistEquipmentAndGetTicket = async (stampField) => {
+    const baseTicket = allTickets.find(t => t.id === currentTicketId)
+      || await ticketService.getTicketById(currentTicketId);
+    if (!baseTicket) return null;
+
+    const eqInput = readTicketEquipmentForm();
+    const nextEq = {
+      ...(baseTicket.equipment || {}),
+      ...eqInput
+    };
+    if (stampField === 'pickup' && !nextEq.pickupAt) {
+      nextEq.pickupAt = new Date().toISOString();
+    }
+    if (stampField === 'delivery' && !nextEq.deliveredAt) {
+      nextEq.deliveredAt = new Date().toISOString();
+    }
+
+    const liveModality = document.getElementById('tdModalitySelect')?.value || baseTicket.modality;
+    const liveAddress = document.getElementById('tdLocationInput')?.value.trim() || baseTicket.address;
+
+    try {
+      const updated = await ticketService.saveEquipment(currentTicketId, nextEq);
+      if (updated) {
+        const merged = { ...updated, modality: liveModality, address: liveAddress };
+        const idx = allTickets.findIndex(t => t.id === currentTicketId);
+        if (idx !== -1) allTickets[idx] = merged;
+        return merged;
+      }
+    } catch (_) {
+      // If ticket is resolved and locked by non-admin rule, still emit receipt with current form snapshot
+    }
+    return { ...baseTicket, modality: liveModality, address: liveAddress, equipment: nextEq };
+  };
+
+  document.getElementById('tdSaveEquipmentBtn')?.addEventListener('click', async () => {
+    if (!currentTicketId) return;
+    try {
+      await ticketService.saveEquipment(currentTicketId, readTicketEquipmentForm());
+      await syncAllData();
+      showToast('Ficha del equipo guardada en el ticket');
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo guardar la ficha del equipo.');
+    }
+  });
+
+  document.getElementById('tdDiagBackToGeneralBtn')?.addEventListener('click', () => {
+    const estadoVal = document.getElementById('tdEstado')?.value || 'diagnostico';
+    syncTicketInfoFormMode(estadoVal, true);
+  });
+
+  document.getElementById('tdOpenDiagFromGeneralBtn')?.addEventListener('click', () => {
+    syncTicketInfoFormMode('diagnostico', false);
+  });
+
+  document.getElementById('tdSaveDiagnosisBtn')?.addEventListener('click', async () => {
+    if (!currentTicketId) return;
+    const diagPayload = readTicketDiagnosisForm();
+    const logToBitacora = Boolean(document.getElementById('tdDiagLogBitacoraCheck')?.checked);
+    try {
+      const updated = await ticketService.saveDiagnosis(currentTicketId, diagPayload, {
+        author: currentUser?.name || 'Técnico Fiberlink',
+        logToBitacora
+      });
+      if (updated) {
+        const idx = allTickets.findIndex(t => t.id === currentTicketId);
+        if (idx !== -1) allTickets[idx] = updated;
+        renderTicketBitacora(updated.bitacora || []);
+        refreshDiagSummaryAndChip(updated);
+      }
+      await syncAllData();
+      showToast('Diagnóstico técnico del equipo guardado');
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo guardar el diagnóstico técnico.');
+    }
+  });
+
+  document.getElementById('tdDiagSendCostToPosBtn')?.addEventListener('click', async () => {
+    if (!currentTicketId) return;
+    const diagPayload = readTicketDiagnosisForm();
+    const price = parseFloat(diagPayload.estimatedCost) || 0;
+    if (price <= 0) {
+      showToast('Ingresa un costo estimado mayor a $0 para pasarlo a Cargos POS.');
+      return;
+    }
+    const concept = (diagPayload.recommendedSolution || diagPayload.verifiedFault || 'Servicio según diagnóstico técnico').slice(0, 180);
+    try {
+      const ticket = await ticketService.getTicketById(currentTicketId);
+      const items = Array.isArray(ticket?.pos?.items) ? [...ticket.pos.items] : [];
+      items.push({ id: `pos-${Date.now()}`, concept, qty: 1, price });
+      const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
+      await ticketService.savePos(currentTicketId, items, total);
+      renderTicketPOS({ items, total });
+      await syncAllData();
+      showToast(`Cargo agregado a POS (${formatMoney(price)})`);
+    } catch (err) {
+      handleTicketRuleError(err, 'No se pudo agregar el costo estimado al POS.');
+    }
+  });
+
+  document.getElementById('tdDownloadPickupPdfBtn')?.addEventListener('click', async () => {
+    if (!currentTicketId) return;
+    const ticket = await persistEquipmentAndGetTicket('pickup');
+    if (!ticket) return;
+    await downloadEquipmentPickupReceiptPdf(ticket, {
+      logoUrl: systemSettings?.company?.logoUrl || '/logo.gif'
+    });
+    showToast(`Recibo de recolección (${ticket.folio}) descargado`);
+  });
+
+  const handleDownloadDeliveryReceipt = async () => {
+    if (!currentTicketId) return;
+    const ticket = await persistEquipmentAndGetTicket('delivery');
+    if (!ticket) return;
+    await downloadEquipmentDeliveryReceiptPdf(ticket, {
+      logoUrl: systemSettings?.company?.logoUrl || '/logo.gif'
+    });
+    showToast(`Recibo de entrega (${ticket.folio}) descargado`);
+  };
+
+  document.getElementById('tdDownloadDeliveryPdfBtn')?.addEventListener('click', handleDownloadDeliveryReceipt);
+  document.getElementById('posDownloadDeliveryPdfBtn')?.addEventListener('click', handleDownloadDeliveryReceipt);
 
   document.getElementById('tdPrintOrderBtn')?.addEventListener('click', () => {
     const ticket = allTickets.find(t => t.id === currentTicketId);
@@ -2055,6 +2547,77 @@ function createTicketCard(ticket) {
   return div;
 }
 
+function readTicketDiagnosisForm() {
+  return {
+    feasibility: document.getElementById('tdDiagFeasibility')?.value || 'En Evaluación',
+    affectedParts: document.getElementById('tdDiagAffectedParts')?.value.trim() || '',
+    verifiedFault: document.getElementById('tdDiagVerifiedFault')?.value.trim() || '',
+    testsPerformed: document.getElementById('tdDiagTestsPerformed')?.value.trim() || '',
+    technicalFindings: document.getElementById('tdDiagFindings')?.value.trim() || '',
+    recommendedSolution: document.getElementById('tdDiagSolution')?.value.trim() || '',
+    estimatedCost: Math.max(0, parseFloat(document.getElementById('tdDiagEstimatedCost')?.value) || 0),
+    estimatedTime: document.getElementById('tdDiagEstimatedTime')?.value.trim() || ''
+  };
+}
+
+function refreshDiagSummaryAndChip(ticket = null) {
+  const activeTicket = ticket || allTickets.find(t => t.id === currentTicketId) || {};
+  const chipEl = document.getElementById('tdDiagEquipmentChip');
+  if (chipEl) {
+    const devType = document.getElementById('tdEqDeviceType')?.value.trim() || activeTicket.equipment?.deviceType || 'Equipo no especificado';
+    const brandModel = document.getElementById('tdEqBrandModel')?.value.trim() || activeTicket.equipment?.brandModel || '';
+    const serial = document.getElementById('tdEqSerialNumber')?.value.trim() || activeTicket.equipment?.serialNumber || '';
+    const reported = document.getElementById('tdDescription')?.textContent?.trim() || activeTicket.description || '';
+    chipEl.replaceChildren();
+
+    const makeChunk = (label, value) => {
+      const span = document.createElement('span');
+      const strong = document.createElement('strong');
+      strong.textContent = `${label}: `;
+      span.appendChild(strong);
+      span.appendChild(document.createTextNode(value));
+      return span;
+    };
+
+    chipEl.appendChild(makeChunk('Equipo', brandModel ? `${devType} · ${brandModel}` : devType));
+    if (serial) chipEl.appendChild(makeChunk('Serie', serial));
+    if (reported) chipEl.appendChild(makeChunk('Reporte', reported.slice(0, 140)));
+  }
+
+  const summaryCard = document.getElementById('tdDiagSummaryCard');
+  const summaryText = document.getElementById('tdDiagSummaryText');
+  const diag = readTicketDiagnosisForm();
+  const hasDiagData = Boolean(
+    diag.verifiedFault || diag.technicalFindings || diag.recommendedSolution || diag.affectedParts
+  );
+  if (summaryCard && summaryText) {
+    if (hasDiagData) {
+      summaryCard.classList.remove('hidden');
+      const headline = diag.feasibility ? `${diag.feasibility}` : 'Diagnóstico';
+      const detail = diag.technicalFindings || diag.verifiedFault || diag.recommendedSolution || diag.affectedParts;
+      summaryText.replaceChildren();
+      const b = document.createElement('strong');
+      b.textContent = `Diagnóstico Técnico (${headline}): `;
+      summaryText.appendChild(b);
+      summaryText.appendChild(document.createTextNode(detail.slice(0, 180)));
+      if (diag.estimatedCost > 0) {
+        summaryText.appendChild(document.createTextNode(` · Est. ${formatMoney(diag.estimatedCost)}`));
+      }
+    } else {
+      summaryCard.classList.add('hidden');
+    }
+  }
+}
+
+function syncTicketInfoFormMode(estadoValue, forceGeneral = false) {
+  const generalWrap = document.getElementById('tdGeneralFormWrap');
+  const diagWrap = document.getElementById('tdDiagnosisFormWrap');
+  const isDiagMode = estadoValue === 'diagnostico' && !forceGeneral;
+  if (generalWrap) generalWrap.classList.toggle('hidden', isDiagMode);
+  if (diagWrap) diagWrap.classList.toggle('hidden', !isDiagMode);
+  refreshDiagSummaryAndChip();
+}
+
 async function openTicketDetail(ticketId) {
   currentTicketId = ticketId;
   const ticket = await ticketService.getTicketById(ticketId);
@@ -2066,14 +2629,66 @@ async function openTicketDetail(ticketId) {
   document.getElementById('tdName').textContent = `${ticket.name || 'Cliente'}${ticket.company ? ' — ' + ticket.company : ''}`;
   document.getElementById('tdPhone').textContent = ticket.phone || '-';
   document.getElementById('tdService').textContent = ticket.service || '-';
-  document.getElementById('tdOnsite').textContent = ticket.modality || 'En Sitio';
-  document.getElementById('tdLocation').textContent = ticket.address || 'Teziutlán, Pue.';
+
+  const modSelect = document.getElementById('tdModalitySelect');
+  if (modSelect) {
+    const modVal = ticket.modality || 'En Sitio / Domicilio';
+    if (!Array.from(modSelect.options).some(opt => opt.value === modVal)) {
+      const extraOpt = document.createElement('option');
+      extraOpt.value = modVal;
+      extraOpt.textContent = modVal;
+      modSelect.appendChild(extraOpt);
+    }
+    modSelect.value = modVal;
+  }
+
+  const locInput = document.getElementById('tdLocationInput');
+  if (locInput) {
+    locInput.value = ticket.address || '';
+  }
+  const tdMapWrap = document.getElementById('tdMapPickerWrap');
+  const tdToggleMapBtn = document.getElementById('tdToggleMapBtn');
+  if (tdMapWrap) tdMapWrap.classList.add('hidden');
+  if (tdToggleMapBtn) tdToggleMapBtn.textContent = '📍 Mapa';
+
   document.getElementById('tdDescription').textContent = ticket.description || 'Sin descripción.';
   document.getElementById('tdDate').textContent = ticket.createdAt ? new Date(ticket.createdAt).toLocaleString('es-MX') : '-';
 
   document.getElementById('tdEstado').value = ticket.estado || 'creación';
   document.getElementById('tdPrioritySelect').value = ticket.priority || 'Normal';
   document.getElementById('tdAssignedSelect').value = ticket.assignedTo || 'Sin asignar';
+
+  const eq = ticket.equipment || {};
+  const setEqVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+  setEqVal('tdEqDeviceType', eq.deviceType);
+  setEqVal('tdEqBrandModel', eq.brandModel);
+  setEqVal('tdEqSerialNumber', eq.serialNumber);
+  setEqVal('tdEqAccessories', eq.accessories);
+  setEqVal('tdEqPhysicalCondition', eq.physicalCondition);
+  setEqVal('tdEqDeliveredTo', eq.deliveredTo || ticket.name || '');
+  setEqVal('tdEqDeliveryNotes', eq.deliveryNotes);
+  tdPickupSigPad?.loadDataUrl(eq.pickupSignature || '');
+  tdTechPickupSigPad?.loadDataUrl(eq.techPickupSignature || '');
+  tdDeliverySigPad?.loadDataUrl(eq.deliverySignature || '');
+  tdTechDeliverySigPad?.loadDataUrl(eq.techDeliverySignature || '');
+
+  const diag = ticket.diagnosis || {};
+  const feasibilityEl = document.getElementById('tdDiagFeasibility');
+  if (feasibilityEl) {
+    feasibilityEl.value = diag.feasibility || 'En Evaluación';
+  }
+  setEqVal('tdDiagAffectedParts', diag.affectedParts);
+  setEqVal('tdDiagVerifiedFault', diag.verifiedFault);
+  setEqVal('tdDiagTestsPerformed', diag.testsPerformed);
+  setEqVal('tdDiagFindings', diag.technicalFindings);
+  setEqVal('tdDiagSolution', diag.recommendedSolution);
+  setEqVal('tdDiagEstimatedCost', diag.estimatedCost > 0 ? String(diag.estimatedCost) : '');
+  setEqVal('tdDiagEstimatedTime', diag.estimatedTime);
+
+  syncTicketInfoFormMode(ticket.estado || 'creación');
 
   const delBtn = document.getElementById('tdDeleteTicketBtn');
   if (delBtn) delBtn.style.display = currentUser?.permissions?.canDelete ? 'inline-flex' : 'none';

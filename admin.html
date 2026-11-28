@@ -18,6 +18,15 @@
   <div class="ambient-glow" aria-hidden="true"></div>
   <div class="noise-overlay" aria-hidden="true"></div>
 
+  <div id="gmpQuotaBanner" class="gmp-quota-banner hidden" role="status" aria-live="polite">
+    <span>
+      Google Maps Platform quota reached. If you are the app owner, visit
+      <a href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors" target="_blank" rel="noopener noreferrer">maps developer site</a>
+      for instructions to update your account.
+    </span>
+    <button type="button" id="gmpQuotaDismissBtn" class="gmp-quota-close" aria-label="Cerrar aviso">✕</button>
+  </div>
+
   <!-- ============================
        LOGIN OVERLAY (ENTERPRISE GLASS)
   ============================ -->
@@ -3359,30 +3368,220 @@
             </div>
           </div>
 
-          <div class="info-grid">
-            <div class="ig-item">
-              <span>Teléfono / WhatsApp</span>
-              <strong id="tdPhone" class="tabular"></strong>
+          <div id="tdGeneralFormWrap">
+            <div class="info-grid">
+              <div class="ig-item">
+                <span>Teléfono / WhatsApp</span>
+                <strong id="tdPhone" class="tabular"></strong>
+              </div>
+              <div class="ig-item">
+                <span>Servicio Solicitado</span>
+                <strong id="tdService"></strong>
+              </div>
+              <div class="ig-item">
+                <label for="tdModalitySelect" style="font-size:0.7rem; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">Modalidad</label>
+                <select id="tdModalitySelect" class="state-select">
+                  <option value="En Sitio / Domicilio">En Sitio / Domicilio</option>
+                  <option value="Soporte Remoto">Soporte Remoto</option>
+                  <option value="Mostrador / Taller">Mostrador / Taller</option>
+                  <option value="Remoto">Remoto</option>
+                </select>
+              </div>
+              <div class="ig-item">
+                <span>Fecha de Registro</span>
+                <strong id="tdDate" class="tabular"></strong>
+              </div>
+              <div class="ig-item full">
+                <label for="tdLocationInput" style="font-size:0.7rem; font-family:var(--font-mono); color:var(--text-muted); text-transform:uppercase;">Ubicación / Dirección</label>
+                <div class="gmp-location-row">
+                  <input
+                    type="text"
+                    id="tdLocationInput"
+                    class="gmp-location-input"
+                    maxlength="260"
+                    placeholder="Calle, número, colonia o referencia en Teziutlán"
+                  >
+                  <button type="button" class="btn btn-secondary btn-sm" id="tdToggleMapBtn" style="white-space:nowrap;" title="Ubicar o mover dirección con marcador en Google Maps">📍 Mapa</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="tdSaveLocationBtn" style="white-space:nowrap;">💾 Guardar</button>
+                </div>
+                <div id="tdMapPickerWrap" class="gmp-picker-panel hidden">
+                  <div class="gmp-picker-toolbar">
+                    <div class="gmp-picker-actions">
+                      <button type="button" class="btn btn-ghost btn-sm" id="tdMapSearchBtn">🔍 Ubicar texto</button>
+                      <button type="button" class="btn btn-ghost btn-sm" id="tdMapLocateBtn">🎯 Mi ubicación</button>
+                    </div>
+                    <span id="tdMapCoords" class="gmp-coords-pill">Sin marcador</span>
+                  </div>
+                  <div id="tdMapCanvas" class="gmp-picker-canvas"></div>
+                  <div id="tdMapStatus" class="gmp-picker-status">Haz clic en el mapa o arrastra el marcador para elegir la dirección.</div>
+                </div>
+              </div>
+              <div class="ig-item full">
+                <span>Descripción del Problema</span>
+                <p id="tdDescription" class="desc-text"></p>
+              </div>
             </div>
-            <div class="ig-item">
-              <span>Servicio Solicitado</span>
-              <strong id="tdService"></strong>
+
+            <div id="tdDiagSummaryCard" class="diag-summary-banner hidden">
+              <div class="diag-summary-text" id="tdDiagSummaryText"></div>
+              <button type="button" class="btn btn-secondary btn-sm" id="tdOpenDiagFromGeneralBtn">🔍 Ver Diagnóstico Técnico</button>
             </div>
-            <div class="ig-item">
-              <span>Modalidad</span>
-              <strong id="tdOnsite"></strong>
+
+            <!-- Ficha de Equipo y Recibos (Recolección en Domicilio / Entrega Final) -->
+            <div style="margin-top:16px; padding:14px; border-radius:12px; border:1px solid var(--border-subtle); background:var(--bg-surface-2, rgba(255,255,255,0.02));">
+              <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+                <div>
+                  <div style="font-size:0.7rem; font-family:var(--font-mono); color:var(--primary); text-transform:uppercase; letter-spacing:0.06em;">Resguardo en Domicilio y Entrega</div>
+                  <strong style="font-size:0.92rem;">Ficha del Equipo y Recibos PDF</strong>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" id="tdSaveEquipmentBtn">💾 Guardar Ficha</button>
+              </div>
+              <div class="form-grid" style="gap:10px;">
+                <label>Tipo de Equipo
+                  <input type="text" id="tdEqDeviceType" list="eqDeviceTypesList" placeholder="Ej. Laptop, Impresora, DVR, Router">
+                </label>
+                <label>Marca / Modelo
+                  <input type="text" id="tdEqBrandModel" placeholder="Ej. HP Pavilion 15 / Epson TM-T20">
+                </label>
+                <label>N° Serie / IMEI
+                  <input type="text" id="tdEqSerialNumber" placeholder="Número de serie o IMEI">
+                </label>
+                <label>Accesorios Recibidos
+                  <input type="text" id="tdEqAccessories" placeholder="Cargador, cables, control, maletín">
+                </label>
+                <label class="full">Estado Físico del Equipo
+                  <input type="text" id="tdEqPhysicalCondition" placeholder="Rayones, golpes previos, pantalla, estado general">
+                </label>
+                <label>Recibe el Equipo (Entrega)
+                  <input type="text" id="tdEqDeliveredTo" placeholder="Nombre de quien recibe al finalizar">
+                </label>
+                <label>Observaciones de Entrega / Fin de Servicio
+                  <input type="text" id="tdEqDeliveryNotes" placeholder="Pruebas realizadas, garantía y observaciones finales">
+                </label>
+              </div>
+              <div class="sig-pad-grid">
+                <div class="sig-pad-card">
+                  <div class="sig-pad-header">
+                    <span class="sig-pad-title">Firma Digital · Recolección (Cliente)</span>
+                    <span id="tdPickupSigStatus" class="sig-pad-status">Sin firma</span>
+                  </div>
+                  <div class="sig-pad-surface">
+                    <canvas id="tdPickupSignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                    <div class="sig-pad-baseline" aria-hidden="true"></div>
+                  </div>
+                  <div class="sig-pad-actions">
+                    <span class="sig-pad-hint">Entrega cliente en domicilio</span>
+                    <button type="button" class="btn btn-ghost btn-sm" id="tdClearPickupSigBtn">Limpiar</button>
+                  </div>
+                </div>
+                <div class="sig-pad-card">
+                  <div class="sig-pad-header">
+                    <span class="sig-pad-title">Firma Digital · Recoge Técnico</span>
+                    <span id="tdTechPickupSigStatus" class="sig-pad-status">Sin firma</span>
+                  </div>
+                  <div class="sig-pad-surface">
+                    <canvas id="tdTechPickupSignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                    <div class="sig-pad-baseline" aria-hidden="true"></div>
+                  </div>
+                  <div class="sig-pad-actions">
+                    <span class="sig-pad-hint">Recoge técnico Fiberlink</span>
+                    <button type="button" class="btn btn-ghost btn-sm" id="tdClearTechPickupSigBtn">Limpiar</button>
+                  </div>
+                </div>
+                <div class="sig-pad-card">
+                  <div class="sig-pad-header">
+                    <span class="sig-pad-title">Firma Digital · Entrega (Fin de Servicio)</span>
+                    <span id="tdDeliverySigStatus" class="sig-pad-status">Sin firma</span>
+                  </div>
+                  <div class="sig-pad-surface">
+                    <canvas id="tdDeliverySignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                    <div class="sig-pad-baseline" aria-hidden="true"></div>
+                  </div>
+                  <div class="sig-pad-actions">
+                    <span class="sig-pad-hint">Recibe equipo de conformidad</span>
+                    <button type="button" class="btn btn-ghost btn-sm" id="tdClearDeliverySigBtn">Limpiar</button>
+                  </div>
+                </div>
+                <div class="sig-pad-card">
+                  <div class="sig-pad-header">
+                    <span class="sig-pad-title">Firma Digital · Entrega Técnico</span>
+                    <span id="tdTechDeliverySigStatus" class="sig-pad-status">Sin firma</span>
+                  </div>
+                  <div class="sig-pad-surface">
+                    <canvas id="tdTechDeliverySignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                    <div class="sig-pad-baseline" aria-hidden="true"></div>
+                  </div>
+                  <div class="sig-pad-actions">
+                    <span class="sig-pad-hint">Entrega técnico Fiberlink</span>
+                    <button type="button" class="btn btn-ghost btn-sm" id="tdClearTechDeliverySigBtn">Limpiar</button>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="tdDownloadPickupPdfBtn">
+                  📥 Descargar Recibo Recolección (Domicilio)
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="tdDownloadDeliveryPdfBtn">
+                  📥 Descargar Recibo Entrega (Fin de Servicio)
+                </button>
+              </div>
             </div>
-            <div class="ig-item">
-              <span>Fecha de Registro</span>
-              <strong id="tdDate" class="tabular"></strong>
+          </div>
+
+          <!-- DATOS DE DIAGNÓSTICO TÉCNICO DEL EQUIPO (ACTIVO EN ESTADO = DIAGNOSTICO) -->
+          <div id="tdDiagnosisFormWrap" class="diag-panel hidden">
+            <div class="diag-panel-head">
+              <div>
+                <div class="diag-eyebrow">Fase Activa · Revisión en Laboratorio / Sitio</div>
+                <strong style="font-size:1rem;">Datos de Diagnóstico Técnico del Equipo</strong>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" id="tdDiagBackToGeneralBtn">📋 Ver Ficha / Recibos</button>
             </div>
-            <div class="ig-item full">
-              <span>Ubicación / Dirección</span>
-              <strong id="tdLocation"></strong>
+
+            <div class="diag-chip-strip" id="tdDiagEquipmentChip"></div>
+
+            <div class="form-grid" style="gap:10px;">
+              <label>Dictamen Técnico
+                <select id="tdDiagFeasibility">
+                  <option value="En Evaluación">En Evaluación</option>
+                  <option value="Reparable">Reparable</option>
+                  <option value="Requiere Refacción">Requiere Refacción</option>
+                  <option value="Ajuste / Software">Ajuste / Software</option>
+                  <option value="No Reparable">No Reparable / Pérdida Total</option>
+                </select>
+              </label>
+              <label>Componentes / Subsistema Afectado
+                <input type="text" id="tdDiagAffectedParts" maxlength="300" placeholder="Ej. SSD NVMe, Fuente de poder, Puerto LAN, Tarjeta lógica">
+              </label>
+              <label class="full">Falla Verificada en el Equipo
+                <input type="text" id="tdDiagVerifiedFault" maxlength="300" placeholder="Ej. Sin lectura de unidad principal / voltaje inestable en carril de 12V">
+              </label>
+              <label class="full">Pruebas Técnicas Realizadas
+                <input type="text" id="tdDiagTestsPerformed" maxlength="500" placeholder="Ej. Prueba SMART, multímetro, reemplazo temporal de cargador, escaneo de red">
+              </label>
+              <label class="full">Diagnóstico Técnico Detallado (Causa Raíz)
+                <textarea id="tdDiagFindings" rows="3" maxlength="1500" placeholder="Describe hallazgos técnicos, mediciones y causa raíz de la falla..."></textarea>
+              </label>
+              <label class="full">Solución / Reparación Recomendada
+                <textarea id="tdDiagSolution" rows="2" maxlength="1000" placeholder="Procedimiento recomendado, refacciones necesarias o configuración a aplicar..."></textarea>
+              </label>
+              <label>Costo Estimado ($ MXN)
+                <input type="number" id="tdDiagEstimatedCost" class="tabular" min="0" step="10" placeholder="0.00">
+              </label>
+              <label>Tiempo Estimado de Entrega
+                <input type="text" id="tdDiagEstimatedTime" maxlength="80" placeholder="Ej. Mismo día / 24 a 48 hrs">
+              </label>
             </div>
-            <div class="ig-item full">
-              <span>Descripción del Problema</span>
-              <p id="tdDescription" class="desc-text"></p>
+
+            <div class="diag-actions-row">
+              <label class="diag-checkbox-label">
+                <input type="checkbox" id="tdDiagLogBitacoraCheck" checked>
+                <span>Registrar resumen en Bitácora Técnica</span>
+              </label>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="tdDiagSendCostToPosBtn">➕ Pasar Costo a Cargos POS</button>
+                <button type="button" class="btn btn-primary btn-sm" id="tdSaveDiagnosisBtn">💾 Guardar Diagnóstico Técnico</button>
+              </div>
             </div>
           </div>
 
@@ -3438,14 +3637,29 @@
               </table>
             </div>
 
-            <button id="posPrintBtn" class="btn btn-primary btn-full" style="margin-top: 15px;">
-              Imprimir Comprobante del Ticket
-            </button>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:15px;">
+              <button type="button" id="posDownloadDeliveryPdfBtn" class="btn btn-primary" style="flex:1 1 220px;">
+                📥 Descargar Recibo Entrega (PDF)
+              </button>
+              <button type="button" id="posPrintBtn" class="btn btn-secondary" style="flex:1 1 180px;">
+                🖨️ Imprimir Comprobante
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <datalist id="eqDeviceTypesList">
+    <option value="Laptop / Notebook"></option>
+    <option value="PC de Escritorio / CPU"></option>
+    <option value="Impresora Térmica / Láser"></option>
+    <option value="DVR / NVR / Cámara CCTV"></option>
+    <option value="Router / Módem / Access Point"></option>
+    <option value="Terminal Punto de Venta POS"></option>
+    <option value="Celular / Tablet"></option>
+  </datalist>
 
   <!-- ============================
        MODAL 2: NEW TICKET
@@ -3490,18 +3704,119 @@
             <option value="Urgente">Urgente</option>
           </select>
         </label>
-        <label class="full">Dirección / Ubicación
-          <input type="text" name="address" placeholder="Calle, número, colonia o referencia en Teziutlán">
-        </label>
+        <div class="full">
+          <label for="ntLocationInput" style="display:block; margin-bottom:4px;">Dirección / Ubicación</label>
+          <div class="gmp-location-row" style="margin-top:0;">
+            <input type="text" name="address" id="ntLocationInput" class="gmp-location-input" maxlength="260" placeholder="Calle, número, colonia o referencia en Teziutlán">
+            <button type="button" class="btn btn-secondary btn-sm" id="ntToggleMapBtn" style="white-space:nowrap;" title="Seleccionar ubicación con marcador en Google Maps">📍 Mapa</button>
+          </div>
+          <div id="ntMapPickerWrap" class="gmp-picker-panel hidden">
+            <div class="gmp-picker-toolbar">
+              <div class="gmp-picker-actions">
+                <button type="button" class="btn btn-ghost btn-sm" id="ntMapSearchBtn">🔍 Ubicar texto</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="ntMapLocateBtn">🎯 Mi ubicación</button>
+              </div>
+              <span id="ntMapCoords" class="gmp-coords-pill">Sin marcador</span>
+            </div>
+            <div id="ntMapCanvas" class="gmp-picker-canvas"></div>
+            <div id="ntMapStatus" class="gmp-picker-status">Haz clic en el mapa o arrastra el marcador para elegir la dirección.</div>
+          </div>
+        </div>
         <label class="full">Técnico Asignado
           <select name="assignedTo" id="newTicketTechSelect"></select>
         </label>
         <label class="full">Descripción de la Falla o Solicitud *
           <textarea name="description" required rows="3" placeholder="Describe el requerimiento o problema reportado..."></textarea>
         </label>
-        <div class="full modal-actions">
+
+        <div class="full" style="margin-top:4px; padding:12px; border-radius:10px; border:1px solid var(--border-subtle); background:var(--bg-surface-2, rgba(255,255,255,0.02));">
+          <div style="font-size:0.72rem; font-family:var(--font-mono); color:var(--primary); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+            Datos del Equipo (Para Recibo de Recolección en Domicilio y Entrega)
+          </div>
+          <div class="form-grid" style="gap:8px;">
+            <label>Tipo de Equipo
+              <input type="text" name="eqDeviceType" list="eqDeviceTypesList" placeholder="Ej. Laptop, Impresora, DVR">
+            </label>
+            <label>Marca / Modelo
+              <input type="text" name="eqBrandModel" placeholder="Ej. HP Pavilion / Epson TM-T20">
+            </label>
+            <label>N° Serie / IMEI
+              <input type="text" name="eqSerialNumber" placeholder="Serie del equipo (opcional)">
+            </label>
+            <label>Accesorios Recogidos
+              <input type="text" name="eqAccessories" placeholder="Cargador, cable USB, control, etc.">
+            </label>
+            <label class="full">Estado Físico / Observaciones al Recoger
+              <input type="text" name="eqPhysicalCondition" placeholder="Rayones, golpes previos, sin daños visibles...">
+            </label>
+            <label class="full">Recibe el Equipo (Entrega)
+              <input type="text" name="eqDeliveredTo" placeholder="Nombre de quien recibirá el equipo al finalizar (opcional)">
+            </label>
+            <div class="full sig-pad-grid" style="margin-top:2px;">
+              <div class="sig-pad-card">
+                <div class="sig-pad-header">
+                  <span class="sig-pad-title">Firma Digital · Recolección (Cliente)</span>
+                  <span id="ntPickupSigStatus" class="sig-pad-status">Sin firma</span>
+                </div>
+                <div class="sig-pad-surface">
+                  <canvas id="ntPickupSignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                  <div class="sig-pad-baseline" aria-hidden="true"></div>
+                </div>
+                <div class="sig-pad-actions">
+                  <span class="sig-pad-hint">Entrega cliente en domicilio</span>
+                  <button type="button" class="btn btn-ghost btn-sm" id="ntClearPickupSigBtn">Limpiar</button>
+                </div>
+              </div>
+              <div class="sig-pad-card">
+                <div class="sig-pad-header">
+                  <span class="sig-pad-title">Firma Digital · Recoge Técnico</span>
+                  <span id="ntTechPickupSigStatus" class="sig-pad-status">Sin firma</span>
+                </div>
+                <div class="sig-pad-surface">
+                  <canvas id="ntTechPickupSignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                  <div class="sig-pad-baseline" aria-hidden="true"></div>
+                </div>
+                <div class="sig-pad-actions">
+                  <span class="sig-pad-hint">Recoge técnico Fiberlink</span>
+                  <button type="button" class="btn btn-ghost btn-sm" id="ntClearTechPickupSigBtn">Limpiar</button>
+                </div>
+              </div>
+              <div class="sig-pad-card">
+                <div class="sig-pad-header">
+                  <span class="sig-pad-title">Firma Digital · Entrega (Fin de Servicio)</span>
+                  <span id="ntDeliverySigStatus" class="sig-pad-status">Sin firma</span>
+                </div>
+                <div class="sig-pad-surface">
+                  <canvas id="ntDeliverySignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                  <div class="sig-pad-baseline" aria-hidden="true"></div>
+                </div>
+                <div class="sig-pad-actions">
+                  <span class="sig-pad-hint">Recibe equipo de conformidad</span>
+                  <button type="button" class="btn btn-ghost btn-sm" id="ntClearDeliverySigBtn">Limpiar</button>
+                </div>
+              </div>
+              <div class="sig-pad-card">
+                <div class="sig-pad-header">
+                  <span class="sig-pad-title">Firma Digital · Entrega Técnico</span>
+                  <span id="ntTechDeliverySigStatus" class="sig-pad-status">Sin firma</span>
+                </div>
+                <div class="sig-pad-surface">
+                  <canvas id="ntTechDeliverySignatureCanvas" class="sig-pad-canvas" width="440" height="150"></canvas>
+                  <div class="sig-pad-baseline" aria-hidden="true"></div>
+                </div>
+                <div class="sig-pad-actions">
+                  <span class="sig-pad-hint">Entrega técnico Fiberlink</span>
+                  <button type="button" class="btn btn-ghost btn-sm" id="ntClearTechDeliverySigBtn">Limpiar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="full modal-actions" style="flex-wrap:wrap; gap:8px;">
           <button type="button" class="btn btn-ghost" data-close="newTicketModal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Crear Ticket</button>
+          <button type="submit" class="btn btn-secondary" data-ticket-action="create">Crear Ticket</button>
+          <button type="submit" class="btn btn-primary" data-ticket-action="create-pickup">📥 Crear y Descargar Recibo Recolección</button>
         </div>
       </form>
     </div>

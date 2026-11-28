@@ -203,6 +203,14 @@
           "type": "object",
           "description": "POS charges and payment status ({ items, total, paid })"
         },
+        "equipment": {
+          "type": "object",
+          "description": "Optional device pickup and delivery receipt metadata (deviceType, brandModel, serialNumber, accessories, physicalCondition, pickupAt, deliveredAt, deliveredTo, deliveryNotes, plus bounded <=80000 char PNG base64 pickupSignature, techPickupSignature, deliverySignature, techDeliverySignature)"
+        },
+        "diagnosis": {
+          "type": "object",
+          "description": "Optional technical diagnosis metadata for the equipment (verifiedFault, testsPerformed, affectedParts, technicalFindings, recommendedSolution, feasibility, estimatedCost, estimatedTime, diagnosedBy, diagnosedAt)"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",

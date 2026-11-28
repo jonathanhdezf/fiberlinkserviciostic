@@ -171,6 +171,64 @@ service cloud.firestore {
         && pos.paid is bool;
     }
 
+    function isValidSignatureData(val) {
+      return val is string
+        && (
+          val.size() == 0
+          || (val.size() > 22 && val.size() <= 80000 && val.matches('^data:image/png;base64,[A-Za-z0-9+/=]+$'))
+        );
+    }
+
+    function isValidTicketEquipment(eq) {
+      return eq is map
+        && eq.keys().hasAll([
+          'deviceType', 'brandModel', 'serialNumber', 'accessories',
+          'physicalCondition', 'pickupAt', 'deliveredAt', 'deliveredTo', 'deliveryNotes'
+        ])
+        && eq.keys().hasOnly([
+          'deviceType', 'brandModel', 'serialNumber', 'accessories',
+          'physicalCondition', 'pickupAt', 'deliveredAt', 'deliveredTo', 'deliveryNotes',
+          'pickupSignature', 'techPickupSignature', 'deliverySignature', 'techDeliverySignature'
+        ])
+        && eq.deviceType is string && eq.deviceType.size() <= 80
+        && eq.brandModel is string && eq.brandModel.size() <= 140
+        && eq.serialNumber is string && eq.serialNumber.size() <= 80
+        && eq.accessories is string && eq.accessories.size() <= 300
+        && eq.physicalCondition is string && eq.physicalCondition.size() <= 300
+        && eq.pickupAt is string && eq.pickupAt.size() <= 64
+        && eq.deliveredAt is string && eq.deliveredAt.size() <= 64
+        && eq.deliveredTo is string && eq.deliveredTo.size() <= 140
+        && eq.deliveryNotes is string && eq.deliveryNotes.size() <= 500
+        && (!('pickupSignature' in eq) || isValidSignatureData(eq.pickupSignature))
+        && (!('techPickupSignature' in eq) || isValidSignatureData(eq.techPickupSignature))
+        && (!('deliverySignature' in eq) || isValidSignatureData(eq.deliverySignature))
+        && (!('techDeliverySignature' in eq) || isValidSignatureData(eq.techDeliverySignature));
+    }
+
+    function isValidTicketDiagnosis(diag) {
+      return diag is map
+        && diag.keys().hasAll([
+          'verifiedFault', 'testsPerformed', 'affectedParts', 'technicalFindings',
+          'recommendedSolution', 'feasibility', 'estimatedCost', 'estimatedTime',
+          'diagnosedBy', 'diagnosedAt'
+        ])
+        && diag.keys().hasOnly([
+          'verifiedFault', 'testsPerformed', 'affectedParts', 'technicalFindings',
+          'recommendedSolution', 'feasibility', 'estimatedCost', 'estimatedTime',
+          'diagnosedBy', 'diagnosedAt'
+        ])
+        && diag.verifiedFault is string && diag.verifiedFault.size() <= 300
+        && diag.testsPerformed is string && diag.testsPerformed.size() <= 500
+        && diag.affectedParts is string && diag.affectedParts.size() <= 300
+        && diag.technicalFindings is string && diag.technicalFindings.size() <= 1500
+        && diag.recommendedSolution is string && diag.recommendedSolution.size() <= 1000
+        && diag.feasibility is string && diag.feasibility.size() <= 60
+        && diag.estimatedCost is number && diag.estimatedCost >= 0 && diag.estimatedCost <= 10000000
+        && diag.estimatedTime is string && diag.estimatedTime.size() <= 80
+        && diag.diagnosedBy is string && diag.diagnosedBy.size() <= 120
+        && diag.diagnosedAt is string && diag.diagnosedAt.size() <= 64;
+    }
+
     function isValidSupportTicket(data, ticketIdParam) {
       return data.keys().hasAll([
           'id', 'folio', 'estado', 'name', 'phone', 'service',
@@ -180,7 +238,7 @@ service cloud.firestore {
         && data.keys().hasOnly([
           'id', 'folio', 'estado', 'name', 'phone', 'email', 'company',
           'address', 'service', 'modality', 'priority', 'assignedTo',
-          'description', 'source', 'bitacora', 'pos', 'createdAt', 'updatedAt'
+          'description', 'source', 'bitacora', 'pos', 'equipment', 'diagnosis', 'createdAt', 'updatedAt'
         ])
         && isValidId(data.id)
         && data.id == ticketIdParam
@@ -199,6 +257,8 @@ service cloud.firestore {
         && data.source is string && data.source.size() <= 80
         && isValidTicketBitacora(data.bitacora)
         && isValidTicketPos(data.pos)
+        && (!('equipment' in data) || isValidTicketEquipment(data.equipment))
+        && (!('diagnosis' in data) || isValidTicketDiagnosis(data.diagnosis))
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }
@@ -514,10 +574,13 @@ service cloud.firestore {
         && (existing().estado != 'resuelto' || isAdmin())
         && (
           isAdmin()
-          || incoming().diff(existing()).affectedKeys().hasOnly(['estado', 'priority', 'assignedTo', 'bitacora', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['estado', 'priority', 'assignedTo', 'modality', 'address', 'bitacora', 'updatedAt'])
           || incoming().diff(existing()).affectedKeys().hasOnly(['bitacora', 'updatedAt'])
           || incoming().diff(existing()).affectedKeys().hasOnly(['pos', 'updatedAt'])
-          || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'email', 'company', 'address', 'service', 'modality', 'description', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['equipment', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['diagnosis', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['diagnosis', 'bitacora', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'email', 'company', 'address', 'service', 'modality', 'description', 'equipment', 'diagnosis', 'updatedAt'])
         );
 
       allow delete: if isValidId(ticketId) && isAdmin();

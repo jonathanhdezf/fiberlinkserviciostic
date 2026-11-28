@@ -33,6 +33,49 @@ function toIsoDate(val) {
   return String(val);
 }
 
+function sanitizeSignatureDataUrl(val) {
+  if (typeof val !== 'string') return '';
+  const trimmed = val.trim();
+  if (!trimmed) return '';
+  if (trimmed.length <= 22 || trimmed.length > 80000) return '';
+  return /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(trimmed) ? trimmed : '';
+}
+
+function normalizeEquipmentData(raw, fallbackName = '') {
+  const eq = raw && typeof raw === 'object' ? raw : {};
+  return {
+    deviceType: sanitizeStr(eq.deviceType, 80, ''),
+    brandModel: sanitizeStr(eq.brandModel, 140, ''),
+    serialNumber: sanitizeStr(eq.serialNumber, 80, ''),
+    accessories: sanitizeStr(eq.accessories, 300, ''),
+    physicalCondition: sanitizeStr(eq.physicalCondition, 300, ''),
+    pickupAt: sanitizeStr(eq.pickupAt, 64, ''),
+    deliveredAt: sanitizeStr(eq.deliveredAt, 64, ''),
+    deliveredTo: sanitizeStr(eq.deliveredTo, 140, fallbackName),
+    deliveryNotes: sanitizeStr(eq.deliveryNotes, 500, ''),
+    pickupSignature: sanitizeSignatureDataUrl(eq.pickupSignature),
+    techPickupSignature: sanitizeSignatureDataUrl(eq.techPickupSignature),
+    deliverySignature: sanitizeSignatureDataUrl(eq.deliverySignature),
+    techDeliverySignature: sanitizeSignatureDataUrl(eq.techDeliverySignature)
+  };
+}
+
+function normalizeDiagnosisData(raw) {
+  const diag = raw && typeof raw === 'object' ? raw : {};
+  return {
+    verifiedFault: sanitizeStr(diag.verifiedFault, 300, ''),
+    testsPerformed: sanitizeStr(diag.testsPerformed, 500, ''),
+    affectedParts: sanitizeStr(diag.affectedParts, 300, ''),
+    technicalFindings: sanitizeStr(diag.technicalFindings, 1500, ''),
+    recommendedSolution: sanitizeStr(diag.recommendedSolution, 1000, ''),
+    feasibility: sanitizeStr(diag.feasibility, 60, ''),
+    estimatedCost: Math.max(0, Math.min(10000000, parseFloat(diag.estimatedCost) || 0)),
+    estimatedTime: sanitizeStr(diag.estimatedTime, 80, ''),
+    diagnosedBy: sanitizeStr(diag.diagnosedBy, 120, ''),
+    diagnosedAt: sanitizeStr(diag.diagnosedAt, 64, '')
+  };
+}
+
 function normalizeTicketDoc(id, data) {
   return {
     id: data.id || id,
@@ -57,6 +100,8 @@ function normalizeTicketDoc(id, data) {
           paid: Boolean(data.pos.paid)
         }
       : { items: [], total: 0, paid: false },
+    equipment: normalizeEquipmentData(data.equipment, data.name || ''),
+    diagnosis: normalizeDiagnosisData(data.diagnosis),
     createdAt: toIsoDate(data.createdAt),
     updatedAt: toIsoDate(data.updatedAt)
   };
@@ -338,6 +383,7 @@ export const ticketService = {
         total: 0,
         paid: false
       },
+      ...(ticketData.equipment ? { equipment: normalizeEquipmentData(ticketData.equipment, ticketData.name || '') } : {}),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
@@ -520,6 +566,7 @@ export const ticketService = {
     if (payload.company !== undefined) updates.company = sanitizeStr(payload.company, 140);
     if (payload.service !== undefined) updates.service = sanitizeStr(payload.service, 100);
     if (payload.modality !== undefined) updates.modality = sanitizeStr(payload.modality, 80);
+    if (payload.equipment !== undefined) updates.equipment = normalizeEquipmentData(payload.equipment, payload.name || current.name || '');
 
     if (notesToAdd.length > 0) {
       const nextBitacora = [...current.bitacora];
@@ -666,6 +713,100 @@ export const ticketService = {
     items.push({ id: `pos-${Date.now()}`, concept, price: parseFloat(price) || 0, qty: 1 });
     const total = items.reduce((s, i) => s + (parseFloat(i.price) || 0) * (Number(i.qty) || 1), 0);
     return this.savePos(id, items, total);
+  },
+
+  async saveEquipment(id, equipmentData) {
+    let existingSnap;
+    try {
+      existingSnap = await resolveTicketDocRef(id);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `tickets/${id}`);
+    }
+    if (!existingSnap || !existingSnap.exists()) return null;
+
+    const current = normalizeTicketDoc(existingSnap.id, existingSnap.data());
+    const nextEquipment = normalizeEquipmentData(
+      { ...current.equipment, ...equipmentData },
+      current.name || ''
+    );
+
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'tickets', existingSnap.id), {
+        equipment: nextEquipment,
+        updatedAt: serverTimestamp()
+      });
+      await batch.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `tickets/${existingSnap.id}`);
+    }
+
+    return {
+      ...current,
+      equipment: nextEquipment,
+      updatedAt: new Date().toISOString()
+    };
+  },
+
+  async saveDiagnosis(id, diagnosisData, options = {}) {
+    let existingSnap;
+    try {
+      existingSnap = await resolveTicketDocRef(id);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `tickets/${id}`);
+    }
+    if (!existingSnap || !existingSnap.exists()) return null;
+
+    const current = normalizeTicketDoc(existingSnap.id, existingSnap.data());
+    const nextDiagnosis = normalizeDiagnosisData({
+      ...current.diagnosis,
+      ...diagnosisData,
+      diagnosedAt: diagnosisData?.diagnosedAt || new Date().toISOString(),
+      diagnosedBy: diagnosisData?.diagnosedBy || options?.author || current.assignedTo || auth.currentUser?.displayName || 'Técnico Fiberlink'
+    });
+
+    const updates = {
+      diagnosis: nextDiagnosis,
+      updatedAt: serverTimestamp()
+    };
+
+    let nextBitacora = current.bitacora;
+    if (options?.logToBitacora) {
+      const summaryParts = [];
+      if (nextDiagnosis.feasibility) summaryParts.push(`[${nextDiagnosis.feasibility}]`);
+      if (nextDiagnosis.verifiedFault) summaryParts.push(`Falla: ${nextDiagnosis.verifiedFault}`);
+      if (nextDiagnosis.technicalFindings) summaryParts.push(`Diagnóstico: ${nextDiagnosis.technicalFindings}`);
+      if (nextDiagnosis.recommendedSolution) summaryParts.push(`Solución: ${nextDiagnosis.recommendedSolution}`);
+      if (nextDiagnosis.estimatedCost > 0) summaryParts.push(`Estimado: $${nextDiagnosis.estimatedCost.toFixed(2)}`);
+      const noteText = sanitizeStr(summaryParts.join(' · '), 1000);
+      if (noteText) {
+        nextBitacora = [
+          ...current.bitacora,
+          {
+            id: `b-${Date.now()}`,
+            date: new Date().toISOString(),
+            author: sanitizeStr(nextDiagnosis.diagnosedBy, 120, 'Técnico Fiberlink'),
+            note: noteText
+          }
+        ].slice(-50);
+        updates.bitacora = nextBitacora;
+      }
+    }
+
+    try {
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'tickets', existingSnap.id), updates);
+      await batch.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `tickets/${existingSnap.id}`);
+    }
+
+    return {
+      ...current,
+      diagnosis: nextDiagnosis,
+      bitacora: nextBitacora,
+      updatedAt: new Date().toISOString()
+    };
   },
 
   async deleteTicket(id) {
